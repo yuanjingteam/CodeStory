@@ -4,12 +4,34 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+// backend/prisma/schema.prisma
+
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid()) 
+  email       String   @unique 
+  password    String   
+  nickname    String   
+  role        Int      @default(0)  // 0-普通用户 1-管理员
+  avatar      String?  @db.VarChar(500)
+  sex         Int      @default(0)  // 0-未知 1-男 2-女
+  occupation  String?  @db.VarChar(100)
+  score       BigInt   @default(0) 
+  level       Int      @default(0)  // 0-青铜 1-黄金 2-钻石
+  createdAt   DateTime @default(now()) 
+  updatedAt   DateTime @updatedAt 
+  isDelete    Int      @default(0) @map("is_delete") 
+  
+  @@index([level], name: "idx_level")
+  @@index([createdAt], name: "idx_created_at")
+  @@map("users")
 }

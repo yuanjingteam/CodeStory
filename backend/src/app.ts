@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import errorHandler from '../src/middleware/errorHandler';
-import prisma from 'prisma';
+import prisma from '../src/config/prisma';
 
 // Load environment variables in development
 if (process.env.NODE_ENV !== 'production') {
@@ -15,21 +15,21 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Health check
-// app.get('/health', async (req, res) => {
-//   try {
-//     await prisma.$queryRaw`SELECT 1`;
-//     res.json({
-//       status: 'ok',
-//       message: 'Server and database are running',
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       status: 'error',
-//       message: 'Database connection failed',
-//     });
-//   }
-// });
+//Health check
+app.get('/api/v1/health', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({
+      status: 'ok',
+      message: 'Server and database are running',
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Database connection failed',
+    });
+  }
+});
 
 // API routes
 
