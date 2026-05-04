@@ -1,48 +1,35 @@
 import Link from 'next/link';
 import React from 'react';
 
-const Header: React.FC = () => {
+const AdminHeader: React.FC = () => {
   return (
     <header className="bg-[#f5f5f5] p-3 relative z-20">
-      <div className="border-4 border-black bg-yellow-400 shadow-[6px_6px_0px_#000]">
-        <div className="bg-gradient-to-r from-yellow-300 to-yellow-500">
+      <div className="border-4 border-black bg-purple-400 shadow-[6px_6px_0px_#000]">
+        <div className="bg-gradient-to-r from-purple-300 to-purple-700">
           <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
             <div className="flex items-center space-x-10">
               <Link
                 href="/"
-                className="flex items-center space-x-2 font-black text-black"
+                className="flex items-center space-x-3 font-black text-black"
               >
-                <div className="border-2 border-black px-2 py-1 bg-yellow-200 shadow-[2px_2px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-100 cursor-pointer">
-                  {'</>'}
+                <div className="border-2 border-black px-2 py-1 bg-white shadow-[2px_2px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-100">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-black"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
                 </div>
-                <span className="text-lg tracking-wide">CODE STORY</span>
+                <span className="text-lg tracking-wide">后台管理</span>
               </Link>
-              <nav className="flex items-center space-x-8 text-black font-bold">
-                <Link
-                  href="/"
-                  className="hover:underline underline-offset-4 decoration-2 decoration-black"
-                >
-                  首页
-                </Link>
-                <Link
-                  href="/courses"
-                  className="hover:underline underline-offset-4 decoration-2 decoration-black"
-                >
-                  课程
-                </Link>
-                <Link
-                  href="/about"
-                  className="hover:underline underline-offset-4 decoration-2 decoration-black"
-                >
-                  关于我们
-                </Link>
-                <Link
-                  href="/users-manage"
-                  className="hover:underline underline-offset-4 decoration-2 decoration-black"
-                >
-                  后台管理
-                </Link>
-              </nav>
             </div>
 
             <div className="flex items-center space-x-5">
@@ -93,4 +80,4 @@ const Header: React.FC = () => {
   );
 };
 
-export default Header;
+export default AdminHeader;

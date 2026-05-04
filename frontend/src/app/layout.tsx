@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import Header from '@/components/layout/Header';
 
 export const metadata: Metadata = {
   title: 'CodeStory',
@@ -18,8 +17,7 @@ export default function RootLayout({
         <div className="fixed inset-0 pointer-events-none z-0">
           <div className="absolute inset-0 bg-[radial-gradient(circle,_#000_1px,_transparent_1px)] bg-[size:20px_20px]"></div>
         </div>
-        <Header />
-        <main className="relative z-10">{children}</main>
+        {children}
       </body>
     </html>
   );
