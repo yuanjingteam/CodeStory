@@ -1,3 +1,7 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  /* 自定义阴影 */
+  --shadow-neo-brutalism: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+  --shadow-neo-brutalism-sm: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+}
