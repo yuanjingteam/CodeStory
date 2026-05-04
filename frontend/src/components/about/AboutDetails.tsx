@@ -17,7 +17,6 @@ export default function AboutHero() {
         p-8
         mx-8 
         transition-all duration-150 
-        hover:shadow-[0px_0px_0_0_rgba(0,0,0,1)]
         relative z-10
       "
     >
