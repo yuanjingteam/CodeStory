@@ -1,12 +1,11 @@
 import axios, {
   type AxiosInstance,
-  type AxiosRequestConfig,
   type AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
 
 const service: AxiosInstance = axios.create({
-  baseURL: '/api/v1',
+  baseURL: 'http://127.0.0.1:4523/m1/8211038-7971129-default',
   timeout: 5000,
 });
 
