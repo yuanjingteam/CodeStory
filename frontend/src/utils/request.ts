@@ -5,7 +5,7 @@ import axios, {
 } from 'axios';
 
 const service: AxiosInstance = axios.create({
-  baseURL: 'http://127.0.0.1:4523/m1/8211038-7971129-default',
+  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'}/api/v1`,
   timeout: 5000,
 });
 

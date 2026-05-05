@@ -19,14 +19,30 @@ app.use(express.json());
 app.get('/api/v1/health', async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
+
+    // 测试查询用户数据
+    const users = await prisma.users.findMany({
+      take: 1,
+    });
+
+    
+    const serializedUsers = users.map((user) => ({
+      ...user,
+      score: Number(user.score),
+    }));
+
     res.json({
       status: 'ok',
       message: 'Server and database are running',
+      database: 'connected',
+      userCount: users.length,
+      sampleUser: serializedUsers.length > 0 ? serializedUsers[0] : null,
     });
   } catch (error) {
     res.status(500).json({
       status: 'error',
       message: 'Database connection failed',
+      error: error instanceof Error ? error.message : String(error),
     });
   }
 });
