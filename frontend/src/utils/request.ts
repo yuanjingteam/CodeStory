@@ -1,12 +1,11 @@
 import axios, {
   type AxiosInstance,
-  type AxiosRequestConfig,
   type AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
 
 const service: AxiosInstance = axios.create({
-  baseURL: '/api/v1',
+  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'}/api/v1`,
   timeout: 5000,
 });
 
