@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import courseApi from '@/app/api/courses/courses';
 import type { Course } from '@/types/course';
 
@@ -9,6 +10,12 @@ const levelConfig: Record<number, { text: string; color: string }> = {
   2: { text: '高级', color: 'bg-pink-300' },
 };
 
+const learnStatusConfig: Record<number, { text: string; color: string }> = {
+  0: { text: '未开始', color: 'bg-gray-300' },
+  1: { text: '进行中', color: 'bg-blue-300' },
+  2: { text: '已完成', color: 'bg-purple-300' },
+};
+
 const levelMap = {
   '全部难度': undefined,
   '初级': 0,
@@ -16,11 +23,28 @@ const levelMap = {
   '高级': 2,
 };
 
+const getLevelNumber = (level: string | number): number => {
+  if (typeof level === 'number') return level;
+  const num = parseInt(level);
+  return isNaN(num) ? 0 : num;
+};
+
+const getLearnStatus = (status: number | undefined): number => {
+  if (status === undefined) return 0;
+  if (status >= 2) return 2; 
+  return status;
+};
+
 export default function CoursesSection() {
+  const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('全部难度');
+
+  const handleCourseClick = (courseId: string | number) => {
+    router.push(`/courses/${courseId}`);
+  };
 
   const fetchCourses = async () => {
     setLoading(true);
@@ -86,20 +110,23 @@ export default function CoursesSection() {
       {!loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {courses.map((course) => {
-            const level = Number(course.level);
-            const config = levelConfig[level] || { text: '未知', color: 'bg-gray-300' };
+            const level = getLevelNumber(course.level);
+            const levelConfigItem = levelConfig[level] || { text: '未知', color: 'bg-gray-300' };
+            const learnStatus = getLearnStatus(course.learnStatus);
+            const statusConfig = learnStatusConfig[learnStatus] || learnStatusConfig[0];
 
             return (
               <div
                 key={course.id}
-                className="flex flex-col border-2 border-black bg-white p-6 shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0_0_rgba(0,0,0,1)] transition-all h-[320px]"
+                onClick={() => handleCourseClick(course.id)}
+                className="flex flex-col border-2 border-black bg-white p-6 shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0_0_rgba(0,0,0,1)] transition-all h-[360px] cursor-pointer"
               >
-                <div className="text-2xl mb-4 h-16 flex justify-center items-center">
-                  {course.coverUrl ? (
+                <div className="text-2xl mb-4 h-20 flex justify-center items-center">
+                  {course.cover_url ? (
                     <img 
-                      src={course.coverUrl} 
+                      src={course.cover_url} 
                       alt={course.title} 
-                      className="h-full object-contain"
+                      className="h-full w-full object-cover rounded"
                     />
                   ) : (
                     '📚'
@@ -109,13 +136,34 @@ export default function CoursesSection() {
                 <h3 className="text-xl font-black mb-1 truncate" title={course.title}>
                   {course.title}
                 </h3>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2" title={course.description}>
+                <p className="text-gray-600 text-sm mb-3 line-clamp-2" title={course.description}>
                   {course.description}
                 </p>
 
+                {course.progress !== undefined ? (
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className={`${levelConfigItem.color} border-2 border-black px-2 py-0.5 text-xs font-bold shrink-0`}>
+                      {levelConfigItem.text}
+                    </span>
+                    <div className="flex-1 bg-gray-200 rounded-full h-2 border-2 border-black">
+                      <div 
+                        className="bg-blue-500 h-full rounded-full transition-all"
+                        style={{ width: `${Math.min(course.progress, 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-bold text-gray-600 whitespace-nowrap">{course.progress}%</span>
+                  </div>
+                ) : (
+                  <div className="mb-2">
+                    <span className={`${levelConfigItem.color} border-2 border-black px-3 py-1 text-xs font-bold`}>
+                      {levelConfigItem.text}
+                    </span>
+                  </div>
+                )}
+
                 <div className="mt-auto">
-                  <span className={`${config.color} border-2 border-black px-3 py-1 text-xs font-bold`}>
-                    {config.text}
+                  <span className={`${statusConfig.color} border-2 border-black px-3 py-1 text-xs font-bold w-full block text-center`}>
+                    {statusConfig.text}
                   </span>
                 </div>
               </div>

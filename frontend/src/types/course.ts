@@ -9,11 +9,14 @@ export interface CourseListRequest {
 }
 
 export interface Course {
-  id: number;
+  id: string | number;
   title: string;
   description: string;
-  coverUrl?: string;
-  level: string | number;
+  cover_url?: string;
+  level: string | number;  // 0-初级 1-中级 2-高级
+  progress?: number;       // 进度百分比
+  progressText?: string;   // 进度文本
+  learnStatus?: number;    // 0-未开始 1-进行中 2-已完成
   icon?: string;
   rating?: number; 
   learners?: number;
