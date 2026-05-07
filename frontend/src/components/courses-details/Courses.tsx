@@ -57,7 +57,7 @@ export default function CoursesSection() {
       };
 
       const res = await courseApi.getList(params);
-      setCourses(res.data?.records || []);
+      setCourses(res.records || []);
     } catch (err) {
       console.error('获取课程失败', err);
     } finally {

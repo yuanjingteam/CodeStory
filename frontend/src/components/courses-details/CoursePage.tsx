@@ -24,7 +24,7 @@ export default function CourseDetails({
       try {
         setLoading(true);
         const response = await courseDetailApi.getById(courseId);
-        setCourse(response.data);
+        setCourse(response);
       } catch (error) {
         console.error('获取课程详情失败:', error);
       } finally {
@@ -143,9 +143,6 @@ function ChapterItem({ chapter, courseId }: { chapter: Chapter; courseId: string
                   <span className="text-xl">📄</span>
                   <div className="flex-1">
                     <div className="font-bold">{lesson.title}</div>
-                    <div className="text-sm text-gray-600">
-                      ⏱️ {lesson.estimated_time}分钟
-                    </div>
                   </div>
                 </div>
                 <span className={`${difficulty.color} border-2 border-black px-3 py-1 text-xs font-bold`}>

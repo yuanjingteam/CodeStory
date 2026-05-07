@@ -1,6 +1,7 @@
 import axios, {
   type AxiosInstance,
   type AxiosResponse,
+  type AxiosRequestConfig,
   InternalAxiosRequestConfig,
 } from 'axios';
 
@@ -31,4 +32,26 @@ service.interceptors.response.use(
   }
 );
 
-export default service;
+interface RequestMethods {
+  get<T>(url: string, config?: AxiosRequestConfig): Promise<T>;
+  post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
+  put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
+  delete<T>(url: string, config?: AxiosRequestConfig): Promise<T>;
+}
+
+const request: RequestMethods = {
+  get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    return service.get<T>(url, config) as Promise<T>;
+  },
+  post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
+    return service.post<T>(url, data, config) as Promise<T>;
+  },
+  put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
+    return service.put<T>(url, data, config) as Promise<T>;
+  },
+  delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    return service.delete<T>(url, config) as Promise<T>;
+  },
+};
+
+export default request;
