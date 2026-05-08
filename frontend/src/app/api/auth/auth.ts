@@ -2,7 +2,7 @@ import request from '@/utils/request';
 import type {
   LoginRequest,
   RegisterRequest,
-  CaptchaResponse,
+  ImageCaptchaResponse,
   ResetPasswordRequest,
 } from 'shared/types/auth';
 export const login = async (data: LoginRequest) => {
@@ -11,9 +11,9 @@ export const login = async (data: LoginRequest) => {
 export const register = async (data: RegisterRequest) => {
   return request.post('/auth/register', data);
 };
-// 获取验证码
-export const getCaptcha = async (): Promise<CaptchaResponse> => {
-  return request.get('/auth/captcha');
+// 获取图片验证码
+export const getImageCaptcha = async (): Promise<ImageCaptchaResponse> => {
+  return request.get('/auth/image-captcha');
 };
 
 //获取邮箱验证码

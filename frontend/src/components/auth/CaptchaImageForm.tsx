@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
-import type { CaptchaResponse } from 'shared/types/auth';
-import { getCaptcha } from '@/app/api/auth/auth';
+import { getImageCaptcha } from '@/app/api/auth/auth';
+import type { ImageCaptchaData } from 'shared/types/auth';
 interface CaptchaImageProps {
   value: string;
   onChange: (data: { captchaCode: string; captchaId: string }) => void;
   error?: string;
 }
+
 
 export default function CaptchaImage({
   value,
@@ -16,18 +16,19 @@ export default function CaptchaImage({
   error,
 }: CaptchaImageProps) {
   const [loading, setLoading] = useState(true);
-  const [captchaData, setCaptchaData] = useState<CaptchaResponse | null>(null);
+  const [captchaData, setCaptchaData] = useState<ImageCaptchaData | null>(null);
   const [requestError, setRequestError] = useState<string>('');
+
   const fetchCaptcha = async () => {
     try {
       setLoading(true);
       setRequestError('');
-      const res = await getCaptcha();
-      if (res.success) {
-        setCaptchaData(res);
+      const res = await getImageCaptcha();
+      if (res.code === 200 && res.data?.captchaId && res.data?.image) {
+        setCaptchaData(res.data);
         onChange({
           captchaCode: '',
-          captchaId: res.captchaId || '',
+          captchaId: res.data.captchaId || '',
         });
       } else {
         setRequestError(res.message || '获取验证码失败');
@@ -39,30 +40,12 @@ export default function CaptchaImage({
       setLoading(false);
     }
   };
-  useEffect(() => {
-    const initCaptcha = async () => {
-      try {
-        setLoading(true);
-        setRequestError('');
-        const res = await getCaptcha();
-        if (res.success) {
-          setCaptchaData(res);
-          onChange({
-            captchaCode: '',
-            captchaId: res.captchaId || '',
-          });
-        } else {
-          setRequestError(res.message || '获取验证码失败');
-        }
-      } catch (error) {
-        console.error(error);
-        setRequestError('获取验证码失败');
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    initCaptcha();
+  useEffect(() => {
+    const initImageCaptcha = async () => {
+      await fetchCaptcha();
+    };
+    initImageCaptcha();
   }, []);
 
   const handleRefresh = async () => {
@@ -75,10 +58,6 @@ export default function CaptchaImage({
       captchaId: captchaData?.captchaId || '',
     });
   };
-
-  const captchaImage = captchaData?.imageBase64
-    ? `data:image/png;base64,${captchaData.imageBase64}`
-    : '';
 
   return (
     <div className="space-y-2">
@@ -146,17 +125,13 @@ export default function CaptchaImage({
               点击重试
             </button>
           ) : (
-            <Image
-              src={captchaImage}
-              alt="验证码"
-              width={128}
-              height={48}
+            <div
               onClick={handleRefresh}
               className="
-                h-12 w-32
+                w-32 h-12
                 border-2 border-black
                 bg-white
-                object-contain
+                flex items-center justify-center
                 cursor-pointer
                 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
                 hover:translate-x-[2px]
@@ -165,7 +140,7 @@ export default function CaptchaImage({
                 transition-all
               "
               title="点击刷新验证码"
-              unoptimized
+              dangerouslySetInnerHTML={{ __html: captchaData?.image || '' }}
             />
           )}
         </div>

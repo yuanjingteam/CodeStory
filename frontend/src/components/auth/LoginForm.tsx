@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { IoLogoWechat } from 'react-icons/io5';
 import Link from 'next/link';
 import { LoginRequest } from 'shared/types/auth';
@@ -25,6 +26,7 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
     captchaCode: '',
     captchaId: '',
   });
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [captchaValid, setCaptchaValid] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -84,6 +86,8 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
       if (res?.data?.code === 200) {
         setSuccess('登录成功 ✓');
         await onSubmit?.(res.data);
+        router.push('/');
+        return;
       } else {
         setErrors((prev) => ({
           ...prev,

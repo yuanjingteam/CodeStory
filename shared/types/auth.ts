@@ -12,11 +12,14 @@ export type RegisterRequest = {
   emailCode: string;
 };
 
-export interface CaptchaResponse {
-  success: boolean;
+export interface ImageCaptchaData {
   captchaId: string;
-  imageBase64: string;
-  message?: string;
+  image: string;
+}
+export interface ImageCaptchaResponse {
+  code: number;
+  message: string;
+  data?: ImageCaptchaData;
 }
 
 export interface SendEmailCodeRequest {
@@ -27,4 +30,30 @@ export interface ResetPasswordRequest {
   email: string;
   emailCode: string;
   password: string;
+}
+
+export interface User {
+  avatar?: string;
+  created_at?: Date;
+  email?: string;
+  id?: string;
+  id_delete: number;
+  level?: number;
+  nickname?: string;
+  occupation?: string;
+  password: string;
+  role?: number;
+  score?: number;
+  sex?: number;
+  update_at: Date;
+
+}
+
+export interface AuthResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    token: string;
+    user: User;
+  };
 }
