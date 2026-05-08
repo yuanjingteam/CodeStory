@@ -30,3 +30,9 @@ export interface CourseListResponse {
   page?: number;
   size?: number;
 }
+
+export interface CourseListApiResponse {
+  code: number;
+  message: string;
+  data: CourseListResponse;
+}

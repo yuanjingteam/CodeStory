@@ -10,15 +10,15 @@ const service: AxiosInstance = axios.create({
   timeout: 5000,
 });
 
+// 请求拦截器
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     return config;
   },
-  (error: Error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
+// 响应拦截器：自动返回后端数据
 service.interceptors.response.use(
   (response: AxiosResponse) => {
     const { data } = response;
@@ -27,30 +27,28 @@ service.interceptors.response.use(
     }
     return Promise.reject(new Error(response.statusText || 'Error'));
   },
-  (error: Error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 interface RequestMethods {
-  get<T>(url: string, config?: AxiosRequestConfig): Promise<T>;
-  post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
-  put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
-  delete<T>(url: string, config?: AxiosRequestConfig): Promise<T>;
+  get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>;
+  post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
+  put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
+  delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>;
 }
 
 const request: RequestMethods = {
-  get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return service.get<T>(url, config) as Promise<T>;
+  get(url, config) {
+    return service.get(url, config);
   },
-  post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
-    return service.post<T>(url, data, config) as Promise<T>;
+  post(url, data, config) {
+    return service.post(url, data, config);
   },
-  put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
-    return service.put<T>(url, data, config) as Promise<T>;
+  put(url, data, config) {
+    return service.put(url, data, config);
   },
-  delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return service.delete<T>(url, config) as Promise<T>;
+  delete(url, config) {
+    return service.delete(url, config);
   },
 };
 
