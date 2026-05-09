@@ -1,36 +1,23 @@
-type CacheValue = {
-  value: string;
-  expire: number;
-};
-const cache = new Map<string, CacheValue>();
+import redisClient from '@/config/redis';
+
 /**
  * 设置缓存
  */
-export function setCache(key: string, value: string, ttl: number) {
-  cache.set(key, {
-    value,
-    expire: Date.now() + ttl * 1000,
-  });
+export async function setCache(key: string, value: string, ttl: number) {
+  await redisClient.setEx(key, ttl, value);
 }
+
 /**
  * 获取缓存
  */
-export function getCache(key: string) {
-  const data = cache.get(key);
-  if (!data) {
-    return null;
-  }
-  // 判断是否过期
-  if (Date.now() > data.expire) {
-    cache.delete(key);
-    return null;
-  }
-
-  return data.value;
+export async function getCache(key: string) {
+  const data = await redisClient.get(key);
+  return data || null;
 }
+
 /**
  * 删除缓存
  */
-export function deleteCache(key: string) {
-  cache.delete(key);
+export async function deleteCache(key: string) {
+  await redisClient.del(key);
 }

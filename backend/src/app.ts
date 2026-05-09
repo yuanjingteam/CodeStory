@@ -1,11 +1,14 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import errorHandler from '../src/middleware/errorHandler';
 import authRouters from './routes/auth';
 
+dotenv.config();
+
 // Load environment variables in development
 if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config({ path: '.env' });
+  require('dotenv').config({ path: './.env' });
 }
 
 const app = express();
@@ -17,9 +20,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 
-
 // API routes
-app.use('/api/v1/auth',authRouters);
+app.use('/api/v1/auth', authRouters);
 
 // Error handler
 app.use(errorHandler);

@@ -2,7 +2,7 @@ import express from 'express';
 import {
   registerController,
   loginController,
-  ImageCaptchaController,
+  captchaController,
 } from '../controllers/auth/index';
 
 const router = express.Router();
@@ -12,6 +12,7 @@ router.post('/register', registerController);
 // 登录接口
 router.post('/login', loginController);
 //获取图片验证码接口
-router.get('/image-captcha', ImageCaptchaController.getImageCaptchaController);
+router.get('/image-captcha', captchaController.getImageCaptchaController);
 //获取邮箱验证码接口
+router.post('/email-captcha', captchaController.getEmailCaptchaController);
 export default router;
