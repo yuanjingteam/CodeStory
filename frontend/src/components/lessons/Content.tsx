@@ -1,37 +1,22 @@
 import Progress from './Progress';
 import { useState, useEffect } from 'react';
-import { lessonDetailApi } from '@/app/api/courses/lesson-detail';
 import type { LessonDetailData, Chapter } from '@/types/lesson-detail';
 
-export default function Content() {
-  const [data, setData] = useState<LessonDetailData | null>(null);
-  const [loading, setLoading] = useState(true);
+interface ContentProps {
+  data: LessonDetailData;
+}
+
+export default function Content({ data }: ContentProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set(['chapter_id_1']));
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        // 尝试调用 API，如果失败则使用模拟数据
-        const response = await lessonDetailApi.getById('lesson_id');
-        setData(response);
-        
-
-        const currentChapter = response.catalog.find((ch) =>
-          ch.lessons.some((l) => l.status === 1)
-        );
-        if (currentChapter) {
-          setExpandedChapters(new Set([currentChapter.id]));
-        }
-      } catch (error) {
-        console.error('获取课程详情失败');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+    const currentChapter = data.catalog.find((ch) =>
+      ch.lessons.some((l) => l.status === 1)
+    );
+    if (currentChapter) {
+      setExpandedChapters(new Set([currentChapter.id]));
+    }
+  }, [data]);
 
   const toggleChapter = (chapterId: string) => {
     setExpandedChapters((prev) => {
@@ -44,22 +29,6 @@ export default function Content() {
       return next;
     });
   };
-
-  if (loading) {
-    return (
-      <div className="h-full flex items-center justify-center bg-white">
-        <span className="font-bold">加载中...</span>
-      </div>
-    );
-  }
-
-  if (!data) {
-    return (
-      <div className="h-full flex items-center justify-center bg-white">
-        <span className="font-bold">加载失败</span>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full flex flex-col">
