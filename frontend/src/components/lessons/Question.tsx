@@ -113,7 +113,15 @@ function ChoiceQuestion({ exercise }: ChoiceQuestionProps) {
 
   return (
     <div className="space-y-2">
-      <div className="font-bold text-lg mb-4">请选择正确答案：</div>
+      {/* 标题和提示按钮同行 */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="font-bold text-lg">请选择正确答案：</div>
+        <button className="py-2 px-4 bg-yellow-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+          💡 提示
+        </button>
+      </div>
+
+      {/* 选项列表 */}
       {options.map((option: string, index: number) => {
         const optionLabel = String.fromCharCode(65 + index);
         const isSelected = selectedOption === optionLabel;
@@ -122,10 +130,11 @@ function ChoiceQuestion({ exercise }: ChoiceQuestionProps) {
           <div
             key={index}
             onClick={() => handleSelect(optionLabel)}
-            className={`p-4 border-4 border-black cursor-pointer transition-all font-bold ${isSelected
-              ? 'bg-yellow-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] translate-x-[2px] translate-y-[2px]'
-              : 'bg-white hover:bg-gray-100 shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]'
-              }`}
+            className={`py-3 px-4 border-4 border-black cursor-pointer transition-all font-bold ${
+              isSelected
+                ? 'bg-yellow-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] translate-x-[2px] translate-y-[2px]'
+                : 'bg-white hover:bg-gray-100 shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]'
+            }`}
           >
             <span className="mr-2">{optionLabel}.</span>
             <span>{option.replace(/^[A-D]\.\s*/, '')}</span>
@@ -133,9 +142,20 @@ function ChoiceQuestion({ exercise }: ChoiceQuestionProps) {
         );
       })}
 
-      <button className="mt-4 w-full py-3 bg-green-600 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
-        提交答案
-      </button>
+      {/* 按钮组：上一题、提交答案、下一题 */}
+      <div className="grid grid-cols-5 gap-2 mt-4">
+        <button className="col-span-1 py-3 bg-gray-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1">
+          <span>‹</span>
+          <span>上一题</span>
+        </button>
+        <button className="col-span-3 py-3 bg-green-600 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-lg">
+          提交答案
+        </button>
+        <button className="col-span-1 py-3 bg-gray-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1">
+          <span>下一题</span>
+          <span>›</span>
+        </button>
+      </div>
     </div>
   );
 }
