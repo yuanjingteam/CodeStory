@@ -1,16 +1,21 @@
-// backend/tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2020",
     "module": "CommonJS",
     "lib": ["ES2020"],
     "outDir": "./dist",
-    "rootDir": "./src",
+    "baseUrl": ".",
     "strict": true,
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "shared/*": ["../shared/*"]
+    }
   },
-  "include": ["src/**/*"],
+
+  "include": ["src/**/*", "src/generated/prisma", "../shared/**/*"],
   "exclude": ["node_modules", "dist"]
 }
