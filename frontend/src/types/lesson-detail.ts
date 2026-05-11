@@ -34,7 +34,7 @@ export interface Chapter {
 export interface LessonItem {
   id: string;
   title: string;
-  status: 'completed' | 'current' | 'locked';
+  status: 0 | 1 | 2;
 }
 
 export interface Exercise {

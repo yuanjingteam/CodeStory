@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import errorHandler from '../src/middleware/errorHandler';
 import authRouters from './routes/auth';
 
@@ -22,6 +23,13 @@ app.use(express.json());
 
 // API routes
 app.use('/api/v1/auth', authRouters);
+// 静态文件服务 - 课程图片
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+
+// API routes
+import coursesRouter from './routes/courses';
+app.use('/api/v1/courses', coursesRouter);
 
 // Error handler
 app.use(errorHandler);

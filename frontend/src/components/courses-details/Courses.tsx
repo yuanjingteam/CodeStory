@@ -119,52 +119,58 @@ export default function CoursesSection() {
               <div
                 key={course.id}
                 onClick={() => handleCourseClick(course.id)}
-                className="flex flex-col border-2 border-black bg-white p-6 shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0_0_rgba(0,0,0,1)] transition-all h-[360px] cursor-pointer"
+                className="flex flex-col border-2 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0_0_rgba(0,0,0,1)] transition-all h-[400px] cursor-pointer"
               >
-                <div className="text-2xl mb-4 h-20 flex justify-center items-center">
+                {/* 顶部图片横幅 */}
+                <div className="h-40 w-full border-b-2 border-black overflow-hidden shrink-0">
                   {course.cover_url ? (
                     <img 
                       src={course.cover_url} 
                       alt={course.title} 
-                      className="h-full w-full object-cover rounded"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
-                    '📚'
+                    <div className="h-full w-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+                      <span className="text-6xl">📚</span>
+                    </div>
                   )}
                 </div>
 
-                <h3 className="text-xl font-black mb-1 truncate" title={course.title}>
-                  {course.title}
-                </h3>
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2" title={course.description}>
-                  {course.description}
-                </p>
+                {/* 内容区域 */}
+                <div className="p-4 flex flex-col flex-1">
+                  <h3 className="text-xl font-black mb-1 truncate" title={course.title}>
+                    {course.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2" title={course.description}>
+                    {course.description}
+                  </p>
 
-                {course.progress !== undefined ? (
-                  <div className="mb-2 flex items-center gap-2">
-                    <span className={`${levelConfigItem.color} border-2 border-black px-2 py-0.5 text-xs font-bold shrink-0`}>
-                      {levelConfigItem.text}
-                    </span>
-                    <div className="flex-1 bg-gray-200 rounded-full h-2 border-2 border-black">
-                      <div 
-                        className="bg-blue-500 h-full rounded-full transition-all"
-                        style={{ width: `${Math.min(course.progress, 100)}%` }}
-                      />
+                  {course.progress !== undefined ? (
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className={`${levelConfigItem.color} border-2 border-black px-2 py-0.5 text-xs font-bold shrink-0`}>
+                        {levelConfigItem.text}
+                      </span>
+                      <div className="flex-1 bg-gray-200 rounded-full h-2 border-2 border-black">
+                        <div 
+                          className="bg-blue-500 h-full rounded-full transition-all"
+                          style={{ width: `${Math.min(course.progress, 100)}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-gray-600 whitespace-nowrap">{course.progress}%</span>
                     </div>
-                    <span className="text-xs font-bold text-gray-600 whitespace-nowrap">{course.progress}%</span>
-                  </div>
-                ) : (
-                  <div className="mb-2">
-                    <span className={`${levelConfigItem.color} border-2 border-black px-3 py-1 text-xs font-bold`}>
-                      {levelConfigItem.text}
+                  ) : (
+                    <div className="mb-2">
+                      <span className={`${levelConfigItem.color} border-2 border-black px-3 py-1 text-xs font-bold`}>
+                        {levelConfigItem.text}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="mt-auto">
+                    <span className={`${statusConfig.color} border-2 border-black px-3 py-1 text-xs font-bold w-full block text-center`}>
+                      {statusConfig.text}
                     </span>
                   </div>
-                )}
-
-                <div className="mt-auto">
-                  <span className={`${statusConfig.color} border-2 border-black px-3 py-1 text-xs font-bold w-full block text-center`}>
-                    {statusConfig.text}
-                  </span>
                 </div>
               </div>
             );
