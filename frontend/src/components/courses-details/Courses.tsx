@@ -67,7 +67,7 @@ export default function CoursesSection() {
 
   useEffect(() => {
     fetchCourses();
-  }, [searchTerm, selectedLevel]);
+  }, [selectedLevel]);
   
   return (
     <section className="border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white p-8 mx-8 relative z-10">
