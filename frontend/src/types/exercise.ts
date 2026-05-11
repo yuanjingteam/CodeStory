@@ -38,3 +38,14 @@ export interface UserAnswer {
   hint_level_used: number;
   score: number;
 }
+
+export interface ExerciseSubmitResponse {
+  code: number;
+  message: string;
+  data: {
+    correct: boolean;
+    score: number;
+    feedback: string;
+    analysis: string;
+  };
+}

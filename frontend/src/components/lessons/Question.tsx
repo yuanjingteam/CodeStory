@@ -17,6 +17,8 @@ export default function Question({ data }: QuestionProps) {
   const router = useRouter();
   const [exerciseData, setExerciseData] = useState<ExerciseDetailData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [submitResult, setSubmitResult] = useState<{ correct: boolean; score: number; feedback: string } | null>(null);
+  const [showResultModal, setShowResultModal] = useState(false);
 
   const currentChapter = data?.catalog.find(ch =>
     ch.lessons.some(l => l.status === 1)
@@ -25,10 +27,45 @@ export default function Question({ data }: QuestionProps) {
   const currentLessonTitle = currentChapter?.lessons.find(l => l.status === 1)?.title;
   const currentLessonId = currentChapter?.lessons.find(l => l.status === 1)?.id;
 
-  useEffect(() => {
-    const fetchExercise = async () => {
-      if (!currentLessonId) return;
+  const handleSubmit = async (answer: string) => {
+    if (!currentLessonId) return;
 
+    try {
+      const response = await exerciseApi.submit(currentLessonId, answer);
+      setSubmitResult({
+        correct: response.correct,
+        score: response.score,
+        feedback: response.feedback
+      });
+      setShowResultModal(true);
+    } catch (error) {
+      console.error('提交答案失败');
+    }
+  };
+
+  const handleNavigate = async (direction: 'prev' | 'next') => {
+    if (!exerciseData?.id) return;
+
+    try {
+      setLoading(true);
+      const response = await exerciseApi.navigate(exerciseData.id, direction, currentLessonId || undefined);
+      setExerciseData(response);
+      setSubmitResult(null);
+      setShowResultModal(false);
+    } catch (error) {
+      console.error('切换题目失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!currentLessonId) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchExercise = async () => {
       try {
         setLoading(true);
         const response = await exerciseApi.getDetail(currentLessonId);
@@ -47,7 +84,6 @@ export default function Question({ data }: QuestionProps) {
 
   return (
     <div className="h-full flex flex-col">
-      {/* 导航栏 */}
       <div className="bg-purple-600 text-white px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="font-bold">{currentChapterTitle}</span>
@@ -63,8 +99,7 @@ export default function Question({ data }: QuestionProps) {
         </button>
       </div>
 
-      {/* 题目内容区域 */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden relative">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <span className="font-bold">加载中...</span>
@@ -83,13 +118,46 @@ export default function Question({ data }: QuestionProps) {
             {/* 下半部分：根据题型动态切换 */}
             <div className="flex-2 overflow-auto p-4">
               {exerciseData.type === 'choice' ? (
-                <ChoiceQuestion exercise={exerciseData} />
+                <ChoiceQuestion exercise={exerciseData} onSubmit={handleSubmit} onNavigate={handleNavigate} />
               ) : exerciseData.type === 'code' ? (
-                <CodeQuestion exercise={exerciseData} />
+                <CodeQuestion exercise={exerciseData} onSubmit={handleSubmit} onNavigate={handleNavigate} />
               ) : (
                 <div className="text-center font-bold">暂不支持的题型</div>
               )}
             </div>
+
+            {/* 提交结果弹窗 - 半透明覆盖在中间区域 */}
+            {showResultModal && submitResult && (
+              <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10">
+                <div className="bg-white border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] p-6 max-w-md w-full mx-4">
+                  <div className="text-center">
+                    {submitResult.correct ? (
+                      <div className="text-6xl mb-4">🎉</div>
+                    ) : (
+                      <div className="text-6xl mb-4">💪</div>
+                    )}
+                    
+                    <h3 className="text-2xl font-black mb-2">
+                      {submitResult.correct ? '恭喜你答对了！' : '要继续加油哦！'}
+                    </h3>
+                    
+                    <div className="border-2 border-black bg-gray-100 p-4 my-4">
+                      <div className="text-4xl font-black text-purple-600 mb-2">
+                        {submitResult.score}分
+                      </div>
+                      <p className="text-gray-700 text-sm">{submitResult.feedback}</p>
+                    </div>
+
+                    <button
+                      onClick={() => setShowResultModal(false)}
+                      className="w-full py-3 bg-green-600 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+                    >
+                      确定
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -97,12 +165,13 @@ export default function Question({ data }: QuestionProps) {
   );
 }
 
-// 选择题组件
 interface ChoiceQuestionProps {
   exercise: ExerciseDetailData;
+  onSubmit: (answer: string) => void;
+  onNavigate?: (direction: 'prev' | 'next') => void;
 }
 
-function ChoiceQuestion({ exercise }: ChoiceQuestionProps) {
+function ChoiceQuestion({ exercise, onSubmit, onNavigate }: ChoiceQuestionProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const options = (exercise.metadata as any)?.options || [];
@@ -111,9 +180,14 @@ function ChoiceQuestion({ exercise }: ChoiceQuestionProps) {
     setSelectedOption(option);
   };
 
+  const handleSubmit = () => {
+    if (selectedOption) {
+      onSubmit(selectedOption);
+    }
+  };
+
   return (
     <div className="space-y-2">
-      {/* 标题和提示按钮同行 */}
       <div className="flex items-center justify-between mb-4">
         <div className="font-bold text-lg">请选择正确答案：</div>
         <button className="py-2 px-4 bg-yellow-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
@@ -121,7 +195,6 @@ function ChoiceQuestion({ exercise }: ChoiceQuestionProps) {
         </button>
       </div>
 
-      {/* 选项列表 */}
       {options.map((option: string, index: number) => {
         const optionLabel = String.fromCharCode(65 + index);
         const isSelected = selectedOption === optionLabel;
@@ -142,16 +215,29 @@ function ChoiceQuestion({ exercise }: ChoiceQuestionProps) {
         );
       })}
 
-      {/* 按钮组：上一题、提交答案、下一题 */}
       <div className="grid grid-cols-5 gap-2 mt-4">
-        <button className="col-span-1 py-3 bg-gray-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1">
+        <button 
+          onClick={() => onNavigate?.('prev')}
+          className="col-span-1 py-3 bg-gray-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1"
+        >
           <span>‹</span>
           <span>上一题</span>
         </button>
-        <button className="col-span-3 py-3 bg-green-600 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-lg">
+        <button 
+          onClick={handleSubmit}
+          disabled={!selectedOption}
+          className={`col-span-3 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-lg ${
+            selectedOption
+              ? 'bg-green-600 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
+        >
           提交答案
         </button>
-        <button className="col-span-1 py-3 bg-gray-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1">
+        <button 
+          onClick={() => onNavigate?.('next')}
+          className="col-span-1 py-3 bg-gray-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1"
+        >
           <span>下一题</span>
           <span>›</span>
         </button>
@@ -163,9 +249,11 @@ function ChoiceQuestion({ exercise }: ChoiceQuestionProps) {
 // 编程题组件
 interface CodeQuestionProps {
   exercise: ExerciseDetailData;
+  onSubmit: (answer: string) => void;
+  onNavigate?: (direction: 'prev' | 'next') => void;
 }
 
-function CodeQuestion({ exercise }: CodeQuestionProps) {
+function CodeQuestion({ exercise, onSubmit, onNavigate }: CodeQuestionProps) {
   const [userCode, setUserCode] = useState('');
 
   useEffect(() => {
@@ -173,9 +261,19 @@ function CodeQuestion({ exercise }: CodeQuestionProps) {
     setUserCode(code);
   }, [exercise]);
 
+  const handleSubmit = () => {
+    onSubmit(userCode);
+  };
+
   return (
     <div className="flex flex-col h-full">
-      <div className="font-bold text-lg mb-4">请编写代码：</div>
+      {/* 标题和提示按钮同行 */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="font-bold text-lg">请编写代码：</div>
+        <button className="py-2 px-4 bg-yellow-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+          💡 提示
+        </button>
+      </div>
 
       <div className="flex-1 min-h-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] overflow-hidden">
         <CodeMirror
@@ -196,9 +294,29 @@ function CodeQuestion({ exercise }: CodeQuestionProps) {
         />
       </div>
 
-      <button className="w-full py-3 mt-4 bg-green-600 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
-        运行代码
-      </button>
+      {/* 按钮组：上一题、运行代码、下一题 */}
+      <div className="grid grid-cols-5 gap-2 mt-4">
+        <button 
+          onClick={() => onNavigate?.('prev')}
+          className="col-span-1 py-3 bg-gray-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1"
+        >
+          <span>‹</span>
+          <span>上一题</span>
+        </button>
+        <button 
+          onClick={handleSubmit}
+          className="col-span-3 py-3 bg-green-600 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-lg"
+        >
+          运行代码
+        </button>
+        <button 
+          onClick={() => onNavigate?.('next')}
+          className="col-span-1 py-3 bg-gray-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1"
+        >
+          <span>下一题</span>
+          <span>›</span>
+        </button>
+      </div>
     </div>
   );
 }
