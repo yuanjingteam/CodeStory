@@ -5,7 +5,7 @@ class CaptchaController {
   // 获取图片验证码控制器
   async getImageCaptchaController(req: Request, res: Response) {
     const data = await captchaService.generateImageCaptcha();
-    res.json({
+    return res.status(200).json({
       code: 200,
       message: 'Image captcha generated successfully',
       data,
@@ -23,16 +23,16 @@ class CaptchaController {
         });
       }
       await captchaService.sendEmailCaptcha(email);
+      return res.status(200).json({
+        code: 200,
+        message: '邮件验证码发送成功',
+      });
     } catch (error) {
       return res.status(500).json({
         code: 500,
-        message: 'Email captcha sent failed',
+        message: '邮件验证码发送失败',
       });
     }
-    res.json({
-      code: 200,
-      message: 'Email captcha sent successfully',
-    });
   }
 }
 export const captchaController = new CaptchaController();

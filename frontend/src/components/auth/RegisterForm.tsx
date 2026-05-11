@@ -3,13 +3,13 @@ import { useState } from 'react';
 import type { RegisterRequest } from 'shared/types/auth';
 import { register, getEmailCaptcha } from '@/app/api/auth/auth';
 import FormInput from './FormInput';
+import type { ValidateResult } from '@/utils/validate';
 import {
   validateEmail,
   validatePassword,
   validateNickname,
   validateConfirmPassword,
   validateCode,
-  ValidateResult,
 } from '@/utils/validate';
 import { useEmailCode } from '@/hooks/auth/useEmailCode';
 interface RegisterFormProps {
@@ -96,7 +96,14 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
         setTouched((prev) => ({ ...prev, email: true }));
         throw new Error(emailResult.message);
       }
-      await getEmailCaptcha({ email: registerInput.email });
+      try {
+        await getEmailCaptcha({ email: registerInput.email });
+      } catch (error) {
+        console.error(error);
+        setErrors((prev) => ({ ...prev, email: '获取验证码失败，请稍后重试' }));
+        setTouched((prev) => ({ ...prev, email: true }));
+        throw new Error('获取验证码失败，请稍后重试');
+      }
     },
   });
   const confirmPasswordStatus = touched.confirmPassword
@@ -145,7 +152,7 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
     try {
       setLoading(true);
       const res = await register(registerInput);
-      if (res?.data?.code === 200) {
+      if (res?.data?.code === 200 || res?.data?.code === 201) {
         setSuccess('注册成功 ✓');
         await onSubmit?.(res.data);
       } else {

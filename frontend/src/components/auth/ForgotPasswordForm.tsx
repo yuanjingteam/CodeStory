@@ -5,12 +5,12 @@ import type { LoginRequest } from 'shared/types/auth';
 import FormInput from './FormInput';
 import { getEmailCaptcha, resetPassword } from '@/app/api/auth/auth';
 import { useEmailCode } from '@/hooks/auth/useEmailCode';
+import type { ValidateResult } from '@/utils/validate';
 import {
   validateEmail,
   validateCode,
   validatePassword,
   validateConfirmPassword,
-  ValidateResult,
 } from '@/utils/validate';
 
 interface ForgotPasswordFormProps {

@@ -34,8 +34,7 @@ class CaptchaService {
   }
   async sendEmailCaptcha(email: string) {
     const code = this.generateCode();
-    const captchaId = crypto.randomUUID();
-    await setCache(`email-captcha:${captchaId}`, code, 60 * 5);
+    await setCache(`email-code:${email}`, code, 60 * 5);
     await setCache(`email-limit:${email}`, '1', 60);
     const sent = await sendEmail({
       to: email,
@@ -51,19 +50,18 @@ class CaptchaService {
     if (!sent) {
       throw new Error('邮件发送失败!!!');
     }
-    return { captchaId, code };
   }
 
   // 验证邮箱验证码
-  async verifyEmailCode(captchaId: string, code: string): Promise<boolean> {
-    const storedCode = await getCache(`email-captcha:${captchaId}`);
+  async verifyEmailCode(email: string, emailCode: string): Promise<boolean> {
+    const storedCode = await getCache(`email-code:${email}`);
     if (!storedCode) {
       throw new Error('验证码已过期');
     }
-    if (storedCode !== code) {
+    if (storedCode !== emailCode) {
       throw new Error('验证码错误');
     }
-    await deleteCache(`email-captcha:${captchaId}`);
+    await deleteCache(`email-code:${email}`);
     return true;
   }
   // 限制邮箱验证码发送频率

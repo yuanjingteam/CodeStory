@@ -6,10 +6,10 @@ import Link from 'next/link';
 import { LoginRequest } from 'shared/types/auth';
 import { login } from '@/app/api/auth/auth';
 import CaptchaImage from './CaptchaImageForm';
+import type { ValidateResult } from '@/utils/validate';
 import {
   validateEmail,
   validatePassword,
-  ValidateResult,
 } from '@/utils/validate';
 import FormInput from './FormInput';
 

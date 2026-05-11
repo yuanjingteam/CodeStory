@@ -17,7 +17,7 @@ export const getImageCaptcha = async (): Promise<ImageCaptchaResponse> => {
 };
 
 //获取邮箱验证码
-export const getEmailCaptcha = async (data: { email: string }): Promise<void> => {
+export const getEmailCaptcha = async (data: { email: string }): Promise<{captchaId:string}> => {
   return request.post('/auth/email-captcha', data);
 };
 

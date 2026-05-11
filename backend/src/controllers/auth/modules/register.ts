@@ -1,30 +1,31 @@
-
 import { Request, Response } from 'express';
 import { registerService } from '@/services/auth/register';
+import { RegisterRequest } from 'shared/types/auth';
 
-export const registerController = async (req: Request, res: Response) => {
-  try {
-    const { email, password, nickname } = req.body;
+class RegisterController {
+  async register(req: Request, res: Response) {
+    try {
+      const body = req.body as RegisterRequest;
+      const { email, password, nickname, emailCode,   } = body;
 
-    // 基础验证
-    if (!email || !password) {
+      if (!email || !password || !nickname || !emailCode) {
+        return res.status(400).json({
+          code: 400,
+          message: '注册信息不能为空',
+        });
+      }
+      const result = await registerService.register(body);
+      return res.status(201).json({
+        code: 201,
+        message: '注册成功',
+      });
+    } catch (error) {
       return res.status(400).json({
-        success: false,
-        message: '邮箱和密码为必填项',
+        code: 400,
+        message: error instanceof Error ? error.message : '注册失败',
       });
     }
-
-    const result = await registerService();
-
-    res.status(200).json({
-      success: true,
-      message: '注册成功',
-      data: result,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error instanceof Error ? error.message : '注册失败',
-    });
   }
-};
+}
+
+export const registerController = new RegisterController();
