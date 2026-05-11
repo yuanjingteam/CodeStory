@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import errorHandler from '../src/middleware/errorHandler';
 import prisma from '../src/config/prisma';
 
@@ -14,6 +15,9 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// 静态文件服务 - 课程图片
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 //Health check
 app.get('/api/v1/health', async (req, res) => {
@@ -48,6 +52,8 @@ app.get('/api/v1/health', async (req, res) => {
 });
 
 // API routes
+import coursesRouter from './routes/courses';
+app.use('/api/v1/courses', coursesRouter);
 
 // Error handler
 app.use(errorHandler);
