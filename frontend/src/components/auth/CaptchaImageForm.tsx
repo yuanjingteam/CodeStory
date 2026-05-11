@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getImageCaptcha } from '@/app/api/auth/auth';
+import { getImageCaptcha } from '@/api/auth/auth';
 import type { ImageCaptchaData } from 'shared/types/auth';
 interface CaptchaImageProps {
   value: string;
   onChange: (data: { captchaCode: string; captchaId: string }) => void;
   error?: string;
 }
-
 
 export default function CaptchaImage({
   value,
@@ -52,7 +51,7 @@ export default function CaptchaImage({
     await fetchCaptcha();
   };
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const code = e.target.value.toUpperCase().replace(/\s/g, '');
+    const code = e.target.value.replace(/\s/g, '');
     onChange({
       captchaCode: code,
       captchaId: captchaData?.captchaId || '',

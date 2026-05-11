@@ -1,13 +1,22 @@
 import request from '@/utils/request';
 import type {
   LoginRequest,
+  LoginResponse,
   RegisterRequest,
   ImageCaptchaResponse,
   ResetPasswordRequest,
 } from 'shared/types/auth';
-export const login = async (data: LoginRequest) => {
+// 登录
+export const login = async (data: LoginRequest): Promise<LoginResponse> => {
   return request.post('/auth/login', data);
 };
+
+//登出
+export const logout = async (): Promise<LoginResponse> => {
+  return request.post('/auth/logout');
+};
+
+// 注册
 export const register = async (data: RegisterRequest) => {
   return request.post('/auth/register', data);
 };

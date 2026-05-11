@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { LoginRequest } from 'shared/types/auth';
 import FormInput from './FormInput';
-import { getEmailCaptcha, resetPassword } from '@/app/api/auth/auth';
+import { getEmailCaptcha, resetPassword } from '@/api/auth/auth';
 import { useEmailCode } from '@/hooks/auth/useEmailCode';
 import type { ValidateResult } from '@/utils/validate';
 import {

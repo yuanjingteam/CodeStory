@@ -3,8 +3,27 @@ export type LoginRequest = {
   password: string;
   captchaCode: string;
   captchaId: string;
+  rememberMe?: boolean;
 };
-
+export type LoginResponse = {
+  code: number;
+  message: string;
+  data?: {
+    token: string;
+    user: UserInfo;
+  };
+};
+export type UserInfo = {
+  id: string;
+  email: string;
+  nickname: string;
+  avatar?: string;
+  sex?: number;
+  occupation?: string;
+  role: number;
+  level: number;
+  score: number;
+};
 export type RegisterRequest = {
   nickname: string;
   email: string;
@@ -46,7 +65,6 @@ export interface User {
   score?: number;
   sex?: number;
   update_at: Date;
-
 }
 
 export interface AuthResponse {

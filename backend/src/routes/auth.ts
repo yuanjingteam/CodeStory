@@ -11,6 +11,8 @@ const router = express.Router();
 router.post('/register', registerController.register);
 // 登录接口
 router.post('/login', loginController.login);
+//登出接口
+router.post('/logout', loginController.logout);
 //获取图片验证码接口
 router.get('/image-captcha', captchaController.getImageCaptchaController);
 //获取邮箱验证码接口

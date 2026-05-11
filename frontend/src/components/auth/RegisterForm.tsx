@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import type { RegisterRequest } from 'shared/types/auth';
-import { register, getEmailCaptcha } from '@/app/api/auth/auth';
+import { register, getEmailCaptcha } from '@/api/auth/auth';
 import FormInput from './FormInput';
 import type { ValidateResult } from '@/utils/validate';
 import {
@@ -237,14 +237,6 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
               onChange={(value) => {
                 setRegisterInput((prev) => ({ ...prev, emailCode: value }));
                 setErrors((prev) => ({ ...prev, emailCode: '' }));
-              }}
-              onBlur={() => {
-                setTouched((prev) => ({ ...prev, emailCode: true }));
-                const result = validateCode(registerInput.emailCode);
-                setErrors((prev) => ({
-                  ...prev,
-                  emailCode: result.isValid ? '' : result.message,
-                }));
               }}
             />
           </div>

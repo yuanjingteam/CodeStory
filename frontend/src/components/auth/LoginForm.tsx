@@ -4,36 +4,40 @@ import { useRouter } from 'next/navigation';
 import { IoLogoWechat } from 'react-icons/io5';
 import Link from 'next/link';
 import { LoginRequest } from 'shared/types/auth';
-import { login } from '@/app/api/auth/auth';
+import { login } from '@/api/auth/auth';
 import CaptchaImage from './CaptchaImageForm';
 import type { ValidateResult } from '@/utils/validate';
 import {
   validateEmail,
   validatePassword,
+  validateCode,
 } from '@/utils/validate';
 import FormInput from './FormInput';
-
+import { useUserStore } from '@/store/useUserStore';
+import type { LoginResponse } from 'shared/types/auth';
 interface LoginFormProps {
-  onSubmit?: (data: LoginRequest) => void;
+  onSubmit?: (data: LoginResponse) => void;
 }
 
 type FieldStatus = 'success' | 'error' | null;
 
 export default function LoginForm({ onSubmit }: LoginFormProps) {
+  const { addUser: setUserLogin } = useUserStore();
   const [loginInput, setLoginInput] = useState<LoginRequest>({
     email: '',
     password: '',
     captchaCode: '',
     captchaId: '',
+    rememberMe: false,
   });
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [captchaValid, setCaptchaValid] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [touched, setTouched] = useState({
     email: false,
     password: false,
+    captcha: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({
     email: '',
@@ -62,14 +66,15 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
   const validateForm = () => {
     const emailResult = validateEmail(loginInput.email);
     const passwordResult = validatePassword(loginInput.password);
+    const captchaResult = validateCode(loginInput.captchaCode);
     const newErrors = {
       email: emailResult.isValid ? '' : emailResult.message,
       password: passwordResult.isValid ? '' : passwordResult.message,
-      captcha: captchaValid ? '' : '请先完成验证码校验',
+      captcha: captchaResult.isValid ? '' : captchaResult.message,
       submit: '',
     };
     setErrors(newErrors);
-    setTouched({ email: true, password: true });
+    setTouched({ email: true, password: true, captcha: true });
     return !Object.values(newErrors).some(Boolean);
   };
 
@@ -83,15 +88,16 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
     try {
       setLoading(true);
       const res = await login(loginInput);
-      if (res?.data?.code === 200) {
+      if (res.code === 200) {
         setSuccess('登录成功 ✓');
-        await onSubmit?.(res.data);
+        await setUserLogin(res);
+        await onSubmit?.(res);
         router.push('/');
         return;
       } else {
         setErrors((prev) => ({
           ...prev,
-          submit: res?.data?.message || '登录失败',
+          submit: res?.message || '登录失败',
         }));
         setLoginInput((prev) => ({ ...prev, password: '' }));
       }
@@ -162,14 +168,12 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
           }}
         />
 
-        {/* 验证码 */}
         <div>
           <CaptchaImage
             value={loginInput.captchaCode}
             error={errors.captcha}
             onChange={({ captchaCode, captchaId }) => {
               setLoginInput((prev) => ({ ...prev, captchaCode, captchaId }));
-              setErrors((prev) => ({ ...prev, captcha: '' }));
             }}
           />
         </div>
@@ -177,6 +181,13 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
+              checked={loginInput.rememberMe}
+              onChange={(e) =>
+                setLoginInput((prev) => ({
+                  ...prev,
+                  rememberMe: e.target.checked,
+                }))
+              }
               className="
                 w-4 h-4
                 border-2 border-black

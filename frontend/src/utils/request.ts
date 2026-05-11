@@ -2,7 +2,10 @@ import axios, {
   type AxiosInstance,
   type AxiosResponse,
   InternalAxiosRequestConfig,
+  type AxiosError,
 } from 'axios';
+import { getToken, isTokenValid } from './jwt';
+import { useUserStore } from '@/store/useUserStore';
 
 const service: AxiosInstance = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'}/api/v1`,
@@ -11,6 +14,10 @@ const service: AxiosInstance = axios.create({
 
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    const token = getToken();
+    if (token && isTokenValid(token)) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error: Error) => {
@@ -26,7 +33,16 @@ service.interceptors.response.use(
     }
     return Promise.reject(new Error(response.statusText || 'Error'));
   },
-  (error: Error) => {
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      const { clearUser, isLoggedIn } = useUserStore.getState();
+      if (isLoggedIn) {
+        clearUser();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/auth/login';
+        }
+      }
+    }
     return Promise.reject(error);
   }
 );

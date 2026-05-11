@@ -14,7 +14,7 @@ class RegisterController {
           message: '注册信息不能为空',
         });
       }
-      const result = await registerService.register(body);
+      await registerService.register(body);
       return res.status(201).json({
         code: 201,
         message: '注册成功',

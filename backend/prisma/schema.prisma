@@ -18,7 +18,7 @@ model users {
   avatar       String?   @db.VarChar(500)
   sex          Int?      @db.SmallInt
   occupation   String?   @db.VarChar(100)
-  score        BigInt    @default(0) @db.BigInt
+  score        Int       @default(0) @db.Integer
   level        Int       @default(0) @db.SmallInt
   created_at   DateTime  @default(now()) @db.Timestamp(6)
   updated_at   DateTime  @updatedAt @db.Timestamp(6)

@@ -65,9 +65,9 @@ export function validateCode(code: string): ValidateResult {
     return { isValid: false, message: '请输入验证码' };
   }
   
-  const codeRegex = /^\d{4,6}$/;
+  const codeRegex = /^[a-zA-Z0-9_]{4}$/;
   if (!codeRegex.test(code)) {
-    return { isValid: false, message: '请输入4-6位数字验证码' };
+    return { isValid: false, message: '请输入4位验证码' };
   }
   
   return { isValid: true, message: '' };
