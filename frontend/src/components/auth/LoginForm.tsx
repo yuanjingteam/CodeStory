@@ -99,7 +99,6 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
           ...prev,
           submit: res?.message || '登录失败',
         }));
-        setLoginInput((prev) => ({ ...prev, password: '' }));
       }
     } catch (error) {
       console.error(error);

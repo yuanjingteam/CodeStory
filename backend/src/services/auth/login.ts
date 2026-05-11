@@ -73,7 +73,7 @@ class LoginService {
         () => {
           tokenBlacklist.delete(jti);
         },
-        30 * 24 * 60 * 60 * 1000
+        7 * 24 * 60 * 60 * 1000
       );
 
       return { success: true, message: '登出成功' };

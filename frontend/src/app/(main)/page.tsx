@@ -2,9 +2,9 @@
 import {  LuArrowRight } from 'react-icons/lu';
 import HomeHero from '@/components/home/HomeHero';
 import HomeCourses from '@/components/home/HomeCourses';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-
-// Mock 课程数据
 const courses = [
   {
     id: 1,
@@ -45,8 +45,14 @@ const courses = [
 ];
 
 export default function Home() {
-
-
+  const router = useRouter();
+  
+  useEffect(() => {
+    const token = localStorage.getItem('code-story-token');
+  if(!token) {
+    return router.replace('/auth/login');
+  }
+}, []);
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Hero Section */}
