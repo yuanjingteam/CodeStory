@@ -5,3 +5,29 @@
   --shadow-neo-brutalism: 8px 8px 0px 0px rgba(0, 0, 0, 1);
   --shadow-neo-brutalism-sm: 4px 4px 0px 0px rgba(0, 0, 0, 1);
 }
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-4px);
+  }
+
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.2s ease-in-out 2;
+}
+
+input[type='password']::-ms-reveal,
+input[type='password']::-ms-clear {
+  display: none;
+}
+
+
