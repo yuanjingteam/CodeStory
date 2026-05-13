@@ -1,36 +1,42 @@
 import request from '@/utils/request';
+import type { AxiosResponse } from 'axios';
 import type {
   LoginRequest,
+  ApiResponse,
   LoginResponse,
   RegisterRequest,
-  ImageCaptchaResponse,
-  ResetPasswordRequest,
+  ImageCaptchaData,
+  ForgetPasswordRequest,
 } from 'shared/types/auth';
 // 登录
-export const login = async (data: LoginRequest): Promise<LoginResponse> => {
+export const login = async (data: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
   return request.post('/auth/login', data);
 };
 
 //登出
-export const logout = async (): Promise<LoginResponse> => {
+export const logout = async (): Promise<ApiResponse<void>> => {
   return request.post('/auth/logout');
 };
 
 // 注册
-export const register = async (data: RegisterRequest) => {
+export const register = async (
+  data: RegisterRequest
+): Promise<ApiResponse<void>> => {
   return request.post('/auth/register', data);
 };
 // 获取图片验证码
-export const getImageCaptcha = async (): Promise<ImageCaptchaResponse> => {
+export const getImageCaptcha = async (): Promise<ApiResponse<ImageCaptchaData>> => {
   return request.get('/auth/image-captcha');
 };
 
 //获取邮箱验证码
-export const getEmailCaptcha = async (data: { email: string }): Promise<{captchaId:string}> => {
+export const getEmailCaptcha = async (data: {
+  email: string;
+}): Promise<ApiResponse<{ captchaId: string }>> => {
   return request.post('/auth/email-captcha', data);
 };
 
-//重置密码
-export const resetPassword = async (data: ResetPasswordRequest) => {
-  return request.post('/auth/reset-password', data);
+//忘记密码
+export const forgetPassword = async (data: ForgetPasswordRequest): Promise<ApiResponse<void>> => {
+  return request.post('/auth/forget-password', data);
 };

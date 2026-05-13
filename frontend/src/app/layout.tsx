@@ -5,7 +5,6 @@ export const metadata: Metadata = {
   title: 'CodeStory',
   description: 'Code practice platform',
 };
-
 export default function RootLayout({
   children,
 }: {

@@ -3,7 +3,7 @@ import { captchaService } from '@/services/auth/captcha';
 
 class CaptchaController {
   // 获取图片验证码控制器
-  async getImageCaptchaController(req: Request, res: Response) {
+  async getImageCaptcha(req: Request, res: Response) {
     const data = await captchaService.generateImageCaptcha();
     return res.status(200).json({
       code: 200,
@@ -12,7 +12,7 @@ class CaptchaController {
     });
   }
   // 获取邮箱验证码控制器
-  async getEmailCaptchaController(req: Request, res: Response) {
+  async getEmailCaptcha(req: Request, res: Response) {
     const { email } = req.body;
     try {
       const canSend = await captchaService.canSendEmail(email);

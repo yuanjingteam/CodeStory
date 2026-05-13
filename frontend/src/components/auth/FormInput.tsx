@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { LuEye, LuEyeClosed } from 'react-icons/lu';
 import { IoCheckmark, IoClose } from 'react-icons/io5';
 interface FormInputProps {
