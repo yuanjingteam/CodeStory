@@ -55,6 +55,7 @@ app.get('/api/v1/health', async (req, res) => {
 import coursesRouter from './routes/courses';
 app.use('/api/v1/courses', coursesRouter);
 
+
 // Error handler
 app.use(errorHandler);
 

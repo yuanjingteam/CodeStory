@@ -12,7 +12,6 @@ router.get('/list', async (req, res) => {
     const level = req.query.level ? parseInt(req.query.level as string) : undefined;
     const userId = req.headers['x-user-id'] as string || '550e8400-e29b-41d4-a716-446655440000';
 
-    // 构建查询条件
     const where: any = {
       is_delete: 0, // 只查询未删除的课程
     };
@@ -99,5 +98,93 @@ router.get('/list', async (req, res) => {
     });
   }
 });
+
+router.get('/:courseId', async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    const course = await prisma.courses.findUnique({
+      where: {
+        id: courseId,
+        is_delete: 0,
+      },
+      include: {
+        chapters: {
+          where: { is_delete: 0 },
+          orderBy: { order: 'asc' },
+          include: {
+            lessons: {
+              where: { is_delete: 0 },
+              orderBy: { order: 'asc' },
+              select: {
+                id: true,
+                title: true,
+                difficulty: true,
+                estimated_time: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!course) {
+      return res.status(404).json({
+        code: 404,
+        message: '课程不存在',
+        data: null,
+      });
+    }
+
+    const chapters = course.chapters.map((chapter) => ({
+      id: chapter.id,
+      title: chapter.title,
+      order: chapter.order,
+      lessonCount: chapter.lessons.length,
+      lessons: chapter.lessons.map((lesson) => ({
+        id: lesson.id,
+        title: lesson.title,
+        difficulty: lesson.difficulty,
+        estimated_time: lesson.estimated_time,
+      })),
+    }));
+
+    const lessonCount = chapters.reduce(
+      (sum, ch) => sum + ch.lessons.length,
+      0
+    );
+
+    const estimatedTotalTime = course.chapters.reduce((sum, ch) => {
+      return (
+        sum +
+        ch.lessons.reduce((lSum, lesson) => lSum + lesson.estimated_time, 0)
+      );
+    }, 0);
+
+    res.json({
+      code: 200,
+      message: 'success',
+      data: {
+        id: course.id,
+        title: course.title,
+        description: course.description,
+        cover_url: course.cover_url,
+        level: course.level,
+        chapterCount: chapters.length,
+        lessonCount,
+        estimatedTotalTime,
+        chapters,
+      },
+    });
+  } catch (error) {
+    console.error('获取课程详情失败:', error);
+    res.status(500).json({
+      code: 500,
+      message: '服务器错误',
+      data: null,
+    });
+  }
+});
+
 
 export default router;
