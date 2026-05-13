@@ -31,6 +31,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 import coursesRouter from './routes/courses';
 app.use('/api/v1/courses', coursesRouter);
 
+
 // Error handler
 app.use(errorHandler);
 

@@ -58,7 +58,7 @@ export default function AboutHero() {
       </div>
 
       {/* 项目初心卡片 */}
-      <div className="border-2 border-black shadow-[3px_3px_0_0_#000] bg-green-50 p-5 mb-8 -mt-8">
+      <div className="border-2 border-black shadow-[3px_3px_0_0_#000] bg-green-50 p-6 mb-8 -mt-8">
         <h2 className="text-xl font-bold mb-2">💡 CodeStory 初心</h2>
         <p className="text-gray-800">
           我们相信：编程不是死记硬背，而是<strong>有趣、陪伴、可互动</strong>的成长过程。
@@ -75,14 +75,14 @@ export default function AboutHero() {
           </div>
           <p className="text-gray-700">智能 AI Agent 陪伴学习</p>
         </div>
-        <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] p-4 bg-white">
+        <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] p-5 bg-white">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-8 h-8 flex items-center justify-center bg-purple-500 rounded-full border-2 border-black text-white font-bold">💻</div>
             <h3 className="font-bold text-lg">实战驱动</h3>
           </div>
           <p className="text-gray-700">边学边练，学以致用</p>
         </div>
-        <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] p-4 bg-white">
+        <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] p-5 bg-white">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-8 h-8 flex items-center justify-center bg-purple-500 rounded-full border-2 border-black text-white font-bold">🎯</div>
             <h3 className="font-bold text-lg">个性化学习</h3>
@@ -92,7 +92,7 @@ export default function AboutHero() {
       </div>
 
       {/* 用户口碑卡片 */}
-      <div className="border-2 border-black shadow-[3px_3px_0_0_#000] bg-blue-50 p-5 mb-8">
+      <div className="border-2 border-black shadow-[3px_3px_0_0_#000] bg-blue-50 p-6 mb-8">
         <h3 className="font-bold text-lg mb-2">⭐ 使用者怎么说</h3>
         <p className="italic text-gray-700">“本来觉得编程超难，在这里跟着练了几天，居然真的能写出小项目了！”</p>
       </div>
@@ -103,7 +103,7 @@ export default function AboutHero() {
           onClick={handleStartLearning}
           className="
             border-3 border-black bg-purple-500 text-white font-bold text-lg 
-            px-8 py-3 shadow-[4px_4px_0_#000] 
+            px-8 py-4 shadow-[4px_4px_0_#000] 
             hover:translate-x-1 hover:translate-y-1 hover:shadow-none 
             transition-all duration-150
           "
