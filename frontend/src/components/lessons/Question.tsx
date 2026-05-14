@@ -145,12 +145,12 @@ export default function Question({ data }: QuestionProps) {
         ) : (
           <>
             {/* 上半部分：固定渲染题干 Markdown */}
-            <div className="flex-1 overflow-auto border-b-4 border-black p-4">
+            <div className="flex-4 overflow-auto border-b-4 border-black p-4">
               <MarkdownContent content={exerciseData.content} />
             </div>
 
             {/* 下半部分：根据题型动态切换 */}
-            <div className="flex-1 overflow-auto p-4">
+            <div className="flex-5 overflow-auto p-4">
               {exerciseData.type === 'single_choice' ? (
                 <ChoiceQuestion 
                   exercise={exerciseData} 
