@@ -10,7 +10,6 @@ export interface ExerciseDetailData {
   type: 'single_choice' | 'code' | 'fill';
   knowledge: string;
   content: string;
-  answer: string;
   analysis: string;
   difficulty: number;
   metadata: ChoiceMetadata | CodeMetadata;

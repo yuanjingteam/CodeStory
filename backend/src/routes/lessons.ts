@@ -117,14 +117,12 @@ router.get('/:lessonId', async (req, res) => {
       id: uuidToShortId(exercises[0].id),
       type: exercises[0].type as 'code' | 'choice' | 'fill',
       content: exercises[0].content,
-      answer: exercises[0].answer,
       analysis: exercises[0].analysis || '',
       metadata: exercises[0].metadata as any,
     } : {
       id: '',
       type: 'code' as const,
       content: '',
-      answer: '',
       analysis: '',
       metadata: { template: '' },
     };

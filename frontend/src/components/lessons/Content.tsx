@@ -1,5 +1,6 @@
 import Progress from './Progress';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import type { LessonDetailData, Chapter } from '@/types/lesson-detail';
 
 interface ContentProps {
@@ -7,6 +8,7 @@ interface ContentProps {
 }
 
 export default function Content({ data }: ContentProps) {
+  const router = useRouter();
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set(['chapter_id_1']));
 
   useEffect(() => {
@@ -28,6 +30,11 @@ export default function Content({ data }: ContentProps) {
       }
       return next;
     });
+  };
+
+  const handleLessonClick = (lessonId: string, chapterId: string) => {
+    const courseId = data.course.id;
+    router.push(`/courses/${courseId}/chapters/${chapterId}/lessons/${lessonId}`);
   };
 
   return (
@@ -71,6 +78,7 @@ export default function Content({ data }: ContentProps) {
                     return (
                       <div
                         key={lesson.id}
+                        onClick={() => handleLessonClick(lesson.id, chapter.id)}
                         className={`flex items-center justify-between px-4 py-3 border-l-4 cursor-pointer transition-colors ${
                           isCurrent
                             ? 'bg-yellow-400 border-yellow-500'

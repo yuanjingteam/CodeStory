@@ -41,7 +41,6 @@ export interface Exercise {
   id: string;
   type: 'code' | 'choice' | 'fill';
   content: string;
-  answer: string;
   analysis: string;
   metadata: {
     template: string;
