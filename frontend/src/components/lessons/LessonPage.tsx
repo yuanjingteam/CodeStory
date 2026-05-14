@@ -6,7 +6,7 @@ import Question from './Question';
 import Chat from './Chat';
 import Content from './Content';
 
-export default function LessonPage() {
+export default function LessonPage({ lessonId }: { lessonId: string }) {
   const [data, setData] = useState<LessonDetailData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -14,7 +14,7 @@ export default function LessonPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await lessonDetailApi.getById('lesson_id');
+        const response = await lessonDetailApi.getById(lessonId);
         setData(response);
       } catch (error) {
         console.error('获取课程详情失败');
@@ -23,8 +23,10 @@ export default function LessonPage() {
       }
     };
 
-    fetchData();
-  }, []);
+    if (lessonId) {
+      fetchData();
+    }
+  }, [lessonId]);
 
   if (loading) {
     return (

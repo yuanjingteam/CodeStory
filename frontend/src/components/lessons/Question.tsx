@@ -60,7 +60,7 @@ export default function Question({ data }: QuestionProps) {
   };
 
   useEffect(() => {
-    if (!currentLessonId) {
+    if (!data?.exercise?.id) {
       setLoading(false);
       return;
     }
@@ -68,7 +68,7 @@ export default function Question({ data }: QuestionProps) {
     const fetchExercise = async () => {
       try {
         setLoading(true);
-        const response = await exerciseApi.getDetail(currentLessonId);
+        const response = await exerciseApi.getDetail(data.exercise.id);
         setExerciseData(response);
       } catch (error) {
         console.error('获取题目详情失败');
@@ -78,7 +78,7 @@ export default function Question({ data }: QuestionProps) {
     };
 
     fetchExercise();
-  }, [currentLessonId]);
+  }, [data?.exercise?.id]);
 
   const currentChapterTitle = currentChapter?.title || '第 1 章 Python 基础语法';
 
@@ -117,7 +117,7 @@ export default function Question({ data }: QuestionProps) {
 
             {/* 下半部分：根据题型动态切换 */}
             <div className="flex-2 overflow-auto p-4">
-              {exerciseData.type === 'choice' ? (
+              {exerciseData.type === 'single_choice' ? (
                 <ChoiceQuestion exercise={exerciseData} onSubmit={handleSubmit} onNavigate={handleNavigate} />
               ) : exerciseData.type === 'code' ? (
                 <CodeQuestion exercise={exerciseData} onSubmit={handleSubmit} onNavigate={handleNavigate} />

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import prisma from '../config/prisma';
 import { success, fail, notFound } from '../utils/response';
+import { uuidToShortId, resolveShortId } from '../utils/idTransform';
 
 const router = Router();
 
@@ -55,7 +56,7 @@ router.get('/list', async (req, res) => {
       }
 
       return {
-        id: course.id,
+        id: uuidToShortId(course.id),
         title: course.title,
         description: course.description,
         cover_url: course.cover_url,
@@ -79,8 +80,12 @@ router.get('/:courseId', async (req, res) => {
   try {
     const { courseId } = req.params;
 
+    // 短 ID 反查完整 UUID
+    const resolvedId = await resolveShortId('courses', courseId);
+    if (!resolvedId) return notFound(res, '课程不存在');
+
     const course = await prisma.courses.findUnique({
-      where: { id: courseId, is_delete: 0 },
+      where: { id: resolvedId, is_delete: 0 },
       include: {
         chapters: {
           where: { is_delete: 0 },
@@ -103,13 +108,17 @@ router.get('/:courseId', async (req, res) => {
 
     if (!course) return notFound(res, '课程不存在');
 
-    // 整理章节
     const chapters = course.chapters.map(ch => ({
-      id: ch.id,
+      id: uuidToShortId(ch.id),
       title: ch.title,
       order: ch.order,
       lessonCount: ch.lessons.length,
-      lessons: ch.lessons,
+      lessons: ch.lessons.map(l => ({
+        id: uuidToShortId(l.id),
+        title: l.title,
+        difficulty: l.difficulty,
+        estimated_time: l.estimated_time,
+      })),
     }));
 
     // 统计
@@ -121,7 +130,7 @@ router.get('/:courseId', async (req, res) => {
     );
 
     return success(res, {
-      id: course.id,
+      id: uuidToShortId(course.id),
       title: course.title,
       description: course.description,
       cover_url: course.cover_url,
