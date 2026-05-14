@@ -14,7 +14,7 @@ export type LoginRequest = {
 
 export type LoginResponse = {
   token: string;
-  userInfo: UserInfo;
+  user: UserInfo;
 };
 
 export type UserInfo = {

@@ -14,7 +14,7 @@ import {
 } from '@/utils/validate';
 import FormInput from './FormInput';
 import { useUserStore } from '@/store/useUserStore';
-import { useMessage } from '@/components/Message';
+import { toast } from 'sonner';
 
 const STORAGE_KEY = 'loginfrom';
 
@@ -27,7 +27,6 @@ type FieldStatus = 'success' | 'error' | null;
 
 export default function LoginForm() {
   const { addUser: setUserLogin } = useUserStore();
-  const { addMessage, MessageManager } = useMessage();
 
   const getInitialLoginInput = (): LoginRequest => {
     try {
@@ -123,18 +122,18 @@ export default function LoginForm() {
         localStorage.removeItem(STORAGE_KEY);
         localStorage.removeItem('registerfrom');
         localStorage.removeItem('forgotpasswordfrom');
-        addMessage('success', '登录成功');
+        toast.success('登录成功');
         await setUserLogin(res.data);
         setTimeout(() => {
           router.push('/');
         }, 500);
         return;
       } else {
-        addMessage('error', res?.message || '登录失败');
+        toast.error(res?.message || '登录失败');
       }
     } catch (error) {
       console.error(error);
-      addMessage('error', '登录失败，请检查邮箱和密码');
+      toast.error('登录失败，请检查邮箱和密码');
       setLoginInput((prev) => ({ ...prev, password: '' }));
     } finally {
       setLoading(false);
@@ -143,7 +142,6 @@ export default function LoginForm() {
 
   return (
     <section>
-      <MessageManager />
       <form
         onSubmit={handleSubmit}
         className={`

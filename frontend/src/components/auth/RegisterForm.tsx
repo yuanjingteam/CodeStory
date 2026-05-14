@@ -12,7 +12,7 @@ import {
   validateCode,
 } from '@/utils/validate';
 import { useEmailCode } from '@/hooks/auth/useEmailCode';
-import { useMessage } from '@/components/Message';
+import { toast } from 'sonner';
 
 const STORAGE_KEY = 'registerfrom';
 
@@ -31,8 +31,6 @@ interface RegisterErrors {
 type FieldStatus = 'success' | 'error' | null;
 
 export default function RegisterForm() {
-  const { addMessage, MessageManager } = useMessage();
-
   const getInitialRegisterInput = (): RegisterRequest => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -130,10 +128,10 @@ export default function RegisterForm() {
       }
       try {
         await getEmailCaptcha({ email: registerInput.email });
-        addMessage('success', '验证码发送成功');
+        toast.success('验证码发送成功');
       } catch (error) {
         console.error(error);
-        addMessage('error', '获取验证码失败，请稍后重试');
+        toast.error('获取验证码失败，请稍后重试');
         throw new Error('获取验证码失败，请稍后重试');
       }
     },
@@ -183,20 +181,19 @@ export default function RegisterForm() {
       const res = await register(registerInput);
       if (res.code === 200 || res.code === 201) {
         localStorage.removeItem(STORAGE_KEY);
-        addMessage('success', '注册成功');
+        toast.success('注册成功');
       } else {
-        addMessage('error', res.message || '注册失败');
+        toast.error(res.message || '注册失败');
       }
     } catch (error) {
       console.error(error);
-      addMessage('error', '注册失败，请稍后重试');
+      toast.error('注册失败，请稍后重试');
     } finally {
       setLoading(false);
     }
   };
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <MessageManager />
       {/* 昵称 */}
       <FormInput
         label="昵称"

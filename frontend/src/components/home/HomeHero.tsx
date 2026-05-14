@@ -1,6 +1,9 @@
+'use client';
 import { useRouter } from 'next/navigation';
 import { LuBot } from 'react-icons/lu';
 import HeroIllustration from '@/components/home/HeroIllustration';
+import { useUserStore } from '@/store/useUserStore';
+import { getStartLearningCourse } from '@/api/home';
 
 export default function HomeHero() {
   const stats = [
@@ -10,6 +13,18 @@ export default function HomeHero() {
     { value: '30K+', label: '注册用户', color: 'bg-blue-500 text-black' },
   ];
   const router = useRouter();
+  const { user } = useUserStore();
+  const startLearning = async () => {
+    if (!user) {
+      return router.push('/courses');
+    }
+    try {
+      const res = await getStartLearningCourse(user.id);
+      router.push(res.data.path ?? '/courses');
+    } catch (error) {
+      console.error('获取开始学习课程失败:', error);
+    } 
+  };
   return (
     <section
       className="  
@@ -23,7 +38,6 @@ export default function HomeHero() {
         relative z-10
       "
     >
-      {/* Background decorations */}
       <div className="absolute z-[-1] top-10 left-10 w-32 h-32 bg-purple-200 rounded-full opacity-50" />
       <div className="absolute z-[-1] bottom-20 right-20 w-48 h-48 bg-green-200 rounded-full opacity-30" />
       <div className="absolute z-[-1] top-1/2 left-1/4 w-20 h-20 bg-yellow-200 rounded-full opacity-40" />
@@ -47,7 +61,7 @@ export default function HomeHero() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <button
-                onClick={() => router.push('/courses')}
+                onClick={startLearning}
                 className="px-8 py-3 bg-purple-500 text-white font-bold text-lg border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
               >
                 开始学习
@@ -69,7 +83,7 @@ export default function HomeHero() {
       </div>
 
       {/* Stats Section */}
-      <div className="max-w-6xl mx-auto py-16 px-4">
+      <div className="max-w-6xl mx-auto py-8 px-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat, index) => (
             <div
