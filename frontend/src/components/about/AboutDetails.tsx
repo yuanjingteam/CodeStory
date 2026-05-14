@@ -11,6 +11,10 @@ export default function AboutHero() {
   return (
     <section 
       className="
+        h-[calc(100vh-110px)]            /* 强制高度为 100% 视口高度 */
+        flex                 /* 开启 Flex 布局 */
+        flex-col             /* 子元素垂直排列 */
+        justify-between  
         border-4 border-black 
         shadow-[4px_4px_0_0_rgba(0,0,0,1)] 
         bg-white 
