@@ -51,7 +51,7 @@ export default function AboutHero() {
             <rect x="140" y="100" width="60" height="40" rx="2" fill="black" stroke="black" strokeWidth="2"/>
             <rect x="145" y="105" width="50" height="30" fill="#22c55e"/>
             <rect x="153" y="20" width="86" height="40" rx="10" fill="#8b5cf6" stroke="black" strokeWidth="3"/>
-            <text x="163" y="45" fill="white" fontSize="12" fontWeight="bold">Let's Code!</text>
+            <text x="163" y="45" fill="white" fontSize="12" fontWeight="bold">Let&apos;s Code!</text>
             <polygon points="180,70 182,76 188,76 183,80 185,86 180,82 175,86 177,80 172,76 178,76" fill="#8b5cf6"/>
           </svg>
         </div>
