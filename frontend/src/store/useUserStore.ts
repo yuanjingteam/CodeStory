@@ -29,15 +29,16 @@ export const useUserStore = create<UserState & UserActions>((set) => ({
   isLoggedIn: false,
 
   addUser: (data: LoginResponse) => {
-    if (!data.data) {
-      throw new Error('登录失败：缺少用户数据');
+    if (!data.token) {
+      throw new Error('登录失败：用户数据');
     }
 
-    setStorage(STORAGE_KEYS.USER_TOKEN, data.data.token);
-    setStorage(STORAGE_KEYS.USER_INFO, data.data.user);
+    setStorage(STORAGE_KEYS.USER_TOKEN, data.token);
+    const userInfo = data.userInfo || {};
+    setStorage(STORAGE_KEYS.USER_INFO, userInfo);
     set({
-      token: data.data.token,
-      user: data.data.user,
+      token: data.token,
+      user: userInfo,
       isLoggedIn: true,
       isLoading: false,
     });

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { RegisterRequest } from 'shared/types/auth';
 import { register, getEmailCaptcha } from '@/api/auth/auth';
 import FormInput from './FormInput';
@@ -12,34 +12,66 @@ import {
   validateCode,
 } from '@/utils/validate';
 import { useEmailCode } from '@/hooks/auth/useEmailCode';
-interface RegisterFormProps {
-  onSubmit?: (data: RegisterRequest) => void;
-}
+import { useMessage } from '@/components/Message';
 
+const STORAGE_KEY = 'registerfrom';
+
+interface RegisterStorage {
+  email: string;
+  nickname: string;
+}
 interface RegisterErrors {
   nickname?: string;
   email?: string;
   password?: string;
   confirmPassword?: string;
   emailCode?: string;
-  submit?: string;
 }
 
 type FieldStatus = 'success' | 'error' | null;
 
-export default function RegisterForm({ onSubmit }: RegisterFormProps) {
-  const [registerInput, setRegisterInput] = useState<RegisterRequest>({
-    nickname: '',
-    email: '',
-    password: '',
-    emailCode: '',
-  });
+export default function RegisterForm() {
+  const { addMessage, MessageManager } = useMessage();
+
+  const getInitialRegisterInput = (): RegisterRequest => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed: RegisterStorage = JSON.parse(stored);
+        return {
+          nickname: parsed.nickname || '',
+          email: parsed.email || '',
+          password: '',
+          emailCode: '',
+        };
+      }
+    } catch (e) {
+      console.error('Failed to parse register storage:', e);
+    }
+    return {
+      nickname: '',
+      email: '',
+      password: '',
+      emailCode: '',
+    };
+  };
+
+  const [registerInput, setRegisterInput] = useState<RegisterRequest>(
+    getInitialRegisterInput
+  );
+
+  useEffect(() => {
+    const storageData: RegisterStorage = {
+      email: registerInput.email,
+      nickname: registerInput.nickname,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(storageData));
+  }, [registerInput.email, registerInput.nickname]);
 
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [confirmShowPassword, setConfirmShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
   const [touched, setTouched] = useState({
     nickname: false,
     email: false,
@@ -98,10 +130,10 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
       }
       try {
         await getEmailCaptcha({ email: registerInput.email });
+        addMessage('success', '验证码发送成功');
       } catch (error) {
         console.error(error);
-        setErrors((prev) => ({ ...prev, email: '获取验证码失败，请稍后重试' }));
-        setTouched((prev) => ({ ...prev, email: true }));
+        addMessage('error', '获取验证码失败，请稍后重试');
         throw new Error('获取验证码失败，请稍后重试');
       }
     },
@@ -129,7 +161,6 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
         ? ''
         : confirmPasswordResult.message,
       emailCode: emailCodeResult.isValid ? '' : emailCodeResult.message,
-      submit: '',
     };
     setErrors(newErrors);
     setTouched({
@@ -144,38 +175,28 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccess('');
-    setErrors((prev) => ({ ...prev, submit: '' }));
     if (!validateForm()) {
       return;
     }
     try {
       setLoading(true);
       const res = await register(registerInput);
-      if (res?.data?.code === 200 || res?.data?.code === 201) {
-        setSuccess('注册成功 ✓');
-        await onSubmit?.(res.data);
+      if (res.code === 200 || res.code === 201) {
+        localStorage.removeItem(STORAGE_KEY);
+        addMessage('success', '注册成功');
       } else {
-        setErrors((prev) => ({
-          ...prev,
-          submit: res?.data?.message || '注册失败',
-        }));
+        addMessage('error', res.message || '注册失败');
       }
     } catch (error) {
       console.error(error);
-      setErrors((prev) => ({ ...prev, submit: '注册失败，请稍后重试' }));
+      addMessage('error', '注册失败，请稍后重试');
     } finally {
       setLoading(false);
     }
   };
   return (
-    <form
-      onSubmit={handleSubmit}
-      className={`
-        space-y-4
-        ${errors.submit ? 'animate-shake' : ''}
-      `}
-    >
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <MessageManager />
       {/* 昵称 */}
       <FormInput
         label="昵称"
@@ -186,8 +207,7 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
         success={nicknameStatus === 'success'}
         onChange={(value) => {
           setRegisterInput((prev) => ({ ...prev, nickname: value }));
-          setErrors((prev) => ({ ...prev, nickname: '', submit: '' }));
-          setSuccess('');
+          setErrors((prev) => ({ ...prev, nickname: '' }));
         }}
         onBlur={() => {
           setTouched((prev) => ({ ...prev, nickname: true }));
@@ -210,8 +230,7 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
         success={emailStatus === 'success'}
         onChange={(value) => {
           setRegisterInput((prev) => ({ ...prev, email: value }));
-          setErrors((prev) => ({ ...prev, email: '', submit: '' }));
-          setSuccess('');
+          setErrors((prev) => ({ ...prev, email: '' }));
         }}
         onBlur={() => {
           setTouched((prev) => ({ ...prev, email: true }));
@@ -251,7 +270,7 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
               font-black text-sm
               bg-yellow-400
               border-2 border-black
-              shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+              shadow-[4px_4px_0_0_rgba(0,0,0,1)]
               hover:translate-x-[2px]
               hover:translate-y-[2px]
               hover:shadow-none
@@ -284,8 +303,7 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
         onTogglePassword={() => setShowPassword(!showPassword)}
         onChange={(value) => {
           setRegisterInput((prev) => ({ ...prev, password: value }));
-          setErrors((prev) => ({ ...prev, password: '', submit: '' }));
-          setSuccess('');
+          setErrors((prev) => ({ ...prev, password: '' }));
         }}
         onBlur={() => {
           setTouched((prev) => ({ ...prev, password: true }));
@@ -325,40 +343,6 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
         }}
       />
 
-      {/* 提交错误 */}
-      {errors.submit && (
-        <div
-          className="
-            border-2 border-black
-            bg-red-200
-            px-3 py-2
-            text-center
-            font-black
-            text-red-700
-            shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
-          "
-        >
-          {errors.submit}
-        </div>
-      )}
-
-      {/* 注册成功 */}
-      {success && (
-        <div
-          className="
-            border-2 border-black
-            bg-green-200
-            px-3 py-2
-            text-center
-            font-black
-            text-green-700
-            shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
-          "
-        >
-          {success}
-        </div>
-      )}
-
       {/* 注册按钮 */}
       <button
         type="submit"
@@ -368,7 +352,7 @@ export default function RegisterForm({ onSubmit }: RegisterFormProps) {
           font-black text-white
           bg-green-500
           border-2 border-black
-          shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+          shadow-[4px_4px_0_0_rgba(0,0,0,1)]
           hover:translate-x-[4px]
           hover:translate-y-[4px]
           hover:shadow-none

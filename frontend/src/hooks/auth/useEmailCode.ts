@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface UseEmailCodeOptions {
   duration?: number;
@@ -12,7 +12,13 @@ export function useEmailCode(options: UseEmailCodeOptions) {
   const [countdown, setCountdown] = useState(0);
   const [loading, setLoading] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const startCountdown = () => {
+  const onSendRef = useRef(onSend);
+
+  useEffect(() => {
+    onSendRef.current = onSend;
+  }, [onSend]);
+
+  const startCountdown = useCallback(() => {
     setCountdown(duration);
     timerRef.current = setInterval(() => {
       setCountdown((prev) => {
@@ -25,12 +31,12 @@ export function useEmailCode(options: UseEmailCodeOptions) {
         return prev - 1;
       });
     }, 1000);
-  };
+  }, [duration]);
 
-  const sendCode = async () => {
+  const sendCode = useCallback(async () => {
     try {
       setLoading(true);
-      await onSend();
+      await onSendRef.current();
       startCountdown();
     } catch (error) {
       console.error(error);
@@ -38,7 +44,7 @@ export function useEmailCode(options: UseEmailCodeOptions) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [startCountdown]);
 
   useEffect(() => {
     return () => {

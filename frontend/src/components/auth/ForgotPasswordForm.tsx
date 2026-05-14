@@ -1,21 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import type { LoginRequest } from 'shared/types/auth';
+import { useState, useEffect } from 'react';
 import FormInput from './FormInput';
-import { getEmailCaptcha, resetPassword } from '@/api/auth/auth';
+import { getEmailCaptcha, forgetPassword } from '@/api/auth/auth';
 import { useEmailCode } from '@/hooks/auth/useEmailCode';
 import type { ValidateResult } from '@/utils/validate';
+import { useRouter } from 'next/navigation';
 import {
   validateEmail,
   validateCode,
   validatePassword,
   validateConfirmPassword,
 } from '@/utils/validate';
+import { useMessage } from '@/components/Message';
 
-interface ForgotPasswordFormProps {
-  onSubmit?: (data: LoginRequest) => void;
-}
+const STORAGE_KEY = 'forgotpasswordfrom';
 
 type FieldStatus = 'success' | 'error' | null;
 
@@ -24,23 +23,48 @@ interface ForgotPasswordErrors {
   emailCode?: string;
   password?: string;
   confirmPassword?: string;
-  submit?: string;
 }
 
-export default function ForgotPasswordForm({
-  onSubmit,
-}: ForgotPasswordFormProps) {
-  const [formData, setFormData] = useState({
-    email: '',
-    emailCode: '',
-    password: '',
-  });
+export default function ForgotPasswordForm() {
+  const { addMessage, MessageManager } = useMessage();
+
+  const getInitialFormData = () => {
+    if (typeof window === 'undefined') {
+      return {
+        email: '',
+        emailCode: '',
+        password: '',
+      };
+    }
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        return {
+          email: stored,
+          emailCode: '',
+          password: '',
+        };
+      }
+    } catch (e) {
+      console.error('Failed to parse forgot password storage:', e);
+    }
+    return {
+      email: '',
+      emailCode: '',
+      password: '',
+    };
+  };
+
+  const [formData, setFormData] = useState(getInitialFormData);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, formData.email);
+  }, [formData.email]);
 
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
   const [touched, setTouched] = useState({
     email: false,
     emailCode: false,
@@ -57,6 +81,7 @@ export default function ForgotPasswordForm({
     const result = validator(value);
     return result.isValid ? 'success' : 'error';
   };
+  const router = useRouter();
   const emailStatus = getFieldStatus('email', formData.email, validateEmail);
   const emailCodeStatus = getFieldStatus(
     'emailCode',
@@ -89,9 +114,15 @@ export default function ForgotPasswordForm({
         setTouched((prev) => ({ ...prev, email: true }));
         throw new Error(emailResult.message);
       }
-      await getEmailCaptcha({
-        email: formData.email,
-      });
+      try {
+        await getEmailCaptcha({
+          email: formData.email,
+        });
+        addMessage('success', '验证码发送成功');
+      } catch (error) {
+        console.error(error);
+        addMessage('error', '验证码发送失败，请稍后重试');
+      }
     },
   });
 
@@ -110,7 +141,6 @@ export default function ForgotPasswordForm({
       confirmPassword: confirmPasswordResult.isValid
         ? ''
         : confirmPasswordResult.message,
-      submit: '',
     };
     setErrors(newErrors);
     setTouched({
@@ -124,47 +154,37 @@ export default function ForgotPasswordForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccess('');
-    setErrors((prev) => ({ ...prev, submit: '' }));
     if (!validateForm()) {
       return;
     }
     try {
       setLoading(true);
-      const res = await resetPassword({
+      const res = await forgetPassword({
         email: formData.email,
         emailCode: formData.emailCode,
         password: formData.password,
       });
 
-      if (res?.data?.code === 200) {
-        setSuccess('密码重置成功 ✓');
-        await onSubmit?.(res.data);
+      if (res.code === 200) {
+        localStorage.removeItem(STORAGE_KEY);
+        addMessage('success', '密码重置成功');
+        setTimeout(() => {
+          router.push('/auth/login');
+        }, 500);
       } else {
-        setErrors((prev) => ({
-          ...prev,
-          submit: res?.data?.message || '密码重置失败',
-        }));
+        addMessage('error', res.message || '密码重置失败');
       }
     } catch (error) {
       console.error(error);
-      setErrors((prev) => ({
-        ...prev,
-        submit: '密码重置失败，请稍后重试',
-      }));
+      addMessage('error', '密码重置失败，请稍后重试');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className={`
-        space-y-4
-        ${errors.submit ? 'animate-shake' : ''}
-      `}
-    >
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <MessageManager />
       {/* 邮箱 */}
       <FormInput
         label="邮箱"
@@ -176,8 +196,7 @@ export default function ForgotPasswordForm({
         success={emailStatus === 'success'}
         onChange={(value) => {
           setFormData((prev) => ({ ...prev, email: value }));
-          setErrors((prev) => ({ ...prev, email: '', submit: '' }));
-          setSuccess('');
+          setErrors((prev) => ({ ...prev, email: '' }));
         }}
         onBlur={() => {
           setTouched((prev) => ({ ...prev, email: true }));
@@ -227,7 +246,7 @@ export default function ForgotPasswordForm({
               font-black text-sm
               bg-yellow-400
               border-2 border-black
-              shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+              shadow-[4px_4px_0_0_rgba(0,0,0,1)]
               hover:translate-x-[2px]
               hover:translate-y-[2px]
               hover:shadow-none
@@ -300,40 +319,6 @@ export default function ForgotPasswordForm({
         }}
       />
 
-      {/* 提交错误 */}
-      {errors.submit && (
-        <div
-          className="
-            border-2 border-black
-            bg-red-200
-            px-3 py-2
-            text-center
-            font-black
-            text-red-700
-            shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
-          "
-        >
-          {errors.submit}
-        </div>
-      )}
-
-      {/* 成功 */}
-      {success && (
-        <div
-          className="
-            border-2 border-black
-            bg-green-200
-            px-3 py-2
-            text-center
-            font-black
-            text-green-700
-            shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
-          "
-        >
-          {success}
-        </div>
-      )}
-
       {/* 提交按钮 */}
       <button
         type="submit"
@@ -343,7 +328,7 @@ export default function ForgotPasswordForm({
           font-black text-white
           bg-yellow-500
           border-2 border-black
-          shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+          shadow-[4px_4px_0_0_rgba(0,0,0,1)]
           hover:translate-x-[4px]
           hover:translate-y-[4px]
           hover:shadow-none

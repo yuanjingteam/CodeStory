@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { IoLogoWechat } from 'react-icons/io5';
 import Link from 'next/link';
@@ -14,26 +14,61 @@ import {
 } from '@/utils/validate';
 import FormInput from './FormInput';
 import { useUserStore } from '@/store/useUserStore';
-import type { LoginResponse } from 'shared/types/auth';
-interface LoginFormProps {
-  onSubmit?: (data: LoginResponse) => void;
+import { useMessage } from '@/components/Message';
+
+const STORAGE_KEY = 'loginfrom';
+
+interface LoginStorage {
+  email: string;
+  rememberMe: boolean;
 }
 
 type FieldStatus = 'success' | 'error' | null;
 
-export default function LoginForm({ onSubmit }: LoginFormProps) {
+export default function LoginForm() {
   const { addUser: setUserLogin } = useUserStore();
-  const [loginInput, setLoginInput] = useState<LoginRequest>({
-    email: '',
-    password: '',
-    captchaCode: '',
-    captchaId: '',
-    rememberMe: false,
-  });
+  const { addMessage, MessageManager } = useMessage();
+
+  const getInitialLoginInput = (): LoginRequest => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed: LoginStorage = JSON.parse(stored);
+        return {
+          email: parsed.email || '',
+          password: '',
+          captchaCode: '',
+          captchaId: '',
+          rememberMe: parsed.rememberMe || false,
+        };
+      }
+    } catch (e) {
+      console.error('Failed to parse login storage:', e);
+    }
+    return {
+      email: '',
+      password: '',
+      captchaCode: '',
+      captchaId: '',
+      rememberMe: false,
+    };
+  };
+
+  const [loginInput, setLoginInput] =
+    useState<LoginRequest>(getInitialLoginInput);
+
+  useEffect(() => {
+    if (loginInput.rememberMe) {
+      const storageData: LoginStorage = {
+        email: loginInput.email,
+        rememberMe: loginInput.rememberMe,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(storageData));
+    }
+  }, [loginInput.email, loginInput.rememberMe]);
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
   const [touched, setTouched] = useState({
     email: false,
     password: false,
@@ -43,7 +78,6 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
     email: '',
     password: '',
     captcha: '',
-    submit: '',
   });
 
   const getFieldStatus = (
@@ -71,7 +105,6 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
       email: emailResult.isValid ? '' : emailResult.message,
       password: passwordResult.isValid ? '' : passwordResult.message,
       captcha: captchaResult.isValid ? '' : captchaResult.message,
-      submit: '',
     };
     setErrors(newErrors);
     setTouched({ email: true, password: true, captcha: true });
@@ -80,8 +113,6 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccess('');
-    setErrors((prev) => ({ ...prev, submit: '' }));
     if (!validateForm()) {
       return;
     }
@@ -89,20 +120,21 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
       setLoading(true);
       const res = await login(loginInput);
       if (res.code === 200) {
-        setSuccess('登录成功 ✓');
-        await setUserLogin(res);
-        await onSubmit?.(res);
-        router.push('/');
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem('registerfrom');
+        localStorage.removeItem('forgotpasswordfrom');
+        addMessage('success', '登录成功');
+        await setUserLogin(res.data);
+        setTimeout(() => {
+          router.push('/');
+        }, 500);
         return;
       } else {
-        setErrors((prev) => ({
-          ...prev,
-          submit: res?.message || '登录失败',
-        }));
+        addMessage('error', res?.message || '登录失败');
       }
     } catch (error) {
       console.error(error);
-      setErrors((prev) => ({ ...prev, submit: '登录失败，请检查邮箱和密码' }));
+      addMessage('error', '登录失败，请检查邮箱和密码');
       setLoginInput((prev) => ({ ...prev, password: '' }));
     } finally {
       setLoading(false);
@@ -111,11 +143,11 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
 
   return (
     <section>
+      <MessageManager />
       <form
         onSubmit={handleSubmit}
         className={`
           space-y-4
-          ${errors.submit ? 'animate-shake' : ''}
         `}
       >
         {/* 邮箱 */}
@@ -129,8 +161,7 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
           success={emailStatus === 'success'}
           onChange={(value) => {
             setLoginInput((prev) => ({ ...prev, email: value }));
-            setErrors((prev) => ({ ...prev, email: '', submit: '' }));
-            setSuccess('');
+            setErrors((prev) => ({ ...prev, email: '' }));
           }}
           onBlur={() => {
             setTouched((prev) => ({ ...prev, email: true }));
@@ -154,8 +185,7 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
           onTogglePassword={() => setShowPassword(!showPassword)}
           onChange={(value) => {
             setLoginInput((prev) => ({ ...prev, password: value }));
-            setErrors((prev) => ({ ...prev, password: '', submit: '' }));
-            setSuccess('');
+            setErrors((prev) => ({ ...prev, password: '' }));
           }}
           onBlur={() => {
             setTouched((prev) => ({ ...prev, password: true }));
@@ -204,36 +234,6 @@ export default function LoginForm({ onSubmit }: LoginFormProps) {
           </Link>
         </div>
 
-        {errors.submit && (
-          <div
-            className="
-              border-2 border-black
-              bg-red-200
-              px-3 py-2
-              text-center
-              font-black
-              text-red-700
-              shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
-            "
-          >
-            {errors.submit}
-          </div>
-        )}
-        {success && (
-          <div
-            className="
-              border-2 border-black
-              bg-green-200
-              px-3 py-2
-              text-center
-              font-black
-              text-green-700
-              shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
-            "
-          >
-            {success}
-          </div>
-        )}
         <button
           type="submit"
           disabled={loading}

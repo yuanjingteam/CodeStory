@@ -1,3 +1,9 @@
+export interface ApiResponse<T> {
+  code: number;
+  message: string;
+  data: T;
+}
+
 export type LoginRequest = {
   email: string;
   password: string;
@@ -5,14 +11,12 @@ export type LoginRequest = {
   captchaId: string;
   rememberMe?: boolean;
 };
+
 export type LoginResponse = {
-  code: number;
-  message: string;
-  data?: {
-    token: string;
-    user: UserInfo;
-  };
+  token: string;
+  userInfo: UserInfo;
 };
+
 export type UserInfo = {
   id: string;
   email: string;
@@ -35,17 +39,12 @@ export interface ImageCaptchaData {
   captchaId: string;
   image: string;
 }
-export interface ImageCaptchaResponse {
-  code: number;
-  message: string;
-  data?: ImageCaptchaData;
-}
 
 export interface SendEmailCodeRequest {
   email: string;
 }
 
-export interface ResetPasswordRequest {
+export interface ForgetPasswordRequest {
   email: string;
   emailCode: string;
   password: string;
@@ -67,11 +66,4 @@ export interface User {
   update_at: Date;
 }
 
-export interface AuthResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    token: string;
-    user: User;
-  };
-}
+

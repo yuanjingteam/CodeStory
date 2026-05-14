@@ -1,6 +1,7 @@
 import prisma from '@/config/prisma';
 import type { LoginRequest } from 'shared/types/auth';
 import { captchaService } from '@/services/auth/captcha';
+import { deleteCache } from '@/utils/cache';
 import {
   validateEmail,
   validatePassword,
@@ -47,7 +48,7 @@ class LoginService {
       },
       body.rememberMe
     );
-
+    await deleteCache(`emailCode:${captchaId}`);
     return {
       token,
       user: {
