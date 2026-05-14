@@ -1,5 +1,5 @@
 'use client';
-import {  LuArrowRight } from 'react-icons/lu';
+import { LuArrowRight } from 'react-icons/lu';
 import HomeHero from '@/components/home/HomeHero';
 import HomeCourses from '@/components/home/HomeCourses';
 import { useEffect } from 'react';

@@ -52,7 +52,7 @@ export default function CourseDetails({
   }
 
   return (
-    <section className="border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white p-8 mx-8 relative z-10">
+    <section className="border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white p-8 mx-8 relative z-10 max-h-[88vh] overflow-y-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-3xl font-black mb-2">{course.title}</h2>
