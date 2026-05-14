@@ -28,10 +28,10 @@ export default function Question({ data }: QuestionProps) {
   const currentLessonId = currentChapter?.lessons.find(l => l.status === 1)?.id;
 
   const handleSubmit = async (answer: string) => {
-    if (!currentLessonId) return;
+    if (!exerciseData?.id) return;
 
     try {
-      const response = await exerciseApi.submit(currentLessonId, answer);
+      const response = await exerciseApi.submit(exerciseData.id, answer);
       setSubmitResult({
         correct: response.correct,
         score: response.score,
