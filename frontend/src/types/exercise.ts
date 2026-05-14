@@ -7,10 +7,9 @@ export interface ExerciseDetailResponse {
 export interface ExerciseDetailData {
   id: string;
   lesson_id: string;
-  type: 'choice' | 'code' | 'fill';
+  type: 'single_choice' | 'code' | 'fill';
   knowledge: string;
   content: string;
-  answer: string;
   analysis: string;
   difficulty: number;
   metadata: ChoiceMetadata | CodeMetadata;

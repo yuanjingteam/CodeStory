@@ -1,21 +1,42 @@
-import { Response } from 'express';
-
-// 统一成功返回
-export function success(res: Response, data: any, message = 'success') {
-  return res.json({ code: 200, message, data });
+export function success(res: any, data: any) {
+  return res.json({
+    code: 200,
+    message: 'success',
+    data,
+  });
 }
 
-// 统一失败返回
-export function fail(
-  res: Response,
-  message = '服务器错误',
-  code = 500,
-  data = null
-) {
-  return res.status(code).json({ code, message, data });
+export function fail(res: any, message: string = '服务器错误') {
+  return res.json({
+    code: 500,
+    message,
+    data: null,
+  });
 }
 
-// 404
-export function notFound(res: Response, message = '资源不存在') {
-  return fail(res, message, 404);
+export function notFound(res: any, message: string = '资源不存在') {
+  return res.json({
+    code: 404,
+    message,
+    data: null,
+  });
+}
+
+// 辅助函数：处理错误响应
+export function badRequest(res: any, message: string = '请求参数错误') {
+  return res.json({
+    code: 400,
+    message,
+    data: null,
+  });
+}
+
+// 辅助函数：处理服务器错误
+export function serverError(res: any, error: any) {
+  console.error('服务器错误:', error);
+  return res.json({
+    code: 500,
+    message: '服务器错误',
+    data: null,
+  });
 }
