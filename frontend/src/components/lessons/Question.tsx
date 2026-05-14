@@ -11,9 +11,10 @@ import { EditorView } from '@codemirror/view';
 
 interface QuestionProps {
   data: LessonDetailData;
+  onLessonCompleted?: (lessonId: string) => void;
 }
 
-export default function Question({ data }: QuestionProps) {
+export default function Question({ data, onLessonCompleted }: QuestionProps) {
   const router = useRouter();
   const [exerciseData, setExerciseData] = useState<ExerciseDetailData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,12 +23,12 @@ export default function Question({ data }: QuestionProps) {
   const [hasPrev, setHasPrev] = useState(false);
   const [hasNext, setHasNext] = useState(false);
 
-  const currentChapter = data?.catalog.find(ch =>
-    ch.lessons.some(l => l.status === 1)
-  );
+  const currentLessonId = data?.currentLesson?.id;
+  const currentLessonTitle = data?.currentLesson?.title;
 
-  const currentLessonTitle = currentChapter?.lessons.find(l => l.status === 1)?.title;
-  const currentLessonId = currentChapter?.lessons.find(l => l.status === 1)?.id;
+  const currentChapter = data?.catalog.find(ch =>
+    ch.lessons.some(l => l.id === currentLessonId)
+  );
   const currentChapterId = currentChapter?.id;
   const courseId = data?.course?.id;
 
@@ -59,6 +60,9 @@ export default function Question({ data }: QuestionProps) {
         feedback: response.feedback
       });
       setShowResultModal(true);
+      if (response.correct && currentLessonId) {
+        onLessonCompleted?.(currentLessonId);
+      }
     } catch (error) {
       console.error('提交答案失败');
     }
