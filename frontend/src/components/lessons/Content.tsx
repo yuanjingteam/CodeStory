@@ -1,22 +1,46 @@
 import Progress from './Progress';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import type { LessonDetailData, Chapter } from '@/types/lesson-detail';
 
 interface ContentProps {
   data: LessonDetailData;
 }
 
+const EXPANDED_CHAPTERS_STORAGE_KEY = 'expandedChapters';
+
 export default function Content({ data }: ContentProps) {
-  const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set(['chapter_id_1']));
+  const router = useRouter();
+  
+  const getStoredExpandedChapters = () => {
+    if (typeof window === 'undefined') return new Set<string>();
+    const stored = localStorage.getItem(EXPANDED_CHAPTERS_STORAGE_KEY);
+    if (!stored) return new Set<string>(['chapter_id_1']);
+    const chapters = JSON.parse(stored) as string[];
+    return new Set<string>(chapters);
+  };
+
+  const [expandedChapters, setExpandedChapters] = useState<Set<string>>(getStoredExpandedChapters);
 
   useEffect(() => {
-    const currentChapter = data.catalog.find((ch) =>
-      ch.lessons.some((l) => l.status === 1)
-    );
-    if (currentChapter) {
-      setExpandedChapters(new Set([currentChapter.id]));
+    const stored = getStoredExpandedChapters();
+    if (stored.size === 0) {
+      const currentChapter = data.catalog.find((ch) =>
+        ch.lessons.some((l) => l.status === 1)
+      );
+      if (currentChapter) {
+        const initial = new Set([currentChapter.id]);
+        setExpandedChapters(initial);
+        localStorage.setItem(EXPANDED_CHAPTERS_STORAGE_KEY, JSON.stringify([...initial]));
+      }
+    } else {
+      setExpandedChapters(stored);
     }
-  }, [data]);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(EXPANDED_CHAPTERS_STORAGE_KEY, JSON.stringify([...expandedChapters]));
+  }, [expandedChapters]);
 
   const toggleChapter = (chapterId: string) => {
     setExpandedChapters((prev) => {
@@ -28,6 +52,11 @@ export default function Content({ data }: ContentProps) {
       }
       return next;
     });
+  };
+
+  const handleLessonClick = (lessonId: string, chapterId: string) => {
+    const courseId = data.course.id;
+    router.push(`/courses/${courseId}/chapters/${chapterId}/lessons/${lessonId}`);
   };
 
   return (
@@ -71,6 +100,7 @@ export default function Content({ data }: ContentProps) {
                     return (
                       <div
                         key={lesson.id}
+                        onClick={() => handleLessonClick(lesson.id, chapter.id)}
                         className={`flex items-center justify-between px-4 py-3 border-l-4 cursor-pointer transition-colors ${
                           isCurrent
                             ? 'bg-yellow-400 border-yellow-500'

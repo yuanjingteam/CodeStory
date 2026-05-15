@@ -11,56 +11,93 @@ import { EditorView } from '@codemirror/view';
 
 interface QuestionProps {
   data: LessonDetailData;
+  onLessonCompleted?: (lessonId: string) => void;
 }
 
-export default function Question({ data }: QuestionProps) {
+export default function Question({ data, onLessonCompleted }: QuestionProps) {
   const router = useRouter();
   const [exerciseData, setExerciseData] = useState<ExerciseDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitResult, setSubmitResult] = useState<{ correct: boolean; score: number; feedback: string } | null>(null);
   const [showResultModal, setShowResultModal] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
+  const [hasNext, setHasNext] = useState(false);
+
+  const currentLessonId = data?.currentLesson?.id;
+  const currentLessonTitle = data?.currentLesson?.title;
 
   const currentChapter = data?.catalog.find(ch =>
-    ch.lessons.some(l => l.status === 1)
+    ch.lessons.some(l => l.id === currentLessonId)
   );
+  const currentChapterId = currentChapter?.id;
+  const courseId = data?.course?.id;
 
-  const currentLessonTitle = currentChapter?.lessons.find(l => l.status === 1)?.title;
-  const currentLessonId = currentChapter?.lessons.find(l => l.status === 1)?.id;
+  const getAllLessons = () => {
+    return data?.catalog.flatMap(ch => ch.lessons) || [];
+  };
+
+  const getCurrentLessonIndex = () => {
+    if (!currentLessonId) return -1;
+    const allLessons = getAllLessons();
+    return allLessons.findIndex(l => l.id === currentLessonId);
+  };
+
+  const updateNavigationState = () => {
+    const currentIndex = getCurrentLessonIndex();
+    const allLessons = getAllLessons();
+    setHasPrev(currentIndex > 0);
+    setHasNext(currentIndex < allLessons.length - 1);
+  };
 
   const handleSubmit = async (answer: string) => {
-    if (!currentLessonId) return;
+    if (!exerciseData?.id) return;
 
     try {
-      const response = await exerciseApi.submit(currentLessonId, answer);
+      const response = await exerciseApi.submit(exerciseData.id, answer);
       setSubmitResult({
         correct: response.correct,
         score: response.score,
         feedback: response.feedback
       });
       setShowResultModal(true);
+      if (response.correct && currentLessonId) {
+        onLessonCompleted?.(currentLessonId);
+      }
     } catch (error) {
       console.error('提交答案失败');
     }
   };
 
   const handleNavigate = async (direction: 'prev' | 'next') => {
-    if (!exerciseData?.id) return;
+    if (!currentLessonId || !courseId || !currentChapterId) return;
 
     try {
-      setLoading(true);
-      const response = await exerciseApi.navigate(exerciseData.id, direction, currentLessonId || undefined);
-      setExerciseData(response);
-      setSubmitResult(null);
-      setShowResultModal(false);
+      const allLessons = getAllLessons();
+      const currentIndex = allLessons.findIndex(l => l.id === currentLessonId);
+      const targetIndex = direction === 'prev' ? currentIndex - 1 : currentIndex + 1;
+
+      if (targetIndex < 0 || targetIndex >= allLessons.length) {
+        return;
+      }
+
+      const targetLessonId = allLessons[targetIndex].id;
+      const targetChapter = data.catalog.find(ch => 
+        ch.lessons.some(l => l.id === targetLessonId)
+      );
+      const targetChapterId = targetChapter?.id || currentChapterId;
+      
+      console.log('切换到小节:', targetLessonId);
+      console.log('路由路径:', `/courses/${courseId}/chapters/${targetChapterId}/lessons/${targetLessonId}`);
+      
+      // 直接跳转路由，让 LessonPage 组件重新获取数据
+      router.push(`/courses/${courseId}/chapters/${targetChapterId}/lessons/${targetLessonId}`);
     } catch (error) {
-      console.error('切换题目失败');
-    } finally {
-      setLoading(false);
+      console.error('切换题目失败:', error);
     }
   };
 
   useEffect(() => {
-    if (!currentLessonId) {
+    if (!data?.exercise?.id) {
       setLoading(false);
       return;
     }
@@ -68,8 +105,9 @@ export default function Question({ data }: QuestionProps) {
     const fetchExercise = async () => {
       try {
         setLoading(true);
-        const response = await exerciseApi.getDetail(currentLessonId);
+        const response = await exerciseApi.getDetail(data.exercise.id);
         setExerciseData(response);
+        updateNavigationState();
       } catch (error) {
         console.error('获取题目详情失败');
       } finally {
@@ -78,7 +116,7 @@ export default function Question({ data }: QuestionProps) {
     };
 
     fetchExercise();
-  }, [currentLessonId]);
+  }, [data?.exercise?.id]);
 
   const currentChapterTitle = currentChapter?.title || '第 1 章 Python 基础语法';
 
@@ -111,16 +149,28 @@ export default function Question({ data }: QuestionProps) {
         ) : (
           <>
             {/* 上半部分：固定渲染题干 Markdown */}
-            <div className="flex-1 overflow-auto border-b-4 border-black p-4">
+            <div className="flex-4 overflow-auto border-b-4 border-black p-4">
               <MarkdownContent content={exerciseData.content} />
             </div>
 
             {/* 下半部分：根据题型动态切换 */}
-            <div className="flex-2 overflow-auto p-4">
-              {exerciseData.type === 'choice' ? (
-                <ChoiceQuestion exercise={exerciseData} onSubmit={handleSubmit} onNavigate={handleNavigate} />
+            <div className="flex-5 overflow-auto p-4">
+              {exerciseData.type === 'single_choice' ? (
+                <ChoiceQuestion 
+                  exercise={exerciseData} 
+                  onSubmit={handleSubmit} 
+                  onNavigate={handleNavigate}
+                  hasPrev={hasPrev}
+                  hasNext={hasNext}
+                />
               ) : exerciseData.type === 'code' ? (
-                <CodeQuestion exercise={exerciseData} onSubmit={handleSubmit} onNavigate={handleNavigate} />
+                <CodeQuestion 
+                  exercise={exerciseData} 
+                  onSubmit={handleSubmit} 
+                  onNavigate={handleNavigate}
+                  hasPrev={hasPrev}
+                  hasNext={hasNext}
+                />
               ) : (
                 <div className="text-center font-bold">暂不支持的题型</div>
               )}
@@ -169,9 +219,11 @@ interface ChoiceQuestionProps {
   exercise: ExerciseDetailData;
   onSubmit: (answer: string) => void;
   onNavigate?: (direction: 'prev' | 'next') => void;
+  hasPrev: boolean;
+  hasNext: boolean;
 }
 
-function ChoiceQuestion({ exercise, onSubmit, onNavigate }: ChoiceQuestionProps) {
+function ChoiceQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: ChoiceQuestionProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const options = (exercise.metadata as any)?.options || [];
@@ -218,7 +270,12 @@ function ChoiceQuestion({ exercise, onSubmit, onNavigate }: ChoiceQuestionProps)
       <div className="grid grid-cols-5 gap-2 mt-4">
         <button 
           onClick={() => onNavigate?.('prev')}
-          className="col-span-1 py-3 bg-gray-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1"
+          disabled={!hasPrev}
+          className={`col-span-1 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 ${
+            hasPrev
+              ? 'bg-gray-400 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
         >
           <span>‹</span>
           <span>上一题</span>
@@ -236,7 +293,12 @@ function ChoiceQuestion({ exercise, onSubmit, onNavigate }: ChoiceQuestionProps)
         </button>
         <button 
           onClick={() => onNavigate?.('next')}
-          className="col-span-1 py-3 bg-gray-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1"
+          disabled={!hasNext}
+          className={`col-span-1 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 ${
+            hasNext
+              ? 'bg-gray-400 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
         >
           <span>下一题</span>
           <span>›</span>
@@ -251,9 +313,11 @@ interface CodeQuestionProps {
   exercise: ExerciseDetailData;
   onSubmit: (answer: string) => void;
   onNavigate?: (direction: 'prev' | 'next') => void;
+  hasPrev: boolean;
+  hasNext: boolean;
 }
 
-function CodeQuestion({ exercise, onSubmit, onNavigate }: CodeQuestionProps) {
+function CodeQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: CodeQuestionProps) {
   const [userCode, setUserCode] = useState('');
 
   useEffect(() => {
@@ -298,7 +362,12 @@ function CodeQuestion({ exercise, onSubmit, onNavigate }: CodeQuestionProps) {
       <div className="grid grid-cols-5 gap-2 mt-4">
         <button 
           onClick={() => onNavigate?.('prev')}
-          className="col-span-1 py-3 bg-gray-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1"
+          disabled={!hasPrev}
+          className={`col-span-1 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 ${
+            hasPrev
+              ? 'bg-gray-400 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
         >
           <span>‹</span>
           <span>上一题</span>
@@ -311,7 +380,12 @@ function CodeQuestion({ exercise, onSubmit, onNavigate }: CodeQuestionProps) {
         </button>
         <button 
           onClick={() => onNavigate?.('next')}
-          className="col-span-1 py-3 bg-gray-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-1"
+          disabled={!hasNext}
+          className={`col-span-1 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 ${
+            hasNext
+              ? 'bg-gray-400 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          }`}
         >
           <span>下一题</span>
           <span>›</span>

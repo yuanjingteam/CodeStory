@@ -31,6 +31,11 @@ app.use('/api/v1/courses', coursesRouter);
 app.use('/api/v1/home', homeRouter);
 
 
+import lessonsRouter from './routes/lessons';
+app.use('/api/v1/chapter/lesson', lessonsRouter);
+
+import exercisesRouter from './routes/exercises';
+app.use('/api/v1/exercises', exercisesRouter);
 
 // Error handler
 app.use(errorHandler);

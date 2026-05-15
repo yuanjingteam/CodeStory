@@ -9,8 +9,9 @@ export default async function LessonPage({
     lessonId: string;
   }>;
 }) {
+  const { lessonId } = await params;
   
   return (
-    <LessonDetails />
+    <LessonDetails lessonId={lessonId} />
   );
 }
