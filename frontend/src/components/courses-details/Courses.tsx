@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import courseApi from '@/app/api/courses/courses';
 import type { Course } from '@/types/course';
+import { useAuth } from '@/hooks/useAuth';
 
 const levelConfig: Record<number, { text: string; color: string }> = {
   0: { text: '初级', color: 'bg-green-300' },
@@ -36,6 +37,8 @@ const getLearnStatus = (status: number | undefined): number => {
 };
 
 export default function CoursesSection() {
+  useAuth();
+  
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(false);
