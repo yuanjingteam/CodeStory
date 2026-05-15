@@ -7,8 +7,8 @@ export const getHomeCourses = async (): Promise<ApiResponse<Course[]>> => {
   return request.get('/home/home-courses');
 };
 
-export const getStartLearningCourse = async (
-  userId: string
-): Promise<ApiResponse<{ path: string }>> => {
-  return request.get(`/home/start-learning/${userId}`);
+export const getStartLearningCourse = async (): Promise<
+  ApiResponse<{ path: string }>
+> => {
+  return request.get(`/home/start-learning`);
 };

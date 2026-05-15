@@ -2,38 +2,12 @@
 import { LuArrowRight } from 'react-icons/lu';
 import HomeHero from '@/components/home/HomeHero';
 import HomeCourses from '@/components/home/HomeCourses';
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUserStore } from '@/store/useUserStore';
+
 
 export default function Home() {
   const router = useRouter();
-  const { initUser, isLoggedIn, isLoading } = useUserStore();
 
-  useEffect(() => {
-    initUser();
-  }, [initUser]);
-
-  useEffect(() => {
-    if (!isLoading && !isLoggedIn) {
-      router.replace('/auth/login');
-    }
-  }, [isLoggedIn, isLoading, router]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
-          <p className="mt-4 text-gray-600">加载中...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn) {
-    return null;
-  }
 
   return (
     <main className="min-h-screen bg-gray-50">

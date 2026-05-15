@@ -4,8 +4,9 @@ import { homeService } from '@/services/home/home';
 class HomeController {
   // 获取热门课程控制器
   async getHomeCourses(req: Request, res: Response) {
+    const userId = req.user?.id;
     try {
-      const data = await homeService.getHomeCourses();
+      const data = await homeService.getHomeCourses(userId);
       return res.status(200).json({
         code: 200,
         message: '成功获取热门课程',
@@ -23,7 +24,7 @@ class HomeController {
   //开始学习跳转控制器
   async startLearning(req: Request, res: Response) {
     try {
-      const { userId } = req.params;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(400).json({
           code: 400,
@@ -32,7 +33,7 @@ class HomeController {
         });
       }
 
-      const path = await homeService.getStartLearningCourse(userId as string);
+      const path = await homeService.getStartLearningCourse(userId );
       return res.status(200).json({
         code: 200,
         message: '成功跳转学习',
