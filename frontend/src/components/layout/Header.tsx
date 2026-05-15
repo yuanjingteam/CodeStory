@@ -1,7 +1,38 @@
+'use client';
 import Link from 'next/link';
 import React from 'react';
-
+import { useState, useEffect, useRef } from 'react';
+import { useUserStore } from '@/store/useUserStore';
+import { useRouter } from 'next/navigation';
+import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
+import { FiUser, FiLogOut } from 'react-icons/fi';
+import Img from 'next/image';
 const Header: React.FC = () => {
+  const router = useRouter();
+  const { user, clearUser } = useUserStore();
+  const [open, setOpen] = useState(false);
+  const handleProfile = () => {};
+  const handleLogout = async () => {
+    clearUser();
+    router.push('/auth/login');
+  };
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
   return (
     <header className="bg-[#f5f5f5] p-3 relative z-20">
       <div className="border-4 border-black bg-yellow-400 shadow-[6px_6px_0px_#000]">
@@ -46,44 +77,51 @@ const Header: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-5">
-              <div className="relative p-1.5 border-2 border-black bg-white shadow-[2px_2px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-100 cursor-pointer">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 text-black"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
+              <div className="relative" ref={dropdownRef}>
+                {/* 用户按钮 */}
+                <button
+                  className="flex items-center space-x-2 px-2 py-1 border-2 border-black bg-purple-500 shadow-[2px_2px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-100 cursor-pointer"
+                  onClick={() => setOpen(!open)}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  <Img
+                    src={user?.avatar || '/default-avatar.png'}
+                    alt="avatar"
+                    className="h-7 w-7 rounded-full  flex items-center justify-center text-white font-bold border-2 border-black"
+                    width={32}
+                    height={32}
                   />
-                </svg>
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-black">
-                  3
-                </span>
-              </div>
-              <div className="flex items-center space-x-2 px-2 py-1 border-2 border-black bg-white shadow-[2px_2px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-100 cursor-pointer">
-                <div className="h-7 w-7 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold border-2 border-black">
-                  U
-                </div>
-                <span className="font-bold text-black text-sm">UserName</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-3 w-3 text-black"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
+
+                  <span className="font-bold text-black text-sm">
+                    {user?.nickname || 'UserName'}
+                  </span>
+
+                  {open ? (
+                    <IoChevronUp className="h-3 w-3 text-black" />
+                  ) : (
+                    <IoChevronDown className="h-3 w-3 text-black" />
+                  )}
+                </button>
+
+                {/* 下拉菜单 */}
+                {open && (
+                  <div className="absolute top-full right-0 mt-2 w-44 border-2 border-black bg-white shadow-[4px_4px_0px_#000] z-50 hover:translate-y-[2px] hover:shadow-none transition-all duration-100">
+                    <button
+                      onClick={handleProfile}
+                      className="w-full flex items-center gap-2 px-4 py-3 border-b-2 border-black hover:bg-yellow-300 cursor-pointer transition-all font-bold text-black"
+                    >
+                      <FiUser />
+                      个人中心
+                    </button>
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-4 py-3 hover:bg-red-300 cursor-pointer transition-all font-bold text-black"
+                    >
+                      <FiLogOut />
+                      退出登录
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -25,36 +25,6 @@ class LoginController {
       });
     }
   }
-  async logout(req: Request, res: Response) {
-    try {
-      const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(400).json({
-          code: 400,
-          message: '缺少 token',
-        });
-      }
 
-      const token = authHeader.split(' ')[1];
-      const result = await loginService.logout(token);
-
-      if (result.success) {
-        return res.status(200).json({
-          code: 200,
-          message: '登出成功',
-        });
-      } else {
-        return res.status(500).json({
-          code: 500,
-          message: result.message,
-        });
-      }
-    } catch (error) {
-      return res.status(500).json({
-        code: 500,
-        message: error instanceof Error ? error.message : '登出失败',
-      });
-    }
-  }
 }
 export const loginController = new LoginController();

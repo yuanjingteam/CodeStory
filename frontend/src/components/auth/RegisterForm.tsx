@@ -128,10 +128,14 @@ export default function RegisterForm() {
       }
       try {
         await getEmailCaptcha({ email: registerInput.email });
-        toast.success('验证码发送成功');
+        toast.success('验证码发送成功', {
+          className: 'bg-green-400 text-black',
+        });
       } catch (error) {
         console.error(error);
-        toast.error('获取验证码失败，请稍后重试');
+        toast.error('获取验证码失败，请稍后重试', {
+          className: 'bg-red-400 text-black',
+        });
         throw new Error('获取验证码失败，请稍后重试');
       }
     },
@@ -181,13 +185,17 @@ export default function RegisterForm() {
       const res = await register(registerInput);
       if (res.code === 200 || res.code === 201) {
         localStorage.removeItem(STORAGE_KEY);
-        toast.success('注册成功');
+        toast.success('注册成功', {
+          className: 'bg-green-400 text-black',
+        });
       } else {
         toast.error(res.message || '注册失败');
       }
     } catch (error) {
       console.error(error);
-      toast.error('注册失败，请稍后重试');
+      toast.error('注册失败，请稍后重试', {
+        className: 'bg-red-400 text-black',
+      });
     } finally {
       setLoading(false);
     }
