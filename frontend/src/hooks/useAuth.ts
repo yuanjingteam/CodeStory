@@ -2,14 +2,15 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUserStore } from '@/store/useUserStore';
 
 export function useAuth() {
   const router = useRouter();
+  const { isLoggedIn, isLoading } = useUserStore();
 
   useEffect(() => {
-    const token = localStorage.getItem('code-story-token');
-    if (!token) {
+    if (!isLoading && !isLoggedIn) {
       router.replace('/auth/login');
     }
-  }, [router]);
+  }, [router, isLoggedIn, isLoading]);
 }
