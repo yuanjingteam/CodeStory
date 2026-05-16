@@ -60,7 +60,7 @@ export default function Question({ data, onLessonCompleted }: QuestionProps) {
         feedback: response.feedback
       });
       setShowResultModal(true);
-      if (response.correct && currentLessonId) {
+      if (currentLessonId) {
         onLessonCompleted?.(currentLessonId);
       }
     } catch (error) {
