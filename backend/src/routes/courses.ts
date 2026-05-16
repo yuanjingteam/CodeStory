@@ -2,17 +2,18 @@ import { Router } from 'express';
 import prisma from '../config/prisma';
 import { success, fail, notFound } from '../utils/response';
 import { uuidToShortId, resolveShortId } from '../utils/idTransform';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
 // 1. 课程列表
-router.get('/list', async (req, res) => {
+router.get('/list', authMiddleware, async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);
     const size = Math.min(100, parseInt(req.query.size as string) || 10);
     const keyword = req.query.keyword as string;
     const level = req.query.level ? parseInt(req.query.level as string) : undefined;
-    const userId = (req.headers['x-user-id'] as string) || '550e8400-e29b-41d4-a716-446655440000';
+    const userId = req.user!.id;
 
     const where: any = { is_delete: 0 };
 

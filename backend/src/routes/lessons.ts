@@ -1,16 +1,17 @@
 import { Router } from 'express';
 import prisma from '../config/prisma';
 import { uuidToShortId, resolveShortId } from '../utils/idTransform';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
-router.get('/:lessonId', async (req, res) => {
+router.get('/:lessonId', authMiddleware, async (req, res) => {
   try {
     const { lessonId } = req.params;
-    const userId = req.headers['x-user-id'] as string || '550e8400-e29b-41d4-a716-446655440000';
+    const userId = req.user!.id;
 
     // 短 ID 反查完整 UUID
-    const resolvedLessonId = await resolveShortId('lessons', lessonId);
+    const resolvedLessonId = await resolveShortId('lessons', lessonId as string);
     if (!resolvedLessonId) {
       return res.status(404).json({
         code: 404,

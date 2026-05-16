@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { getExerciseDetail, submitExercise, formatExerciseResponse } from '../services/courses/exercise.service';
 import { badRequest, notFound, serverError } from '../utils/response';
+import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
-router.get('/detail', async (req, res) => {
+router.get('/detail', authMiddleware, async (req, res) => {
   try {
     const exerciseId = req.query.exercise_id as string;
-    const userId = req.headers['x-user-id'] as string || '550e8400-e29b-41d4-a716-446655440000';
+    const userId = req.user!.id;
 
     if (!exerciseId) {
       return badRequest(res, '缺少 exercise_id 参数');
@@ -28,10 +29,10 @@ router.get('/detail', async (req, res) => {
   }
 });
 
-router.post('/submit', async (req, res) => {
+router.post('/submit', authMiddleware, async (req, res) => {
   try {
     const { exercise_id, answer } = req.body;
-    const userId = req.headers['x-user-id'] as string || '550e8400-e29b-41d4-a716-446655440000';
+    const userId = req.user!.id;
 
     if (!exercise_id || !answer) {
       return badRequest(res, '缺少 exercise_id 或 answer 参数');

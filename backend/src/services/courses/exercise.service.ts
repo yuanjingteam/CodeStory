@@ -92,6 +92,8 @@ export async function submitExercise(
     },
   });
 
+  const isFirstSubmission = !existingAnswer;
+
   if (existingAnswer) {
     await prisma.answer.update({
       where: { id: existingAnswer.id },
@@ -116,12 +118,120 @@ export async function submitExercise(
     });
   }
 
+  if (isFirstSubmission) {
+    await updateLessonAndCourseProgress(exercise.lesson_id, userId);
+  }
+
   return {
     correct,
     score,
     feedback,
     analysis: exercise.analysis || '',
   };
+}
+
+async function updateLessonAndCourseProgress(lessonId: string, userId: string): Promise<void> {
+  const now = new Date();
+
+  const lesson = await prisma.lessons.findUnique({
+    where: { id: lessonId, is_delete: 0 },
+    include: { chapters: { include: { courses: true } } },
+  });
+
+  if (!lesson) return;
+
+  const courseId = lesson.chapters.courses.id;
+
+  const existingLessonProgress = await prisma.lessons_progress.findUnique({
+    where: {
+      user_id_lesson_id: {
+        user_id: userId,
+        lesson_id: lessonId,
+      },
+    },
+  });
+
+  if (existingLessonProgress) {
+    if (existingLessonProgress.status === 0) {
+      await prisma.lessons_progress.update({
+        where: { id: existingLessonProgress.id },
+        data: {
+          status: 1,
+          last_learned_at: now,
+        },
+      });
+    } else {
+      await prisma.lessons_progress.update({
+        where: { id: existingLessonProgress.id },
+        data: { last_learned_at: now },
+      });
+    }
+  } else {
+    await prisma.lessons_progress.create({
+      data: {
+        user_id: userId,
+        lesson_id: lessonId,
+        status: 1,
+        mastery_level: 0,
+        last_learned_at: now,
+      },
+    });
+  }
+
+  const chapterIds = (await prisma.chapters.findMany({
+    where: { course_id: courseId, is_delete: 0 },
+    select: { id: true },
+  })).map(ch => ch.id);
+
+  const totalLessons = await prisma.lessons.count({
+    where: {
+      chapter_id: { in: chapterIds },
+      is_delete: 0,
+    },
+  });
+
+  const completedLessons = await prisma.lessons_progress.count({
+    where: {
+      user_id: userId,
+      status: { gte: 1 },
+      is_delete: 0,
+      lessons: {
+        chapter_id: { in: chapterIds },
+      },
+    },
+  });
+
+  const existingCourseProgress = await prisma.courses_progress.findUnique({
+    where: {
+      user_id_course_id: {
+        user_id: userId,
+        course_id: courseId,
+      },
+    },
+  });
+
+  if (existingCourseProgress) {
+    await prisma.courses_progress.update({
+      where: { id: existingCourseProgress.id },
+      data: {
+        completed_lessons: completedLessons,
+        total_lessons: totalLessons,
+        status: 1,
+        last_learned_at: now,
+      },
+    });
+  } else {
+    await prisma.courses_progress.create({
+      data: {
+        user_id: userId,
+        course_id: courseId,
+        completed_lessons: completedLessons,
+        total_lessons: totalLessons,
+        status: 1,
+        last_learned_at: now,
+      },
+    });
+  }
 }
 
 export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: UserAnswer | null) {
