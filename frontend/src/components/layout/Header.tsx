@@ -9,9 +9,11 @@ import { FiUser, FiLogOut } from 'react-icons/fi';
 import Img from 'next/image';
 const Header: React.FC = () => {
   const router = useRouter();
-  const { user, clearUser } = useUserStore();
+  const { user, clearUser, isLoading } = useUserStore();
   const [open, setOpen] = useState(false);
-  const handleProfile = () => {};
+  const handleProfile = () => {
+    router.push('/profile');
+  };
   const handleLogout = async () => {
     clearUser();
     router.push('/auth/login');
@@ -83,16 +85,23 @@ const Header: React.FC = () => {
                   className="flex items-center space-x-2 px-2 py-1 border-2 border-black bg-purple-500 shadow-[2px_2px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-100 cursor-pointer"
                   onClick={() => setOpen(!open)}
                 >
-                  <Img
-                    src={user?.avatar || '/default-avatar.png'}
-                    alt="avatar"
-                    className="h-7 w-7 rounded-full  flex items-center justify-center text-white font-bold border-2 border-black"
-                    width={32}
-                    height={32}
-                  />
+                  <div className="w-7 h-7 rounded-full border-2 border-black overflow-hidden bg-gray-300 flex items-center justify-center">
+                    {isLoading ? (
+                      <span className="text-xs text-gray-500">...</span>
+                    ) : (
+                      <Img
+                        src={user?.avatar || '/default-avatar.png'}
+                        alt="avatar"
+                        className="h-full w-full object-cover"
+                        width={28}
+                        height={28}
+                        priority
+                      />
+                    )}
+                  </div>
 
-                  <span className="font-bold text-black text-sm">
-                    {user?.nickname || 'UserName'}
+                  <span className="font-bold text-black text-sm min-w-[60px]">
+                    {isLoading ? '...' : (user?.nickname || 'UserName')}
                   </span>
 
                   {open ? (

@@ -12,7 +12,7 @@ export default function AdminLayout({
       <AdminHeader />
       <div className="flex">
         <AdminSider />
-        <main className="flex-1 p-6  relative z-10">{children}</main>
+        <main className="flex-1 p-4  relative z-10">{children}</main>
       </div>
     </div>
   );

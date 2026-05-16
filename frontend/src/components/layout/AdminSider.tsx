@@ -6,12 +6,12 @@ const menuItems = [
   { name: '课程管理', href: '/courses-manage', icon: 'book' },
   { name: '章节管理', href: '/chapters-manage', icon: 'list' },
   { name: '小节管理', href: '/lessons-manage', icon: 'file-text' },
-  { name: '练习管理', href: '/exercises-manage', icon: 'edit' },
+  { name: '题目管理', href: '/exercises-manage', icon: 'edit' },
 ];
 
 const AdminSider: React.FC = () => {
   return (
-    <aside className="w-64 bg-white min-h-[calc(100vh-84px)] p-4 ">
+    <aside className="w-64 min-h-[calc(100vh-84px)] p-4 ">
       <nav className="space-y-2 relative z-10">
         {menuItems.map((item) => (
           <Link

@@ -19,7 +19,7 @@ export default function HomeHero() {
       return router.push('/courses');
     }
     try {
-      const res = await getStartLearningCourse(user.id);
+      const res = await getStartLearningCourse();
       router.push(res.data.path ?? '/courses');
     } catch (error) {
       console.error('获取开始学习课程失败:', error);
