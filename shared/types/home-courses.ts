@@ -1,13 +1,10 @@
 export interface Course {
-  id: number;
+  id: string;
   title: string;
+  cover_url: string;
   description: string;
-  icon: string;
   level: string;
-  levelColor: string;
-  progress: number;
-}
-
-export interface HomeCoursesProps {
-  courses: Course[];
+  course_seq: number;
+  completed_lessons: number;
+  total_lessons: number;
 }

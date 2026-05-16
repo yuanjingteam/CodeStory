@@ -6,9 +6,11 @@ import {
 } from '@/config/jwt';
 
 export interface TokenPayload {
-  id: string;
+  id: string; // 统一为 id
   email: string;
-  role: number;
+  role: number; // 添加 role
+  iat?: number;
+  exp?: number;
 }
 
 export const generateToken = (

@@ -8,66 +8,61 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 用户表
 model users {
-  id           String    @id @default(uuid()) @db.Char(36)
-  email        String    @unique @db.VarChar(255)
-  role         Int       @default(0) @db.SmallInt
-  password     String    @db.VarChar(255)
-  nickname     String?   @db.VarChar(50)
-  avatar       String?   @db.VarChar(500)
-  sex          Int?      @db.SmallInt
-  occupation   String?   @db.VarChar(100)
-  score        Int       @default(0) @db.Integer
-  level        Int       @default(0) @db.SmallInt
-  created_at   DateTime  @default(now()) @db.Timestamp(6)
-  updated_at   DateTime  @updatedAt @db.Timestamp(6)
-  is_delete    Int       @default(0) @db.SmallInt
-
-  courses_progress   courses_progress[]
-  lessons_progress   lessons_progress[]
-  answers            answer[]
-  ai_chat_sessions  ai_chat_sessions[]
-  wechat_users      wechat_users[]
+  id               String             @id @default(uuid()) @db.Char(36)
+  email            String             @unique @db.VarChar(255)
+  role             Int                @default(0) @db.SmallInt
+  password         String             @db.VarChar(255)
+  nickname         String?            @db.VarChar(50)
+  avatar           String?            @db.VarChar(500)
+  sex              Int?               @db.SmallInt
+  occupation       String?            @db.VarChar(100)
+  score            Int                @default(0)
+  level            Int                @default(0) @db.SmallInt
+  created_at       DateTime           @default(now()) @db.Timestamp(6)
+  updated_at       DateTime           @updatedAt @db.Timestamp(6)
+  is_delete        Int                @default(0) @db.SmallInt
+  ai_chat_sessions ai_chat_sessions[]
+  answers          answer[]
+  courses_progress courses_progress[]
+  lessons_progress lessons_progress[]
+  wechat_users     wechat_users[]
 
   @@index([is_delete])
   @@index([created_at])
 }
 
-// 课程表
 model courses {
-  id           String    @id @default(uuid()) @db.Char(36)
-  cover_url    String?   @db.VarChar(500)
-  title        String    @db.VarChar(100)
-  description  String?   @db.Text
-  level        Int       @default(0) @db.SmallInt
-  created_at   DateTime  @default(now()) @db.Timestamp(6)
-  updated_at   DateTime  @updatedAt @db.Timestamp(6)
-  is_delete    Int       @default(0) @db.SmallInt
-
+  id               String             @id @default(uuid()) @db.Char(36)
+  cover_url        String?            @db.VarChar(500)
+  title            String             @db.VarChar(100)
+  description      String?
+  level            Int                @default(0) @db.SmallInt
+  created_at       DateTime           @default(now()) @db.Timestamp(6)
+  updated_at       DateTime           @updatedAt @db.Timestamp(6)
+  is_delete        Int                @default(0) @db.SmallInt
+  course_seq       Int                @default(autoincrement())
+  chapters         chapters[]
   courses_progress courses_progress[]
-  chapters          chapters[]
 
   @@index([level])
   @@index([is_delete])
   @@index([created_at])
 }
 
-// 用户课程进度表
 model courses_progress {
-  id                 String    @id @default(uuid()) @db.Char(36)
-  user_id            String    @db.Char(36)
-  course_id          String    @db.Char(36)
-  completed_lessons  Int       @default(0)
-  total_lessons      Int       @default(0)
-  status             Int       @default(0) @db.SmallInt
-  last_learned_at    DateTime? @db.Timestamp(6)
-  created_at         DateTime  @default(now()) @db.Timestamp(6)
-  updated_at         DateTime  @updatedAt @db.Timestamp(6)
-  is_delete          Int       @default(0) @db.SmallInt
-
-  users    users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  courses  courses  @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  id                String    @id @default(uuid()) @db.Char(36)
+  user_id           String    @db.Char(36)
+  course_id         String    @db.Char(36)
+  completed_lessons Int       @default(0)
+  total_lessons     Int       @default(0)
+  status            Int       @default(0) @db.SmallInt
+  last_learned_at   DateTime? @db.Timestamp(6)
+  created_at        DateTime  @default(now()) @db.Timestamp(6)
+  updated_at        DateTime  @updatedAt @db.Timestamp(6)
+  is_delete         Int       @default(0) @db.SmallInt
+  courses           courses   @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  users             users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, course_id])
   @@index([user_id])
@@ -76,42 +71,40 @@ model courses_progress {
   @@index([is_delete])
 }
 
-// 章节表
 model chapters {
-  id           String    @id @default(uuid()) @db.Char(36)
-  course_id    String    @db.Char(36)
-  title        String    @db.VarChar(255)
-  order        Int       @default(0)
-  created_at   DateTime  @default(now()) @db.Timestamp(6)
-  updated_at   DateTime  @updatedAt @db.Timestamp(6)
-  is_delete    Int       @default(0) @db.SmallInt
-
-  courses courses @relation(fields: [course_id], references: [id], onDelete: Cascade)
-  lessons lessons[]
+  id          String    @id @default(uuid()) @db.Char(36)
+  course_id   String    @db.Char(36)
+  title       String    @db.VarChar(255)
+  order       Int       @default(0)
+  created_at  DateTime  @default(now()) @db.Timestamp(6)
+  updated_at  DateTime  @updatedAt @db.Timestamp(6)
+  is_delete   Int       @default(0) @db.SmallInt
+  chapter_seq Int       @default(autoincrement())
+  courses     courses   @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  lessons     lessons[]
 
   @@unique([course_id, order])
   @@index([course_id])
   @@index([is_delete])
 }
 
-// 小节表
 model lessons {
-  id               String    @id @default(uuid()) @db.Char(36)
-  chapter_id       String    @db.Char(36)
-  title            String    @db.VarChar(255)
-  content          String?   @db.Text
-  difficulty       Int       @default(0) @db.SmallInt
-  score_avg        Int       @default(0)
-  estimated_time   Int       @default(0)
-  order            Int       @default(0)
-  created_at       DateTime  @default(now()) @db.Timestamp(6)
-  updated_at       DateTime  @updatedAt @db.Timestamp(6)
-  is_delete        Int       @default(0) @db.SmallInt
-
-  chapters         chapters         @relation(fields: [chapter_id], references: [id], onDelete: Cascade)
-  lessons_progress lessons_progress[]
-  exercises        exercises[]
+  id               String             @id @default(uuid()) @db.Char(36)
+  chapter_id       String             @db.Char(36)
+  title            String             @db.VarChar(255)
+  content          String?
+  difficulty       Int                @default(0) @db.SmallInt
+  score_avg        Int                @default(0)
+  estimated_time   Int                @default(0)
+  order            Int                @default(0)
+  created_at       DateTime           @default(now()) @db.Timestamp(6)
+  updated_at       DateTime           @updatedAt @db.Timestamp(6)
+  is_delete        Int                @default(0) @db.SmallInt
+  lesson_seq       Int                @default(autoincrement())
   ai_chat_sessions ai_chat_sessions[]
+  exercises        exercises[]
+  chapters         chapters           @relation(fields: [chapter_id], references: [id], onDelete: Cascade)
+  lessons_progress lessons_progress[]
 
   @@unique([chapter_id, order])
   @@index([chapter_id])
@@ -119,20 +112,18 @@ model lessons {
   @@index([is_delete])
 }
 
-// 用户小节进度
 model lessons_progress {
-  id               String    @id @default(uuid()) @db.Char(36)
-  user_id          String    @db.Char(36)
-  lesson_id        String    @db.Char(36)
-  status           Int       @default(0) @db.SmallInt
-  mastery_level    Int       @default(0)
-  last_learned_at  DateTime? @db.Timestamp(6)
-  created_at       DateTime  @default(now()) @db.Timestamp(6)
-  updated_at       DateTime  @updatedAt @db.Timestamp(6)
-  is_delete        Int       @default(0) @db.SmallInt
-
-  users    users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  lessons  lessons  @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+  id              String    @id @default(uuid()) @db.Char(36)
+  user_id         String    @db.Char(36)
+  lesson_id       String    @db.Char(36)
+  status          Int       @default(0) @db.SmallInt
+  mastery_level   Int       @default(0)
+  last_learned_at DateTime? @db.Timestamp(6)
+  created_at      DateTime  @default(now()) @db.Timestamp(6)
+  updated_at      DateTime  @updatedAt @db.Timestamp(6)
+  is_delete       Int       @default(0) @db.SmallInt
+  lessons         lessons   @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+  users           users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, lesson_id])
   @@index([user_id])
@@ -141,24 +132,22 @@ model lessons_progress {
   @@index([is_delete])
 }
 
-// 练习题表
 model exercises {
-  id          String    @id @default(uuid()) @db.Char(36)
-  lesson_id   String    @db.Char(36)
-  type        String    @db.VarChar(20)
-  knowledge   String?   @db.Text
-  content     String    @db.Text
-  answer      String    @db.Text
-  analysis    String?   @db.Text
-  difficulty  Int       @default(1) @db.SmallInt
-  source      String?   @db.VarChar(20)
-  metadata    Json?     @db.Json
-  created_at  DateTime  @default(now()) @db.Timestamp(6)
-  updated_at  DateTime  @updatedAt @db.Timestamp(6)
-  is_delete   Int       @default(0) @db.SmallInt
-
-  lessons lessons @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
-  answers answer[]
+  id         String   @id @default(uuid()) @db.Char(36)
+  lesson_id  String   @db.Char(36)
+  type       String   @db.VarChar(20)
+  knowledge  String?
+  content    String
+  answer     String
+  analysis   String?
+  difficulty Int      @default(1) @db.SmallInt
+  source     String?  @db.VarChar(20)
+  metadata   Json?    @db.Json
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @updatedAt @db.Timestamp(6)
+  is_delete  Int      @default(0) @db.SmallInt
+  answers    answer[]
+  lessons    lessons  @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
 
   @@index([lesson_id])
   @@index([type])
@@ -167,22 +156,20 @@ model exercises {
   @@index([is_delete])
 }
 
-// 用户答案表
 model answer {
-  id                String    @id @default(uuid()) @db.Char(36)
-  user_id           String    @db.Char(36)
-  exercise_id       String    @db.Char(36)
-  answer            String?   @db.Text
-  submission_count  Int       @default(0)
-  feedback          String?   @db.Text
-  hint_level_used   Int       @default(0)
-  score             Int       @default(0)
-  created_at        DateTime  @default(now()) @db.Timestamp(6)
-  updated_at        DateTime  @updatedAt @db.Timestamp(6)
-  is_delete         Int       @default(0) @db.SmallInt
-
-  users      users      @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  exercises  exercises  @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+  id               String    @id @default(uuid()) @db.Char(36)
+  user_id          String    @db.Char(36)
+  exercise_id      String    @db.Char(36)
+  answer           String?
+  submission_count Int       @default(0)
+  feedback         String?
+  hint_level_used  Int       @default(0)
+  score            Int       @default(0)
+  created_at       DateTime  @default(now()) @db.Timestamp(6)
+  updated_at       DateTime  @updatedAt @db.Timestamp(6)
+  is_delete        Int       @default(0) @db.SmallInt
+  exercises        exercises @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+  users            users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, exercise_id])
   @@index([user_id])
@@ -190,21 +177,19 @@ model answer {
   @@index([is_delete])
 }
 
-// AI聊天会话
 model ai_chat_sessions {
-  id                   String    @id @default(uuid()) @db.Char(36)
-  user_id              String    @db.Char(36)
-  lesson_id            String    @db.Char(36)
-  state                Int       @default(0) @db.SmallInt
-  current_exercise_id  String?   @db.Char(36)
-  hint_level           Int       @default(0)
-  context              Json?     @db.Json
-  created_at           DateTime  @default(now()) @db.Timestamp(6)
-  updated_at           DateTime  @updatedAt @db.Timestamp(6)
-  is_delete            Int       @default(0) @db.SmallInt
-
-  users    users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  lessons  lessons  @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+  id                  String   @id @default(uuid()) @db.Char(36)
+  user_id             String   @db.Char(36)
+  lesson_id           String   @db.Char(36)
+  state               Int      @default(0) @db.SmallInt
+  current_exercise_id String?  @db.Char(36)
+  hint_level          Int      @default(0)
+  context             Json?    @db.Json
+  created_at          DateTime @default(now()) @db.Timestamp(6)
+  updated_at          DateTime @updatedAt @db.Timestamp(6)
+  is_delete           Int      @default(0) @db.SmallInt
+  lessons             lessons  @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+  users               users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, lesson_id])
   @@index([user_id])
@@ -213,20 +198,18 @@ model ai_chat_sessions {
   @@index([is_delete])
 }
 
-// 微信用户
 model wechat_users {
-  id           String    @id @default(uuid()) @db.Char(36)
-  user_id      String?   @db.Char(36)
-  openid       String    @unique @db.VarChar(100)
-  unionid      String?   @db.VarChar(100)
-  nickname     String?   @db.VarChar(100)
-  avatar       String?   @db.VarChar(500)
-  gender       Int       @default(0) @db.SmallInt
-  created_at   DateTime  @default(now()) @db.Timestamp(6)
-  updated_at   DateTime  @updatedAt @db.Timestamp(6)
-  is_delete    Int       @default(0) @db.SmallInt
-
-  user users? @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid()) @db.Char(36)
+  user_id    String?  @db.Char(36)
+  openid     String   @unique @db.VarChar(100)
+  unionid    String?  @db.VarChar(100)
+  nickname   String?  @db.VarChar(100)
+  avatar     String?  @db.VarChar(500)
+  gender     Int      @default(0) @db.SmallInt
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @updatedAt @db.Timestamp(6)
+  is_delete  Int      @default(0) @db.SmallInt
+  user       users?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@index([unionid])

@@ -40,3 +40,4 @@ export const getEmailCaptcha = async (data: {
 export const forgetPassword = async (data: ForgetPasswordRequest): Promise<ApiResponse<void>> => {
   return request.post('/auth/forget-password', data);
 };
+

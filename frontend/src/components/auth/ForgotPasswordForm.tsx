@@ -12,7 +12,7 @@ import {
   validatePassword,
   validateConfirmPassword,
 } from '@/utils/validate';
-import { useMessage } from '@/components/Message';
+import { toast } from 'sonner';
 
 const STORAGE_KEY = 'forgotpasswordfrom';
 
@@ -26,8 +26,6 @@ interface ForgotPasswordErrors {
 }
 
 export default function ForgotPasswordForm() {
-  const { addMessage, MessageManager } = useMessage();
-
   const getInitialFormData = () => {
     if (typeof window === 'undefined') {
       return {
@@ -118,10 +116,14 @@ export default function ForgotPasswordForm() {
         await getEmailCaptcha({
           email: formData.email,
         });
-        addMessage('success', '验证码发送成功');
+        toast.success('验证码发送成功', {
+          className: 'bg-green-400 text-black',
+        });
       } catch (error) {
         console.error(error);
-        addMessage('error', '验证码发送失败，请稍后重试');
+        toast.error('验证码发送失败，请稍后重试', {
+          className: 'bg-red-400 text-black',
+        });
       }
     },
   });
@@ -167,16 +169,16 @@ export default function ForgotPasswordForm() {
 
       if (res.code === 200) {
         localStorage.removeItem(STORAGE_KEY);
-        addMessage('success', '密码重置成功');
+        toast.success('密码重置成功');
         setTimeout(() => {
           router.push('/auth/login');
         }, 500);
       } else {
-        addMessage('error', res.message || '密码重置失败');
+        toast.error(res.message || '密码重置失败');
       }
     } catch (error) {
       console.error(error);
-      addMessage('error', '密码重置失败，请稍后重试');
+      toast.error('密码重置失败，请稍后重试');
     } finally {
       setLoading(false);
     }
@@ -184,7 +186,6 @@ export default function ForgotPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <MessageManager />
       {/* 邮箱 */}
       <FormInput
         label="邮箱"

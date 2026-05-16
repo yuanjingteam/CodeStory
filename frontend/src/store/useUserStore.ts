@@ -1,12 +1,6 @@
 import { create } from 'zustand';
-import { getStorage, setStorage, removeStorage } from '@/utils/storage';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { UserInfo, LoginResponse } from 'shared/types/auth';
-import { logout } from '@/api/auth/auth';
-
-const STORAGE_KEYS = {
-  USER_TOKEN: 'code-story-token',
-  USER_INFO: 'code-story-user',
-};
 
 interface UserState {
   token: string | null;
@@ -17,72 +11,83 @@ interface UserState {
 
 interface UserActions {
   addUser: (data: LoginResponse) => void;
-  clearUser: () => Promise<void>;
+  clearUser: () => void;
   updateUserInfo: (info: Partial<UserInfo>) => void;
   initUser: () => void;
 }
 
-export const useUserStore = create<UserState & UserActions>((set) => ({
+type UserStore = UserState & UserActions;
+
+const initialState: UserState = {
   token: null,
   user: null,
   isLoading: true,
   isLoggedIn: false,
+};
 
-  addUser: (data: LoginResponse) => {
-    if (!data.token) {
-      throw new Error('登录失败：用户数据');
+export const useUserStore = create<UserStore>()(
+  persist(
+    (set, get) => ({
+      ...initialState,
+      addUser: (data: LoginResponse) => {
+        if (!data?.token) {
+          throw new Error('登录失败：token 不存在');
+        }
+        set({
+          token: data.token,
+          user: data.user ?? null,
+          isLoggedIn: true,
+          isLoading: false,
+        });
+      },
+
+      clearUser: () => {
+        set({
+          ...initialState,
+          isLoading: false,
+        });
+        useUserStore.persist.clearStorage();
+      },
+
+      updateUserInfo: (info: Partial<UserInfo>) => {
+        const { user } = get();
+        if (!user) return;
+        set({ user: { ...user, ...info } });
+      },
+
+      initUser: () => {
+        const { token, user } = get();
+        if (token && user) {
+          set({
+            isLoggedIn: true,
+            isLoading: false,
+          });
+          return;
+        }
+        set({
+          token: null,
+          user: null,
+          isLoggedIn: false,
+          isLoading: false,
+        });
+      },
+    }),
+    {
+      name: 'user-storage',
+      version: 1,
+      storage: createJSONStorage(() => localStorage),
+
+      migrate: (persistedState) => {
+        return persistedState as UserStore;
+      },
+      partialize: (state) => ({
+        token: state.token,
+        user: state.user,
+        isLoggedIn: state.isLoggedIn,
+      }),
+      onRehydrateStorage: () => (state) => {
+        state?.initUser();
+      },
     }
-
-    setStorage(STORAGE_KEYS.USER_TOKEN, data.token);
-    const userInfo = data.userInfo || {};
-    setStorage(STORAGE_KEYS.USER_INFO, userInfo);
-    set({
-      token: data.token,
-      user: userInfo,
-      isLoggedIn: true,
-      isLoading: false,
-    });
-  },
-
-  clearUser: async () => {
-    const currentToken = getStorage<string>(STORAGE_KEYS.USER_TOKEN);
-    if (currentToken) {
-      try {
-        await logout();
-      } catch (error) {
-        console.error('Logout API failed:', error);
-      }
-    }
-    removeStorage(STORAGE_KEYS.USER_TOKEN);
-    removeStorage(STORAGE_KEYS.USER_INFO);
-    set({
-      token: null,
-      user: null,
-      isLoggedIn: false,
-      isLoading: false,
-    });
-  },
-
-  updateUserInfo: (info: Partial<UserInfo>) => {
-    set((state) => {
-      if (!state.user) return state;
-      const updatedUser = { ...state.user, ...info };
-      if (state.token) {
-        setStorage(STORAGE_KEYS.USER_TOKEN, state.token);
-        setStorage(STORAGE_KEYS.USER_INFO, updatedUser);
-      }
-      return { user: updatedUser };
-    });
-  },
-
-  initUser: () => {
-    const token = getStorage<string>(STORAGE_KEYS.USER_TOKEN);
-    const user = getStorage<UserInfo>(STORAGE_KEYS.USER_INFO);
-    set({
-      token,
-      user,
-      isLoggedIn: !!token,
-      isLoading: false,
-    });
-  },
-}));
+  )
+);

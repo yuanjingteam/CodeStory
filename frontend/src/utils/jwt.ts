@@ -1,17 +1,41 @@
 import { getStorage } from './storage';
+import { useUserStore } from '@/store/useUserStore';
 
-const STORAGE_KEY = 'code-story-token';
 
 export interface JwtPayload {
-  userId: string;
+  id: string; 
   email: string;
-  nickname: string;
+  role: number; 
   iat?: number;
   exp?: number;
 }
 
+
 export function getToken(): string | null {
-  return getStorage<string>(STORAGE_KEY);
+  try {
+    const tokenFromStore = useUserStore.getState().token;
+    if (tokenFromStore) {
+      return tokenFromStore;
+    }
+    const tokenFromStorage = getStorage<string>('code-story-token');
+    if (tokenFromStorage) {
+      return tokenFromStorage;
+    }
+    const userStorage = getStorage<string>('user-storage');
+    if (userStorage) {
+      try {
+        const parsed = JSON.parse(userStorage);
+        if (parsed?.state?.token) {
+          return parsed.state.token;
+        }
+      } catch {
+      }
+    }
+    return null;
+  } catch (error) {
+    console.error('Failed to get token:', error);
+    return null;
+  }
 }
 
 export function parseJwt(token: string): JwtPayload | null {

@@ -9,15 +9,19 @@ import {
 const router = express.Router();
 
 // 注册接口
-router.post('/register', registerController.register);
+router.post('/register', (req, res) => registerController.register(req, res));
 // 登录接口
-router.post('/login', loginController.login);
-//登出接口
-router.post('/logout', loginController.logout);
-//获取图片验证码接口
-router.get('/image-captcha', captchaController.getImageCaptcha);
-//获取邮箱验证码接口
-router.post('/email-captcha', captchaController.getEmailCaptcha);
-//忘记密码接口
-router.post('/forget-password', forgetPasswordController.forgetPassword);
+router.post('/login', (req, res) => loginController.login(req, res));
+// 获取图片验证码接口
+router.get('/image-captcha', (req, res) =>
+  captchaController.getImageCaptcha(req, res)
+);
+// 获取邮箱验证码接口
+router.post('/email-captcha', (req, res) =>
+  captchaController.getEmailCaptcha(req, res)
+);
+// 忘记密码接口
+router.post('/forget-password', (req, res) =>
+  forgetPasswordController.forgetPassword(req, res)
+);
 export default router;

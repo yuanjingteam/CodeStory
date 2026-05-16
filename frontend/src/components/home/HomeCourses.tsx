@@ -1,32 +1,45 @@
 'use client';
-import { useState } from 'react';
-import { FaPython , FaReact, FaNodeJs,  } from 'react-icons/fa';
-import { IoLogoJavascript, IoLogoCodepen } from 'react-icons/io';
-import { HomeCoursesProps } from 'shared/types/home-courses';
+import { useState, useEffect } from 'react';
+import { Course } from 'shared/types/home-courses';
+import { getHomeCourses } from '@/api/home';
+import Img from 'next/image';
+import { useRouter } from 'next/navigation';
 
+export default function HomeCourses() {
+  const [homeCourses, setHomeCourses] = useState<Course[]>([]);
+  const [hoveredCourse, setHoveredCourse] = useState<string | null>(null);
+  const router = useRouter();
 
+  const getLevelStyle = (level: string) => {
+    switch (level) {
+      case '入门':
+        return 'bg-green-500 text-green-700';
+      case '初级':
+        return 'bg-blue-500 text-blue-700';
+      case '中级':
+        return 'bg-yellow-500 text-yellow-700';
+      case '高级':
+        return 'bg-red-500 text-red-700';
+      default:
+        return 'bg-gray-500 text-gray-700';
+    }
+  };
 
-const IconComponent = ({ icon }: { icon: string }) => {
-  switch (icon) {
-    case 'python':
-      return <FaPython className="w-8 h-8 text-yellow-600" />;
-    case 'javascript':
-      return <IoLogoJavascript className="w-8 h-8 text-yellow-500" />;
-    case 'react':
-      return <FaReact className="w-8 h-8 text-cyan-500" />;
-    case 'nodejs':
-      return <FaNodeJs className="w-8 h-8 text-green-600" />;
-    default:
-      return <IoLogoCodepen className="w-8 h-8 text-gray-600" />;
-  }
-};
-
-export default function HomeCourses({ courses }: HomeCoursesProps) {
-  const [hoveredCourse, setHoveredCourse] = useState<number | null>(null);
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const res = await getHomeCourses();
+        setHomeCourses(res.data);
+      } catch (err) {
+        console.error('获取热门课程失败', err);
+      }
+    };
+    fetchCourses();
+  }, []);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {courses.map((course) => (
+      {homeCourses.map((course) => (
         <div
           key={course.id}
           className={`relative bg-white border-2 border-black p-4 cursor-pointer transition-all duration-200 ${
@@ -35,32 +48,44 @@ export default function HomeCourses({ courses }: HomeCoursesProps) {
               : 'shadow-[4px_4px_0_0_rgba(0,0,0,1)]'
           }`}
           onMouseEnter={() => setHoveredCourse(course.id)}
+          onClick={() => router.push(`/courses/${course.id}`)}
           onMouseLeave={() => setHoveredCourse(null)}
         >
           <div
-            className={`absolute -top-2 -right-2 px-2 py-1 text-xs font-black text-white border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${course.levelColor}`}
+            className={`absolute -top-2 -right-2 px-2 py-1 text-xs font-black text-white border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${getLevelStyle(course.level)}`}
           >
             {course.level}
           </div>
 
           <div className="flex items-start gap-3 mb-3">
-            <div className="w-12 h-12 bg-gray-100 border-2 border-black rounded-lg flex items-center justify-center">
-              <IconComponent icon={course.icon} />
+            <div className="w-20 h-20 bg-gray-100 border-2 border-black  flex items-center justify-center">
+              <Img
+                src={course.cover_url}
+                alt={course.title}
+                width={50}
+                height={50}
+                className="w-full h-full"
+                unoptimized
+              />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 flex flex-col justify-between items-between">
               <h3 className="font-black text-black text-sm">{course.title}</h3>
               <p className="text-xs text-gray-500">{course.description}</p>
             </div>
           </div>
-
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-500 font-bold">进度 {course.progress}%</span>
+            <span className="text-xs text-gray-500 font-bold">
+              进度{' '}
+              {`${((course.completed_lessons / course.total_lessons) * 100).toFixed(2)}%`}
+            </span>
           </div>
 
           <div className="w-full bg-gray-200 h-2 border-2 border-black rounded overflow-hidden">
             <div
-              className={`h-full ${course.levelColor} transition-all duration-300`}
-              style={{ width: `${course.progress}%` }}
+              className={`h-full transition-all duration-300`}
+              style={{
+                width: `${(course.completed_lessons / course.total_lessons) * 100}%`,
+              }}
             />
           </div>
         </div>

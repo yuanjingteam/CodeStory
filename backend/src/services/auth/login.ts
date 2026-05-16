@@ -64,25 +64,6 @@ class LoginService {
       },
     };
   }
-  async logout(token: string) {
-    try {
-      const decoded = verifyToken(token);
-      const jti = `${decoded.id}-${decoded.email}`;
-      tokenBlacklist.add(jti);
-
-      setTimeout(
-        () => {
-          tokenBlacklist.delete(jti);
-        },
-        7 * 24 * 60 * 60 * 1000
-      );
-
-      return { success: true, message: '登出成功' };
-    } catch (error) {
-      console.error('Logout failed:', error);
-      return { success: false, message: '登出失败' };
-    }
-  }
 
   isTokenBlacklisted(token: string): boolean {
     try {

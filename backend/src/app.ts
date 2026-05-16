@@ -4,6 +4,9 @@ import dotenv from 'dotenv';
 import path from 'path';
 import errorHandler from '../src/middleware/errorHandler';
 import authRouters from './routes/auth';
+import coursesRouter from './routes/courses';
+import homeRouter from './routes/home';
+
 
 dotenv.config();
 
@@ -23,13 +26,10 @@ app.use(express.json());
 
 // API routes
 app.use('/api/v1/auth', authRouters);
-// 静态文件服务 - 课程图片
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
-
-
-// API routes
-import coursesRouter from './routes/courses';
 app.use('/api/v1/courses', coursesRouter);
+app.use('/api/v1/home', homeRouter);
+
 
 import lessonsRouter from './routes/lessons';
 app.use('/api/v1/chapter/lesson', lessonsRouter);
