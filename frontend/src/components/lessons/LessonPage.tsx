@@ -6,6 +6,7 @@ import Question from './Question';
 import Chat from './Chat';
 import Content from './Content';
 import { useLessonProgress } from '@/hooks/courses/useLessonProgress';
+import { showToast } from '@/utils/toast';
 
 export default function LessonPage({ lessonId }: { lessonId: string }) {
   const [data, setData] = useState<LessonDetailData | null>(null);
@@ -48,7 +49,8 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
 
   const handleLessonCompleted = (lessonId: string) => {
     progress.saveProgress(lessonId);
-    
+    showToast.success('已记录学习进度');
+
     setData(prev => {
       if (!prev) return prev;
       return {
