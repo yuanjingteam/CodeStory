@@ -375,32 +375,19 @@ export default function UsersManagePage() {
 
   return (
     <div className="space-y-4">
-      {/* 搜索筛选和添加用户在同一行 */}
-      <div className="flex items-center  gap-4">
-        <SearchFilter
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          searchPlaceholder="搜索用户名或邮箱..."
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          onApplyFilters={handleApplyFilters}
-          stats={[
-            {
-              label: '正常',
-              value: users.filter((u) => u.is_delete === 0).length,
-              color: 'bg-green-100 text-green-700',
-            },
-            {
-              label: '已删除',
-              value: users.filter((u) => u.is_delete === 1).length,
-              color: 'bg-gray-100 text-gray-600',
-            },
-          ]}
-        />
-        <button className="px-6 py-2 bg-purple-500 text-white font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200 shrink-0">
-          + 添加用户
-        </button>
-      </div>
+      <SearchFilter
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="搜索用户名或邮箱..."
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onApplyFilters={handleApplyFilters}
+        actionSlot={
+          <button className="px-6 py-2 bg-purple-500 text-white font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200 shrink-0">
+            + 添加用户
+          </button>
+        }
+      />
 
       {/* 数据表格 */}
       <DataTable<User>
