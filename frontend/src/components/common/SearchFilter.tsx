@@ -22,8 +22,8 @@ interface SearchFilterProps {
   searchPlaceholder?: string;
   filters: FilterField[];
   onFilterChange: (filters: FilterField[]) => void;
-  stats?: { label: string; value: number; color: string }[];
   onApplyFilters?: () => void;
+  actionSlot?: React.ReactNode;
 }
 
 export default function SearchFilter({
@@ -32,8 +32,8 @@ export default function SearchFilter({
   searchPlaceholder = '搜索...',
   filters = [],
   onFilterChange,
-  stats = [],
   onApplyFilters,
+  actionSlot,
 }: SearchFilterProps) {
   const handleFilterChange = (
     filterId: string,
@@ -45,11 +45,55 @@ export default function SearchFilter({
     onFilterChange(updatedFilters);
   };
 
+  const renderFilter = (filter: FilterField) => (
+    <div key={filter.id} className="flex items-center gap-2">
+      <label className="font-bold text-gray-700 whitespace-nowrap">
+        {filter.label}
+      </label>
+      {filter.type === 'select' && filter.options && (
+        <select
+          value={String(filter.value ?? '')}
+          onChange={(e) => handleFilterChange(filter.id, e.target.value)}
+          className="border-2 border-black px-3 py-1 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
+        >
+          {filter.options.map((option, optIndex) => (
+            <option key={optIndex} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      )}
+      {filter.type === 'input' && (
+        <input
+          type="text"
+          placeholder={filter.placeholder}
+          value={String(filter.value ?? '')}
+          onChange={(e) => handleFilterChange(filter.id, e.target.value)}
+          className="border-2 border-black px-3 py-1 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
+        />
+      )}
+      {filter.type === 'checkbox' && (
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={Boolean(filter.value)}
+            onChange={(e) =>
+              handleFilterChange(filter.id, e.target.checked)
+            }
+            className="w-4 h-4 border-2 border-black accent-purple-600"
+          />
+          <span className="text-sm">是</span>
+        </label>
+      )}
+    </div>
+  );
+
   return (
     <div className="bg-white border-3 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] p-3">
       <div className="flex flex-wrap gap-4 items-center">
-        {/* 搜索框 */}
-        <div className="relative w-64">
+        {filters.map(renderFilter)}
+
+        <div className="relative flex-1 max-w-md">
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
@@ -60,60 +104,17 @@ export default function SearchFilter({
           />
         </div>
 
-        {/* 筛选器 */}
-        {filters.map((filter) => (
-          <div key={filter.id} className="flex items-center gap-2">
-            <label className="font-bold text-gray-700 whitespace-nowrap">
-              {filter.label}
-            </label>
-            {filter.type === 'select' && filter.options && (
-              <select
-                value={String(filter.value ?? '')}
-                onChange={(e) => handleFilterChange(filter.id, e.target.value)}
-                className="border-2 border-black px-3 py-1 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
-              >
-                {filter.options.map((option, optIndex) => (
-                  <option key={optIndex} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            )}
-            {filter.type === 'input' && (
-              <input
-                type="text"
-                placeholder={filter.placeholder}
-                value={String(filter.value ?? '')}
-                onChange={(e) => handleFilterChange(filter.id, e.target.value)}
-                className="border-2 border-black px-3 py-1 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
-              />
-            )}
-            {filter.type === 'checkbox' && (
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={Boolean(filter.value)}
-                  onChange={(e) =>
-                    handleFilterChange(filter.id, e.target.checked)
-                  }
-                  className="w-4 h-4 border-2 border-black accent-purple-600"
-                />
-                <span className="text-sm">是</span>
-              </label>
-            )}
-          </div>
-        ))}
-
-        {/* 应用筛选按钮 */}
         {onApplyFilters && filters.length > 0 && (
           <button
             onClick={onApplyFilters}
-            className="flex items-center gap-1 px-4 py-2 bg-purple-500 text-white font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+            className="flex items-center gap-1 px-4 py-2 bg-purple-500 text-white font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all shrink-0"
           >
             <FiFilter className="w-4 h-4" />
-            应用筛选
+            筛选
           </button>
         )}
+
+        {actionSlot && <div className="ml-auto shrink-0">{actionSlot}</div>}
       </div>
     </div>
   );
