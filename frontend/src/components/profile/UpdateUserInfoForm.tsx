@@ -42,8 +42,8 @@ export default function UpdateUserInfoForm({
       let avatarUrl = formData.avatar;
       if (avatarFile) {
         const uploadFormData = new FormData();
-        uploadFormData.append('file', avatarFile);
-        const uploadRes = await uploadAvatar(avatarFile);
+        uploadFormData.append('avatar', avatarFile);
+        const uploadRes = await uploadAvatar(uploadFormData);
         avatarUrl = uploadRes.data.avatar;
       }
 
@@ -53,6 +53,8 @@ export default function UpdateUserInfoForm({
       });
     } catch (error) {
       console.error('上传头像失败:', error);
+    } finally {
+      handleClose();
     }
   };
 
@@ -121,6 +123,8 @@ export default function UpdateUserInfoForm({
               <Img
                 src={previewUrl || '/default-avatar.png'}
                 alt="avatar"
+                width={80}
+                height={80}
                 className="w-20 h-20 rounded-full border-2 border-black object-cover"
               />
 
@@ -147,7 +151,7 @@ export default function UpdateUserInfoForm({
             </label>
 
             <div className="flex gap-2">
-              {[0, 1].map((sex) => (
+              {[1, 2].map((sex) => (
                 <button
                   key={sex}
                   type="button"

@@ -4,10 +4,14 @@ import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/useUserStore';
 import { updateUserProfile } from '@/api/profile';
 import type { LoginUserInfo } from 'shared/types/auth';
-import type { UserProfileInfo, UserCourse, UpdateUserInfopRequest } from 'shared/types/profile';
+import type {
+  UserProfileInfo,
+  UserCourse,
+  UpdateUserInfopRequest,
+} from 'shared/types/profile';
 import { userSexMap, userRoleMap, userLevelMap } from '@/utils/constants';
 import { getProfile, getUserCourses } from '@/api/profile';
-import { LuUser, LuMail, LuAward, LuBookOpen, LuStar } from 'react-icons/lu';
+import { LuFlame, LuMail, LuBookOpen, LuBadgeCheck } from 'react-icons/lu';
 import { FaUserEdit, FaStar } from 'react-icons/fa';
 import Img from 'next/image';
 import UpdateUserInfoForm from '@/components/profile/UpdateUserInfoForm';
@@ -99,11 +103,11 @@ export default function ProfilePage() {
     {
       label: '已完成课程',
       value: courses.filter((course) => course.status === 2).length,
-      icon: LuStar,
+      icon: LuBadgeCheck,
       color: 'bg-green-400',
     },
-    { label: '待定选项1', value: '？', icon: LuAward, color: 'bg-gray-400' },
-    { label: '待定选项2', value: '？', icon: LuUser, color: 'bg-gray-400' },
+    { label: '待定选项1', value: '？', icon: LuFlame, color: 'bg-gray-400' },
+    { label: '待定选项2', value: '？', icon: LuFlame, color: 'bg-gray-400' },
   ];
 
   const updateUserProfileHandler = async (data: UpdateUserInfopRequest) => {
