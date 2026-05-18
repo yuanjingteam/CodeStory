@@ -144,9 +144,9 @@ export default function CoursesSection() {
                   <h3 className="text-xl font-black mb-1 truncate" title={course.title}>
                     {course.title}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2" title={course.description}>
-                    {course.description}
-                  </p>
+                <p className="text-gray-600 text-sm mb-3 whitespace-nowrap overflow-hidden text-ellipsis" title={course.description}>
+                  {course.description}
+                </p>
 
                   {course.progress !== undefined ? (
                     <div className="mb-2 flex items-center gap-2">
