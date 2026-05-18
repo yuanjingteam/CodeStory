@@ -76,3 +76,26 @@ export const updateCourse = async (req: Request, res: Response) => {
     return fail(res, '更新课程失败');
   }
 };
+
+export const deleteCourse = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params as { id: string };
+    const resolvedId = await resolveShortId('courses', id);
+    if (!resolvedId) return notFound(res, '课程不存在');
+
+    const existing = await prisma.courses.findUnique({
+      where: { id: resolvedId, is_delete: 0 },
+    });
+    if (!existing) return notFound(res, '课程不存在');
+
+    await prisma.courses.update({
+      where: { id: resolvedId },
+      data: { is_delete: 1 },
+    });
+
+    return success(res, null);
+  } catch (error) {
+    console.error('删除课程失败:', error);
+    return fail(res, '删除课程失败');
+  }
+};

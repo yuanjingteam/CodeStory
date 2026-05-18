@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
+import { showToast } from '@/utils/toast';
 import { SearchFilter, DataTable, Pagination, ConfirmDialog } from '@/components/common';
 import type { FilterField, Column } from '@/components/common';
 import CourseModel from './CourseModel';
@@ -72,8 +73,10 @@ export default function CourseManage() {
   const handleSubmit = async (data: CourseFormData & { id?: string }) => {
     if (data.id) {
       await courseManageApi.update(data.id, data);
+      showToast.success('课程更新成功');
     } else {
       await courseManageApi.create(data);
+      showToast.success('课程创建成功');
     }
     fetchCourses();
   };
@@ -98,9 +101,11 @@ export default function CourseManage() {
     setDeleteTarget(item);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (deleteTarget) {
-      console.log('删除课程:', deleteTarget.id);
+      await courseManageApi.delete(deleteTarget.id);
+      showToast.success(`课程「${deleteTarget.title}」已删除`);
+      fetchCourses();
     }
     setDeleteTarget(null);
   };

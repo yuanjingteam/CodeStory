@@ -27,4 +27,5 @@ export interface UpdateCourseRequest extends Partial<CourseFormData> {
 export interface DeleteCourseResponse {
   code: number;
   message: string;
+  data: null;
 }
