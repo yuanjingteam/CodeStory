@@ -1,10 +1,14 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
-import { SearchFilter, DataTable, Pagination } from '@/components/common';
+import { showToast } from '@/utils/toast';
+import { SearchFilter, DataTable, Pagination, ConfirmDialog } from '@/components/common';
 import type { FilterField, Column } from '@/components/common';
+import CourseModel from './CourseModel';
 import courseApi from '@/app/api/courses/courses';
+import courseManageApi from '@/app/api/manage/course-manage';
 import type { Course } from '@/types/course';
+import type { CourseFormData } from '@/types/course-manage';
 
 const levelMap: Record<number, string> = {
   0: '初级',
@@ -25,6 +29,9 @@ export default function CourseManage() {
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<(CourseFormData & { id: string; cover_url?: string }) | undefined>();
+  const [deleteTarget, setDeleteTarget] = useState<Course | null>(null);
   const [filters, setFilters] = useState<FilterField[]>([
     {
       id: 'level',
@@ -36,18 +43,6 @@ export default function CourseManage() {
         { label: '初级', value: 0 },
         { label: '中级', value: 1 },
         { label: '高级', value: 2 },
-      ],
-    },
-    {
-      id: 'status',
-      label: '状态',
-      type: 'select',
-      value: '',
-      options: [
-        { label: '全部状态', value: '' },
-        { label: '未开始', value: 0 },
-        { label: '进行中', value: 1 },
-        { label: '已完成', value: 2 },
       ],
     },
   ]);
@@ -74,6 +69,46 @@ export default function CourseManage() {
   useEffect(() => {
     fetchCourses();
   }, [page, size]);
+
+  const handleSubmit = async (data: CourseFormData & { id?: string }) => {
+    if (data.id) {
+      await courseManageApi.update(data.id, data);
+      showToast.success('课程更新成功');
+    } else {
+      await courseManageApi.create(data);
+      showToast.success('课程创建成功');
+    }
+    fetchCourses();
+  };
+
+  const handleOpenCreate = () => {
+    setEditingCourse(undefined);
+    setModalOpen(true);
+  };
+
+  const handleOpenEdit = (item: Course) => {
+    setEditingCourse({
+      id: String(item.id),
+      title: item.title,
+      description: item.description || '',
+      level: Number(item.level),
+      cover_url: item.cover_url,
+    });
+    setModalOpen(true);
+  };
+
+  const handleOpenDelete = (item: Course) => {
+    setDeleteTarget(item);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (deleteTarget) {
+      await courseManageApi.delete(deleteTarget.id);
+      showToast.success(`课程「${deleteTarget.title}」已删除`);
+      fetchCourses();
+    }
+    setDeleteTarget(null);
+  };
 
   const columns: Column<Course>[] = [
     {
@@ -129,16 +164,15 @@ export default function CourseManage() {
       align: 'center',
       render: (_, item) => (
         <div className="flex items-center gap-2">
-          <button className="px-3 py-1 bg-blue-400 text-white text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1">
+          <button
+            onClick={() => handleOpenEdit(item)}
+            className="px-3 py-1 bg-blue-400 text-white text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+          >
             <FiEdit className="w-3 h-3" />
             编辑
           </button>
           <button
-            onClick={() => {
-              if (confirm(`确定要删除课程「${item.title}」吗？`)) {
-                console.log('删除课程:', item.id);
-              }
-            }}
+            onClick={() => handleOpenDelete(item)}
             className="px-3 py-1 bg-red-400 text-white text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
           >
             <FiTrash2 className="w-3 h-3" />
@@ -162,7 +196,10 @@ export default function CourseManage() {
           fetchCourses();
         }}
         actionSlot={
-          <button className="px-6 py-2 bg-purple-500 text-white font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200">
+          <button
+            onClick={handleOpenCreate}
+            className="px-6 py-2 bg-purple-500 text-white font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
+          >
             + 新建课程
           </button>
         }
@@ -180,6 +217,24 @@ export default function CourseManage() {
           setSize(newSize);
           setPage(1);
         }}
+      />
+
+      <CourseModel
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleSubmit}
+        initialData={editingCourse}
+      />
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="删除课程"
+        message={`确定删除「${deleteTarget?.title}」吗？删除后不可恢复。`}
+        confirmText="确认"
+        cancelText="取消"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
       />
     </div>
   );

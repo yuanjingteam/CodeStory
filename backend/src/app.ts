@@ -38,6 +38,9 @@ app.use('/api/v1/chapter/lesson', lessonsRouter);
 import exercisesRouter from './routes/exercises';
 app.use('/api/v1/exercises', exercisesRouter);
 
+import courseManageRouter from './routes/course-manage';
+app.use('/api/v1/admin/courses', courseManageRouter);
+
 // Error handler
 app.use(errorHandler);
 
