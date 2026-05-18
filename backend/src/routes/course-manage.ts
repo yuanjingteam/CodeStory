@@ -1,7 +1,6 @@
-// routes/course.js
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth';
-import { uploadCourseCover } from '../middleware/upload'; // 引入刚才抽离的上传中间件
+import { uploadCourseCover } from '../middleware/upload';
 import { createCourse, updateCourse, deleteCourse } from '../services/course-manage/course-manage'
 
 const router = Router();
