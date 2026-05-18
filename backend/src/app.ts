@@ -6,6 +6,7 @@ import errorHandler from '../src/middleware/errorHandler';
 import authRouters from './routes/auth';
 import coursesRouter from './routes/courses';
 import homeRouter from './routes/home';
+import profileRouter from './routes/profile';
 
 
 dotenv.config();
@@ -29,7 +30,7 @@ app.use('/api/v1/auth', authRouters);
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/api/v1/courses', coursesRouter);
 app.use('/api/v1/home', homeRouter);
-
+app.use('/api/v1/profile', profileRouter);
 
 import lessonsRouter from './routes/lessons';
 app.use('/api/v1/chapter/lesson', lessonsRouter);

@@ -14,10 +14,10 @@ export type LoginRequest = {
 
 export type LoginResponse = {
   token: string;
-  user: UserInfo;
+  user: LoginUserInfo;
 };
 
-export type UserInfo = {
+export type LoginUserInfo = {
   id: string;
   email: string;
   nickname: string;
@@ -27,6 +27,7 @@ export type UserInfo = {
   role: number;
   level: number;
   score: number;
+  created_at: string;
 };
 export type RegisterRequest = {
   nickname: string;

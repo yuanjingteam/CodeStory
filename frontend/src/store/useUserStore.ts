@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { UserInfo, LoginResponse } from 'shared/types/auth';
+import type { LoginUserInfo, LoginResponse } from 'shared/types/auth';
 
 interface UserState {
   token: string | null;
-  user: UserInfo | null;
+  user: LoginUserInfo | null;
   isLoading: boolean;
   isLoggedIn: boolean;
 }
@@ -12,7 +12,7 @@ interface UserState {
 interface UserActions {
   addUser: (data: LoginResponse) => void;
   clearUser: () => void;
-  updateUserInfo: (info: Partial<UserInfo>) => void;
+  updateUserInfo: (info: Partial<LoginUserInfo>) => void;
   initUser: () => void;
 }
 
@@ -49,7 +49,7 @@ export const useUserStore = create<UserStore>()(
         useUserStore.persist.clearStorage();
       },
 
-      updateUserInfo: (info: Partial<UserInfo>) => {
+      updateUserInfo: (info: Partial<LoginUserInfo>) => {
         const { user } = get();
         if (!user) return;
         set({ user: { ...user, ...info } });

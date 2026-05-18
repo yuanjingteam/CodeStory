@@ -56,11 +56,12 @@ class LoginService {
         email: user.email,
         nickname: user.nickname,
         avatar: user.avatar,
-        sex: user.sex,
-        occupation: user.occupation,
         role: user.role,
         level: user.level,
         score: user.score,
+        created_at: user.created_at,
+        sex: user.sex,
+        occupation: user.occupation,
       },
     };
   }

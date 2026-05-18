@@ -3,7 +3,7 @@ export interface Course {
   title: string;
   cover_url: string;
   description: string;
-  level: string;
+  level: number;
   course_seq: number;
   completed_lessons: number;
   total_lessons: number;

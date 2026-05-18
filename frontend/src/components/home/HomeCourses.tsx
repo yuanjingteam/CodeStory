@@ -4,26 +4,14 @@ import { Course } from 'shared/types/home-courses';
 import { getHomeCourses } from '@/api/home';
 import Img from 'next/image';
 import { useRouter } from 'next/navigation';
+import { courseLevelMap } from '@/utils/constants'; 
 
 export default function HomeCourses() {
   const [homeCourses, setHomeCourses] = useState<Course[]>([]);
   const [hoveredCourse, setHoveredCourse] = useState<string | null>(null);
   const router = useRouter();
 
-  const getLevelStyle = (level: string) => {
-    switch (level) {
-      case '入门':
-        return 'bg-green-500 text-green-700';
-      case '初级':
-        return 'bg-blue-500 text-blue-700';
-      case '中级':
-        return 'bg-yellow-500 text-yellow-700';
-      case '高级':
-        return 'bg-red-500 text-red-700';
-      default:
-        return 'bg-gray-500 text-gray-700';
-    }
-  };
+
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -52,9 +40,9 @@ export default function HomeCourses() {
           onMouseLeave={() => setHoveredCourse(null)}
         >
           <div
-            className={`absolute -top-2 -right-2 px-2 py-1 text-xs font-black text-white border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${getLevelStyle(course.level)}`}
+            className={`absolute -top-2 -right-2 px-2 py-1 text-xs font-black text-white border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${courseLevelMap[course.level].color || 'bg-gray-500 text-gray-700'}`}
           >
-            {course.level}
+            {courseLevelMap[course.level].text || '未知'}
           </div>
 
           <div className="flex items-start gap-3 mb-3">
