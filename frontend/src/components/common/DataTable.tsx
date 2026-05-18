@@ -93,7 +93,7 @@ export default function DataTable<T>({
   return (
     <div
       className="bg-white border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] overflow-hidden flex flex-col"
-      style={{ maxHeight }}
+      style={{ height: maxHeight }}
     >
       <div className="overflow-y-auto flex-1">
         {/* 表头 */}

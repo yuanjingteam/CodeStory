@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { showToast } from '@/utils/toast';
 import { SearchFilter, DataTable, Pagination, ConfirmDialog } from '@/components/common';
@@ -32,6 +32,7 @@ export default function CourseManage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<(CourseFormData & { id: string; cover_url?: string }) | undefined>();
   const [deleteTarget, setDeleteTarget] = useState<Course | null>(null);
+  const hasMounted = useRef(false);
   const [filters, setFilters] = useState<FilterField[]>([
     {
       id: 'level',
@@ -67,7 +68,10 @@ export default function CourseManage() {
   };
 
   useEffect(() => {
-    fetchCourses();
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      fetchCourses();
+    }
   }, [page, size]);
 
   const handleSubmit = async (data: CourseFormData & { id?: string }) => {
@@ -205,7 +209,7 @@ export default function CourseManage() {
         }
       />
 
-      <DataTable<Course> columns={columns} data={courses} loading={loading} maxHeight="500px" />
+      <DataTable<Course> columns={columns} data={courses} loading={loading} maxHeight="700px" />
 
       <Pagination
         currentPage={page}
