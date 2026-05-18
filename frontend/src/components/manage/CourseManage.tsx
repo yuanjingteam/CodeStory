@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
-import { SearchFilter, DataTable, Pagination } from '@/components/common';
+import { SearchFilter, DataTable, Pagination, ConfirmDialog } from '@/components/common';
 import type { FilterField, Column } from '@/components/common';
 import CourseModel from './CourseModel';
 import courseApi from '@/app/api/courses/courses';
@@ -30,6 +30,7 @@ export default function CourseManage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<(CourseFormData & { id: string; cover_url?: string }) | undefined>();
+  const [deleteTarget, setDeleteTarget] = useState<Course | null>(null);
   const [filters, setFilters] = useState<FilterField[]>([
     {
       id: 'level',
@@ -91,6 +92,17 @@ export default function CourseManage() {
       cover_url: item.cover_url,
     });
     setModalOpen(true);
+  };
+
+  const handleOpenDelete = (item: Course) => {
+    setDeleteTarget(item);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      console.log('删除课程:', deleteTarget.id);
+    }
+    setDeleteTarget(null);
   };
 
   const columns: Column<Course>[] = [
@@ -155,11 +167,7 @@ export default function CourseManage() {
             编辑
           </button>
           <button
-            onClick={() => {
-              if (confirm(`确定要删除课程「${item.title}」吗？`)) {
-                console.log('删除课程:', item.id);
-              }
-            }}
+            onClick={() => handleOpenDelete(item)}
             className="px-3 py-1 bg-red-400 text-white text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
           >
             <FiTrash2 className="w-3 h-3" />
@@ -211,6 +219,17 @@ export default function CourseManage() {
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
         initialData={editingCourse}
+      />
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="删除课程"
+        message={`确定删除「${deleteTarget?.title}」吗？删除后不可恢复。`}
+        confirmText="确认"
+        cancelText="取消"
+        variant="danger"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
       />
     </div>
   );
