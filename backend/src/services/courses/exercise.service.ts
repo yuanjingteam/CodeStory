@@ -1,5 +1,5 @@
 import prisma from '../../config/prisma';
-import { resolveShortId, uuidToShortId } from '../../utils/short-id';
+import { resolveShortId, uuidToShortId } from '../../utils/idTransform';
 
 export interface ExerciseDetail {
   id: string;
