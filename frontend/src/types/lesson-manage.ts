@@ -34,6 +34,7 @@ export interface CreateLessonRequest {
   type?: string;
   difficulty?: number;
   sortOrder?: number;
+  answer?: string;
 }
 
 export interface CreateLessonResponse {
@@ -48,6 +49,7 @@ export interface UpdateLessonRequest {
   type?: string;
   difficulty?: number;
   sortOrder?: number;
+  answer?: string;
 }
 
 export interface UpdateLessonResponse {

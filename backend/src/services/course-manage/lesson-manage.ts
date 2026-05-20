@@ -105,16 +105,12 @@ export const getLessonList = async (req: Request, res: Response) => {
 
 export const createLesson = async (req: Request, res: Response) => {
   try {
-    const { chapterId, lessonName, content, type, difficulty, sortOrder } = req.body;
-
-    console.log('创建小节 - 接收参数:', { chapterId, lessonName, content, type, difficulty, sortOrder });
-
+    const { chapterId, lessonName, content, type, difficulty, sortOrder, answer } = req.body;
     if (!chapterId || chapterId === '') return badRequest(res, '章节ID不能为空');
     if (!lessonName || !lessonName.trim()) return badRequest(res, '小节名称不能为空');
 
     const resolvedChapterId = await resolveShortId('chapters', chapterId);
     if (!resolvedChapterId) return notFound(res, '章节不存在');
-    console.log('创建小节 - 解析章节ID:', resolvedChapterId);
 
     const chapterExists = await prisma.chapters.findUnique({
       where: { id: resolvedChapterId, is_delete: 0 }
@@ -140,15 +136,12 @@ export const createLesson = async (req: Request, res: Response) => {
       });
       
       if (existingOrder) {
-        console.log('创建小节 - 排序冲突，调整为最大值+1');
         finalOrder = (maxOrder._max.order || 0) + 1;
       }
     } else {
       finalOrder = (maxOrder._max.order || 0) + 1;
-      console.log('创建小节 - 自动计算排序:', finalOrder);
     }
 
-    console.log('创建小节 - 准备创建lesson记录...');
     const lesson = await prisma.lessons.create({
       data: {
         chapter_id: resolvedChapterId,
@@ -158,33 +151,32 @@ export const createLesson = async (req: Request, res: Response) => {
         order: finalOrder
       }
     });
-    console.log('创建小节 - lesson创建成功:', lesson.id);
 
     let exerciseType = '';
     let exerciseContent = '';
+    let exerciseAnswer = '';
 
-    if (type || content) {
+    if (type || content || answer) {
       try {
-        console.log('创建小节 - 准备创建exercise记录...');
         const exercise = await prisma.exercises.create({
           data: {
             lesson_id: lesson.id,
             type: String(type || ''),
             content: String(content || ''),
-            answer: '',
+            answer: String(answer || ''),
             difficulty: Number(difficulty) || 0
           }
         });
         exerciseType = exercise.type;
         exerciseContent = exercise.content;
-        console.log('创建小节 - exercise创建成功:', exercise.id);
+        exerciseAnswer = exercise.answer;
+
       } catch (exerciseError) {
-        console.error('创建小节 - exercise创建失败（非致命）:', exerciseError);
+        console.error('创建小节失败:', exerciseError);
         // 即使exercise创建失败，也返回lesson数据
       }
     }
 
-    console.log('创建小节 - 准备返回成功响应...');
     return success(res, {
       id: uuidToShortId(lesson.id),
       courseId: uuidToShortId(chapterExists.course_id),
@@ -194,14 +186,14 @@ export const createLesson = async (req: Request, res: Response) => {
       lessonName: lesson.title,
       content: exerciseContent || lesson.content || '',
       type: exerciseType,
+      answer: exerciseAnswer || '',
       difficulty: lesson.difficulty,
       sortOrder: lesson.order,
-      exerciseCount: type || content ? 1 : 0,
+      exerciseCount: type || content || answer ? 1 : 0,
       createdAt: lesson.created_at.toISOString().replace('T', ' ').slice(0, 19),
       updateAt: lesson.updated_at.toISOString().replace('T', ' ').slice(0, 19)
     });
   } catch (error) {
-    console.error('创建小节失败 - 详细错误:', error);
     return fail(res, '创建小节失败');
   }
 };
@@ -217,7 +209,7 @@ export const updateLesson = async (req: Request, res: Response) => {
     });
     if (!existing) return notFound(res, '小节不存在');
 
-    const { lessonName, content, type, difficulty, sortOrder } = req.body;
+    const { lessonName, content, type, difficulty, sortOrder, answer } = req.body;
     const updateData: Record<string, any> = {};
 
     if (lessonName !== undefined && lessonName !== '') {
@@ -240,8 +232,9 @@ export const updateLesson = async (req: Request, res: Response) => {
 
     let exerciseType = '';
     let exerciseContent = '';
+    let exerciseAnswer = '';
 
-    if (type !== undefined || content !== undefined) {
+    if (type !== undefined || content !== undefined || answer !== undefined) {
       const existingExercise = await prisma.exercises.findFirst({
         where: { lesson_id: resolvedId, is_delete: 0 },
         orderBy: { created_at: 'asc' }
@@ -255,6 +248,9 @@ export const updateLesson = async (req: Request, res: Response) => {
         if (content !== undefined) {
           exerciseUpdateData.content = content;
         }
+        if (answer !== undefined) {
+          exerciseUpdateData.answer = answer;
+        }
 
         const updatedExercise = await prisma.exercises.update({
           where: { id: existingExercise.id },
@@ -262,18 +258,20 @@ export const updateLesson = async (req: Request, res: Response) => {
         });
         exerciseType = updatedExercise.type || '';
         exerciseContent = updatedExercise.content || '';
-      } else if (type || content) {
+        exerciseAnswer = updatedExercise.answer || '';
+      } else if (type || content || answer) {
         const newExercise = await prisma.exercises.create({
           data: {
             lesson_id: resolvedId,
             type: type || '',
             content: content || '',
-            answer: '',
+            answer: answer || '',
             difficulty: lesson.difficulty
           }
         });
         exerciseType = newExercise.type;
         exerciseContent = newExercise.content;
+        exerciseAnswer = newExercise.answer;
       }
     } else {
       const firstExercise = await prisma.exercises.findFirst({
@@ -283,6 +281,7 @@ export const updateLesson = async (req: Request, res: Response) => {
       if (firstExercise) {
         exerciseType = firstExercise.type || '';
         exerciseContent = firstExercise.content || '';
+        exerciseAnswer = firstExercise.answer || '';
       }
     }
 
@@ -308,6 +307,7 @@ export const updateLesson = async (req: Request, res: Response) => {
       lessonName: lesson.title,
       content: exerciseContent || lesson.content || '',
       type: exerciseType,
+      answer: exerciseAnswer || '',
       difficulty: lesson.difficulty,
       sortOrder: lesson.order,
       exerciseCount,

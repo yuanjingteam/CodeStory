@@ -31,6 +31,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
     type: string;
     difficulty: number;
     sortOrder: number;
+    answer: string;
   }>({
     chapterId: '',
     lessonName: '',
@@ -38,6 +39,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
     type: '',
     difficulty: 0,
     sortOrder: 0,
+    answer: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
@@ -52,6 +54,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         type: initialData.type || '',
         difficulty: initialData.difficulty ?? 0,
         sortOrder: initialData.sortOrder ?? 0,
+        answer: (initialData as any).answer || '',
       });
     }
     if (!open) {
@@ -62,6 +65,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         type: '',
         difficulty: 0,
         sortOrder: 0,
+        answer: '',
       });
     }
   }, [open, initialData, isEdit]);
@@ -124,7 +128,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
           </button>
         </div>
 
-        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
           <div>
             <label className="block text-sm font-bold mb-1">所属章节 *</label>
             <select
@@ -159,38 +163,51 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
               value={formData.content}
               onChange={e => setFormData(prev => ({ ...prev, content: e.target.value }))}
               placeholder="输入小节的详细内容（支持HTML格式）..."
-              rows={5}
+              rows={3}
               className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-bold mb-1">题型</label>
-            <select
-              value={formData.type}
-              onChange={e => setFormData(prev => ({ ...prev, type: e.target.value }))}
-              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
-            >
-              <option value="">请选择题型</option>
-              {getExerciseTypeOptions().map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold mb-1">题型</label>
+              <select
+                value={formData.type}
+                onChange={e => setFormData(prev => ({ ...prev, type: e.target.value }))}
+                className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
+              >
+                <option value="">请选择题型</option>
+                {getExerciseTypeOptions().map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold mb-1">难度</label>
+              <select
+                value={formData.difficulty}
+                onChange={e => setFormData(prev => ({ ...prev, difficulty: Number(e.target.value) }))}
+                className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
+              >
+                <option value={0}>简单</option>
+                <option value={1}>中等</option>
+                <option value={2}>困难</option>
+              </select>
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-bold mb-1">难度</label>
-            <select
-              value={formData.difficulty}
-              onChange={e => setFormData(prev => ({ ...prev, difficulty: Number(e.target.value) }))}
-              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
-            >
-              <option value={0}>简单</option>
-              <option value={1}>中等</option>
-              <option value={2}>困难</option>
-            </select>
+            <label className="block text-sm font-bold mb-1">答案</label>
+            <textarea
+              value={formData.answer}
+              onChange={e => setFormData(prev => ({ ...prev, answer: e.target.value }))}
+              placeholder="输入正确答案（选择题填选项字母如A/B/C/D，编程题填参考代码）"
+              rows={2}
+              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+            />
           </div>
         </div>
 
