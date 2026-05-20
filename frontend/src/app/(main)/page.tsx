@@ -4,18 +4,16 @@ import HomeHero from '@/components/home/HomeHero';
 import HomeCourses from '@/components/home/HomeCourses';
 import { useRouter } from 'next/navigation';
 
-
 export default function Home() {
   const router = useRouter();
-
 
   return (
     <main>
       {/* Hero Section */}
       <HomeHero />
       {/* Courses Section */}
-      <section className="py-6 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-6  mx-8 bg-white">
+        <div className=" mx-auto">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-black text-black">热门课程</h2>
             <button

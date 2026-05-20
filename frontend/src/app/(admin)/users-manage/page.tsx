@@ -406,7 +406,7 @@ export default function UsersManagePage() {
         getRowClassName={(user) =>
           user.is_delete === 1 ? 'bg-gray-100 opacity-60' : ''
         }
-        maxHeight="auto"
+        maxHeight="500px"
       />
 
       {/* 分页 */}
@@ -421,7 +421,7 @@ export default function UsersManagePage() {
         onPageSizeChange={(pageSize) =>
           setPagination({ ...pagination, pageSize: pageSize })
         }
-        pageSizeOptions={[5, 10, 20, 50, 100]}
+        pageSizeOptions={[10, 20, 50, 100]}
       />
 
       {/* 用户编辑/添加弹窗 */}
