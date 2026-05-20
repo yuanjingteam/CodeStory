@@ -4,6 +4,7 @@ import { UserCourse } from 'shared/types/profile';
 import Img from 'next/image';
 import { useRouter } from 'next/navigation';
 import { courseLevelMap, courseStatusMap } from '@/utils/constants';
+import { formatPercentage } from '@/utils/format';
 
 export default function UserCourses({
   courses,
@@ -19,11 +20,6 @@ export default function UserCourses({
   const notStartedCourses = courses.filter((course) => course.status === 0);
 
   const renderCourseCard = (course: UserCourse) => {
-    const progress =
-      course.total_lessons > 0
-        ? ((course.completed_lessons / course.total_lessons) * 100).toFixed(0)
-        : '0';
-
     return (
       <div
         key={`${course.title}-${course.last_learned_at}`}
@@ -65,7 +61,8 @@ export default function UserCourses({
         {/* 进度信息 */}
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs text-gray-500 font-bold">
-            进度 {progress}%
+            进度{' '}
+            {formatPercentage(course.completed_lessons, course.total_lessons)}
           </span>
           <span
             className={`text-xs font-bold px-2 py-0.5 border border-black rounded ${courseStatusMap[course.status]?.color || 'bg-gray-500 text-white'}`}
@@ -79,7 +76,7 @@ export default function UserCourses({
           <div
             className={`h-full ${course.status === 2 ? 'bg-green-500' : 'bg-purple-500'} transition-all duration-300`}
             style={{
-              width: `${progress}%`,
+              width: `${formatPercentage(course.completed_lessons, course.total_lessons)}`,
             }}
           />
         </div>
