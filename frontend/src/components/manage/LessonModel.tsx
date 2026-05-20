@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { FiX } from 'react-icons/fi';
-import type { CreateLessonRequest, UpdateLessonRequest } from '@/types/lesson-manage';
+import type { CreateLessonRequest, UpdateLessonRequest, MetadataValue } from '@/types/lesson-manage';
 import chapterManageApi from '@/app/api/manage/chapter-manage';
 import { getExerciseTypeOptions } from '@/utils/exerciseType';
 import type { ChapterItem } from '@/types/chapter-manage';
@@ -18,6 +18,8 @@ interface LessonModelProps {
     type?: string;
     difficulty: number;
     sortOrder: number;
+    answer?: string;
+    metadata?: MetadataValue;
   };
 }
 
@@ -32,6 +34,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
     difficulty: number;
     sortOrder: number;
     answer: string;
+    metadata: MetadataValue;
   }>({
     chapterId: '',
     lessonName: '',
@@ -40,6 +43,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
     difficulty: 0,
     sortOrder: 0,
     answer: '',
+    metadata: null,
   });
   const [submitting, setSubmitting] = useState(false);
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
@@ -54,7 +58,8 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         type: initialData.type || '',
         difficulty: initialData.difficulty ?? 0,
         sortOrder: initialData.sortOrder ?? 0,
-        answer: (initialData as any).answer || '',
+        answer: initialData.answer || '',
+        metadata: initialData.metadata || null,
       });
     }
     if (!open) {
@@ -66,6 +71,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         difficulty: 0,
         sortOrder: 0,
         answer: '',
+        metadata: null,
       });
     }
   }, [open, initialData, isEdit]);
@@ -105,7 +111,10 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
 
     setSubmitting(true);
     try {
-      await onSubmit(isEdit ? { ...formData, id: initialData!.id } : formData);
+      const submitData = { ...formData };
+      delete (submitData as Record<string, unknown>).sortOrder;
+      
+      await onSubmit(isEdit ? { ...submitData, id: initialData!.id } : submitData);
       onClose();
     } finally {
       setSubmitting(false);
@@ -113,12 +122,13 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 pt-[10vh] pb-4 px-4 overflow-y-auto" onClick={onClose}>
       <div
-        className="bg-white border-3 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] w-full max-w-lg mx-4"
+        className="bg-white border-3 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] w-full max-w-lg my-4 flex flex-col"
+        style={{ maxHeight: '80vh' }}
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-4 border-b-2 border-black">
+        <div className="flex items-center justify-between p-4 border-b-2 border-black flex-shrink-0">
           <h2 className="text-xl font-bold">{isEdit ? '编辑小节' : '新建小节'}</h2>
           <button
             onClick={onClose}
@@ -128,7 +138,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
           </button>
         </div>
 
-        <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+        <div className="p-6 space-y-4 overflow-y-auto flex-1">
           <div>
             <label className="block text-sm font-bold mb-1">所属章节 *</label>
             <select
@@ -204,14 +214,64 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
             <textarea
               value={formData.answer}
               onChange={e => setFormData(prev => ({ ...prev, answer: e.target.value }))}
-              placeholder="输入正确答案（选择题填选项字母如A/B/C/D，编程题填参考代码）"
+              placeholder="输入正确答案（选择题填正确选项内容，编程题填参考代码）"
               rows={2}
               className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
             />
           </div>
+
+          {formData.type && (
+            <div className="border-2 border-dashed border-blue-300 p-4 rounded-lg bg-blue-50">
+              <label className="block text-sm font-bold mb-2">� 题目配置（可选）</label>
+              
+              <div className="mb-3 p-3 bg-white border border-gray-200 rounded text-xs">
+                <p className="font-semibold mb-2 text-gray-700">
+                  {formData.type === 'single_choice' ? '📝 选择题示例格式：' : '💻 编程题示例格式：'}
+                </p>
+                <pre className="text-gray-600 whitespace-pre-wrap break-all">
+{formData.type === 'single_choice' 
+  ? `{
+  "template": "单选题模板",
+  "options": ["<link>", "<a>", "<href>", "<url>"]
+}`
+  : `{
+  "template": "代码题模板",
+  "testCases": [
+    {"input": "1, 2", "output": "3"},
+    {"input": "5, 10", "output": "15"}
+  ]
+}`}
+                </pre>
+              </div>
+
+              <textarea
+                value={typeof formData.metadata === 'object' ? JSON.stringify(formData.metadata, null, 2) : (formData.metadata || '')}
+                onChange={e => {
+                  const value = e.target.value.trim();
+                  if (!value) {
+                    setFormData(prev => ({ ...prev, metadata: null }));
+                    return;
+                  }
+                  try {
+                    const parsed = JSON.parse(value);
+                    setFormData(prev => ({ ...prev, metadata: parsed }));
+                  } catch {
+                    setFormData(prev => ({ ...prev, metadata: value }));
+                  }
+                }}
+                placeholder={`复制上方示例并修改内容...`}
+                rows={6}
+                className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none font-mono text-sm"
+              />
+              
+              {typeof formData.metadata === 'string' && formData.metadata && (
+                <p className="mt-2 text-xs text-red-600">⚠️ JSON 格式错误，请检查</p>
+              )}
+            </div>
+          )}
         </div>
 
-        <div className="flex gap-3 p-4 border-t-2 border-black justify-end">
+        <div className="flex gap-3 p-4 border-t-2 border-black justify-end flex-shrink-0">
           <button
             onClick={onClose}
             disabled={submitting}

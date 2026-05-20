@@ -27,8 +27,11 @@ export function getExerciseTypeColor(type: string): string {
 }
 
 export function getExerciseTypeOptions(): Array<{ label: string; value: string }> {
-  return Object.values(EXERCISE_TYPE_MAP).map(item => ({
-    label: item.label,
-    value: item.value
-  }));
+  const allowedTypes = ['single_choice', 'code'];
+  return Object.values(EXERCISE_TYPE_MAP)
+    .filter(item => allowedTypes.includes(item.value))
+    .map(item => ({
+      label: item.label,
+      value: item.value
+    }));
 }

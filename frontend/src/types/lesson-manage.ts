@@ -1,3 +1,12 @@
+export interface ExerciseMetadata {
+  template?: string;
+  options?: string[];
+  testCases?: Array<{ input: string; output: string }>;
+  [key: string]: unknown;
+}
+
+export type MetadataValue = ExerciseMetadata | string | null;
+
 export interface LessonItem {
   id: string;
   lessonId: string;
@@ -14,6 +23,7 @@ export interface LessonItem {
   difficulty: number;
   source: string;
   sortOrder: number;
+  metadata: MetadataValue;
   createdAt: string;
   updateAt: string;
 }
@@ -35,6 +45,7 @@ export interface CreateLessonRequest {
   difficulty?: number;
   sortOrder?: number;
   answer?: string;
+  metadata?: MetadataValue;
 }
 
 export interface CreateLessonResponse {
@@ -50,6 +61,7 @@ export interface UpdateLessonRequest {
   difficulty?: number;
   sortOrder?: number;
   answer?: string;
+  metadata?: MetadataValue;
 }
 
 export interface UpdateLessonResponse {

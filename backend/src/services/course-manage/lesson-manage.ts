@@ -92,6 +92,7 @@ export const getLessonList = async (req: Request, res: Response) => {
       difficulty: exercise.difficulty,
       source: exercise.source || '',
       sortOrder: exercise.lessons?.order || 0,
+      metadata: exercise.metadata,
       createdAt: exercise.created_at.toISOString().replace('T', ' ').slice(0, 19),
       updateAt: exercise.updated_at.toISOString().replace('T', ' ').slice(0, 19)
     }));
@@ -105,7 +106,7 @@ export const getLessonList = async (req: Request, res: Response) => {
 
 export const createLesson = async (req: Request, res: Response) => {
   try {
-    const { chapterId, lessonName, content, type, difficulty, sortOrder, answer } = req.body;
+    const { chapterId, lessonName, content, type, difficulty, sortOrder, answer, metadata } = req.body;
     if (!chapterId || chapterId === '') return badRequest(res, '章节ID不能为空');
     if (!lessonName || !lessonName.trim()) return badRequest(res, '小节名称不能为空');
 
@@ -117,44 +118,50 @@ export const createLesson = async (req: Request, res: Response) => {
     });
     if (!chapterExists) return notFound(res, '章节不存在');
 
-    const maxOrder = await prisma.lessons.aggregate({
-      where: { chapter_id: resolvedChapterId, is_delete: 0 },
-      _max: { order: true }
-    });
-
-    let finalOrder: number;
-    if (sortOrder !== undefined && sortOrder !== null && sortOrder !== '') {
-      finalOrder = Number(sortOrder);
-      console.log('创建小节 - 使用指定的排序:', finalOrder);
-      
-      const existingOrder = await prisma.lessons.findFirst({
-        where: {
-          chapter_id: resolvedChapterId,
-          order: finalOrder,
-          is_delete: 0
-        }
-      });
-      
-      if (existingOrder) {
-        finalOrder = (maxOrder._max.order || 0) + 1;
-      }
+    let finalOrder;
+    if (sortOrder !== undefined && sortOrder !== '') {
+      finalOrder = parseInt(sortOrder);
     } else {
+      const maxOrder = await prisma.lessons.aggregate({
+        where: { chapter_id: resolvedChapterId, is_delete: 0 },
+        _max: { order: true }
+      });
       finalOrder = (maxOrder._max.order || 0) + 1;
     }
 
-    const lesson = await prisma.lessons.create({
-      data: {
-        chapter_id: resolvedChapterId,
-        title: lessonName.trim(),
-        content: content || '',
-        difficulty: Number(difficulty) || 0,
-        order: finalOrder
+    let lesson;
+    let retryCount = 0;
+    const MAX_RETRY = 10;
+
+    while (retryCount < MAX_RETRY) {
+      try {
+        lesson = await prisma.lessons.create({
+          data: {
+            chapter_id: resolvedChapterId,
+            title: lessonName.trim(),
+            difficulty: Number(difficulty) || 0,
+            order: finalOrder
+          }
+        });
+        break;
+      } catch (createError) {
+        if ((createError as any)?.code === 'P2002' && retryCount < MAX_RETRY - 1) {
+          retryCount++;
+          finalOrder++;
+          continue;
+        }
+        throw createError;
       }
-    });
+    }
+
+    if (!lesson) {
+      return fail(res, '创建小节失败');
+    }
 
     let exerciseType = '';
     let exerciseContent = '';
     let exerciseAnswer = '';
+    let exerciseMetadata = null;
 
     if (type || content || answer) {
       try {
@@ -164,16 +171,17 @@ export const createLesson = async (req: Request, res: Response) => {
             type: String(type || ''),
             content: String(content || ''),
             answer: String(answer || ''),
-            difficulty: Number(difficulty) || 0
+            difficulty: Number(difficulty) || 0,
+            metadata: metadata || null
           }
         });
         exerciseType = exercise.type;
         exerciseContent = exercise.content;
         exerciseAnswer = exercise.answer;
+        exerciseMetadata = exercise.metadata;
 
       } catch (exerciseError) {
-        console.error('创建小节失败:', exerciseError);
-        // 即使exercise创建失败，也返回lesson数据
+        console.error('创建题目失败:', exerciseError);
       }
     }
 
@@ -184,9 +192,10 @@ export const createLesson = async (req: Request, res: Response) => {
       chapterId: uuidToShortId(lesson.chapter_id),
       chapterName: chapterExists.title,
       lessonName: lesson.title,
-      content: exerciseContent || lesson.content || '',
+      content: exerciseContent,
       type: exerciseType,
-      answer: exerciseAnswer || '',
+      answer: exerciseAnswer,
+      metadata: exerciseMetadata,
       difficulty: lesson.difficulty,
       sortOrder: lesson.order,
       exerciseCount: type || content || answer ? 1 : 0,
@@ -194,22 +203,48 @@ export const createLesson = async (req: Request, res: Response) => {
       updateAt: lesson.updated_at.toISOString().replace('T', ' ').slice(0, 19)
     });
   } catch (error) {
-    return fail(res, '创建小节失败');
+    console.error('创建小节失败:', error);
+
+    if ((error as any)?.code === 'P2002') {
+      return fail(res, '数据重复：该记录已存在');
+    }
+    if ((error as any)?.code === 'P2025') {
+      return fail(res, '关联数据不存在');
+    }
+
+    return fail(res, `创建小节失败: ${error instanceof Error ? error.message : '未知错误'}`);
   }
 };
 
 export const updateLesson = async (req: Request, res: Response) => {
   try {
     const { id } = req.params as { id: string };
-    const resolvedId = await resolveShortId('lessons', id);
-    if (!resolvedId) return notFound(res, '小节不存在');
+
+    let resolvedLessonId: string | null = null;
+
+    const resolvedExerciseId = await resolveShortId('exercises', id);
+    if (resolvedExerciseId) {
+      const exercise = await prisma.exercises.findUnique({
+        where: { id: resolvedExerciseId, is_delete: 0 },
+        select: { lesson_id: true }
+      });
+      if (exercise) {
+        resolvedLessonId = exercise.lesson_id;
+      }
+    }
+
+    if (!resolvedLessonId) {
+      resolvedLessonId = await resolveShortId('lessons', id);
+    }
+
+    if (!resolvedLessonId) return notFound(res, '小节不存在');
 
     const existing = await prisma.lessons.findUnique({
-      where: { id: resolvedId, is_delete: 0 }
+      where: { id: resolvedLessonId, is_delete: 0 }
     });
     if (!existing) return notFound(res, '小节不存在');
 
-    const { lessonName, content, type, difficulty, sortOrder, answer } = req.body;
+    const { lessonName, content, type, difficulty, sortOrder, answer, metadata } = req.body;
     const updateData: Record<string, any> = {};
 
     if (lessonName !== undefined && lessonName !== '') {
@@ -226,17 +261,18 @@ export const updateLesson = async (req: Request, res: Response) => {
     }
 
     const lesson = await prisma.lessons.update({
-      where: { id: resolvedId },
+      where: { id: resolvedLessonId },
       data: updateData
     });
 
     let exerciseType = '';
     let exerciseContent = '';
     let exerciseAnswer = '';
+    let exerciseMetadata = null;
 
-    if (type !== undefined || content !== undefined || answer !== undefined) {
+    if (type !== undefined || content !== undefined || answer !== undefined || metadata !== undefined) {
       const existingExercise = await prisma.exercises.findFirst({
-        where: { lesson_id: resolvedId, is_delete: 0 },
+        where: { lesson_id: resolvedLessonId, is_delete: 0 },
         orderBy: { created_at: 'asc' }
       });
 
@@ -251,6 +287,9 @@ export const updateLesson = async (req: Request, res: Response) => {
         if (answer !== undefined) {
           exerciseUpdateData.answer = answer;
         }
+        if (metadata !== undefined) {
+          exerciseUpdateData.metadata = metadata;
+        }
 
         const updatedExercise = await prisma.exercises.update({
           where: { id: existingExercise.id },
@@ -259,34 +298,38 @@ export const updateLesson = async (req: Request, res: Response) => {
         exerciseType = updatedExercise.type || '';
         exerciseContent = updatedExercise.content || '';
         exerciseAnswer = updatedExercise.answer || '';
-      } else if (type || content || answer) {
+        exerciseMetadata = updatedExercise.metadata;
+      } else if (type || content || answer || metadata) {
         const newExercise = await prisma.exercises.create({
           data: {
-            lesson_id: resolvedId,
+            lesson_id: resolvedLessonId,
             type: type || '',
             content: content || '',
             answer: answer || '',
-            difficulty: lesson.difficulty
+            difficulty: lesson.difficulty,
+            metadata: metadata || null
           }
         });
         exerciseType = newExercise.type;
         exerciseContent = newExercise.content;
         exerciseAnswer = newExercise.answer;
+        exerciseMetadata = newExercise.metadata;
       }
     } else {
       const firstExercise = await prisma.exercises.findFirst({
-        where: { lesson_id: resolvedId, is_delete: 0 },
+        where: { lesson_id: resolvedLessonId, is_delete: 0 },
         orderBy: { created_at: 'asc' }
       });
       if (firstExercise) {
         exerciseType = firstExercise.type || '';
         exerciseContent = firstExercise.content || '';
         exerciseAnswer = firstExercise.answer || '';
+        exerciseMetadata = firstExercise.metadata;
       }
     }
 
     const exerciseCount = await prisma.exercises.count({
-      where: { lesson_id: resolvedId, is_delete: 0 }
+      where: { lesson_id: resolvedLessonId, is_delete: 0 }
     });
 
     const chapterInfo = await prisma.chapters.findUnique({
@@ -308,6 +351,7 @@ export const updateLesson = async (req: Request, res: Response) => {
       content: exerciseContent || lesson.content || '',
       type: exerciseType,
       answer: exerciseAnswer || '',
+      metadata: exerciseMetadata,
       difficulty: lesson.difficulty,
       sortOrder: lesson.order,
       exerciseCount,
@@ -323,16 +367,38 @@ export const updateLesson = async (req: Request, res: Response) => {
 export const deleteLesson = async (req: Request, res: Response) => {
   try {
     const { id } = req.params as { id: string };
-    const resolvedId = await resolveShortId('lessons', id);
-    if (!resolvedId) return notFound(res, '小节不存在');
+
+    let resolvedLessonId: string | null = null;
+
+    const resolvedExerciseId = await resolveShortId('exercises', id);
+    if (resolvedExerciseId) {
+      const exercise = await prisma.exercises.findUnique({
+        where: { id: resolvedExerciseId, is_delete: 0 },
+        select: { lesson_id: true }
+      });
+      if (exercise) {
+        resolvedLessonId = exercise.lesson_id;
+      }
+    }
+
+    if (!resolvedLessonId) {
+      resolvedLessonId = await resolveShortId('lessons', id);
+    }
+
+    if (!resolvedLessonId) return notFound(res, '小节不存在');
 
     const existing = await prisma.lessons.findUnique({
-      where: { id: resolvedId, is_delete: 0 }
+      where: { id: resolvedLessonId, is_delete: 0 }
     });
     if (!existing) return notFound(res, '小节不存在');
 
     await prisma.lessons.update({
-      where: { id: resolvedId },
+      where: { id: resolvedLessonId },
+      data: { is_delete: 1 }
+    });
+
+    await prisma.exercises.updateMany({
+      where: { lesson_id: resolvedLessonId },
       data: { is_delete: 1 }
     });
 
