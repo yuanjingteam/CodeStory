@@ -137,21 +137,6 @@ export default function ChapterModel({ open, onClose, onSubmit, initialData }: C
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-bold mb-1">排序值（可选）</label>
-            <input
-              type="number"
-              value={formData.sortOrder}
-              onChange={e => setFormData(prev => ({
-                ...prev,
-                sortOrder: Number(e.target.value) || 0,
-              }))}
-              placeholder="数字越小越靠前，默认自动计算"
-              min={0}
-              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
-            />
-          </div>
-
         </div>
 
         <div className="flex gap-3 p-4 border-t-2 border-black justify-end">

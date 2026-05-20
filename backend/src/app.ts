@@ -43,6 +43,9 @@ app.use('/api/v1/admin/courses', courseManageRouter);
 import chapterManageRouter from './routes/chapter-manage';
 app.use('/api/v1/admin/chapter', chapterManageRouter);
 
+import lessonManageRouter from './routes/lesson-manage';
+app.use('/api/v1/admin/lessons', lessonManageRouter);
+
 // Error handler
 app.use(errorHandler);
 

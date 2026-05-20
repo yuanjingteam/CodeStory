@@ -2,16 +2,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { showToast } from '@/utils/toast';
+import { getExerciseTypeLabel, getExerciseTypeColor } from '@/utils/exerciseType';
 import { SearchFilter, DataTable, Pagination, ConfirmDialog } from '@/components/common';
 import type { FilterField, Column } from '@/components/common';
-import chapterManageApi from '@/app/api/manage/chapter-manage';
+import lessonManageApi from '@/app/api/manage/lesson-manage';
 import courseApi from '@/app/api/courses/courses';
-import type { ChapterItem } from '@/types/chapter-manage';
+import chapterManageApi from '@/app/api/manage/chapter-manage';
+import type { LessonItem } from '@/types/lesson-manage';
 import type { Course } from '@/types/course';
-import ChapterModel from './ChapterModel';
+import type { ChapterItem } from '@/types/chapter-manage';
+import LessonModel from '@/components/manage/LessonModel';
 
-export default function ChapterManage() {
-  const [chapters, setChapters] = useState<ChapterItem[]>([]);
+export default function LessonManage() {
+  const [lessons, setLessons] = useState<LessonItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -27,15 +30,50 @@ export default function ChapterManage() {
         { label: '全部课程', value: '' },
       ],
     },
+    {
+      id: 'chapter',
+      label: '章节',
+      type: 'select',
+      value: '',
+      options: [
+        { label: '全部章节', value: '' },
+      ],
+    },
+    {
+      id: 'difficulty',
+      label: '难度',
+      type: 'select',
+      value: '',
+      options: [
+        { label: '全部难度', value: '' },
+        { label: '简单', value: '0' },
+        { label: '中等', value: '1' },
+        { label: '困难', value: '2' },
+      ],
+    },
   ]);
-  const [deleteTarget, setDeleteTarget] = useState<ChapterItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<LessonItem | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingChapter, setEditingChapter] = useState<ChapterItem | undefined>();
+  const [editingLesson, setEditingLesson] = useState<LessonItem | undefined>();
   const hasMounted = useRef(false);
 
   useEffect(() => {
     fetchCourses();
+    fetchChapters();
   }, []);
+
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      fetchLessons();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (hasMounted.current) {
+      fetchLessons();
+    }
+  }, [page, size]);
 
   const fetchCourses = async () => {
     try {
@@ -59,79 +97,97 @@ export default function ChapterManage() {
   };
 
   const fetchChapters = async () => {
+    try {
+      const res = await chapterManageApi.getList({
+        page: 1,
+        size: 100,
+      });
+      const chapterOptions = (res.data || []).map((chapter: ChapterItem) => ({
+        label: chapter.chapterName,
+        value: String(chapter.id),
+      }));
+      
+      setFilters(prev => prev.map(filter => 
+        filter.id === 'chapter' 
+          ? { ...filter, options: [{ label: '全部章节', value: '' }, ...chapterOptions] }
+          : filter
+      ));
+    } catch (error) {
+      console.error('获取章节列表失败:', error);
+    }
+  };
+
+  const fetchLessons = async () => {
     setLoading(true);
     try {
       const courseIdValue = filters.find(f => f.id === 'course')?.value;
-      const res = await chapterManageApi.getList({
+      const chapterIdValue = filters.find(f => f.id === 'chapter')?.value;
+      const difficultyValue = filters.find(f => f.id === 'difficulty')?.value;
+      
+      const res = await lessonManageApi.getList({
         courseId: courseIdValue !== '' && courseIdValue !== undefined ? String(courseIdValue) : undefined,
+        chapterId: chapterIdValue !== '' && chapterIdValue !== undefined ? String(chapterIdValue) : undefined,
         keyword: searchTerm || undefined,
+        difficulty: difficultyValue !== '' && difficultyValue !== undefined ? Number(difficultyValue) : undefined,
         page,
         size,
       });
-      setChapters(res.data);
+      setLessons(res.data);
       setTotal(res.total);
     } catch (error) {
-      console.error('获取章节列表失败:', error);
+      console.error('获取小节列表失败:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (!hasMounted.current) {
-      hasMounted.current = true;
-      fetchChapters();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (hasMounted.current) {
-      fetchChapters();
-    }
-  }, [page, size]);
-
   const handleOpenCreate = () => {
-    setEditingChapter(undefined);
+    setEditingLesson(undefined);
     setModalOpen(true);
   };
 
-  const handleOpenEdit = (item: ChapterItem) => {
-    setEditingChapter(item);
+  const handleOpenEdit = (item: LessonItem) => {
+    setEditingLesson(item);
     setModalOpen(true);
   };
 
   const handleSubmit = async (data: any) => {
-    if (data.id) {
-      await chapterManageApi.update(data.id, data);
-      showToast.success('章节更新成功');
-    } else {
-      await chapterManageApi.create(data);
-      showToast.success('章节创建成功');
+    try {
+      if (data.id) {
+        await lessonManageApi.update(data.id, data);
+        showToast.success('小节更新成功');
+      } else {
+        await lessonManageApi.create(data);
+        showToast.success('小节创建成功');
+      }
+      fetchLessons();
+    } catch (error: any) {
+      console.error('保存小节失败:', error);
+      showToast.error(error?.message || '保存失败，请重试');
     }
-    fetchChapters();
   };
 
-  const handleOpenDelete = (item: ChapterItem) => {
+  const handleOpenDelete = (item: LessonItem) => {
     setDeleteTarget(item);
   };
 
   const handleConfirmDelete = async () => {
     if (deleteTarget) {
       try {
-        await chapterManageApi.delete(deleteTarget.id);
-        showToast.success(`章节「${deleteTarget.chapterName}」已删除`);
-        fetchChapters();
+        await lessonManageApi.delete(deleteTarget.id);
+        showToast.success(`小节「${deleteTarget.lessonName}」已删除`);
+        fetchLessons();
       } catch (error) {
-        console.error('删除章节失败:', error);
+        console.error('删除小节失败:', error);
       }
       setDeleteTarget(null);
     }
   };
 
-  const columns: Column<ChapterItem>[] = [
+  const columns: Column<LessonItem>[] = [
     {
-      id: 'courseId',
-      key: 'courseId',
+      id: 'courseName',
+      key: 'courseName',
       header: '课程名',
       flex: 2,
       render: (_, item) => (
@@ -142,22 +198,51 @@ export default function ChapterManage() {
       id: 'chapterName',
       key: 'chapterName',
       header: '章节名',
-      flex: 3,
+      flex: 2,
       render: (_, item) => (
         <span className="text-gray-700">{item.chapterName}</span>
       ),
     },
     {
-      id: 'sectionCount',
-      key: 'sectionCount',
-      header: '小节数',
+      id: 'lessonName',
+      key: 'lessonName',
+      header: '小节名',
+      flex: 3,
+      render: (_, item) => (
+        <span className="text-gray-700">{item.lessonName}</span>
+      ),
+    },
+    {
+      id: 'type',
+      key: 'type',
+      header: '题型',
+      flex: 1.5,
+      align: 'center',
+      render: (value) => {
+        const label = getExerciseTypeLabel(String(value));
+        const color = getExerciseTypeColor(String(value));
+        return (
+          <span className={`px-3 py-1 font-bold border-2 border-black ${color} inline-block`}>
+            {label}
+          </span>
+        );
+      },
+    },
+    {
+      id: 'difficulty',
+      key: 'difficulty',
+      header: '难度',
       flex: 1,
       align: 'center',
-      render: (value) => (
-        <span className="px-3 py-1 font-bold border-2 border-black bg-blue-300 inline-block">
-          {String(value)} 节
-        </span>
-      ),
+      render: (value) => {
+        const levelMap: Record<number, string> = { 0: '简单', 1: '中等', 2: '困难' };
+        const colorMap: Record<number, string> = { 0: 'bg-green-300', 1: 'bg-yellow-300', 2: 'bg-red-300' };
+        return (
+          <span className={`px-3 py-1 font-bold border-2 border-black ${colorMap[value as number] || 'bg-gray-300'} inline-block`}>
+            {levelMap[value as number] || `${value}`}
+          </span>
+        );
+      },
     },
     {
       id: 'createdAt',
@@ -210,24 +295,24 @@ export default function ChapterManage() {
       <SearchFilter
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        searchPlaceholder="搜索章节名称..."
+        searchPlaceholder="搜索小节名称..."
         filters={filters}
         onFilterChange={setFilters}
         onApplyFilters={() => {
           setPage(1);
-          fetchChapters();
+          fetchLessons();
         }}
         actionSlot={
           <button
             onClick={handleOpenCreate}
             className="px-6 py-2 bg-purple-500 text-white font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
           >
-            + 新建章节
+            + 新建小节
           </button>
         }
       />
 
-      <DataTable<ChapterItem> columns={columns} data={chapters} loading={loading} maxHeight="700px" />
+      <DataTable<LessonItem> columns={columns} data={lessons} loading={loading} maxHeight="700px" />
 
       <Pagination
         currentPage={page}
@@ -243,8 +328,8 @@ export default function ChapterManage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        title="删除章节"
-        message={`确定删除「${deleteTarget?.chapterName}」吗？删除后不可恢复。`}
+        title="删除小节"
+        message={`确定删除「${deleteTarget?.lessonName}」吗？删除后不可恢复。`}
         confirmText="确认"
         cancelText="取消"
         variant="danger"
@@ -252,11 +337,11 @@ export default function ChapterManage() {
         onCancel={() => setDeleteTarget(null)}
       />
 
-      <ChapterModel
+      <LessonModel
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
-        initialData={editingChapter}
+        initialData={editingLesson}
       />
     </div>
   );
