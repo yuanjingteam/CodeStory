@@ -5,6 +5,7 @@ import { getHomeCourses } from '@/api/home';
 import Img from 'next/image';
 import { useRouter } from 'next/navigation';
 import { courseLevelMap } from '@/utils/constants'; 
+import { formatPercentage } from '@/utils/format';
 
 export default function HomeCourses() {
   const [homeCourses, setHomeCourses] = useState<Course[]>([]);
@@ -64,7 +65,7 @@ export default function HomeCourses() {
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-gray-500 font-bold">
               进度{' '}
-              {`${((course.completed_lessons / course.total_lessons) * 100).toFixed(2)}%`}
+              {`${formatPercentage(course.completed_lessons, course.total_lessons)}`}
             </span>
           </div>
 
@@ -72,7 +73,7 @@ export default function HomeCourses() {
             <div
               className={`h-full transition-all duration-300`}
               style={{
-                width: `${(course.completed_lessons / course.total_lessons) * 100}%`,
+                width: `${formatPercentage(course.completed_lessons, course.total_lessons)}`,
               }}
             />
           </div>

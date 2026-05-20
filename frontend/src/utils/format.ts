@@ -112,3 +112,19 @@ export function formatDateChinese(dateStr: string): string {
 
   return `${year}年${month}月${day}日 ${hours}:${minutes}:${seconds}`;
 }
+/**
+ * 将两个数转换为百分比
+ * @param numerator - 分子
+ * @param denominator - 分母
+ * @returns 百分比字符串（如：50%），分母为0时返回0%
+ */
+export function formatPercentage(
+  numerator: number,
+  denominator: number
+): string {
+  if (denominator === 0) {
+    return '0%';
+  }
+  const percentage = (numerator / denominator) * 100;
+  return `${percentage.toFixed(1)}%`;
+}

@@ -406,7 +406,7 @@ export default function UsersManagePage() {
         getRowClassName={(user) =>
           user.is_delete === 1 ? 'bg-gray-100 opacity-60' : ''
         }
-        maxHeight="500px"
+        maxHeight="550px"
       />
 
       {/* 分页 */}
