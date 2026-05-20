@@ -33,7 +33,7 @@ export default function DataTable<T>({
   emptyText = '暂无数据',
   emptyIcon = <FiUser className="w-16 h-16 text-gray-300" />,
   getRowClassName,
-  maxHeight = '400px',
+  maxHeight,
 }: DataTableProps<T>) {
   const totalFlex = columns.reduce((sum, col) => sum + (col.flex || 1), 0);
 
@@ -79,9 +79,10 @@ export default function DataTable<T>({
       </div>
     );
   };
+
   if (loading) {
     return (
-      <div className="bg-white border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] flex items-center justify-center h-64">
+      <div className="bg-white border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] flex items-center justify-center ">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
           <p className="mt-4 text-gray-600 font-bold">加载中...</p>
@@ -104,7 +105,7 @@ export default function DataTable<T>({
           {columns.map((col) => (
             <div
               key={col.id}
-              className={`px-2 py-1 min-w-0 flex ${getAlignClass(col.align)}`}
+              className={`px-2 py-1 min-w-0 flex items-center ${getAlignClass(col.align)}`}
             >
               {col.header}
             </div>
@@ -112,40 +113,43 @@ export default function DataTable<T>({
         </div>
 
         {/* 数据行 */}
-        <div className="divide-y-2 divide-black">
-          {data.length === 0 ? (
-            <div className="py-12 text-center">
+        {data.length === 0 ? (
+          <div
+            className="flex flex-col items-center justify-center py-16"
+            style={{ gridColumn: '1 / -1' }}
+          >
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center">
               {emptyIcon}
-              <p className="text-gray-500 font-bold mt-4">{emptyText}</p>
             </div>
-          ) : (
-            data.map((item, index) => (
-              <div
-                key={index}
-                className={`px-4 py-3 items-center hover:bg-yellow-50 transition-colors ${
-                  getRowClassName ? getRowClassName(item, index) : ''
-                }`}
-                style={{ display: 'grid', ...getGridTemplateStyle() }}
-              >
-                {columns.map((col) => {
-                  const cellContent = col.key ? item[col.key] : undefined;
-                  return (
-                    <div
-                      key={col.id}
-                      className={`px-2 py-1 min-w-0 flex items-center ${getAlignClass(col.align)}`}
-                    >
-                      {col.render
-                        ? col.render(cellContent, item, index)
-                        : col.ellipsis
-                          ? renderEllipsisText(cellContent)
-                          : String(cellContent ?? '')}
-                    </div>
-                  );
-                })}
-              </div>
-            ))
-          )}
-        </div>
+            <p className="text-gray-500 font-bold mt-6 text-lg">{emptyText}</p>
+          </div>
+        ) : (
+          data.map((item, index) => (
+            <div
+              key={index}
+              className={`border-b-2 border-black px-4 py-3 items-center hover:bg-yellow-50 transition-all duration-150 ${
+                getRowClassName ? getRowClassName(item, index) : ''
+              }`}
+              style={{ display: 'grid', ...getGridTemplateStyle() }}
+            >
+              {columns.map((col) => {
+                const cellContent = col.key ? item[col.key] : undefined;
+                return (
+                  <div
+                    key={col.id}
+                    className={`px-2 py-1 min-w-0 flex items-center ${getAlignClass(col.align)}`}
+                  >
+                    {col.render
+                      ? col.render(cellContent, item, index)
+                      : col.ellipsis
+                        ? renderEllipsisText(cellContent)
+                        : String(cellContent ?? '')}
+                  </div>
+                );
+              })}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

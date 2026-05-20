@@ -185,17 +185,13 @@ export default function RegisterForm() {
       const res = await register(registerInput);
       if (res.code === 200 || res.code === 201) {
         localStorage.removeItem(STORAGE_KEY);
-        toast.success('注册成功', {
-          className: 'bg-green-400 text-black',
-        });
+        toast.success('注册成功');
       } else {
         toast.error(res.message || '注册失败');
       }
     } catch (error) {
       console.error(error);
-      toast.error('注册失败，请稍后重试', {
-        className: 'bg-red-400 text-black',
-      });
+      toast.error('注册失败，请稍后重试');
     } finally {
       setLoading(false);
     }

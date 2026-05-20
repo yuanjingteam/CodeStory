@@ -1,5 +1,5 @@
 export const userSexMap: Record<number, string> = {
-  0: '未设置',
+  0: '未设置性别',
   1: '男',
   2: '女',
 };

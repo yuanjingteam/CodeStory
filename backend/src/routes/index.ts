@@ -1,0 +1,9 @@
+export { default as authRouters } from './auth';
+export { default as coursesRouter } from './courses';
+export { default as homeRouter } from './home';
+export { default as profileRouter } from './profile';
+export { default as userManageRouter } from './user-manage';
+export { default as lessonsRouter } from './lessons';
+export { default as exercisesRouter } from './exercises';
+export { default as courseManageRouter } from './course-manage';
+export { default as chapterManageRouter } from './chapter-manage';

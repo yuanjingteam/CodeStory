@@ -3,11 +3,17 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import errorHandler from '../src/middleware/errorHandler';
-import authRouters from './routes/auth';
-import coursesRouter from './routes/courses';
-import homeRouter from './routes/home';
-import profileRouter from './routes/profile';
-
+import {
+  authRouters,
+  coursesRouter,
+  homeRouter,
+  profileRouter,
+  userManageRouter,
+  lessonsRouter,
+  exercisesRouter,
+  courseManageRouter,
+  chapterManageRouter,
+} from './routes/index';
 
 dotenv.config();
 
@@ -24,26 +30,17 @@ app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-
 // API routes
 app.use('/api/v1/auth', authRouters);
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/api/v1/courses', coursesRouter);
 app.use('/api/v1/home', homeRouter);
 app.use('/api/v1/profile', profileRouter);
-
-import lessonsRouter from './routes/lessons';
+app.use('/api/v1/user-manage', userManageRouter);
 app.use('/api/v1/chapter/lesson', lessonsRouter);
-
-import exercisesRouter from './routes/exercises';
 app.use('/api/v1/exercises', exercisesRouter);
-
-import courseManageRouter from './routes/course-manage';
 app.use('/api/v1/admin/courses', courseManageRouter);
-
-import chapterManageRouter from './routes/chapter-manage';
 app.use('/api/v1/admin/chapter', chapterManageRouter);
-
 // Error handler
 app.use(errorHandler);
 

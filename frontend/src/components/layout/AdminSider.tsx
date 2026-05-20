@@ -11,7 +11,7 @@ const menuItems = [
 
 const AdminSider: React.FC = () => {
   return (
-    <aside className="w-64 min-h-[calc(100vh-84px)] p-4 ">
+    <aside className="w-44 min-h-[calc(100vh-84px)] p-4 ">
       <nav className="space-y-2 relative z-10">
         {menuItems.map((item) => (
           <Link

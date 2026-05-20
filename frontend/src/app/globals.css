@@ -34,3 +34,31 @@ input[type='password']::-ms-clear {
 }
 
 
+/* 自定义 Toast 容器 */
+[data-sonner-toast] {
+  border: 2px solid #000 !important;
+  border-radius: 0 !important;
+  box-shadow: 6px 6px 0 0 rgba(0, 0, 0, 1) !important;
+}
+
+/* 自定义成功状态 */
+[data-sonner-toast][data-type="success"] {
+  background: #dcfce7 !important;
+  border-color: #00ff5e !important;
+}
+
+/* 自定义错误状态 */
+[data-sonner-toast][data-type="error"] {
+  background: #fee2e2 !important;
+  border-color: #ff0000 !important;
+}
+
+/* 自定义标题和内容 */
+[data-sonner-toast] .sonner-title {
+  font-family: 'Arial', sans-serif;
+  font-weight: bold;
+}
+
+[data-sonner-toast] .sonner-description {
+  font-size: 14px;
+}

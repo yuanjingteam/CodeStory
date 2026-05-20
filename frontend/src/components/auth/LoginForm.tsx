@@ -122,24 +122,18 @@ export default function LoginForm() {
         localStorage.removeItem(STORAGE_KEY);
         localStorage.removeItem('registerfrom');
         localStorage.removeItem('forgotpasswordfrom');
-        toast.success('登录成功', {
-          className: 'bg-green-400 text-black',
-        });
+        toast.success('登录成功');
         await setUserLogin(res.data);
         setTimeout(() => {
           router.push('/');
         }, 500);
         return;
-      } else {
-        toast.error(res?.message || '登录失败', {
-          className: 'bg-red-400 text-black',
-        });
+        } else {
+        toast.error(res?.message || '登录失败');
       }
     } catch (error) {
       console.error(error);
-      toast.error('登录失败，请检查邮箱和密码', {
-        className: 'bg-red-400 text-black',
-      });
+      toast.error('登录失败，请检查邮箱和密码');
       setLoginInput((prev) => ({ ...prev, password: '' }));
     } finally {
       setLoading(false);

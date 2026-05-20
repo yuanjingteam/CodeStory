@@ -116,14 +116,10 @@ export default function ForgotPasswordForm() {
         await getEmailCaptcha({
           email: formData.email,
         });
-        toast.success('验证码发送成功', {
-          className: 'bg-green-400 text-black',
-        });
+        toast.success('验证码发送成功');
       } catch (error) {
         console.error(error);
-        toast.error('验证码发送失败，请稍后重试', {
-          className: 'bg-red-400 text-black',
-        });
+        toast.error('验证码发送失败，请稍后重试');
       }
     },
   });

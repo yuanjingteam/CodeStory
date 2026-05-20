@@ -21,7 +21,7 @@ export default function RootLayout({
           position="top-right"
           toastOptions={{
             className:
-              '!border-2 !border-black !rounded-none !font-black !shadow-[6px_6px_0_0_rgba(0,0,0,1)]',
+              '!border-2 !border-black !rounded-none !font-black !shadow-[2px_2px_0_0_rgba(0,0,0,1)]',
             actionButtonStyle: {
               background: 'white',
               color: 'black',
