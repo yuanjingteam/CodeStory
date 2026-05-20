@@ -12,7 +12,10 @@ export interface ChapterItem {
 export interface ChapterListResponse {
   code: number;
   msg: string;
-  data: ChapterItem[];
+  data: {
+    total: number;
+    data: ChapterItem[];
+  };
 }
 
 export interface CreateChapterRequest {

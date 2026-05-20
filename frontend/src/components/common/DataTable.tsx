@@ -112,7 +112,7 @@ export default function DataTable<T>({
         </div>
 
         {/* 数据行 */}
-        <div className="divide-y-2 divide-black">
+        <div className="divide-y-2 divide-black border-b-4 border-black">
           {data.length === 0 ? (
             <div className="py-12 text-center">
               {emptyIcon}

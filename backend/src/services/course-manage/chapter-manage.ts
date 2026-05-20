@@ -19,6 +19,8 @@ export const getChapterList = async (req: Request, res: Response) => {
       where.title = { contains: String(keyword) };
     }
 
+    const total = await prisma.chapters.count({ where });
+
     const chapters = await prisma.chapters.findMany({
       where,
       orderBy: { order: 'asc' },
@@ -47,7 +49,7 @@ export const getChapterList = async (req: Request, res: Response) => {
       updateAt: chapter.updated_at.toISOString().replace('T', ' ').slice(0, 19)
     }));
 
-    return success(res, data);
+    return success(res, { total, data });
   } catch (error) {
     console.error('获取章节列表失败:', error);
     return fail(res, '获取章节列表失败');
