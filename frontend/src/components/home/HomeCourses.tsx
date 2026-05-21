@@ -4,15 +4,13 @@ import { Course } from 'shared/types/home-courses';
 import { getHomeCourses } from '@/api/home';
 import Img from 'next/image';
 import { useRouter } from 'next/navigation';
-import { courseLevelMap } from '@/utils/constants'; 
+import { courseLevelMap } from '@/utils/constants';
 import { formatPercentage } from '@/utils/format';
 
 export default function HomeCourses() {
   const [homeCourses, setHomeCourses] = useState<Course[]>([]);
   const [hoveredCourse, setHoveredCourse] = useState<string | null>(null);
   const router = useRouter();
-
-
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -41,9 +39,9 @@ export default function HomeCourses() {
           onMouseLeave={() => setHoveredCourse(null)}
         >
           <div
-            className={`absolute -top-2 -right-2 px-2 py-1 text-xs font-black text-white border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${courseLevelMap[course.level].color || 'bg-gray-500 text-gray-700'}`}
+            className={`absolute -top-2 -right-2 px-2 py-1 text-xs font-black text-white border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${courseLevelMap[course.level]?.color || 'bg-gray-500 text-gray-700'}`}
           >
-            {courseLevelMap[course.level].text || '未知'}
+            {courseLevelMap[course.level]?.text || '未知'}
           </div>
 
           <div className="flex items-start gap-3 mb-3">
