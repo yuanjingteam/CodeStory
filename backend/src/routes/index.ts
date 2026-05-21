@@ -7,3 +7,4 @@ export { default as lessonsRouter } from './lessons';
 export { default as exercisesRouter } from './exercises';
 export { default as courseManageRouter } from './course-manage';
 export { default as chapterManageRouter } from './chapter-manage';
+export { default as lessonManageRouter } from './lesson-manage';

@@ -14,6 +14,7 @@ import {
   exercisesRouter,
   courseManageRouter,
   chapterManageRouter,
+  lessonManageRouter,
 } from './routes/index';
 
 dotenv.config();
@@ -37,13 +38,13 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/api/v1/courses', coursesRouter);
 app.use('/api/v1/home', homeRouter);
 app.use('/api/v1/profile', profileRouter);
+app.use('/api/v1/chapter/lesson', lessonsRouter);
+app.use('/api/v1/exercises', exercisesRouter);
 app.use(
   '/api/v1/admin/user-manage',
   [authMiddleware, requireAdmin],
   userManageRouter
 );
-app.use('/api/v1/chapter/lesson', lessonsRouter);
-app.use('/api/v1/exercises', exercisesRouter);
 app.use(
   '/api/v1/admin/courses',
   [authMiddleware, requireAdmin],
@@ -54,6 +55,12 @@ app.use(
   [authMiddleware, requireAdmin],
   chapterManageRouter
 );
+app.use(
+  '/api/v1/admin/lessons',
+  [authMiddleware, requireAdmin],
+  lessonManageRouter
+);
+
 // Error handler
 app.use(errorHandler);
 

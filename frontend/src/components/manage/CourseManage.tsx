@@ -154,9 +154,9 @@ export default function CourseManage() {
       align: 'center',
       render: (value) =>
         value ? (
-          <img src={String(value)} alt="" className="w-12 h-12 object-cover border-2 border-black" />
+          <img src={String(value)} alt="" className="w-9 h-9 object-cover border-2 border-black" />
         ) : (
-          <div className="w-12 h-12 bg-gray-200 border-2 border-black flex items-center justify-center text-xs font-bold">
+          <div className="w-9 h-9 bg-gray-200 border-2 border-black flex items-center justify-center text-xs font-bold">
             暂无
           </div>
         ),
