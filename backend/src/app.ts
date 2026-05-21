@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
-import errorHandler from '../src/middleware/errorHandler';
+import errorHandler from './middleware/errorHandler';
+import { authMiddleware, requireAdmin } from './middleware/auth';
 import {
   authRouters,
   coursesRouter,
@@ -36,11 +37,23 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/api/v1/courses', coursesRouter);
 app.use('/api/v1/home', homeRouter);
 app.use('/api/v1/profile', profileRouter);
-app.use('/api/v1/user-manage', userManageRouter);
+app.use(
+  '/api/v1/admin/user-manage',
+  [authMiddleware, requireAdmin],
+  userManageRouter
+);
 app.use('/api/v1/chapter/lesson', lessonsRouter);
 app.use('/api/v1/exercises', exercisesRouter);
-app.use('/api/v1/admin/courses', courseManageRouter);
-app.use('/api/v1/admin/chapter', chapterManageRouter);
+app.use(
+  '/api/v1/admin/courses',
+  [authMiddleware, requireAdmin],
+  courseManageRouter
+);
+app.use(
+  '/api/v1/admin/chapter',
+  [authMiddleware, requireAdmin],
+  chapterManageRouter
+);
 // Error handler
 app.use(errorHandler);
 

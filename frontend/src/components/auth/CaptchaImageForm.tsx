@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getImageCaptcha } from '@/api/auth/auth';
 import type { ImageCaptchaData } from 'shared/types/auth';
+import { toast } from 'sonner';
 interface CaptchaImageProps {
   value: string;
   onChange: (data: { captchaCode: string; captchaId: string }) => void;
@@ -16,12 +17,11 @@ export default function CaptchaImage({
 }: CaptchaImageProps) {
   const [loading, setLoading] = useState(true);
   const [captchaData, setCaptchaData] = useState<ImageCaptchaData | null>(null);
-  const [requestError, setRequestError] = useState<string>('');
+  
 
   const fetchCaptcha = async () => {
     try {
       setLoading(true);
-      setRequestError('');
       const res = await getImageCaptcha();
       if (res.code === 200 && res.data?.captchaId && res.data?.image) {
         setCaptchaData(res.data);
@@ -30,11 +30,11 @@ export default function CaptchaImage({
           captchaId: res.data.captchaId || '',
         });
       } else {
-        setRequestError(res.message || '获取验证码失败');
+        toast.error(res.message || '获取验证码失败');
       }
     } catch (error) {
       console.error(error);
-      setRequestError('获取验证码失败');
+      toast.error('获取验证码失败');
     } finally {
       setLoading(false);
     }
@@ -72,7 +72,7 @@ export default function CaptchaImage({
           type="text"
           value={value}
           onChange={handleInputChange}
-          placeholder="请输入验证码"
+          placeholder="请输入验证码（大写字母）"
           maxLength={4}
           className={`
             flex-1 px-4 py-3
@@ -104,7 +104,7 @@ export default function CaptchaImage({
             >
               加载中...
             </div>
-          ) : requestError ? (
+          ) : error ? (
             <button
               type="button"
               onClick={handleRefresh}

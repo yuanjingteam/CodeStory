@@ -11,6 +11,7 @@ const Header: React.FC = () => {
   const router = useRouter();
   const { user, clearUser, isLoading } = useUserStore();
   const [open, setOpen] = useState(false);
+  const isAdmin = user?.role === 1;
   const handleProfile = () => {
     router.push('/profile');
   };
@@ -69,12 +70,14 @@ const Header: React.FC = () => {
                 >
                   关于我们
                 </Link>
-                <Link
-                  href="/users-manage"
-                  className="hover:underline underline-offset-4 decoration-2 decoration-black"
-                >
-                  后台管理
-                </Link>
+                {isAdmin && (
+                  <Link
+                    href="/users-manage"
+                    className="hover:underline underline-offset-4 decoration-2 decoration-black"
+                  >
+                    后台管理
+                  </Link>
+                )}
               </nav>
             </div>
 
@@ -101,7 +104,7 @@ const Header: React.FC = () => {
                   </div>
 
                   <span className="font-bold text-black text-sm min-w-[60px]">
-                    {isLoading ? '...' : (user?.nickname || 'UserName')}
+                    {isLoading ? '...' : user?.nickname || 'UserName'}
                   </span>
 
                   {open ? (

@@ -128,12 +128,12 @@ export default function LoginForm() {
           router.push('/');
         }, 500);
         return;
-        } else {
-        toast.error(res?.message || '登录失败');
+      } else {
+        toast.error(res.message );
       }
     } catch (error) {
       console.error(error);
-      toast.error('登录失败，请检查邮箱和密码');
+      toast.error( '登录失败');
       setLoginInput((prev) => ({ ...prev, password: '' }));
     } finally {
       setLoading(false);

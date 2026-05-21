@@ -1,7 +1,7 @@
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import type { Request, Response, NextFunction } from 'express';
-import { TokenPayload } from '@/utils/jwt';
-import { loginService } from '@/services/auth/login';
+import { TokenPayload } from '../utils/jwt';
+import { loginService } from '../services/auth/login';
 
 interface AuthRequest extends Request {
   user?: TokenPayload;
@@ -82,4 +82,21 @@ export const authMiddleware = (
       code: 'AUTH_SERVICE_ERROR',
     });
   }
+};
+
+export const requireAdmin = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const user = req.user;
+  if (!user) {
+    return res.status(401).json({ code: 401, message: '未登录' });
+  }
+
+  if (user.role !== 1) {
+    return res.status(403).json({ code: 403, message: '无权限访问' });
+  }
+
+  next();
 };

@@ -235,7 +235,7 @@ export default function ProfilePage() {
         </div>
       </div>
       {/* MY Courses - 用户课程 */}
-      <div className="bg-white border-4 border-black p-6 shadow-[6px_6px_0_0_rgba(0,0,0,1)]">
+      <div className="bg-white border-4 border-black p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-black text-black">MY COURSES</h3>
         </div>
