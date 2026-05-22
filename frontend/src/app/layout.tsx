@@ -12,11 +12,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN" className="h-screen">
-      <body className="min-h-screen bg-white relative">
+      <body className="min-h-screen  relative">
         <div className="fixed inset-0 pointer-events-none z-0">
           <div className="absolute inset-0 bg-[radial-gradient(circle,_#000_1px,_transparent_1px)] bg-[size:20px_20px]"></div>
         </div>
-        {children}
+        <div className="my-4  w-full max-w-[1280px] mx-auto relative z-10 border-2 border-black bg-white shadow-[4px_4px_0px_#000] rounded-sm ">
+          {children}
+        </div>
         <Toaster
           position="top-right"
           toastOptions={{

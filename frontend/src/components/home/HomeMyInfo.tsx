@@ -6,17 +6,15 @@ import { updateUserProfile } from '@/api/profile';
 import type { LoginUserInfo } from 'shared/types/auth';
 import type {
   UserProfileInfo,
-  UserCourse,
   UpdateUserInfopRequest,
 } from 'shared/types/profile';
 import { userSexMap, userRoleMap, userLevelMap } from '@/utils/constants';
-import { getProfile, getUserCourses } from '@/api/profile';
-import { LuFlame, LuMail, LuBookOpen, LuBadgeCheck } from 'react-icons/lu';
+import { getProfile } from '@/api/profile';
+import { LuMail } from 'react-icons/lu';
 import { FaUserEdit, FaStar } from 'react-icons/fa';
 import Img from 'next/image';
-import UpdateUserInfoForm from '@/components/profile/UpdateUserInfoForm';
-import UserCourses from '@/components/profile/UserCourses';
-export default function ProfilePage() {
+import UpdateUserInfoForm from '@/components/home/UpdateUserInfoForm';
+export default function HomeMyInfo() {
   const { user, isLoggedIn, isLoading, updateUserInfo } = useUserStore();
   const router = useRouter();
   const [userInfo, setUserInfo] = useState<UserProfileInfo>({
@@ -30,7 +28,7 @@ export default function ProfilePage() {
     score: user?.score || 0,
     created_at: user?.created_at || '',
   });
-  const [courses, setCourses] = useState<UserCourse[]>([]);
+
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   useEffect(() => {
@@ -69,21 +67,6 @@ export default function ProfilePage() {
 
     fetchUserProfile();
   }, [isLoggedIn, isLoading, updateUserInfo]);
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const res = await getUserCourses();
-        if (res.code === 200) {
-          setCourses(res.data);
-        }
-      } catch (err) {
-        console.error('获取用户课程失败', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCourses();
-  }, []);
 
   if (loading) {
     return (
@@ -92,23 +75,6 @@ export default function ProfilePage() {
       </div>
     );
   }
-
-  const stats = [
-    {
-      label: '在学习课程',
-      value: courses.filter((course) => course.status === 1).length,
-      icon: LuBookOpen,
-      color: 'bg-yellow-400',
-    },
-    {
-      label: '已完成课程',
-      value: courses.filter((course) => course.status === 2).length,
-      icon: LuBadgeCheck,
-      color: 'bg-green-400',
-    },
-    { label: '待定选项1', value: '？', icon: LuFlame, color: 'bg-gray-400' },
-    { label: '待定选项2', value: '？', icon: LuFlame, color: 'bg-gray-400' },
-  ];
 
   const updateUserProfileHandler = async (data: UpdateUserInfopRequest) => {
     setLoading(true);
@@ -129,18 +95,11 @@ export default function ProfilePage() {
   };
 
   return (
-    <main className="max-w-6xl mx-auto px-4 py-8 relative z-10">
-      {/* Page Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-black text-black">MY PROFILE</h1>
-          <p className="text-gray-600 mt-1">管理你的学习进度和个人信息</p>
-        </div>
-      </div>
+    <main className=" relative z-10 border-2 border-black bg-gray-100  rounded-sm">
       {/* Main Content Row */}
       <div className="flex gap-4 mb-8">
         {/* 个人信息卡片 */}
-        <div className="flex-[3] bg-gray-100 border-4 border-black p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)] flex items-center gap-6 relative">
+        <div className="flex-[3]   flex items-center gap-6 relative">
           <span
             className={`absolute -top-4 -right-4 px-3 py-2 text-xs font-black border-2 border-black  ${userRoleMap[userInfo.role]?.color || 'bg-gray-400 text-white'} shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all duration-150`}
           >
@@ -181,26 +140,6 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        {/* 四项统计数据 */}
-        <div className="flex-[2] flex flex-col gap-3">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className={`${stat.color} border-3 border-black px-4 py-3 shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0_0_rgba(0,0,0,1)] transition-all duration-150 flex items-center gap-3 min-h-[60px]`}
-            >
-              <stat.icon className="w-6 h-6 text-black opacity-80 flex-shrink-0" />
-              <div>
-                <div className="text-xl font-black text-black">
-                  {stat.value}
-                </div>
-                <div className="text-xs font-bold text-black opacity-80">
-                  {stat.label}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
         <div className="flex-[2]  flex flex-col gap-3">
           {/* 等级卡片 */}
           <div
@@ -233,13 +172,6 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-      </div>
-      {/* MY Courses - 用户课程 */}
-      <div className="bg-white border-4 border-black p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-black text-black">MY COURSES</h3>
-        </div>
-        <UserCourses courses={courses} loading={loading} />
       </div>
 
       <UpdateUserInfoForm

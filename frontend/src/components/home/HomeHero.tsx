@@ -28,12 +28,8 @@ export default function HomeHero() {
   return (
     <section
       className="  
-        border-4 border-black 
-        shadow-[4px_4px_0_0_rgba(0,0,0,1)] 
         bg-white 
         py-8
-        px-4
-        mx-8
         transition-all duration-150 
         relative z-10
       "
@@ -83,12 +79,12 @@ export default function HomeHero() {
       </div>
 
       {/* Stats Section */}
-      <div className="max-w-6xl mx-auto py-8 px-4">
+      <div className=" mx-auto py-8 ">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat, index) => (
             <div
               key={index}
-              className={`${stat.color} text-white p-6 border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] text-center hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200`}
+              className={`${stat.color} text-white p-4 border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] text-center hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200`}
             >
               <div className="text-3xl font-black">{stat.value}</div>
               <div className="text-sm font-bold">{stat.label}</div>
