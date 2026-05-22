@@ -73,7 +73,7 @@ export default function CoursesSection() {
   }, [selectedLevel]);
   
   return (
-    <section className="border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white p-8 mx-8 relative z-10">
+    <section className="bg-white p-8 mx-8 relative z-10">
       <div className="mb-8">
         <h2 className="text-3xl font-black mb-2">全部课程</h2>
         <p className="text-gray-600">选择你感兴趣的课程，开始学习之旅</p>
@@ -154,7 +154,7 @@ export default function CoursesSection() {
                         {levelConfigItem.text}
                       </span>
                       <div className="flex-1 bg-gray-200 rounded-full h-2 border-2 border-black">
-                        <div 
+                        <div
                           className="bg-blue-500 h-full rounded-full transition-all"
                           style={{ width: `${Math.min(course.progress, 100)}%` }}
                         />

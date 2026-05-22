@@ -66,10 +66,10 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
   };
 
   return (
-    <div className="flex gap-3 p-3 h-[calc(100vh-100px)]">
-      <div 
-        className="w-64 flex-shrink-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col"
-        style={{ flex: '0 0 320px' }}
+    <div className="flex gap-3 p-3 box-border max-h-[88vh] overflow-y-auto">
+      <div
+        className="flex-shrink-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col"
+        style={{ width: '320px' }}
       >
         <Content data={data} />
       </div>
@@ -78,9 +78,9 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
         <Question data={data} onLessonCompleted={handleLessonCompleted} />
       </div>
 
-      <div 
-        className="w-120 flex-shrink-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col"
-        style={{ flex: '0 0 320px' }}
+      <div
+        className="flex-shrink-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col"
+        style={{ width: '320px' }}
       >
         <Chat />
       </div>

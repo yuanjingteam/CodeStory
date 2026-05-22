@@ -37,7 +37,7 @@ export default function CourseDetails({
 
   if (loading) {
     return (
-      <section className="border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white p-8 mx-8 relative z-10">
+      <section className="bg-white p-8 mx-8 relative z-10">
         <div className="text-center py-10 font-bold">加载中...</div>
       </section>
     );
@@ -45,14 +45,14 @@ export default function CourseDetails({
 
   if (!course) {
     return (
-      <section className="border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white p-8 mx-8 relative z-10">
+      <section className="bg-white p-8 mx-8 relative z-10">
         <div className="text-center py-10 font-bold">课程不存在</div>
       </section>
     );
   }
 
   return (
-    <section className="border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white p-8 mx-8 relative z-10 max-h-[88vh] overflow-y-auto">
+    <section className="bg-white p-8 mx-8 relative z-10 max-h-[88vh] overflow-y-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-3xl font-black mb-2">{course.title}</h2>
