@@ -95,34 +95,51 @@ export default function HomeMyInfo() {
   };
 
   return (
-    <main className=" relative z-10 border-2 border-black bg-gray-100  rounded-sm">
-      {/* Main Content Row */}
-      <div className="flex gap-4 mb-8">
-        {/* 个人信息卡片 */}
-        <div className="flex-[3]   flex items-center gap-6 relative">
-          <span
-            className={`absolute -top-4 -right-4 px-3 py-2 text-xs font-black border-2 border-black  ${userRoleMap[userInfo.role]?.color || 'bg-gray-400 text-white'} shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all duration-150`}
-          >
-            {userRoleMap[userInfo.role]?.text || '普通用户'}
-          </span>
+    <section className="w-full max-w-md mr-6">
+      {/* 个人信息卡片 */}
+      <div className="relative bg-white border-2 border-black rounded-sm p-6">
+        {/* 角色标签 */}
+        <span
+          className={`rounded-full absolute -top-3 -right-3 px-3 py-1 text-xs font-black border-2 border-black ${userRoleMap[userInfo.role]?.color || 'bg-gray-400 text-white'} `}
+        >
+          {userRoleMap[userInfo.role]?.text || '普通用户'}
+        </span>
+
+        {/* 头像和基本信息 */}
+        <div className="flex items-start gap-4 mb-6">
           {/* Avatar */}
-          <div className="relative">
-            <div className="w-40 h-40 bg-purple-100 border-4 border-black rounded-full flex items-center justify-center ">
-              <Img
-                src={userInfo.avatar || '/default-avatar.png'}
-                width={50}
-                height={50}
-                alt="User Avatar"
-                objectFit="cover"
-                className="w-32 h-32 rounded-full"
-              />
+          <div className="relative flex-shrink-0">
+            <div className="w-24 h-24 bg-purple-100 border-3 border-black rounded-full flex items-center justify-center">
+              {userInfo.avatar ? (
+                <Img
+                  src={userInfo.avatar}
+                  width={96}
+                  height={96}
+                  alt="User Avatar"
+                  objectFit="cover"
+                  className="w-20 h-20 rounded-full"
+                />
+              ) : (
+                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                  <span className="text-gray-500 text-2xl font-black">?</span>
+                </div>
+              )}
             </div>
           </div>
+
           {/* User Info */}
-          <div className="flex-1">
-            <h2 className="text-2xl font-black text-black mb-3">
-              {userInfo.nickname || '用户'}
-            </h2>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-start mb-2">
+              <h2 className="text-xl font-black text-black  truncate">
+                {userInfo.nickname || '用户'}
+              </h2>
+              <button
+                onClick={() => setIsOpen(true)}
+                className=" mx-4 cursor-pointer"
+              >
+                <FaUserEdit className="w-6 h-6 text-gray-500 text-center" />
+              </button>
+            </div>
             <div className="flex flex-col gap-1 text-sm text-gray-600">
               <span>性别: {userSexMap[userInfo.sex] || '未设置'}</span>
               <span>职业: {userInfo.occupation || '未设置'}</span>
@@ -132,44 +149,63 @@ export default function HomeMyInfo() {
               </span>
             </div>
           </div>
-          <button
-            onClick={() => setIsOpen(true)}
-            className="absolute -bottom-3 -right-3 w-10 h-10 bg-green-400 border-2 border-black rounded-full flex items-center justify-center shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all duration-150"
-          >
-            <FaUserEdit className="w-5 h-5 text-black" />
-          </button>
         </div>
 
-        <div className="flex-[2]  flex flex-col gap-3">
+        {/* 等级和积分卡片 */}
+        <div className="grid grid-cols-2 gap-3">
           {/* 等级卡片 */}
           <div
-            className={`${userLevelMap[userInfo.level || 0]?.color || 'bg-gray-700 text-white'} border-3 border-black px-6 py-4 shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0_0_rgba(0,0,0,1)] transition-all duration-150 flex flex-col items-center justify-center flex-1`}
+            className={`${userLevelMap[userInfo.level || 0]?.color || 'bg-gray-700 text-white'}  px-4 py-3 rounded-md flex flex-col items-center justify-center`}
           >
-            <div className="text-xs font-bold opacity-80 mb-2">等级</div>
-            <div className="text-xl font-black">
+            <div className="text-xs font-bold opacity-80 mb-1">等级</div>
+            <div className="text-lg font-black">
               {userLevelMap[userInfo.level || 0]?.text || '无等级'}
             </div>
-            <div className="flex items-center gap-1">
-              {Array(userInfo.level || 0)
+            <div className="flex items-center gap-0.5 mt-1">
+              {Array(Math.min(userInfo.level || 0, 5))
                 .fill(0)
-                .map((_, i) => {
-                  return (
-                    <FaStar
-                      key={i}
-                      className="w-6 h-6 text-yellow-500 opacity-80 flex-shrink-0"
-                    />
-                  );
-                })}
+                .map((_, i) => (
+                  <FaStar
+                    key={i}
+                    className="w-4 h-4 text-yellow-400 flex-shrink-0"
+                  />
+                ))}
             </div>
           </div>
+
           {/* 积分卡片 */}
-          <div className="bg-gradient-to-br from-purple-400 to-purple-600 border-3 border-black px-6 py-4 shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0_0_rgba(0,0,0,1)] transition-all duration-150 flex flex-col items-center justify-center flex-1">
-            <div className="text-xs font-bold text-white opacity-80 mb-2">
+          <div className="bg-gradient-to-br from-purple-400 to-purple-600  px-4 py-3 rounded-md flex flex-col items-center justify-center">
+            <div className="text-xs font-bold text-white opacity-80 mb-1">
               积分
             </div>
-            <div className="text-xl font-black text-white font-bold text-center">
+            <div className="text-xl font-black text-white">
               {userInfo.score || 0}
             </div>
+          </div>
+        </div>
+
+        {/* 经验条 */}
+        <div className="mt-4 pt-4 ">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-bold text-gray-600">经验值</span>
+            <span className="text-sm font-black text-gray-800">
+              Lv.{userInfo.level }
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.min(100, ((userInfo.level * 100 + 20) / ((userInfo.level + 1) * 100)) * 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
+            <span className="text-xs font-medium text-gray-500 min-w-[100px] text-right">
+              {userInfo.level * 100 + 20} / {(userInfo.level + 1) * 100}
+            </span>
           </div>
         </div>
       </div>
@@ -180,6 +216,6 @@ export default function HomeMyInfo() {
         initialData={userInfo}
         onSubmit={updateUserProfileHandler}
       />
-    </main>
+    </section>
   );
 }

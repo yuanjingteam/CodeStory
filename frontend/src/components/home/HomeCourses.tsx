@@ -25,7 +25,7 @@ export default function HomeCourses() {
   }, []);
 
   return (
-    <section className="mb-8 bg-white border-2 border-black rounded-sm  mx-auto">
+    <section className="m-8 bg-white border-2 border-black rounded-sm  mx-auto">
       <div className="flex p-4   items-center justify-between mb-4 border-b-2 border-black">
         <h2 className="text-xl font-black text-black">热门课程</h2>
         <button
@@ -39,17 +39,17 @@ export default function HomeCourses() {
         {homeCourses.map((course) => (
           <div
             key={course.id}
-            className={`relative bg-white border-2 border-black p-4 cursor-pointer transition-all duration-200 ${
+            className={`relative rounded-xl bg-white border-2 border-black p-4 cursor-pointer transition-all duration-200 ${
               hoveredCourse === course.id
                 ? 'translate-x-[4px] translate-y-[4px] shadow-none'
-                : 'shadow-[4px_4px_0_0_rgba(0,0,0,1)]'
+                : 'shadow-[2px_2px_0_0_rgba(0,0,0,1)]'
             }`}
             onMouseEnter={() => setHoveredCourse(course.id)}
             onClick={() => router.push(`/courses/${course.id}`)}
             onMouseLeave={() => setHoveredCourse(null)}
           >
             <div
-              className={`absolute -top-2 -right-2 px-2 py-1 text-xs font-black text-white border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${courseLevelMap[course.level]?.color || 'bg-gray-500 text-gray-700'}`}
+              className={`absolute -top-2 -right-2 px-2 py-1 text-xs font-black text-white border-2 border-black  ${courseLevelMap[course.level]?.color || 'bg-gray-500 text-gray-700'}`}
             >
               {courseLevelMap[course.level]?.text || '未知'}
             </div>

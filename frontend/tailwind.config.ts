@@ -19,8 +19,17 @@ const config: Config = {
         'neo-brutalism': '8px 8px 0px 0px rgba(0, 0, 0, 1)', // 大阴影
         'neo-brutalism-sm': '4px 4px 0px 0px rgba(0, 0, 0, 1)', // 小阴影
       },
+      // 添加隐藏滚动条工具类
+      scrollbarHide: {
+        '&::-webkit-scrollbar': {
+          display: 'none',
+        },
+        '-ms-overflow-style': 'none',
+        'scrollbar-width': 'none',
+      },
     },
   },
   plugins: [],
 };
+
 export default config;

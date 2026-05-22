@@ -58,13 +58,13 @@ export default function HomeHero() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <button
                 onClick={startLearning}
-                className="px-8 py-3 bg-purple-500 text-white font-bold text-lg border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
+                className="px-8 py-3 bg-purple-500 text-white font-bold text-lg border-2 border-black rounded-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
               >
                 开始学习
               </button>
               <button
                 onClick={() => router.push('/courses')}
-                className="px-8 py-3 bg-white text-black font-bold text-lg border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
+                className="px-8 py-3 bg-white text-black font-bold text-lg border-2 border-black rounded-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
               >
                 探索课程
               </button>
@@ -84,7 +84,7 @@ export default function HomeHero() {
           {stats.map((stat, index) => (
             <div
               key={index}
-              className={`${stat.color} text-white p-4 border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] text-center hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200`}
+              className={`${stat.color} text-white p-4 border-2 border-black rounded-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)] text-center hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200`}
             >
               <div className="text-3xl font-black">{stat.value}</div>
               <div className="text-sm font-bold">{stat.label}</div>
