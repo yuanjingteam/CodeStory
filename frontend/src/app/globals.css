@@ -8,7 +8,12 @@ html {
   --shadow-neo-brutalism: 8px 8px 0px 0px rgba(0, 0, 0, 1);
   --shadow-neo-brutalism-sm: 4px 4px 0px 0px rgba(0, 0, 0, 1);
 }
-
+body {
+  background-color: transparent;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
 @keyframes shake {
   0%,
   100% {
@@ -33,7 +38,6 @@ input[type='password']::-ms-clear {
   display: none;
 }
 
-
 /* 自定义 Toast 容器 */
 [data-sonner-toast] {
   border: 2px solid #000 !important;
@@ -42,13 +46,13 @@ input[type='password']::-ms-clear {
 }
 
 /* 自定义成功状态 */
-[data-sonner-toast][data-type="success"] {
+[data-sonner-toast][data-type='success'] {
   background: #dcfce7 !important;
   border-color: #00ff5e !important;
 }
 
 /* 自定义错误状态 */
-[data-sonner-toast][data-type="error"] {
+[data-sonner-toast][data-type='error'] {
   background: #fee2e2 !important;
   border-color: #ff0000 !important;
 }
@@ -62,3 +66,5 @@ input[type='password']::-ms-clear {
 [data-sonner-toast] .sonner-description {
   font-size: 14px;
 }
+
+
