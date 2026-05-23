@@ -57,7 +57,7 @@ export default function Pagination({
         <select
           value={pageSize}
           onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          className="border-2 border-black px-3 py-1 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
+          className="border-2 border-gray-300 py-1 font-bold bg-white rounded-md transition-all"
         >
           {pageSizeOptions.map((size) => (
             <option key={size} value={size}>
@@ -71,7 +71,7 @@ export default function Pagination({
       </div>
 
       {/* 右侧：分页导航 */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center gap-2">
         <span className="text-sm text-gray-600 font-bold">
           当前第 {currentPage}/{totalPages} 页
         </span>
@@ -80,10 +80,10 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className={`px-3 py-1 border-2 border-black font-bold transition-all ${
+          className={`w-8 h-8 py-1 border-2 flex items-center justify-center rounded-md border-gray-300 font-bold transition-all ${
             currentPage === 1
               ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+              : 'bg-white  hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
           }`}
         >
           <IoArrowBack className="w-4 h-4" />
@@ -95,10 +95,10 @@ export default function Pagination({
             <button
               key={page}
               onClick={() => onPageChange(page)}
-              className={`w-8 h-8 border-2 border-black font-bold transition-all ${
+              className={`w-8 h-8 rounded-md border-2 border-gray-500 font-bold transition-all ${
                 currentPage === page
                   ? 'bg-purple-500 text-white shadow-none'
-                  : 'bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+                  : 'bg-white  hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
               }`}
             >
               {page}
@@ -109,10 +109,10 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className={`px-3 py-1 border-2 border-black font-bold transition-all ${
+          className={`w-8 h-8 py-1 border-2 flex items-center justify-center rounded-md border-gray-300 font-bold transition-all ${
             currentPage === totalPages
               ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+              : 'bg-white  hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
           }`}
         >
           <IoArrowForward className="w-4 h-4" />
