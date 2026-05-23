@@ -38,7 +38,7 @@ export default function HomeHero() {
       <div className="absolute z-[-1] bottom-20 right-20 w-48 h-48 bg-green-200 rounded-full opacity-30" />
       <div className="absolute z-[-1] top-1/2 left-1/4 w-20 h-20 bg-yellow-200 rounded-full opacity-40" />
 
-      <div className="max-w-6xl mx-auto">
+      <div className="px-8">
         <div className="flex flex-col lg:flex-row items-center gap-12">
           {/* Left content */}
           <div className="flex-1 text-center lg:text-left">
@@ -79,7 +79,7 @@ export default function HomeHero() {
       </div>
 
       {/* Stats Section */}
-      <div className=" mx-auto py-8 ">
+      <div className="px-8 py-8 ">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat, index) => (
             <div

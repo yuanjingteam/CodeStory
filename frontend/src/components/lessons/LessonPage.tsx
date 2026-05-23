@@ -65,22 +65,44 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
     });
   };
 
+  const handleLessonSwitched = async (newLessonId: string, newChapterId: string) => {
+    console.log('🔄 LessonPage 收到切换通知:', newLessonId);
+
+    try {
+      // 注意：不设置 loading 状态，避免整个页面闪烁
+      // 只在后台静默更新数据
+      const response = await lessonDetailApi.getById(newLessonId);
+      const dataWithProgress = {
+        ...response,
+        catalog: progress.applyProgressToCatalog(response.catalog)
+      };
+      setData(dataWithProgress);
+      console.log('✅ LessonPage 数据已更新（静默刷新）');
+    } catch (error) {
+      console.error('❌ 切换小节失败:', error);
+    }
+  };
+
   return (
-    <div className="flex gap-3 p-3 h-[calc(100vh-100px)]">
-      <div 
-        className="w-64 flex-shrink-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col"
-        style={{ flex: '0 0 320px' }}
+    <div className="flex gap-3 p-3 box-border max-h-[88vh] overflow-y-auto">
+      <div
+        className="flex-shrink-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col"
+        style={{ width: '320px' }}
       >
         <Content data={data} />
       </div>
 
       <div className="flex-1 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col">
-        <Question data={data} onLessonCompleted={handleLessonCompleted} />
+        <Question
+          data={data}
+          onLessonCompleted={handleLessonCompleted}
+          onLessonSwitched={handleLessonSwitched}
+        />
       </div>
 
-      <div 
-        className="w-120 flex-shrink-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col"
-        style={{ flex: '0 0 320px' }}
+      <div
+        className="flex-shrink-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col"
+        style={{ width: '320px' }}
       >
         <Chat />
       </div>

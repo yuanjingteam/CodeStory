@@ -12,18 +12,15 @@ export default function AboutHero() {
   };
 
   return (
-    <section 
+    <section
       className="
-        h-[calc(100vh-110px)]            /* 强制高度为 100% 视口高度 */
-        flex                 /* 开启 Flex 布局 */
-        flex-col             /* 子元素垂直排列 */
-        justify-between  
-        border-4 border-black 
-        shadow-[4px_4px_0_0_rgba(0,0,0,1)] 
-        bg-white 
-        p-8
-        mx-8 
-        transition-all duration-150 
+        min-h-[calc(100vh-110px)]
+        flex
+        flex-col
+        bg-white
+        px-8 pt-4
+        mx-8
+        transition-all duration-150
         relative z-10
       "
     >
@@ -40,7 +37,7 @@ export default function AboutHero() {
 
         <div className="flex justify-center">
           <svg 
-            className="animate-bounce translate-y-8"
+            className="animate-bounce translate-y-12"
             width="240" 
             height="240" 
             viewBox="0 0 240 240" 
@@ -74,7 +71,7 @@ export default function AboutHero() {
       </div>
 
       {/* 核心优势三块卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] p-4 bg-white">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-8 h-8 flex items-center justify-center bg-purple-500 rounded-full border-2 border-black text-white font-bold">🤖</div>
@@ -99,13 +96,13 @@ export default function AboutHero() {
       </div>
 
       {/* 用户口碑卡片 */}
-      <div className="border-2 border-black shadow-[3px_3px_0_0_#000] bg-blue-50 p-6 mb-8">
+      <div className="border-2 border-black shadow-[3px_3px_0_0_#000] bg-blue-50 p-6 mb-6">
         <h3 className="font-bold text-lg mb-2">⭐ 使用者怎么说</h3>
         <p className="italic text-gray-700">“本来觉得编程超难，在这里跟着练了几天，居然真的能写出小项目了！”</p>
       </div>
 
       {/* 行动引导按钮 */}
-      <div className="text-center mt-4 ">
+      <div className="text-center mb-0">
         <button 
           onClick={handleStartLearning}
           className="
