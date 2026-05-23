@@ -23,7 +23,7 @@ const AdminSider: React.FC = () => {
   };
 
   return (
-    <aside className="w-52 min-h-[calc(100vh-84px)] bg-white border-r-2 border-gray-200">
+    <aside className="w-52 min-h-[calc(100vh-62px)] bg-white border-r-2 border-gray-300">
       {/* 菜单列表 */}
       <nav className="p-3 space-y-2">
         {menuItems.map((item) => {

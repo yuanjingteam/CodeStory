@@ -87,7 +87,7 @@ export default function SearchFilter({
   );
 
   return (
-    <div className="bg-white border-3 rounded-sm border-gray-500  p-3">
+    <div className="bg-white border-2 rounded-sm border-gray-300  p-3">
       <div className="flex flex-wrap gap-4 items-center">
         {filters.map(renderFilter)}
 
