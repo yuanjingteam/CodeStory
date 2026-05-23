@@ -1,11 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiEdit, FiTrash2, FiUser, FiMail } from 'react-icons/fi';
-import type {
-  UserDetail,
-  GetUserListRequest,
-  UserDetailRequest,
-} from 'shared/types/user-manage';
+import type { UserDetail, UserDetailRequest } from 'shared/types/user-manage';
 import {
   SearchFilter,
   DataTable,
@@ -31,11 +27,7 @@ import Img from 'next/image';
 export default function UsersManagePage() {
   const [userList, setUserList] = useState<UserDetail[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState({
-    search: '',
-    role: '',
-    status: '',
-  });
+  const [searchTerm, setSearchTerm] = useState('');
   const [pagination, setPagination] = useState<PaginationResponse>({
     pageSize: 5,
     currentPage: 1,
@@ -46,6 +38,7 @@ export default function UsersManagePage() {
   // 弹窗状态
   const [showUserModal, setShowUserModal] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const hasMounted = useRef(false);
 
   // 筛选字段配置
   const [filters, setFilters] = useState<FilterField[]>([
@@ -73,42 +66,51 @@ export default function UsersManagePage() {
     },
   ]);
 
-  useEffect(() => {
-    // 获取用户列表
-    const fetchUsers = async (data: GetUserListRequest) => {
-      setLoading(true);
-      try {
-        const res = await getUserList(data);
-        if (res.code === 200) {
-          setUserList(res.data.list);
-          // 使用函数式更新避免闭包问题
-          setPagination((prev) => ({
-            ...prev,
-            total: res.data.pagination.total,
-            totalPages: res.data.pagination.totalPages,
-          }));
-        }
-      } catch (error) {
-        console.error('获取用户列表失败:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // 获取用户列表
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const roleValue = filters.find((f) => f.id === 'role')?.value;
+      const statusValue = filters.find((f) => f.id === 'status')?.value;
 
-    fetchUsers({
-      page: pagination.currentPage,
-      pageSize: pagination.pageSize,
-      search: searchTerm.search || '',
-      role: searchTerm.role || '',
-      status: searchTerm.status || '',
-    });
-  }, [
-    pagination.currentPage,
-    pagination.pageSize,
-    searchTerm.search,
-    searchTerm.role,
-    searchTerm.status,
-  ]);
+      const res = await getUserList({
+        page: pagination.currentPage,
+        pageSize: pagination.pageSize,
+        search: searchTerm || '',
+        role:
+          roleValue !== '' && roleValue !== undefined ? String(roleValue) : '',
+        status:
+          statusValue !== '' && statusValue !== undefined
+            ? String(statusValue)
+            : '',
+      });
+      if (res.code === 200) {
+        setUserList(res.data.list);
+        setPagination((prev) => ({
+          ...prev,
+          total: res.data.pagination.total,
+          totalPages: res.data.pagination.totalPages,
+        }));
+      }
+    } catch (error) {
+      console.error('获取用户列表失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      fetchUsers();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (hasMounted.current) {
+      fetchUsers();
+    }
+  }, [pagination.currentPage, pagination.pageSize]);
 
   // 删除用户
   const handleDelete = async (userId: string) => {
@@ -209,14 +211,6 @@ export default function UsersManagePage() {
   // 处理筛选变化
   const handleFilterChange = (updatedFilters: FilterField[]) => {
     setFilters(updatedFilters);
-    // 同步更新 searchTerm 状态，触发 useEffect 重新请求
-    const roleFilter = updatedFilters.find((f) => f.id === 'role');
-    const statusFilter = updatedFilters.find((f) => f.id === 'status');
-    setSearchTerm((prev) => ({
-      ...prev,
-      role: String(roleFilter?.value || ''),
-      status: String(statusFilter?.value || ''),
-    }));
   };
 
   const columns: Column<UserDetail>[] = [
@@ -253,7 +247,7 @@ export default function UsersManagePage() {
     {
       id: 'userInfo',
       header: '用户信息',
-      flex: 3,
+      flex: 2.5,
       render: (_, item) => (
         <div>
           <div
@@ -273,10 +267,10 @@ export default function UsersManagePage() {
       id: 'email',
       key: 'email',
       header: '邮箱',
-      flex: 2.5,
+      flex: 3,
       ellipsis: true,
       render: (value) => (
-        <div className="flex items-center gap-1 text-sm text-gray-600">
+        <div className="flex mr-2 items-center gap-1 text-sm text-gray-600">
           <FiMail className="w-3 h-3" />
           <span className="truncate" title={String(value ?? '')}>
             {value as string}
@@ -329,7 +323,7 @@ export default function UsersManagePage() {
       header: '注册时间',
       flex: 2,
       ellipsis: true,
-      render: (value) => formatDate(value as string, 'YYYY-MM-DD'),
+      render: (value) => formatDate(value as string, 'YYYY-MM-DD HH:mm:ss'),
       align: 'center',
     },
     {
@@ -338,19 +332,19 @@ export default function UsersManagePage() {
       header: '更新时间',
       flex: 2,
       ellipsis: true,
-      render: (value) => formatDate(value as string, 'YYYY-MM-DD'),
+      render: (value) => formatDate(value as string, 'YYYY-MM-DD HH:mm:ss'),
       align: 'center',
     },
     {
       id: 'actions',
       header: '操作',
-      flex: 2.5,
+      flex: 3,
       align: 'center',
       render: (_, item) => (
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleEditUser(item)}
-            className="px-3 py-1 bg-blue-400 text-white text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+            className="px-3 py-1 bg-blue-400 text-white rounded-md text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
           >
             <FiEdit className="w-3 h-3" />
             编辑
@@ -358,14 +352,14 @@ export default function UsersManagePage() {
           {item.is_delete === 1 ? (
             <button
               onClick={() => handleRestore(item.id)}
-              className="px-3 py-1 bg-green-400 text-white text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+              className="px-3 py-1 bg-green-400 text-white rounded-md text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
             >
               恢复
             </button>
           ) : (
             <button
               onClick={() => handleDelete(item.id)}
-              className="px-3 py-1 bg-red-400 text-white text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+              className="px-3 py-1 bg-red-400 text-white text-xs rounded-md font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
             >
               <FiTrash2 className="w-3 h-3" />
               删除
@@ -379,17 +373,19 @@ export default function UsersManagePage() {
   return (
     <div className="space-y-4">
       <SearchFilter
-        searchTerm={searchTerm.search}
-        onSearchChange={(value) =>
-          setSearchTerm({ ...searchTerm, search: value })
-        }
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
         searchPlaceholder="搜索用户名或邮箱..."
         filters={filters}
         onFilterChange={handleFilterChange}
+        onApplyFilters={() => {
+          setPagination((prev) => ({ ...prev, currentPage: 1 }));
+          fetchUsers();
+        }}
         actionSlot={
           <button
             onClick={handleAddUser}
-            className="px-6 py-2 bg-purple-500 text-white font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200 shrink-0"
+            className="px-6 py-2 rounded-sm bg-purple-500 text-white font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200 shrink-0"
           >
             + 添加用户
           </button>

@@ -17,16 +17,16 @@ const Header: React.FC = () => {
   };
   const dropdownRef = useRef<HTMLDivElement>(null);
   return (
-    <header className="  relative z-20">
-      <div className="border-b-2 border-black bg-yellow-400">
-        <div className="bg-gradient-to-r from-yellow-300 to-yellow-500">
-          <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
+    <header className="h-[62px] relative z-20 flex-shrink-0">
+      <div className="h-full border-b-2 border-black bg-yellow-400">
+        <div className="h-full bg-gradient-to-r from-yellow-300 to-yellow-500">
+          <div className="h-full max-w-7xl mx-auto flex items-center justify-between px-6">
             <div className="flex items-center space-x-10">
               <Link
                 href="/"
                 className="flex items-center space-x-2 font-black text-black"
               >
-                <div className="border-2 border-black px-2 py-1 bg-yellow-200 shadow-[2px_2px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-100 cursor-pointer">
+                <div className="rounded-sm border-2 border-black px-2 py-1 bg-yellow-200 shadow-[2px_2px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all duration-100 cursor-pointer">
                   {'</>'}
                 </div>
                 <span className="text-lg tracking-wide">CODE STORY</span>
@@ -63,7 +63,6 @@ const Header: React.FC = () => {
 
             <div className="flex items-center space-x-5">
               <div className="relative" ref={dropdownRef}>
-                {/* 用户按钮 */}
                 <div className="flex items-center space-x-2 px-2 py-1 ">
                   <div className=" rounded-full border-2 border-black overflow-hidden bg-gray-300 flex items-center justify-center">
                     {isLoading ? (

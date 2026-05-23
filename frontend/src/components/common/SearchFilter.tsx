@@ -54,7 +54,7 @@ export default function SearchFilter({
         <select
           value={String(filter.value ?? '')}
           onChange={(e) => handleFilterChange(filter.id, e.target.value)}
-          className="border-2 border-black px-3 py-1 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
+          className="border-2 rounded-md border-gray-300 px-3 py-1 font-bold bg-white "
         >
           {filter.options.map((option, optIndex) => (
             <option key={optIndex} value={option.value}>
@@ -77,9 +77,7 @@ export default function SearchFilter({
           <input
             type="checkbox"
             checked={Boolean(filter.value)}
-            onChange={(e) =>
-              handleFilterChange(filter.id, e.target.checked)
-            }
+            onChange={(e) => handleFilterChange(filter.id, e.target.checked)}
             className="w-4 h-4 border-2 border-black accent-purple-600"
           />
           <span className="text-sm">是</span>
@@ -89,7 +87,7 @@ export default function SearchFilter({
   );
 
   return (
-    <div className="bg-white border-3 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] p-3">
+    <div className="bg-white border-2 rounded-sm border-gray-300  p-3">
       <div className="flex flex-wrap gap-4 items-center">
         {filters.map(renderFilter)}
 
@@ -100,14 +98,14 @@ export default function SearchFilter({
             placeholder={searchPlaceholder}
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border-2 border-black font-bold bg-gray-100 focus:outline-none focus:bg-white transition-colors"
+            className="w-full pl-10 pr-4 py-2 border-2 rounded-md border-gray-500 font-bold bg-gray-100 focus:outline-none focus:bg-white transition-colors"
           />
         </div>
 
         {onApplyFilters && filters.length > 0 && (
           <button
             onClick={onApplyFilters}
-            className="flex items-center gap-1 px-4 py-2 bg-purple-500 text-white font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all shrink-0"
+            className="flex items-center gap-1 px-4 py-2 rounded-sm bg-purple-500 text-white font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all shrink-0"
           >
             <FiFilter className="w-4 h-4" />
             筛选
