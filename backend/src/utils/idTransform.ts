@@ -19,18 +19,15 @@ export async function resolveShortId(
   shortId: string
 ): Promise<string | null> {
   if (!isShortId(shortId)) {
-    console.log('[DEBUG resolveShortId] 不是合法的短 ID 格式:', shortId);
     return shortId;
   }
 
   const prefix = shortId.slice(0, 2).toLowerCase();
   const suffix = shortId.slice(-3).toLowerCase();
-  
+
   const sql = `SELECT id FROM ${table} WHERE REPLACE(id, '-', '') LIKE $1 || '%' || $2`;
-  console.log('[DEBUG resolveShortId] SQL:', sql, '参数:', prefix, suffix);
-  
+
   const results = await prisma.$queryRawUnsafe(sql, prefix, suffix);
-  console.log('[DEBUG resolveShortId] 查询结果:', results);
 
   if (Array.isArray(results) && results.length > 0) {
     return (results[0] as any).id;

@@ -25,6 +25,17 @@ export async function getCourseList(params: CourseListParams, userId: string): P
     where.level = params.level;
   }
 
+  if (params.minStudentCount !== undefined || params.maxStudentCount !== undefined) {
+    where.student_count = {};
+    if (params.minStudentCount !== undefined) {
+      where.student_count.gte = params.minStudentCount;
+    }
+    if (params.maxStudentCount !== undefined) {
+      where.student_count.lte = params.maxStudentCount;
+    }
+  }
+
+
   const [total, courses] = await Promise.all([
     prisma.courses.count({ where }),
     prisma.courses.findMany({
@@ -42,7 +53,18 @@ export async function getCourseList(params: CourseListParams, userId: string): P
 
   const progressMap = new Map(progressRecords.map(r => [r.course_id, r]));
 
-  const records = courses.map(course => {
+  let filteredCourses = courses;
+
+  if (params.learnStatus !== undefined) {
+    console.log('🎯 筛选学习状态:', params.learnStatus);
+    filteredCourses = courses.filter(course => {
+      const p = progressMap.get(course.id);
+      if (!p) return params.learnStatus === 0;
+      return p.status === params.learnStatus;
+    });
+  }
+
+  const records = filteredCourses.map(course => {
     const p = progressMap.get(course.id);
     let percent = 0;
 
@@ -56,6 +78,7 @@ export async function getCourseList(params: CourseListParams, userId: string): P
       description: course.description,
       cover_url: course.cover_url,
       level: course.level,
+      studentCount: course.student_count || 0,
       progress: percent,
       progressText: `${percent}%`,
       learnStatus: p?.status || 0,

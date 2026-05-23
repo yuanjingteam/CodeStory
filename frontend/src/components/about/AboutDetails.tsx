@@ -37,7 +37,7 @@ export default function AboutHero() {
 
         <div className="flex justify-center">
           <svg 
-            className="animate-bounce translate-y-8"
+            className="animate-bounce translate-y-12"
             width="240" 
             height="240" 
             viewBox="0 0 240 240" 

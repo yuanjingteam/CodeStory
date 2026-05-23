@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { exerciseApi } from '@/app/api/courses/exercise';
+import { lessonDetailApi } from '@/app/api/courses/lesson-detail';
 import type { LessonDetailData } from '@/types/lesson-detail';
 import type { ExerciseDetailData } from '@/types/exercise';
 import MarkdownContent from './MarkdownContent';
@@ -12,9 +13,10 @@ import { EditorView } from '@codemirror/view';
 interface QuestionProps {
   data: LessonDetailData;
   onLessonCompleted?: (lessonId: string) => void;
+  onLessonSwitched?: (lessonId: string, chapterId: string) => void;
 }
 
-export default function Question({ data, onLessonCompleted }: QuestionProps) {
+export default function Question({ data, onLessonCompleted, onLessonSwitched }: QuestionProps) {
   const router = useRouter();
   const [exerciseData, setExerciseData] = useState<ExerciseDetailData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,9 +24,12 @@ export default function Question({ data, onLessonCompleted }: QuestionProps) {
   const [showResultModal, setShowResultModal] = useState(false);
   const [hasPrev, setHasPrev] = useState(false);
   const [hasNext, setHasNext] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false); // 新增：切换动画状态
+  const [transitionDirection, setTransitionDirection] = useState<'left' | 'right' | null>(null); // 新增：切换方向
 
-  const currentLessonId = data?.currentLesson?.id;
-  const currentLessonTitle = data?.currentLesson?.title;
+  // 改为本地状态，支持切换题目时更新
+  const [currentLessonId, setCurrentLessonId] = useState<string | undefined>(data?.currentLesson?.id);
+  const [currentLessonTitle, setCurrentLessonTitle] = useState<string | undefined>(data?.currentLesson?.title);
 
   const currentChapter = data?.catalog.find(ch =>
     ch.lessons.some(l => l.id === currentLessonId)
@@ -81,23 +86,76 @@ export default function Question({ data, onLessonCompleted }: QuestionProps) {
       }
 
       const targetLessonId = allLessons[targetIndex].id;
-      const targetChapter = data.catalog.find(ch => 
+      const targetChapter = data.catalog.find(ch =>
         ch.lessons.some(l => l.id === targetLessonId)
       );
       const targetChapterId = targetChapter?.id || currentChapterId;
-      
+
       console.log('切换到小节:', targetLessonId);
-      console.log('路由路径:', `/courses/${courseId}/chapters/${targetChapterId}/lessons/${targetLessonId}`);
-      
-      // 直接跳转路由，让 LessonPage 组件重新获取数据
-      router.push(`/courses/${courseId}/chapters/${targetChapterId}/lessons/${targetLessonId}`);
+
+      // 平滑切换：先淡出，再更新，最后淡入
+      setTransitionDirection(direction === 'next' ? 'left' : 'right'); // 设置滑动方向
+      setIsTransitioning(true); // 开始淡出
+      setSubmitResult(null);
+      setShowResultModal(false);
+
+      // 延迟一小段时间让淡出动画执行（150ms）
+      await new Promise(resolve => setTimeout(resolve, 150));
+
+      try {
+        // 获取新小节的详情数据
+        console.log('📡 请求小节详情:', targetLessonId);
+        const lessonDetail = await lessonDetailApi.getById(targetLessonId);
+        console.log('📥 收到小节详情:', lessonDetail);
+
+        // 更新本地状态
+        setCurrentLessonId(targetLessonId);
+        setCurrentLessonTitle(lessonDetail.currentLesson?.title);
+        console.log('✅ 更新标题:', lessonDetail.currentLesson?.title);
+
+        if (lessonDetail.exercise?.id) {
+          console.log('📡 请求题目详情:', lessonDetail.exercise.id);
+          const exerciseResponse = await exerciseApi.getDetail(lessonDetail.exercise.id);
+          console.log('📥 收到题目详情:', exerciseResponse);
+          setExerciseData(exerciseResponse);
+          console.log('✅ 题目数据已更新');
+        } else {
+          console.log('⚠️ 该小节没有题目');
+          setExerciseData(null);
+        }
+
+        // 更新导航状态
+        setHasPrev(targetIndex > 0);
+        setHasNext(targetIndex < allLessons.length - 1);
+
+        // 更新浏览器URL（不触发页面重新加载）
+        const newUrl = `/courses/${courseId}/chapters/${targetChapterId}/lessons/${targetLessonId}`;
+        window.history.pushState({ path: newUrl }, '', newUrl);
+        console.log('🌐 URL已更新:', newUrl);
+
+        // 通知父组件：当前小节已切换
+        onLessonSwitched?.(targetLessonId, targetChapterId);
+
+        // 延迟一小段时间让淡入动画执行
+        setTimeout(() => setIsTransitioning(false), 50);
+
+      } catch (error) {
+        console.error('❌ 切换题目失败:', error);
+        setIsTransitioning(false); // 出错时恢复显示
+        throw error;
+      }
+
     } catch (error) {
       console.error('切换题目失败:', error);
     }
   };
 
   useEffect(() => {
-    if (!data?.exercise?.id) {
+    // 初始化或从data prop同步状态
+    const lessonId = currentLessonId || data?.currentLesson?.id;
+    const exerciseId = data?.exercise?.id;
+
+    if (!exerciseId) {
       setLoading(false);
       return;
     }
@@ -105,7 +163,7 @@ export default function Question({ data, onLessonCompleted }: QuestionProps) {
     const fetchExercise = async () => {
       try {
         setLoading(true);
-        const response = await exerciseApi.getDetail(data.exercise.id);
+        const response = await exerciseApi.getDetail(exerciseId);
         setExerciseData(response);
         updateNavigationState();
       } catch (error) {
@@ -116,7 +174,25 @@ export default function Question({ data, onLessonCompleted }: QuestionProps) {
     };
 
     fetchExercise();
-  }, [data?.exercise?.id]);
+  }, [currentLessonId, data?.exercise?.id]);
+
+  // 监听 props.data 变化，同步内部状态（当父组件更新时）
+  useEffect(() => {
+    if (data?.currentLesson?.id && data.currentLesson.id !== currentLessonId) {
+      console.log('📢 检测到父组件数据变化，同步状态:', data.currentLesson.id);
+      setCurrentLessonId(data.currentLesson.id);
+      setCurrentLessonTitle(data.currentLesson.title);
+
+      if (data.exercise?.id) {
+        exerciseApi.getDetail(data.exercise.id)
+          .then(response => {
+            console.log('📥 同步题目数据:', response.id);
+            setExerciseData(response);
+          })
+          .catch(error => console.error('同步题目失败:', error));
+      }
+    }
+  }, [data?.currentLesson?.id, data?.exercise?.id]);
 
   const currentChapterTitle = currentChapter?.title || '第 1 章 Python 基础语法';
 
@@ -138,7 +214,7 @@ export default function Question({ data, onLessonCompleted }: QuestionProps) {
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
-        {loading ? (
+        {loading && !exerciseData ? (
           <div className="flex items-center justify-center h-full">
             <span className="font-bold">加载中...</span>
           </div>
@@ -148,25 +224,34 @@ export default function Question({ data, onLessonCompleted }: QuestionProps) {
           </div>
         ) : (
           <>
-            {/* 上半部分：固定渲染题干 Markdown */}
-            <div className="flex-4 overflow-auto border-b-4 border-black p-4">
-              <MarkdownContent content={exerciseData.content} />
-            </div>
+            {/* 整体内容区域：题目 + 选项/代码，统一滚动（带淡入淡出 + 滑动动画） */}
+            <div
+              className={`flex-1 overflow-y-auto p-4 transition-all duration-300 ease-in-out ${
+                isTransitioning
+                  ? 'opacity-0 ' + (transitionDirection === 'left' ? '-translate-x-4' : 'translate-x-4')
+                  : 'opacity-100 translate-x-0'
+              }`}
+            >
+              {/* 题目内容 */}
+              <div className="mb-6">
+                <MarkdownContent content={exerciseData.content} />
+              </div>
 
-            {/* 下半部分：根据题型动态切换 */}
-            <div className="flex-5 overflow-auto p-4">
+              {/* 根据题型动态切换：选项或代码块 */}
               {exerciseData.type === 'single_choice' ? (
-                <ChoiceQuestion 
-                  exercise={exerciseData} 
-                  onSubmit={handleSubmit} 
+                <ChoiceQuestion
+                  key={currentLessonId}
+                  exercise={exerciseData}
+                  onSubmit={handleSubmit}
                   onNavigate={handleNavigate}
                   hasPrev={hasPrev}
                   hasNext={hasNext}
                 />
               ) : exerciseData.type === 'code' ? (
-                <CodeQuestion 
-                  exercise={exerciseData} 
-                  onSubmit={handleSubmit} 
+                <CodeQuestion
+                  key={currentLessonId}
+                  exercise={exerciseData}
+                  onSubmit={handleSubmit}
                   onNavigate={handleNavigate}
                   hasPrev={hasPrev}
                   hasNext={hasNext}
@@ -242,7 +327,7 @@ function ChoiceQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: Ch
     <div className="space-y-2">
       <div className="flex items-center justify-between mb-4">
         <div className="font-bold text-lg">请选择正确答案：</div>
-        <button className="py-2 px-4 bg-yellow-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+        <button className="py-2 px-4 bg-yellow-400 text-black font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
           💡 提示
         </button>
       </div>
@@ -268,12 +353,12 @@ function ChoiceQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: Ch
       })}
 
       <div className="grid grid-cols-5 gap-2 mt-4">
-        <button 
+        <button
           onClick={() => onNavigate?.('prev')}
           disabled={!hasPrev}
           className={`col-span-1 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 ${
             hasPrev
-              ? 'bg-gray-400 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+              ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
@@ -291,12 +376,12 @@ function ChoiceQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: Ch
         >
           提交答案
         </button>
-        <button 
+        <button
           onClick={() => onNavigate?.('next')}
           disabled={!hasNext}
           className={`col-span-1 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 ${
             hasNext
-              ? 'bg-gray-400 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+              ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
@@ -319,6 +404,7 @@ interface CodeQuestionProps {
 
 function CodeQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: CodeQuestionProps) {
   const [userCode, setUserCode] = useState('');
+  const [isCollapsed, setIsCollapsed] = useState(true); // 默认收起
 
   useEffect(() => {
     const code = (exercise.metadata as any)?.codeTemplate || '';
@@ -334,12 +420,33 @@ function CodeQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: Code
       {/* 标题和提示按钮同行 */}
       <div className="flex items-center justify-between mb-4">
         <div className="font-bold text-lg">请编写代码：</div>
-        <button className="py-2 px-4 bg-yellow-400 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
-          💡 提示
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="py-2 px-4 bg-purple-500 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+          >
+            {isCollapsed ? (
+              <>
+                <span>▶</span>
+                <span>展开代码块</span>
+              </>
+            ) : (
+              <>
+                <span>▼</span>
+                <span>收起代码块</span>
+              </>
+            )}
+          </button>
+          <button className="py-2 px-4 bg-yellow-400 text-black font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+            💡 提示
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 min-h-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] overflow-hidden">
+      {/* 代码编辑器区域：收起/展开 */}
+      <div className={`border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] overflow-hidden transition-all duration-300 ${
+        isCollapsed ? 'h-[180px]' : 'flex-1 min-h-0'
+      }`}>
         <CodeMirror
           value={userCode}
           onChange={setUserCode}
@@ -360,12 +467,12 @@ function CodeQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: Code
 
       {/* 按钮组：上一题、运行代码、下一题 */}
       <div className="grid grid-cols-5 gap-2 mt-4">
-        <button 
+        <button
           onClick={() => onNavigate?.('prev')}
           disabled={!hasPrev}
           className={`col-span-1 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 ${
             hasPrev
-              ? 'bg-gray-400 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+              ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
@@ -378,12 +485,12 @@ function CodeQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: Code
         >
           运行代码
         </button>
-        <button 
+        <button
           onClick={() => onNavigate?.('next')}
           disabled={!hasNext}
           className={`col-span-1 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 ${
             hasNext
-              ? 'bg-gray-400 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+              ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
