@@ -7,7 +7,7 @@ import HomeMyCourses from '@/components/home/HomeMyCourses';
 export default function Home() {
  
   return (
-    <main className="px-8">
+    <main>
       {/* Hero Section */}
       <HomeHero />
       <div className="flex justify-between items-center my-4">

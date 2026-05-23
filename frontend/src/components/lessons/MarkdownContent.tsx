@@ -1,9 +1,45 @@
 'use client';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 interface MarkdownContentProps {
   content: string;
+}
+
+function CollapsibleTable({ children, ...props }: any) {
+  const [isCollapsed, setIsCollapsed] = useState(true); // 默认收起
+
+  return (
+    <div className="mb-3">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-bold text-gray-600">📊 表格内容</span>
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="text-sm px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded border border-gray-400 font-medium transition-colors flex items-center gap-1"
+        >
+          {isCollapsed ? (
+            <>
+              <span>▼</span>
+              <span>展开</span>
+            </>
+          ) : (
+            <>
+              <span>▲</span>
+              <span>收起</span>
+            </>
+          )}
+        </button>
+      </div>
+      {!isCollapsed && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-collapse border border-gray-300" {...props}>
+            {children}
+          </table>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function MarkdownContent({ content }: MarkdownContentProps) {
@@ -61,10 +97,10 @@ export default function MarkdownContent({ content }: MarkdownContentProps) {
           hr: ({ node, ref, ...props }) => (
             <hr className="border-t-2 border-gray-300 my-4" {...props} />
           ),
-          table: ({ node, ref, ...props }) => (
-            <div className="overflow-x-auto mb-3">
-              <table className="min-w-full border-collapse border border-gray-300" {...props} />
-            </div>
+          table: ({ node, ref, children, ...props }: any) => (
+            <CollapsibleTable {...props}>
+              {children}
+            </CollapsibleTable>
           ),
           th: ({ node, ref, ...props }) => (
             <th className="border border-gray-300 bg-gray-100 px-3 py-2 font-bold text-left" {...props} />

@@ -1,6 +1,9 @@
 export interface CourseListParams {
   keyword?: string;
   level?: number;
+  learnStatus?: number;
+  minStudentCount?: number;
+  maxStudentCount?: number;
   page?: number;
   size?: number;
 }
