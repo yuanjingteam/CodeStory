@@ -7,7 +7,7 @@ class HomeService {
         is_delete: 0,
       },
       orderBy: {
-        course_seq: 'asc',
+        student_count: 'desc',
       },
       take: 4,
       include: {
@@ -35,6 +35,7 @@ class HomeService {
         description: course.description || '',
         level: course.level || 0,
         course_seq: course.course_seq || 0,
+        student_count: course.student_count || 0,
         completed_lessons: progress?.completed_lessons || 0,
         total_lessons: progress?.total_lessons || 0,
       };
