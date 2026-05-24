@@ -11,6 +11,7 @@ export interface ExerciseDetail {
   analysis: string | null;
   difficulty: number;
   metadata: any;
+  hints: any;
 }
 
 export interface UserAnswer {
@@ -53,7 +54,8 @@ export async function getExerciseDetail(
 export async function submitExercise(
   exerciseId: string,
   answer: string,
-  userId: string
+  userId: string,
+  hintLevelUsed: number = 0
 ): Promise<{ correct: boolean; score: number; feedback: string; analysis: string } | null> {
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
@@ -74,12 +76,32 @@ export async function submitExercise(
     const answerIndex = answer.trim().toUpperCase().charCodeAt(0) - 65;
     const selectedOption = options[answerIndex];
     correct = selectedOption === exercise.answer;
-    score = correct ? 100 : 0;
-    feedback = correct ? '回答正确，知识点掌握良好' : '回答错误，请重新思考';
+    
+    if (correct) {
+      const hints = exercise.hints as any;
+      const scoreDeduction = hints?._meta?.score_deduction || [0, 10, 25, 45];
+      score = Math.max(0, 100 - (scoreDeduction[hintLevelUsed] || 0));
+      feedback = hintLevelUsed > 0 
+        ? `回答正确！使用了 ${hintLevelUsed} 次提示，得分: ${score} 分` 
+        : '回答正确，知识点掌握良好';
+    } else {
+      score = 0;
+      feedback = '回答错误，请重新思考';
+    }
   } else if (exercise.type === 'code') {
     correct = answer.trim() === exercise.answer.trim();
-    score = correct ? 100 : 0;
-    feedback = correct ? '所有测试用例通过' : '部分测试用例未通过';
+    
+    if (correct) {
+      const hints = exercise.hints as any;
+      const scoreDeduction = hints?._meta?.score_deduction || [0, 10, 25, 45];
+      score = Math.max(0, 100 - (scoreDeduction[hintLevelUsed] || 0));
+      feedback = hintLevelUsed > 0 
+        ? `所有测试用例通过！使用了 ${hintLevelUsed} 次提示，得分: ${score} 分`
+        : '所有测试用例通过';
+    } else {
+      score = 0;
+      feedback = '部分测试用例未通过';
+    }
   }
 
   const existingAnswer = await prisma.answer.findUnique({
@@ -95,13 +117,15 @@ export async function submitExercise(
   const isFirstSubmission = !existingAnswer;
 
   if (existingAnswer) {
+    const finalScore = isFirstSubmission ? score : Math.max(existingAnswer.score, score);
     await prisma.answer.update({
       where: { id: existingAnswer.id },
       data: {
         answer,
         submission_count: existingAnswer.submission_count + 1,
         feedback,
-        score,
+        hint_level_used: Math.max(existingAnswer.hint_level_used, hintLevelUsed),
+        score: finalScore,
       },
     });
   } else {
@@ -113,7 +137,7 @@ export async function submitExercise(
         submission_count: 1,
         feedback,
         score,
-        hint_level_used: 0,
+        hint_level_used: hintLevelUsed,
       },
     });
   }
@@ -244,6 +268,7 @@ export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: Use
     analysis: exercise.analysis || '',
     difficulty: exercise.difficulty,
     metadata: exercise.metadata,
+    hints: exercise.hints,
     userAnswer: userAnswer ? {
       answer: userAnswer.answer || '',
       submission_count: userAnswer.submission_count,

@@ -1,0 +1,120 @@
+'use client';
+
+import { useState } from 'react';
+import type { HintConfig } from '@/types/exercise';
+
+interface HintModalProps {
+  hints: HintConfig | null;
+  currentLevel: number;
+  onUseHint: (newLevel: number) => void;
+  onClose: () => void;
+}
+
+export default function HintModal({ 
+  hints, 
+  currentLevel, 
+  onUseHint,
+  onClose 
+}: HintModalProps) {
+  const [localHints, setLocalHints] = useState<string[]>([]);
+
+  if (!hints) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] p-6 max-w-md w-full mx-4">
+          <h3 className="text-xl font-bold mb-4">💡 提示</h3>
+          <p className="text-gray-600 mb-6">本题暂无提示</p>
+          <button
+            onClick={onClose}
+            className="w-full py-2 bg-yellow-400 border-4 border-black font-bold shadow-[4px_4px_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+          >
+            确定
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const { max_level, score_deduction } = hints._meta;
+  const remainingHints = max_level - currentLevel;
+
+  const handleGetHint = () => {
+    if (currentLevel >= max_level) return;
+    
+    const nextLevel = currentLevel + 1;
+    const hintKey = `level_${nextLevel}` as const;
+    const hintContent = hints[hintKey];
+    
+    if (hintContent) {
+      setLocalHints(prev => [...prev, hintContent]);
+      onUseHint(nextLevel);
+    }
+  };
+
+  const totalDeduction = score_deduction[currentLevel] || 0;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold">💡 学习助手</h3>
+          <button 
+            onClick={onClose}
+            className="text-2xl font-bold hover:text-red-500"
+          >
+            ✕
+          </button>
+        </div>
+
+        {localHints.length > 0 && (
+          <div className="mb-4 space-y-3">
+            {localHints.map((hint, index) => (
+              <div 
+                key={index}
+                className={`p-3 border-2 border-black ${
+                  index === localHints.length - 1 
+                    ? 'bg-yellow-50' 
+                    : 'bg-gray-50'
+                }`}
+              >
+                <div className="font-bold text-sm mb-1">
+                  📌 提示 {index + 1}
+                </div>
+                <p className="text-sm text-gray-700">{hint}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="bg-purple-50 p-3 border-2 border-black mb-4">
+          <div className="flex justify-between text-sm font-bold">
+            <span>已使用提示：{currentLevel} / {max_level}</span>
+            <span className="text-orange-600">
+              将扣除 {totalDeduction} 分
+            </span>
+          </div>
+        </div>
+
+        {remainingHints > 0 ? (
+          <button
+            onClick={handleGetHint}
+            className="w-full py-3 bg-green-500 text-white border-4 border-black font-bold shadow-[4px_4px_0_#000] hover:bg-green-600 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+          >
+            👉 获取下一个提示 (剩余 {remainingHints} 次)
+          </button>
+        ) : (
+          <div className="text-center py-3 bg-gray-100 border-2 border-black font-bold text-gray-500">
+            💪 已达最大提示次数，试试自己完成吧！
+          </div>
+        )}
+
+        <button
+          onClick={onClose}
+          className="w-full mt-3 py-2 bg-yellow-400 border-4 border-black font-bold shadow-[4px_4px_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+        >
+          关闭
+        </button>
+      </div>
+    </div>
+  );
+}

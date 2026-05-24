@@ -1,3 +1,11 @@
+export interface HintConfig {
+  [key: `level_${number}`]: string;
+  _meta: {
+    max_level: number;
+    score_deduction: number[];
+  };
+}
+
 export interface Exercise {
   id: string;
   lesson_id: string;
@@ -8,6 +16,7 @@ export interface Exercise {
   analysis: string | null;
   difficulty: number;
   metadata: any;
+  hints: HintConfig | null;
 }
 
 export interface UserAnswer {
@@ -27,6 +36,7 @@ export interface ExerciseDetailResponse {
   analysis: string;
   difficulty: number;
   metadata: any;
+  hints: HintConfig | null;
   userAnswer: {
     answer: string;
     submission_count: number;

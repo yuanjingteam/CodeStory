@@ -84,15 +84,15 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
   };
 
   return (
-    <div className="flex gap-3 p-3 box-border max-h-[88vh] overflow-y-auto">
+    <div className="flex gap-3 p-3 box-border h-[calc(100vh-110px)]">
       <div
-        className="flex-shrink-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col"
+        className="flex-shrink-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col overflow-hidden"
         style={{ width: '320px' }}
       >
         <Content data={data} />
       </div>
 
-      <div className="flex-1 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col">
+      <div className="flex-1 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col overflow-hidden">
         <Question
           data={data}
           onLessonCompleted={handleLessonCompleted}
@@ -101,7 +101,7 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
       </div>
 
       <div
-        className="flex-shrink-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col"
+        className="flex-shrink-0 border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col overflow-hidden"
         style={{ width: '320px' }}
       >
         <Chat />

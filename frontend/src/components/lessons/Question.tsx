@@ -6,6 +6,7 @@ import { lessonDetailApi } from '@/app/api/courses/lesson-detail';
 import type { LessonDetailData } from '@/types/lesson-detail';
 import type { ExerciseDetailData } from '@/types/exercise';
 import MarkdownContent from './MarkdownContent';
+import HintModal from './HintModal';
 import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
 import { EditorView } from '@codemirror/view';
@@ -24,8 +25,9 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
   const [showResultModal, setShowResultModal] = useState(false);
   const [hasPrev, setHasPrev] = useState(false);
   const [hasNext, setHasNext] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false); // 新增：切换动画状态
-  const [transitionDirection, setTransitionDirection] = useState<'left' | 'right' | null>(null); // 新增：切换方向
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionDirection, setTransitionDirection] = useState<'left' | 'right' | null>(null);
+  const [currentHintLevelUsed, setCurrentHintLevelUsed] = useState(0); // 当前使用的提示等级
 
   // 改为本地状态，支持切换题目时更新
   const [currentLessonId, setCurrentLessonId] = useState<string | undefined>(data?.currentLesson?.id);
@@ -58,7 +60,7 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
     if (!exerciseData?.id) return;
 
     try {
-      const response = await exerciseApi.submit(exerciseData.id, answer);
+      const response = await exerciseApi.submit(exerciseData.id, answer, currentHintLevelUsed);
       setSubmitResult({
         correct: response.correct,
         score: response.score,
@@ -118,10 +120,12 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
           const exerciseResponse = await exerciseApi.getDetail(lessonDetail.exercise.id);
           console.log('📥 收到题目详情:', exerciseResponse);
           setExerciseData(exerciseResponse);
+          setCurrentHintLevelUsed(0); // 切换题目时重置提示等级
           console.log('✅ 题目数据已更新');
         } else {
           console.log('⚠️ 该小节没有题目');
           setExerciseData(null);
+          setCurrentHintLevelUsed(0); // 切换题目时重置提示等级
         }
 
         // 更新导航状态
@@ -246,6 +250,7 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
                   onNavigate={handleNavigate}
                   hasPrev={hasPrev}
                   hasNext={hasNext}
+                  onHintUsed={setCurrentHintLevelUsed} // 传递提示使用回调
                 />
               ) : exerciseData.type === 'code' ? (
                 <CodeQuestion
@@ -255,6 +260,7 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
                   onNavigate={handleNavigate}
                   hasPrev={hasPrev}
                   hasNext={hasNext}
+                  onHintUsed={setCurrentHintLevelUsed} // 传递提示使用回调
                 />
               ) : (
                 <div className="text-center font-bold">暂不支持的题型</div>
@@ -306,10 +312,13 @@ interface ChoiceQuestionProps {
   onNavigate?: (direction: 'prev' | 'next') => void;
   hasPrev: boolean;
   hasNext: boolean;
+  onHintUsed?: (level: number) => void; // 新增：提示使用回调
 }
 
-function ChoiceQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: ChoiceQuestionProps) {
+function ChoiceQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext, onHintUsed }: ChoiceQuestionProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [showHintModal, setShowHintModal] = useState(false);
+  const [hintLevelUsed, setHintLevelUsed] = useState(0);
 
   const options = (exercise.metadata as any)?.options || [];
 
@@ -323,12 +332,30 @@ function ChoiceQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: Ch
     }
   };
 
+  const handleUseHint = (newLevel: number) => {
+    setHintLevelUsed(newLevel);
+    onHintUsed?.(newLevel); // 通知父组件
+  };
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between mb-4">
         <div className="font-bold text-lg">请选择正确答案：</div>
-        <button className="py-2 px-4 bg-yellow-400 text-black font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
-          💡 提示
+        <button
+          onClick={() => setShowHintModal(true)}
+          disabled={!exercise.hints || hintLevelUsed >= exercise.hints?._meta.max_level}
+          className={`
+            py-2 px-4 font-bold border-4 border-black
+            shadow-[4px_4px_0_0_rgba(0,0,0,1)]
+            hover:translate-x-[2px] hover:translate-y-[2px]
+            hover:shadow-none transition-all
+            ${exercise.hints && hintLevelUsed < exercise.hints._meta.max_level
+              ? 'bg-yellow-400 text-black cursor-pointer'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }
+          `}
+        >
+          💡 提示 {exercise.hints ? `(${exercise.hints._meta.max_level - hintLevelUsed})` : ''}
         </button>
       </div>
 
@@ -365,7 +392,7 @@ function ChoiceQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: Ch
           <span>‹</span>
           <span>上一题</span>
         </button>
-        <button 
+        <button
           onClick={handleSubmit}
           disabled={!selectedOption}
           className={`col-span-3 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-lg ${
@@ -389,6 +416,15 @@ function ChoiceQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: Ch
           <span>›</span>
         </button>
       </div>
+
+      {showHintModal && (
+        <HintModal
+          hints={exercise.hints || null}
+          currentLevel={hintLevelUsed}
+          onUseHint={handleUseHint}
+          onClose={() => setShowHintModal(false)}
+        />
+      )}
     </div>
   );
 }
@@ -400,11 +436,14 @@ interface CodeQuestionProps {
   onNavigate?: (direction: 'prev' | 'next') => void;
   hasPrev: boolean;
   hasNext: boolean;
+  onHintUsed?: (level: number) => void; // 新增：提示使用回调
 }
 
-function CodeQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: CodeQuestionProps) {
+function CodeQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext, onHintUsed }: CodeQuestionProps) {
   const [userCode, setUserCode] = useState('');
-  const [isCollapsed, setIsCollapsed] = useState(true); // 默认收起
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [showHintModal, setShowHintModal] = useState(false);
+  const [hintLevelUsed, setHintLevelUsed] = useState(0);
 
   useEffect(() => {
     const code = (exercise.metadata as any)?.codeTemplate || '';
@@ -413,6 +452,11 @@ function CodeQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: Code
 
   const handleSubmit = () => {
     onSubmit(userCode);
+  };
+
+  const handleUseHint = (newLevel: number) => {
+    setHintLevelUsed(newLevel);
+    onHintUsed?.(newLevel); // 通知父组件
   };
 
   return (
@@ -437,8 +481,21 @@ function CodeQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: Code
               </>
             )}
           </button>
-          <button className="py-2 px-4 bg-yellow-400 text-black font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
-            💡 提示
+          <button
+            onClick={() => setShowHintModal(true)}
+            disabled={!exercise.hints || hintLevelUsed >= exercise.hints?._meta.max_level}
+            className={`
+              py-2 px-4 font-bold border-4 border-black
+              shadow-[4px_4px_0_0_rgba(0,0,0,1)]
+              hover:translate-x-[2px] hover:translate-y-[2px]
+              hover:shadow-none transition-all
+              ${exercise.hints && hintLevelUsed < exercise.hints._meta.max_level
+                ? 'bg-yellow-400 text-black cursor-pointer'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }
+            `}
+          >
+            💡 提示 {exercise.hints ? `(${exercise.hints._meta.max_level - hintLevelUsed})` : ''}
           </button>
         </div>
       </div>
@@ -498,6 +555,15 @@ function CodeQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext }: Code
           <span>›</span>
         </button>
       </div>
+
+      {showHintModal && (
+        <HintModal
+          hints={exercise.hints || null}
+          currentLevel={hintLevelUsed}
+          onUseHint={handleUseHint}
+          onClose={() => setShowHintModal(false)}
+        />
+      )}
     </div>
   );
 }

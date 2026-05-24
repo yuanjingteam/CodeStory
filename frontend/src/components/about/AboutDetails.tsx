@@ -14,32 +14,32 @@ export default function AboutHero() {
   return (
     <section
       className="
-        min-h-[calc(100vh-110px)]
         flex
         flex-col
         bg-white
-        px-8 pt-4
-        mx-8
+        px-4 sm:px-6 md:px-8 lg:px-12
+        py-4 sm:py-6
+        mx-2 sm:mx-4 md:mx-6 lg:mx-8
         transition-all duration-150
         relative z-10
       "
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-6">
-        <div>
-          <h1 className="text-4xl font-extrabold mb-4 text-black -mt-8">关于 CodeStory 🤖</h1>
-          <p className="text-lg text-gray-800 mb-3">
-            一个专治 <span className="font-bold">“看会了一写就废”</span> 的 AI 编程学习搭子。
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-center mb-6 sm:mb-8">
+        <div className="order-2 lg:order-1">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-3 sm:mb-4 text-black">
+            关于 CodeStory 🤖
+          </h1>
+          <p className="text-base sm:text-lg text-gray-800 mb-2 sm:mb-3">
+            一个专治 <span className="font-bold">"看会了一写就废"</span> 的 AI 编程学习搭子。
           </p>
-          <p className="text-lg text-gray-700">
+          <p className="text-base sm:text-lg text-gray-700">
             不啰嗦、不枯燥，AI 全程陪练，让你笑着学会写代码 ✨
           </p>
         </div>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center order-1 lg:order-2">
           <svg 
-            className="animate-bounce translate-y-12"
-            width="240" 
-            height="240" 
+            className="animate-bounce translate-y-8 sm:translate-y-10 md:translate-y-12 w-40 h-40 sm:w-52 sm:h-52 md:w-60 md:h-60 lg:w-[240px] lg:h-[240px]"
             viewBox="0 0 240 240" 
             fill="none" 
             xmlns="http://www.w3.org/2000/svg" 
@@ -62,54 +62,58 @@ export default function AboutHero() {
       </div>
 
       {/* 项目初心卡片 */}
-      <div className="border-2 border-black shadow-[3px_3px_0_0_#000] bg-green-50 p-6 mb-8 -mt-8">
-        <h2 className="text-xl font-bold mb-2">💡 CodeStory 初心</h2>
-        <p className="text-gray-800">
+      <div className="border-2 border-black shadow-[3px_3px_0_0_#000] bg-green-50 p-4 sm:p-5 md:p-6 mb-6 sm:mb-8 -mt-4 sm:-mt-6 md:-mt-8">
+        <h2 className="text-lg sm:text-xl font-bold mb-2">💡 CodeStory 初心</h2>
+        <p className="text-sm sm:text-base text-gray-800">
           我们相信：编程不是死记硬背，而是<strong>有趣、陪伴、可互动</strong>的成长过程。
           让每个人都能轻松、快乐、真正学会写代码。
         </p>
       </div>
 
       {/* 核心优势三块卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] p-4 bg-white">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 flex items-center justify-center bg-purple-500 rounded-full border-2 border-black text-white font-bold">🤖</div>
-            <h3 className="font-bold text-lg">AI 引导学习</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-5 sm:mb-6">
+        <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] p-3 sm:p-4 bg-white">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-purple-500 rounded-full border-2 border-black text-white font-bold text-sm sm:text-base">🤖</div>
+            <h3 className="font-bold text-base sm:text-lg">AI 引导学习</h3>
           </div>
-          <p className="text-gray-700">智能 AI Agent 陪伴学习</p>
+          <p className="text-sm sm:text-base text-gray-700">智能 AI Agent 陪伴学习</p>
         </div>
-        <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] p-5 bg-white">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 flex items-center justify-center bg-purple-500 rounded-full border-2 border-black text-white font-bold">💻</div>
-            <h3 className="font-bold text-lg">实战驱动</h3>
+        <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] p-3 sm:p-4 bg-white">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-purple-500 rounded-full border-2 border-black text-white font-bold text-sm sm:text-base">💻</div>
+            <h3 className="font-bold text-base sm:text-lg">实战驱动</h3>
           </div>
-          <p className="text-gray-700">边学边练，学以致用</p>
+          <p className="text-sm sm:text-base text-gray-700">边学边练，学以致用</p>
         </div>
-        <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] p-5 bg-white">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 flex items-center justify-center bg-purple-500 rounded-full border-2 border-black text-white font-bold">🎯</div>
-            <h3 className="font-bold text-lg">个性化学习</h3>
+        <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] p-3 sm:p-4 bg-white sm:col-span-2 lg:col-span-1">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center bg-purple-500 rounded-full border-2 border-black text-white font-bold text-sm sm:text-base">🎯</div>
+            <h3 className="font-bold text-base sm:text-lg">个性化学习</h3>
           </div>
-          <p className="text-gray-700">根据学习情况智能调整</p>
+          <p className="text-sm sm:text-base text-gray-700">根据学习情况智能调整</p>
         </div>
       </div>
 
       {/* 用户口碑卡片 */}
-      <div className="border-2 border-black shadow-[3px_3px_0_0_#000] bg-blue-50 p-6 mb-6">
-        <h3 className="font-bold text-lg mb-2">⭐ 使用者怎么说</h3>
-        <p className="italic text-gray-700">“本来觉得编程超难，在这里跟着练了几天，居然真的能写出小项目了！”</p>
+      <div className="border-2 border-black shadow-[3px_3px_0_0_#000] bg-blue-50 p-4 sm:p-5 md:p-6 mb-5 sm:mb-6">
+        <h3 className="font-bold text-base sm:text-lg mb-2">⭐ 使用者怎么说</h3>
+        <p className="italic text-sm sm:text-base text-gray-700">"本来觉得编程超难，在这里跟着练了几天，居然真的能写出小项目了！"</p>
       </div>
 
       {/* 行动引导按钮 */}
-      <div className="text-center mb-0">
+      <div className="text-center pb-4">
         <button 
           onClick={handleStartLearning}
           className="
-            border-3 border-black bg-purple-500 text-white font-bold text-lg 
-            px-8 py-4 shadow-[4px_4px_0_#000] 
-            hover:translate-x-1 hover:translate-y-1 hover:shadow-none 
+            border-2 sm:border-3 border-black bg-purple-500 text-white font-bold 
+            text-base sm:text-lg 
+            px-6 sm:px-8 py-3 sm:py-4 
+            shadow-[3px_3px_0_#000] sm:shadow-[4px_4px_0_#000]
+            hover:translate-x-0.5 hover:translate-y-0.5 sm:hover:translate-x-1 sm:hover:translate-y-1 
+            hover:shadow-[2px_2px_0_#000] sm:hover:shadow-none 
             transition-all duration-150
+            w-full sm:w-auto
           "
         >
           🚀 开始免费学习
