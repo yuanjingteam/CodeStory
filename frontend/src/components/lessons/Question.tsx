@@ -6,10 +6,8 @@ import { lessonDetailApi } from '@/app/api/courses/lesson-detail';
 import type { LessonDetailData } from '@/types/lesson-detail';
 import type { ExerciseDetailData } from '@/types/exercise';
 import MarkdownContent from './MarkdownContent';
-import HintModal from './HintModal';
-import CodeMirror from '@uiw/react-codemirror';
-import { python } from '@codemirror/lang-python';
-import { EditorView } from '@codemirror/view';
+import ChoiceQuestion from './ChoiceQuestion';
+import CodeQuestion from './CodeQuestion';
 
 interface QuestionProps {
   data: LessonDetailData;
@@ -27,9 +25,8 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
   const [hasNext, setHasNext] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [transitionDirection, setTransitionDirection] = useState<'left' | 'right' | null>(null);
-  const [currentHintLevelUsed, setCurrentHintLevelUsed] = useState(0); // 当前使用的提示等级
+  const [currentHintLevelUsed, setCurrentHintLevelUsed] = useState(0);
 
-  // 改为本地状态，支持切换题目时更新
   const [currentLessonId, setCurrentLessonId] = useState<string | undefined>(data?.currentLesson?.id);
   const [currentLessonTitle, setCurrentLessonTitle] = useState<string | undefined>(data?.currentLesson?.title);
 
@@ -95,22 +92,18 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
 
       console.log('切换到小节:', targetLessonId);
 
-      // 平滑切换：先淡出，再更新，最后淡入
-      setTransitionDirection(direction === 'next' ? 'left' : 'right'); // 设置滑动方向
-      setIsTransitioning(true); // 开始淡出
+      setTransitionDirection(direction === 'next' ? 'left' : 'right');
+      setIsTransitioning(true);
       setSubmitResult(null);
       setShowResultModal(false);
 
-      // 延迟一小段时间让淡出动画执行（150ms）
       await new Promise(resolve => setTimeout(resolve, 150));
 
       try {
-        // 获取新小节的详情数据
         console.log('📡 请求小节详情:', targetLessonId);
         const lessonDetail = await lessonDetailApi.getById(targetLessonId);
         console.log('📥 收到小节详情:', lessonDetail);
 
-        // 更新本地状态
         setCurrentLessonId(targetLessonId);
         setCurrentLessonTitle(lessonDetail.currentLesson?.title);
         console.log('✅ 更新标题:', lessonDetail.currentLesson?.title);
@@ -120,32 +113,28 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
           const exerciseResponse = await exerciseApi.getDetail(lessonDetail.exercise.id);
           console.log('📥 收到题目详情:', exerciseResponse);
           setExerciseData(exerciseResponse);
-          setCurrentHintLevelUsed(0); // 切换题目时重置提示等级
+          setCurrentHintLevelUsed(0);
           console.log('✅ 题目数据已更新');
         } else {
           console.log('⚠️ 该小节没有题目');
           setExerciseData(null);
-          setCurrentHintLevelUsed(0); // 切换题目时重置提示等级
+          setCurrentHintLevelUsed(0);
         }
 
-        // 更新导航状态
         setHasPrev(targetIndex > 0);
         setHasNext(targetIndex < allLessons.length - 1);
 
-        // 更新浏览器URL（不触发页面重新加载）
         const newUrl = `/courses/${courseId}/chapters/${targetChapterId}/lessons/${targetLessonId}`;
         window.history.pushState({ path: newUrl }, '', newUrl);
         console.log('🌐 URL已更新:', newUrl);
 
-        // 通知父组件：当前小节已切换
         onLessonSwitched?.(targetLessonId, targetChapterId);
 
-        // 延迟一小段时间让淡入动画执行
         setTimeout(() => setIsTransitioning(false), 50);
 
       } catch (error) {
         console.error('❌ 切换题目失败:', error);
-        setIsTransitioning(false); // 出错时恢复显示
+        setIsTransitioning(false);
         throw error;
       }
 
@@ -155,7 +144,6 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
   };
 
   useEffect(() => {
-    // 初始化或从data prop同步状态
     const lessonId = currentLessonId || data?.currentLesson?.id;
     const exerciseId = data?.exercise?.id;
 
@@ -180,7 +168,6 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
     fetchExercise();
   }, [currentLessonId, data?.exercise?.id]);
 
-  // 监听 props.data 变化，同步内部状态（当父组件更新时）
   useEffect(() => {
     if (data?.currentLesson?.id && data.currentLesson.id !== currentLessonId) {
       console.log('📢 检测到父组件数据变化，同步状态:', data.currentLesson.id);
@@ -228,7 +215,6 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
           </div>
         ) : (
           <>
-            {/* 整体内容区域：题目 + 选项/代码，统一滚动（带淡入淡出 + 滑动动画） */}
             <div
               className={`flex-1 overflow-y-auto p-4 transition-all duration-300 ease-in-out ${
                 isTransitioning
@@ -236,38 +222,29 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
                   : 'opacity-100 translate-x-0'
               }`}
             >
-              {/* 题目内容 */}
               <div className="mb-6">
                 <MarkdownContent content={exerciseData.content} />
               </div>
 
-              {/* 根据题型动态切换：选项或代码块 */}
               {exerciseData.type === 'single_choice' ? (
                 <ChoiceQuestion
                   key={currentLessonId}
                   exercise={exerciseData}
                   onSubmit={handleSubmit}
-                  onNavigate={handleNavigate}
-                  hasPrev={hasPrev}
-                  hasNext={hasNext}
-                  onHintUsed={setCurrentHintLevelUsed} // 传递提示使用回调
+                  onHintUsed={setCurrentHintLevelUsed}
                 />
               ) : exerciseData.type === 'code' ? (
                 <CodeQuestion
                   key={currentLessonId}
                   exercise={exerciseData}
                   onSubmit={handleSubmit}
-                  onNavigate={handleNavigate}
-                  hasPrev={hasPrev}
-                  hasNext={hasNext}
-                  onHintUsed={setCurrentHintLevelUsed} // 传递提示使用回调
+                  onHintUsed={setCurrentHintLevelUsed}
                 />
               ) : (
                 <div className="text-center font-bold">暂不支持的题型</div>
               )}
             </div>
 
-            {/* 底部导航栏 - 固定在页面底部 */}
             {exerciseData && (
               <div className="bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSIxIiBjeT0iMSIgcj0iMSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg==')] border-t-4 border-black px-6 py-4">
                 <div className="grid grid-cols-5 gap-3 max-w-4xl mx-auto">
@@ -320,7 +297,6 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
               </div>
             )}
 
-            {/* 提交结果弹窗 - 半透明覆盖在中间区域 */}
             {showResultModal && submitResult && (
               <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10">
                 <div className="bg-white border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] p-6 max-w-md w-full mx-4">
@@ -355,196 +331,6 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
           </>
         )}
       </div>
-    </div>
-  );
-}
-
-interface ChoiceQuestionProps {
-  exercise: ExerciseDetailData;
-  onSubmit: (answer: string) => void;
-  onNavigate?: (direction: 'prev' | 'next') => void;
-  hasPrev: boolean;
-  hasNext: boolean;
-  onHintUsed?: (level: number) => void; // 新增：提示使用回调
-}
-
-function ChoiceQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext, onHintUsed }: ChoiceQuestionProps) {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [showHintModal, setShowHintModal] = useState(false);
-  const [hintLevelUsed, setHintLevelUsed] = useState(0);
-
-  const options = (exercise.metadata as any)?.options || [];
-
-  const handleSelect = (option: string) => {
-    setSelectedOption(option);
-  };
-
-  const handleSubmit = () => {
-    if (selectedOption) {
-      onSubmit(selectedOption);
-    }
-  };
-
-  const handleUseHint = (newLevel: number) => {
-    setHintLevelUsed(newLevel);
-    onHintUsed?.(newLevel); // 通知父组件
-  };
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between mb-4">
-        <div className="font-bold text-lg">请选择正确答案：</div>
-        <button
-          onClick={() => setShowHintModal(true)}
-          disabled={!exercise.hints || hintLevelUsed >= exercise.hints?._meta.max_level}
-          className={`
-            py-2 px-4 font-bold border-4 border-black
-            shadow-[4px_4px_0_0_rgba(0,0,0,1)]
-            hover:translate-x-[2px] hover:translate-y-[2px]
-            hover:shadow-none transition-all
-            ${exercise.hints && hintLevelUsed < exercise.hints._meta.max_level
-              ? 'bg-yellow-400 text-black cursor-pointer'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }
-          `}
-        >
-          💡 提示 {exercise.hints ? `(${exercise.hints._meta.max_level - hintLevelUsed})` : ''}
-        </button>
-      </div>
-
-      {options.map((option: string, index: number) => {
-        const optionLabel = String.fromCharCode(65 + index);
-        const isSelected = selectedOption === optionLabel;
-
-        return (
-          <div
-            key={index}
-            onClick={() => handleSelect(optionLabel)}
-            className={`py-3 px-4 border-4 border-black cursor-pointer transition-all font-bold ${
-              isSelected
-                ? 'bg-yellow-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] translate-x-[2px] translate-y-[2px]'
-                : 'bg-white hover:bg-gray-100 shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]'
-            }`}
-          >
-            <span className="mr-2">{optionLabel}.</span>
-            <span>{option.replace(/^[A-D]\.\s*/, '')}</span>
-          </div>
-        );
-      })}
-
-      {showHintModal && (
-        <HintModal
-          hints={exercise.hints || null}
-          currentLevel={hintLevelUsed}
-          onUseHint={handleUseHint}
-          onClose={() => setShowHintModal(false)}
-        />
-      )}
-    </div>
-  );
-}
-
-// 编程题组件
-interface CodeQuestionProps {
-  exercise: ExerciseDetailData;
-  onSubmit: (answer: string) => void;
-  onNavigate?: (direction: 'prev' | 'next') => void;
-  hasPrev: boolean;
-  hasNext: boolean;
-  onHintUsed?: (level: number) => void; // 新增：提示使用回调
-}
-
-function CodeQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext, onHintUsed }: CodeQuestionProps) {
-  const [userCode, setUserCode] = useState('');
-  const [isCollapsed, setIsCollapsed] = useState(true);
-  const [showHintModal, setShowHintModal] = useState(false);
-  const [hintLevelUsed, setHintLevelUsed] = useState(0);
-
-  useEffect(() => {
-    const code = (exercise.metadata as any)?.codeTemplate || '';
-    setUserCode(code);
-  }, [exercise]);
-
-  const handleSubmit = () => {
-    onSubmit(userCode);
-  };
-
-  const handleUseHint = (newLevel: number) => {
-    setHintLevelUsed(newLevel);
-    onHintUsed?.(newLevel); // 通知父组件
-  };
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* 标题和提示按钮同行 */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="font-bold text-lg">请编写代码：</div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="py-2 px-4 bg-purple-500 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
-          >
-            {isCollapsed ? (
-              <>
-                <span>▶</span>
-                <span>展开代码块</span>
-              </>
-            ) : (
-              <>
-                <span>▼</span>
-                <span>收起代码块</span>
-              </>
-            )}
-          </button>
-          <button
-            onClick={() => setShowHintModal(true)}
-            disabled={!exercise.hints || hintLevelUsed >= exercise.hints?._meta.max_level}
-            className={`
-              py-2 px-4 font-bold border-4 border-black
-              shadow-[4px_4px_0_0_rgba(0,0,0,1)]
-              hover:translate-x-[2px] hover:translate-y-[2px]
-              hover:shadow-none transition-all
-              ${exercise.hints && hintLevelUsed < exercise.hints._meta.max_level
-                ? 'bg-yellow-400 text-black cursor-pointer'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }
-            `}
-          >
-            💡 提示 {exercise.hints ? `(${exercise.hints._meta.max_level - hintLevelUsed})` : ''}
-          </button>
-        </div>
-      </div>
-
-      {/* 代码编辑器区域：收起/展开 */}
-      <div className={`border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] overflow-hidden transition-all duration-300 ${
-        isCollapsed ? 'h-[180px]' : 'flex-1 min-h-0'
-      }`}>
-        <CodeMirror
-          value={userCode}
-          onChange={setUserCode}
-          height="100%"
-          theme="dark"
-          extensions={[
-            python(),
-            EditorView.lineWrapping
-          ]}
-          basicSetup={{
-            lineNumbers: true,
-            foldGutter: true,
-            highlightActiveLine: true,
-          }}
-          style={{ width: '100%', height: '100%' }}
-        />
-      </div>
-
-      {showHintModal && (
-        <HintModal
-          hints={exercise.hints || null}
-          currentLevel={hintLevelUsed}
-          onUseHint={handleUseHint}
-          onClose={() => setShowHintModal(false)}
-        />
-      )}
     </div>
   );
 }
