@@ -1,10 +1,15 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import type { ExerciseDetailData } from '@/types/exercise';
 import HintModal from './HintModal';
 import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
 import { EditorView } from '@codemirror/view';
+import { BsLightbulb } from 'react-icons/bs';
+
+export interface CodeQuestionHandle {
+  getCode: () => string;
+}
 
 interface CodeQuestionProps {
   exercise: ExerciseDetailData;
@@ -12,11 +17,16 @@ interface CodeQuestionProps {
   onHintUsed?: (level: number) => void;
 }
 
-export default function CodeQuestion({ exercise, onSubmit, onHintUsed }: CodeQuestionProps) {
+const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
+  ({ exercise, onSubmit, onHintUsed }, ref) => {
   const [userCode, setUserCode] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [showHintModal, setShowHintModal] = useState(false);
   const [hintLevelUsed, setHintLevelUsed] = useState(0);
+
+  useImperativeHandle(ref, () => ({
+    getCode: () => userCode,
+  }), [userCode]);
 
   useEffect(() => {
     const code = (exercise.metadata as any)?.codeTemplate || '';
@@ -61,13 +71,14 @@ export default function CodeQuestion({ exercise, onSubmit, onHintUsed }: CodeQue
               shadow-[4px_4px_0_0_rgba(0,0,0,1)]
               hover:translate-x-[2px] hover:translate-y-[2px]
               hover:shadow-none transition-all
+              flex items-center justify-center
               ${exercise.hints && hintLevelUsed < exercise.hints._meta.max_level
                 ? 'bg-yellow-400 text-black cursor-pointer'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }
             `}
           >
-            💡 提示 {exercise.hints ? `(${exercise.hints._meta.max_level - hintLevelUsed})` : ''}
+            <BsLightbulb className="w-5 h-5 mr-1" /> 提示 {exercise.hints ? `(${exercise.hints._meta.max_level - hintLevelUsed})` : ''}
           </button>
         </div>
       </div>
@@ -103,4 +114,6 @@ export default function CodeQuestion({ exercise, onSubmit, onHintUsed }: CodeQue
       )}
     </div>
   );
-}
+});
+
+export default CodeQuestion;

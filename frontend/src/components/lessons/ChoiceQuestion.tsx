@@ -1,7 +1,12 @@
 'use client';
-import { useState } from 'react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
 import type { ExerciseDetailData } from '@/types/exercise';
 import HintModal from './HintModal';
+import { BsLightbulb } from 'react-icons/bs';
+
+export interface ChoiceQuestionHandle {
+  getSelectedAnswer: () => string | null;
+}
 
 interface ChoiceQuestionProps {
   exercise: ExerciseDetailData;
@@ -9,10 +14,15 @@ interface ChoiceQuestionProps {
   onHintUsed?: (level: number) => void;
 }
 
-export default function ChoiceQuestion({ exercise, onSubmit, onHintUsed }: ChoiceQuestionProps) {
+const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
+  ({ exercise, onSubmit, onHintUsed }, ref) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showHintModal, setShowHintModal] = useState(false);
   const [hintLevelUsed, setHintLevelUsed] = useState(0);
+
+  useImperativeHandle(ref, () => ({
+    getSelectedAnswer: () => selectedOption,
+  }), [selectedOption]);
 
   const options = (exercise.metadata as any)?.options || [];
 
@@ -43,13 +53,14 @@ export default function ChoiceQuestion({ exercise, onSubmit, onHintUsed }: Choic
             shadow-[4px_4px_0_0_rgba(0,0,0,1)]
             hover:translate-x-[2px] hover:translate-y-[2px]
             hover:shadow-none transition-all
+            flex items-center justify-center
             ${exercise.hints && hintLevelUsed < exercise.hints._meta.max_level
               ? 'bg-yellow-400 text-black cursor-pointer'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }
           `}
         >
-          💡 提示 {exercise.hints ? `(${exercise.hints._meta.max_level - hintLevelUsed})` : ''}
+          <BsLightbulb className="w-5 h-5 mr-1" /> 提示 {exercise.hints ? `(${exercise.hints._meta.max_level - hintLevelUsed})` : ''}
         </button>
       </div>
 
@@ -83,4 +94,6 @@ export default function ChoiceQuestion({ exercise, onSubmit, onHintUsed }: Choic
       )}
     </div>
   );
-}
+});
+
+export default ChoiceQuestion;

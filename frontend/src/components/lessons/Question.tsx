@@ -1,13 +1,13 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { exerciseApi } from '@/app/api/courses/exercise';
 import { lessonDetailApi } from '@/app/api/courses/lesson-detail';
 import type { LessonDetailData } from '@/types/lesson-detail';
 import type { ExerciseDetailData } from '@/types/exercise';
 import MarkdownContent from './MarkdownContent';
-import ChoiceQuestion from './ChoiceQuestion';
-import CodeQuestion from './CodeQuestion';
+import ChoiceQuestion, { ChoiceQuestionHandle } from './ChoiceQuestion';
+import CodeQuestion, { CodeQuestionHandle } from './CodeQuestion';
 
 interface QuestionProps {
   data: LessonDetailData;
@@ -29,6 +29,9 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
 
   const [currentLessonId, setCurrentLessonId] = useState<string | undefined>(data?.currentLesson?.id);
   const [currentLessonTitle, setCurrentLessonTitle] = useState<string | undefined>(data?.currentLesson?.title);
+
+  const choiceQuestionRef = useRef<ChoiceQuestionHandle>(null);
+  const codeQuestionRef = useRef<CodeQuestionHandle>(null);
 
   const currentChapter = data?.catalog.find(ch =>
     ch.lessons.some(l => l.id === currentLessonId)
@@ -90,7 +93,6 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
       );
       const targetChapterId = targetChapter?.id || currentChapterId;
 
-      console.log('切换到小节:', targetLessonId);
 
       setTransitionDirection(direction === 'next' ? 'left' : 'right');
       setIsTransitioning(true);
@@ -100,51 +102,35 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
       await new Promise(resolve => setTimeout(resolve, 150));
 
       try {
-        console.log('📡 请求小节详情:', targetLessonId);
         const lessonDetail = await lessonDetailApi.getById(targetLessonId);
-        console.log('📥 收到小节详情:', lessonDetail);
 
         setCurrentLessonId(targetLessonId);
         setCurrentLessonTitle(lessonDetail.currentLesson?.title);
-        console.log('✅ 更新标题:', lessonDetail.currentLesson?.title);
 
         if (lessonDetail.exercise?.id) {
-          console.log('📡 请求题目详情:', lessonDetail.exercise.id);
           const exerciseResponse = await exerciseApi.getDetail(lessonDetail.exercise.id);
-          console.log('📥 收到题目详情:', exerciseResponse);
           setExerciseData(exerciseResponse);
           setCurrentHintLevelUsed(0);
-          console.log('✅ 题目数据已更新');
         } else {
-          console.log('⚠️ 该小节没有题目');
           setExerciseData(null);
           setCurrentHintLevelUsed(0);
         }
-
         setHasPrev(targetIndex > 0);
         setHasNext(targetIndex < allLessons.length - 1);
-
         const newUrl = `/courses/${courseId}/chapters/${targetChapterId}/lessons/${targetLessonId}`;
         window.history.pushState({ path: newUrl }, '', newUrl);
-        console.log('🌐 URL已更新:', newUrl);
-
         onLessonSwitched?.(targetLessonId, targetChapterId);
-
         setTimeout(() => setIsTransitioning(false), 50);
-
       } catch (error) {
-        console.error('❌ 切换题目失败:', error);
         setIsTransitioning(false);
         throw error;
       }
-
     } catch (error) {
       console.error('切换题目失败:', error);
     }
   };
 
   useEffect(() => {
-    const lessonId = currentLessonId || data?.currentLesson?.id;
     const exerciseId = data?.exercise?.id;
 
     if (!exerciseId) {
@@ -170,14 +156,12 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
 
   useEffect(() => {
     if (data?.currentLesson?.id && data.currentLesson.id !== currentLessonId) {
-      console.log('📢 检测到父组件数据变化，同步状态:', data.currentLesson.id);
       setCurrentLessonId(data.currentLesson.id);
       setCurrentLessonTitle(data.currentLesson.title);
 
       if (data.exercise?.id) {
         exerciseApi.getDetail(data.exercise.id)
           .then(response => {
-            console.log('📥 同步题目数据:', response.id);
             setExerciseData(response);
           })
           .catch(error => console.error('同步题目失败:', error));
@@ -228,6 +212,7 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
 
               {exerciseData.type === 'single_choice' ? (
                 <ChoiceQuestion
+                  ref={choiceQuestionRef}
                   key={currentLessonId}
                   exercise={exerciseData}
                   onSubmit={handleSubmit}
@@ -235,6 +220,7 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
                 />
               ) : exerciseData.type === 'code' ? (
                 <CodeQuestion
+                  ref={codeQuestionRef}
                   key={currentLessonId}
                   exercise={exerciseData}
                   onSubmit={handleSubmit}
@@ -263,13 +249,14 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
                   <button
                     onClick={() => {
                       if (exerciseData.type === 'single_choice') {
-                        const selectedOption = document.querySelector('input[name="option"]:checked') as HTMLInputElement | null;
-                        if (selectedOption?.value) handleSubmit(selectedOption.value);
+                        const selectedAnswer = choiceQuestionRef.current?.getSelectedAnswer();
+                        if (selectedAnswer) {
+                          handleSubmit(selectedAnswer);
+                        }
                       } else if (exerciseData.type === 'code') {
-                        const codeEditor = document.querySelector('.cm-content');
-                        if (codeEditor) {
-                          const codeText = (codeEditor as any).view?.state?.doc?.toString() || '';
-                          handleSubmit(codeText);
+                        const code = codeQuestionRef.current?.getCode();
+                        if (code) {
+                          handleSubmit(code);
                         }
                       }
                     }}
