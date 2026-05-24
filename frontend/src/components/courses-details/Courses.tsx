@@ -14,8 +14,8 @@ const levelConfig: Record<number, { text: string; color: string }> = {
 
 const learnStatusConfig: Record<number, { text: string; color: string }> = {
   0: { text: '未开始', color: 'bg-gray-300' },
-  1: { text: '进行中', color: 'bg-blue-300' },
-  2: { text: '已完成', color: 'bg-purple-300' },
+  1: { text: '进行中', color: 'bg-yellow-300' },
+  2: { text: '已完成', color: 'bg-green-300' },
 };
 
 const levelMap = {
@@ -47,9 +47,12 @@ const getLevelNumber = (level: string | number): number => {
   return isNaN(num) ? 0 : num;
 };
 
-const getLearnStatus = (status: number | undefined): number => {
+const getLearnStatus = (status: number | undefined, progress: number | undefined): number => {
+  if (progress !== undefined && progress >= 100) {
+    return 2; // 进度100%强制为"已完成"
+  }
   if (status === undefined) return 0;
-  if (status >= 2) return 2; 
+  if (status >= 2) return 2;
   return status;
 };
 
@@ -187,7 +190,7 @@ export default function CoursesSection() {
           {courses.map((course) => {
             const level = getLevelNumber(course.level);
             const levelConfigItem = levelConfig[level] || { text: '未知', color: 'bg-gray-300' };
-            const learnStatus = getLearnStatus(course.learnStatus);
+            const learnStatus = getLearnStatus(course.learnStatus, course.progress);
             const statusConfig = learnStatusConfig[learnStatus] || learnStatusConfig[0];
 
             return (
@@ -225,7 +228,9 @@ export default function CoursesSection() {
                       <div className="flex items-center gap-2 mb-2">
                         <div className="flex-1 bg-gray-200 rounded-full h-2 border-2 border-black">
                           <div
-                            className="bg-blue-500 h-full rounded-full transition-all"
+                            className={`h-full rounded-full transition-all ${
+                              learnStatus === 2 ? 'bg-green-500' : 'bg-blue-500'
+                            }`}
                             style={{ width: `${Math.min(course.progress, 100)}%` }}
                           />
                         </div>
