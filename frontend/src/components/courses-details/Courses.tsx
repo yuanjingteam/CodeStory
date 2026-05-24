@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import courseApi from '@/app/api/courses/courses';
 import type { Course } from '@/types/course';
 import { useAuth } from '@/hooks/useAuth';
-import { BsPersonFill } from "react-icons/bs";
+import { BsPersonFill, BsSearch } from "react-icons/bs";
 
 const levelConfig: Record<number, { text: string; color: string }> = {
   0: { text: '初级', color: 'bg-green-300' },
@@ -166,9 +166,9 @@ export default function CoursesSection() {
           />
           <button
             onClick={fetchCourses}
-            className="rounded-r-lg bg-purple-600 text-white px-4 py-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-purple-700 transition-colors"
+            className="rounded-r-lg bg-purple-600 text-white px-4 py-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-purple-700 transition-colors flex items-center justify-center"
           >
-            🔍
+            <BsSearch className="w-5 h-5" />
           </button>
           <button
             onClick={handleReset}

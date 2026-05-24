@@ -1,15 +1,40 @@
 import Progress from './Progress';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { LessonDetailData, Chapter } from '@/types/lesson-detail';
 
 interface ContentProps {
   data: LessonDetailData;
+  onLessonClick?: (lessonId: string, chapterId: string) => void;
 }
 
 const EXPANDED_CHAPTERS_STORAGE_KEY = 'expandedChapters';
 
-export default function Content({ data }: ContentProps) {
+function areEqual(prevProps: ContentProps, nextProps: ContentProps) {
+  return (
+    prevProps.data.course.id === nextProps.data.course.id &&
+    prevProps.data.course.progress === nextProps.data.course.progress &&
+    prevProps.data.catalog.length === nextProps.data.catalog.length &&
+    prevProps.data.catalog.every((chapter, index) => {
+      const nextChapter = nextProps.data.catalog[index];
+      return (
+        chapter.id === nextChapter.id &&
+        chapter.title === nextChapter.title &&
+        chapter.lessons.length === nextChapter.lessons.length &&
+        chapter.lessons.every((lesson, lessonIndex) => {
+          const nextLesson = nextChapter.lessons[lessonIndex];
+          return (
+            lesson.id === nextLesson.id &&
+            lesson.title === nextLesson.title &&
+            lesson.status === nextLesson.status
+          );
+        })
+      );
+    })
+  );
+}
+
+export default memo(function Content({ data, onLessonClick }: ContentProps) {
   const router = useRouter();
   
   const getStoredExpandedChapters = () => {
@@ -55,8 +80,12 @@ export default function Content({ data }: ContentProps) {
   };
 
   const handleLessonClick = (lessonId: string, chapterId: string) => {
-    const courseId = data.course.id;
-    router.push(`/courses/${courseId}/chapters/${chapterId}/lessons/${lessonId}`);
+    if (onLessonClick) {
+      onLessonClick(lessonId, chapterId);
+    } else {
+      const courseId = data.course.id;
+      router.push(`/courses/${courseId}/chapters/${chapterId}/lessons/${lessonId}`);
+    }
   };
 
   return (
@@ -142,4 +171,4 @@ export default function Content({ data }: ContentProps) {
       </div>
     </div>
   );
-}
+})

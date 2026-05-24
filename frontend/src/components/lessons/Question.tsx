@@ -267,6 +267,59 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
               )}
             </div>
 
+            {/* 底部导航栏 - 固定在页面底部 */}
+            {exerciseData && (
+              <div className="bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiLz48Y2lyY2xlIGN4PSIxIiBjeT0iMSIgcj0iMSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg==')] border-t-4 border-black px-6 py-4">
+                <div className="grid grid-cols-5 gap-3 max-w-4xl mx-auto">
+                  <button
+                    onClick={() => handleNavigate('prev')}
+                    disabled={!hasPrev}
+                    className={`col-span-1 py-3 px-4 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2 text-base ${
+                      hasPrev
+                        ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <span>‹</span>
+                    <span>上一题</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (exerciseData.type === 'single_choice') {
+                        const selectedOption = document.querySelector('input[name="option"]:checked') as HTMLInputElement | null;
+                        if (selectedOption?.value) handleSubmit(selectedOption.value);
+                      } else if (exerciseData.type === 'code') {
+                        const codeEditor = document.querySelector('.cm-content');
+                        if (codeEditor) {
+                          const codeText = (codeEditor as any).view?.state?.doc?.toString() || '';
+                          handleSubmit(codeText);
+                        }
+                      }
+                    }}
+                    className={`col-span-3 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-lg ${
+                      exerciseData.type === 'code' 
+                        ? 'bg-green-600 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none' 
+                        : 'bg-green-600 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+                    }`}
+                  >
+                    {exerciseData.type === 'code' ? '运行代码' : '提交'}
+                  </button>
+                  <button
+                    onClick={() => handleNavigate('next')}
+                    disabled={!hasNext}
+                    className={`col-span-1 py-3 px-4 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2 text-base ${
+                      hasNext
+                        ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <span>下一题</span>
+                    <span>›</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* 提交结果弹窗 - 半透明覆盖在中间区域 */}
             {showResultModal && submitResult && (
               <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-10">
@@ -379,44 +432,6 @@ function ChoiceQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext, onHi
         );
       })}
 
-      <div className="grid grid-cols-5 gap-2 mt-4">
-        <button
-          onClick={() => onNavigate?.('prev')}
-          disabled={!hasPrev}
-          className={`col-span-1 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 ${
-            hasPrev
-              ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          <span>‹</span>
-          <span>上一题</span>
-        </button>
-        <button
-          onClick={handleSubmit}
-          disabled={!selectedOption}
-          className={`col-span-3 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-lg ${
-            selectedOption
-              ? 'bg-green-600 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          提交答案
-        </button>
-        <button
-          onClick={() => onNavigate?.('next')}
-          disabled={!hasNext}
-          className={`col-span-1 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 ${
-            hasNext
-              ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          <span>下一题</span>
-          <span>›</span>
-        </button>
-      </div>
-
       {showHintModal && (
         <HintModal
           hints={exercise.hints || null}
@@ -520,40 +535,6 @@ function CodeQuestion({ exercise, onSubmit, onNavigate, hasPrev, hasNext, onHint
           }}
           style={{ width: '100%', height: '100%' }}
         />
-      </div>
-
-      {/* 按钮组：上一题、运行代码、下一题 */}
-      <div className="grid grid-cols-5 gap-2 mt-4">
-        <button
-          onClick={() => onNavigate?.('prev')}
-          disabled={!hasPrev}
-          className={`col-span-1 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 ${
-            hasPrev
-              ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          <span>‹</span>
-          <span>上一题</span>
-        </button>
-        <button 
-          onClick={handleSubmit}
-          className="col-span-3 py-3 bg-green-600 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-lg"
-        >
-          运行代码
-        </button>
-        <button
-          onClick={() => onNavigate?.('next')}
-          disabled={!hasNext}
-          className={`col-span-1 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 ${
-            hasNext
-              ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          <span>下一题</span>
-          <span>›</span>
-        </button>
       </div>
 
       {showHintModal && (
