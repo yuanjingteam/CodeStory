@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { courseLevelMap } from '@/utils/constants';
 import { formatPercentage } from '@/utils/format';
 import { LuArrowRight } from 'react-icons/lu';
+import { FiUsers } from 'react-icons/fi';
 export default function HomeCourses() {
   const [homeCourses, setHomeCourses] = useState<Course[]>([]);
   const [hoveredCourse, setHoveredCourse] = useState<string | null>(null);
@@ -26,7 +27,7 @@ export default function HomeCourses() {
 
   return (
     <section className="m-8 bg-white border-2 border-black rounded-sm  mx-auto">
-      <div className="flex p-4   items-center justify-between mb-4 border-b-2 border-black">
+      <div className="flex p-4  items-center justify-between mb-4 border-b-2 border-black">
         <h2 className="text-xl font-black text-black">热门课程</h2>
         <button
           className="flex items-center gap-1 text-purple-600 font-bold hover:underline text-sm"
@@ -53,8 +54,8 @@ export default function HomeCourses() {
             >
               {courseLevelMap[course.level]?.text || '未知'}
             </div>
-            <div className="flex items-start gap-3 mb-3 ">
-              <div className="w-20 h-20 bg-gray-100 border-2 border-black  flex items-center justify-center">
+            <div className="flex items-start gap-3 mb-3">
+              <div className="w-20 h-20 bg-gray-100 border-2 border-black flex items-center justify-center">
                 <Img
                   src={course.cover_url}
                   alt={course.title}
@@ -64,11 +65,17 @@ export default function HomeCourses() {
                   unoptimized
                 />
               </div>
-              <div className="flex-1 flex flex-col justify-between items-between">
-                <h3 className="font-black text-black text-sm">
-                  {course.title}
-                </h3>
-                <p className="text-xs text-gray-500">{course.description}</p>
+              <div className="flex-1 flex flex-col justify-between min-h-[80px]">
+                <div>
+                  <h3 className="font-black text-black text-sm">
+                    {course.title}
+                  </h3>
+                  <p className="text-xs text-gray-500">{course.description}</p>
+                </div>
+                <div className="flex items-center gap-1 text-xs text-gray-400 font-bold">
+                  <FiUsers className="w-4 h-4" />{' '}
+                  {`${course.student_count}人学习`}
+                </div>
               </div>
             </div>
             <div className="flex items-center justify-between mb-2">

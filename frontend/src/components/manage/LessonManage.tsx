@@ -207,7 +207,7 @@ export default function LessonManage() {
       id: 'lessonName',
       key: 'lessonName',
       header: '小节名',
-      flex: 3,
+      flex: 2.5,
       render: (_, item) => (
         <span className="text-gray-700">{item.lessonName}</span>
       ),
@@ -232,7 +232,7 @@ export default function LessonManage() {
       id: 'difficulty',
       key: 'difficulty',
       header: '难度',
-      flex: 1,
+      flex: 1.5,
       align: 'center',
       render: (value) => {
         const levelMap: Record<number, string> = { 0: '简单', 1: '中等', 2: '困难' };
@@ -249,9 +249,9 @@ export default function LessonManage() {
       key: 'createdAt',
       header: '创建时间',
       flex: 1.5,
-      align: 'center',
-      render: (value) => (
-        <span className="text-gray-600">{String(value)}</span>
+      align: 'left',
+      render: (_, item) => (
+        <span className="text-gray-600">{String(item.createdAt || '-')}</span>
       ),
     },
     {
@@ -259,15 +259,15 @@ export default function LessonManage() {
       key: 'updateAt',
       header: '更新时间',
       flex: 1.5,
-      align: 'center',
-      render: (value) => (
-        <span className="text-gray-600">{String(value)}</span>
+      align: 'left',
+      render: (_, item) => (
+        <span className="text-gray-600">{String(item.updateAt || '-')}</span>
       ),
     },
     {
       id: 'actions',
       header: '操作',
-      flex: 2,
+      flex: 2.5,
       align: 'center',
       render: (_, item) => (
         <div className="flex items-center gap-2">

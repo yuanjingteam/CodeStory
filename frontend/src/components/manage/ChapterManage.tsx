@@ -164,9 +164,9 @@ export default function ChapterManage() {
       key: 'createdAt',
       header: '创建时间',
       flex: 1.5,
-      align: 'center',
-      render: (value) => (
-        <span className="text-gray-600">{String(value)}</span>
+      align: 'left',
+      render: (_, item) => (
+        <span className="text-gray-600">{String(item.createdAt || '-')}</span>
       ),
     },
     {
@@ -174,9 +174,9 @@ export default function ChapterManage() {
       key: 'updateAt',
       header: '更新时间',
       flex: 1.5,
-      align: 'center',
-      render: (value) => (
-        <span className="text-gray-600">{String(value)}</span>
+      align: 'left',
+      render: (_, item) => (
+        <span className="text-gray-600">{String(item.updateAt || '-')}</span>
       ),
     },
     {

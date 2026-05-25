@@ -11,14 +11,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh-CN" className="h-screen">
-      <body className="min-h-screen  relative ">
+    <html lang="zh-CN">
+      <body className="relative ">
         <div className="fixed inset-0 pointer-events-none z-0">
           <div className="absolute inset-0 bg-[radial-gradient(circle,_#000_1px,_transparent_1px)] bg-[size:20px_20px]"></div>
         </div>
-     <div className="w-[95%] max-w-[1500px] mx-auto my-4 border-2 border-black bg-white shadow-[4px_4px_0px_#000] rounded-sm relative z-10">
-        {children}
-     </div>
+        <div className="w-[95%] max-w-[1500px] mx-auto my-4 border-2 border-black bg-white shadow-[4px_4px_0px_#000] rounded-sm relative z-10">
+          {children}
+        </div>
         <Toaster
           position="top-right"
           toastOptions={{
