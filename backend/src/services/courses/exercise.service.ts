@@ -259,6 +259,7 @@ async function updateLessonAndCourseProgress(lessonId: string, userId: string): 
 }
 
 export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: UserAnswer | null) {
+  const hints = exercise.hints as any;
   return {
     id: uuidToShortId(exercise.id),
     lesson_id: uuidToShortId(exercise.lesson_id),
@@ -268,7 +269,9 @@ export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: Use
     analysis: exercise.analysis || '',
     difficulty: exercise.difficulty,
     metadata: exercise.metadata,
-    hints: exercise.hints,
+    hints: hints ? {
+      _meta: hints._meta
+    } : null,
     userAnswer: userAnswer ? {
       answer: userAnswer.answer || '',
       submission_count: userAnswer.submission_count,
@@ -276,5 +279,87 @@ export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: Use
       hint_level_used: userAnswer.hint_level_used,
       score: userAnswer.score,
     } : null,
+  };
+}
+
+export async function getExerciseHint(
+  exerciseId: string,
+  hintLevel: number
+): Promise<{ content: string; level: number; maxLevel: number } | null> {
+  const resolvedId = await resolveShortId('exercises', exerciseId);
+  if (!resolvedId) return null;
+
+  const exercise = await prisma.exercises.findUnique({
+    where: { id: resolvedId, is_delete: 0 },
+  });
+
+  if (!exercise || !exercise.hints) return null;
+
+  const hints = exercise.hints as any;
+  const maxLevel = hints._meta?.max_level || 0;
+
+  if (hintLevel < 1 || hintLevel > maxLevel) {
+    return null;
+  }
+
+  const hintKey = `level_${hintLevel}` as const;
+  const hintContent = hints[hintKey];
+
+  if (!hintContent) {
+    return null;
+  }
+
+  return {
+    content: hintContent,
+    level: hintLevel,
+    maxLevel: maxLevel,
+  };
+}
+
+export async function getAcquiredHints(
+  exerciseId: string,
+  userId: string
+): Promise<{ hints: Array<{ level: number; content: string }>; currentLevel: number; maxLevel: number } | null> {
+  const resolvedId = await resolveShortId('exercises', exerciseId);
+  if (!resolvedId) return null;
+
+  const exercise = await prisma.exercises.findUnique({
+    where: { id: resolvedId, is_delete: 0 },
+  });
+
+  if (!exercise || !exercise.hints) return null;
+
+  const userAnswer = await prisma.answer.findUnique({
+    where: {
+      user_id_exercise_id: {
+        user_id: userId,
+        exercise_id: resolvedId,
+      },
+      is_delete: 0,
+    },
+  });
+
+  const currentLevel = userAnswer?.hint_level_used || 0;
+  const hints = exercise.hints as any;
+  const maxLevel = hints._meta?.max_level || 0;
+
+  const acquiredHints = [];
+  
+  for (let i = 1; i <= currentLevel && i <= maxLevel; i++) {
+    const hintKey = `level_${i}` as const;
+    const hintContent = hints[hintKey];
+    
+    if (hintContent) {
+      acquiredHints.push({
+        level: i,
+        content: hintContent,
+      });
+    }
+  }
+
+  return {
+    hints: acquiredHints,
+    currentLevel,
+    maxLevel,
   };
 }

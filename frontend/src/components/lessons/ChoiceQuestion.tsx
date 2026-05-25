@@ -18,8 +18,7 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
   ({ exercise, onSubmit, onHintUsed }, ref) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showHintModal, setShowHintModal] = useState(false);
-  const [hintLevelUsed, setHintLevelUsed] = useState(0);
-  const [acquiredHints, setAcquiredHints] = useState<string[]>([]);
+  const [hintLevelUsed, setHintLevelUsed] = useState(exercise.userAnswer?.hint_level_used || 0);
 
   useImperativeHandle(ref, () => ({
     getSelectedAnswer: () => selectedOption,
@@ -39,7 +38,6 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
 
   const handleUseHint = (newLevel: number, hintContent: string) => {
     setHintLevelUsed(newLevel);
-    setAcquiredHints(prev => [...prev, hintContent]);
     onHintUsed?.(newLevel);
   };
 
@@ -88,9 +86,9 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
 
       {showHintModal && (
         <HintModal
+          exerciseId={exercise.id}
           hints={exercise.hints || null}
           currentLevel={hintLevelUsed}
-          acquiredHints={acquiredHints}
           onUseHint={handleUseHint}
           onClose={() => setShowHintModal(false)}
         />

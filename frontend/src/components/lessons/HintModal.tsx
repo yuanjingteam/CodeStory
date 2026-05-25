@@ -1,23 +1,50 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import type { HintConfig } from '@/types/exercise';
 import { BsLightbulb } from 'react-icons/bs';
+import { exerciseApi } from '@/app/api/courses/exercise';
 
 interface HintModalProps {
+  exerciseId: string;
   hints: HintConfig | null;
   currentLevel: number;
-  acquiredHints?: string[];
   onUseHint: (newLevel: number, hintContent: string) => void;
   onClose: () => void;
 }
 
 export default function HintModal({ 
+  exerciseId,
   hints, 
   currentLevel,
-  acquiredHints = [],
   onUseHint,
   onClose 
 }: HintModalProps) {
+  const [loading, setLoading] = useState(false);
+  const [loadingHints, setLoadingHints] = useState(true);
+  const [acquiredHints, setAcquiredHints] = useState<Array<{ level: number; content: string }>>([]);
+
+  useEffect(() => {
+    const fetchAcquiredHints = async () => {
+      if (!exerciseId || !hints) {
+        setLoadingHints(false);
+        return;
+      }
+
+      try {
+        const result = await exerciseApi.getAcquiredHints(exerciseId);
+        if (result && result.hints) {
+          setAcquiredHints(result.hints);
+        }
+      } catch (error) {
+        console.error('获取已使用的提示失败:', error);
+      } finally {
+        setLoadingHints(false);
+      }
+    };
+
+    fetchAcquiredHints();
+  }, [exerciseId, hints]);
 
   if (!hints) {
     return (
@@ -41,15 +68,23 @@ export default function HintModal({
   const { max_level, score_deduction } = hints._meta;
   const remainingHints = max_level - currentLevel;
 
-  const handleGetHint = () => {
-    if (currentLevel >= max_level) return;
+  const handleGetHint = async () => {
+    if (currentLevel >= max_level || loading) return;
+
+    setLoading(true);
     
-    const nextLevel = currentLevel + 1;
-    const hintKey = `level_${nextLevel}` as const;
-    const hintContent = hints[hintKey];
-    
-    if (hintContent) {
-      onUseHint(nextLevel, hintContent);
+    try {
+      const nextLevel = currentLevel + 1;
+      const result = await exerciseApi.getHint(exerciseId, nextLevel);
+      
+      if (result && result.content) {
+        setAcquiredHints(prev => [...prev, { level: result.level, content: result.content }]);
+        onUseHint(nextLevel, result.content);
+      }
+    } catch (error) {
+      console.error('获取提示失败:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,7 +106,12 @@ export default function HintModal({
           </button>
         </div>
 
-        {acquiredHints.length > 0 && (
+        {loadingHints ? (
+          <div className="mb-4 text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            <p className="mt-2 text-gray-600">加载中...</p>
+          </div>
+        ) : acquiredHints.length > 0 ? (
           <div className="mb-4 space-y-3">
             {acquiredHints.map((hint, index) => (
               <div 
@@ -83,13 +123,13 @@ export default function HintModal({
                 }`}
               >
                 <div className="font-bold text-sm mb-1 flex items-center">
-                  提示 {index + 1}
+                  提示 {hint.level}
                 </div>
-                <p className="text-sm text-gray-700">{hint}</p>
+                <p className="text-sm text-gray-700">{hint.content}</p>
               </div>
             ))}
           </div>
-        )}
+        ) : null}
 
         <div className="bg-purple-50 p-3 border-2 border-black mb-4">
           <div className="flex justify-between text-sm font-bold">
@@ -103,9 +143,16 @@ export default function HintModal({
         {remainingHints > 0 ? (
           <button
             onClick={handleGetHint}
-            className="w-full py-3 bg-green-500 text-white border-2 border-black font-bold shadow-[2px_2px_0_#000] hover:bg-green-600 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+            disabled={loading}
+            className={`w-full py-3 bg-green-500 text-white border-2 border-black font-bold shadow-[2px_2px_0_#000] hover:bg-green-600 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all ${
+              loading ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
           >
-            👉 获取下一个提示 (剩余 {remainingHints} 次)
+            {loading ? (
+              <>⏳ 获取中...</>
+            ) : (
+              <>👉 获取下一个提示 (剩余 {remainingHints} 次)</>
+            )}
           </button>
         ) : currentLevel > 0 ? (
           <div className="text-center py-3 bg-yellow-50 border-2 border-black font-bold text-gray-700">

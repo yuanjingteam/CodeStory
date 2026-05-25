@@ -22,8 +22,7 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
   const [userCode, setUserCode] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [showHintModal, setShowHintModal] = useState(false);
-  const [hintLevelUsed, setHintLevelUsed] = useState(0);
-  const [acquiredHints, setAcquiredHints] = useState<string[]>([]);
+  const [hintLevelUsed, setHintLevelUsed] = useState(exercise.userAnswer?.hint_level_used || 0);
 
   useImperativeHandle(ref, () => ({
     getCode: () => userCode,
@@ -40,7 +39,6 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
 
   const handleUseHint = (newLevel: number, hintContent: string) => {
     setHintLevelUsed(newLevel);
-    setAcquiredHints(prev => [...prev, hintContent]);
     onHintUsed?.(newLevel);
   };
 
@@ -108,9 +106,9 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
 
       {showHintModal && (
         <HintModal
+          exerciseId={exercise.id}
           hints={exercise.hints || null}
           currentLevel={hintLevelUsed}
-          acquiredHints={acquiredHints}
           onUseHint={handleUseHint}
           onClose={() => setShowHintModal(false)}
         />
