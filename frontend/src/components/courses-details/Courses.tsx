@@ -4,18 +4,18 @@ import { useRouter } from 'next/navigation';
 import courseApi from '@/app/api/courses/courses';
 import type { Course } from '@/types/course';
 import { useAuth } from '@/hooks/useAuth';
-import { BsPersonFill } from "react-icons/bs";
+import { BsPersonFill, BsSearch } from "react-icons/bs";
 
 const levelConfig: Record<number, { text: string; color: string }> = {
-  0: { text: '初级', color: 'bg-green-300' },
-  1: { text: '中级', color: 'bg-green-300' },
-  2: { text: '高级', color: 'bg-pink-300' },
+  0: { text: '初级', color: 'bg-green-400 rounded-lg' },
+  1: { text: '中级', color: 'bg-yellow-400 rounded-lg' },
+  2: { text: '高级', color: 'bg-red-400 rounded-lg' },
 };
 
 const learnStatusConfig: Record<number, { text: string; color: string }> = {
-  0: { text: '未开始', color: 'bg-gray-300' },
-  1: { text: '进行中', color: 'bg-blue-300' },
-  2: { text: '已完成', color: 'bg-purple-300' },
+  0: { text: '未开始', color: 'bg-gray-300 rounded-lg' },
+  1: { text: '进行中', color: 'bg-yellow-300 rounded-lg' },
+  2: { text: '已完成', color: 'bg-green-300 rounded-lg' },
 };
 
 const levelMap = {
@@ -47,9 +47,12 @@ const getLevelNumber = (level: string | number): number => {
   return isNaN(num) ? 0 : num;
 };
 
-const getLearnStatus = (status: number | undefined): number => {
+const getLearnStatus = (status: number | undefined, progress: number | undefined): number => {
+  if (progress !== undefined && progress >= 100) {
+    return 2; // 进度100%强制为"已完成"
+  }
   if (status === undefined) return 0;
-  if (status >= 2) return 2; 
+  if (status >= 2) return 2;
   return status;
 };
 
@@ -163,9 +166,9 @@ export default function CoursesSection() {
           />
           <button
             onClick={fetchCourses}
-            className="rounded-r-lg bg-purple-600 text-white px-4 py-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-purple-700 transition-colors"
+            className="rounded-r-lg bg-purple-600 text-white px-4 py-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-purple-700 transition-colors flex items-center justify-center"
           >
-            🔍
+            <BsSearch className="w-5 h-5" />
           </button>
           <button
             onClick={handleReset}
@@ -187,7 +190,7 @@ export default function CoursesSection() {
           {courses.map((course) => {
             const level = getLevelNumber(course.level);
             const levelConfigItem = levelConfig[level] || { text: '未知', color: 'bg-gray-300' };
-            const learnStatus = getLearnStatus(course.learnStatus);
+            const learnStatus = getLearnStatus(course.learnStatus, course.progress);
             const statusConfig = learnStatusConfig[learnStatus] || learnStatusConfig[0];
 
             return (
@@ -225,7 +228,9 @@ export default function CoursesSection() {
                       <div className="flex items-center gap-2 mb-2">
                         <div className="flex-1 bg-gray-200 rounded-full h-2 border-2 border-black">
                           <div
-                            className="bg-blue-500 h-full rounded-full transition-all"
+                            className={`h-full rounded-full transition-all ${
+                              learnStatus === 2 ? 'bg-green-500' : 'bg-blue-500'
+                            }`}
                             style={{ width: `${Math.min(course.progress, 100)}%` }}
                           />
                         </div>

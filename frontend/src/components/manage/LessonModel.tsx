@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { FiX } from 'react-icons/fi';
-import type { CreateLessonRequest, UpdateLessonRequest, MetadataValue } from '@/types/lesson-manage';
+import type { CreateLessonRequest, UpdateLessonRequest, MetadataValue, HintsValue } from '@/types/lesson-manage';
 import chapterManageApi from '@/app/api/manage/chapter-manage';
 import { getExerciseTypeOptions } from '@/utils/exerciseType';
 import type { ChapterItem } from '@/types/chapter-manage';
@@ -20,6 +20,7 @@ interface LessonModelProps {
     sortOrder: number;
     answer?: string;
     metadata?: MetadataValue;
+    hints?: HintsValue;
   };
 }
 
@@ -35,6 +36,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
     sortOrder: number;
     answer: string;
     metadata: MetadataValue;
+    hints: HintsValue;
   }>({
     chapterId: '',
     lessonName: '',
@@ -44,6 +46,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
     sortOrder: 0,
     answer: '',
     metadata: null,
+    hints: null,
   });
   const [submitting, setSubmitting] = useState(false);
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
@@ -60,6 +63,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         sortOrder: initialData.sortOrder ?? 0,
         answer: initialData.answer || '',
         metadata: initialData.metadata || null,
+        hints: initialData.hints || null,
       });
     }
     if (!open) {
@@ -72,6 +76,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         sortOrder: 0,
         answer: '',
         metadata: null,
+        hints: null,
       });
     }
   }, [open, initialData, isEdit]);
@@ -194,7 +199,6 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
                 ))}
               </select>
             </div>
-
             <div>
               <label className="block text-sm font-bold mb-1">难度</label>
               <select
@@ -221,27 +225,28 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
           </div>
 
           {formData.type && (
+          <>
             <div className="border-2 border-dashed border-blue-300 p-4 rounded-lg bg-blue-50">
-              <label className="block text-sm font-bold mb-2">� 题目配置（可选）</label>
+              <label className="block text-sm font-bold mb-2">题目配置</label>
               
               <div className="mb-3 p-3 bg-white border border-gray-200 rounded text-xs">
                 <p className="font-semibold mb-2 text-gray-700">
                   {formData.type === 'single_choice' ? '📝 选择题示例格式：' : '💻 编程题示例格式：'}
                 </p>
                 <pre className="text-gray-600 whitespace-pre-wrap break-all">
-{formData.type === 'single_choice' 
-  ? `{
+                  {formData.type === 'single_choice' 
+                    ? `{
   "template": "单选题模板",
   "options": ["<link>", "<a>", "<href>", "<url>"]
 }`
-  : `{
+                    : `{
   "template": "代码题模板",
   "testCases": [
     {"input": "1, 2", "output": "3"},
     {"input": "5, 10", "output": "15"}
   ]
-}`}
-                </pre>
+}`
+                   }</pre>
               </div>
 
               <textarea
@@ -268,6 +273,52 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
                 <p className="mt-2 text-xs text-red-600">⚠️ JSON 格式错误，请检查</p>
               )}
             </div>
+
+            <div className="border-2 border-dashed border-yellow-300 p-4 rounded-lg bg-yellow-50">
+              <label className="block text-sm font-bold mb-2">配置提示</label>
+              
+              <div className="mb-3 p-3 bg-white border border-gray-200 rounded text-xs">
+                <p className="font-semibold mb-2 text-gray-700">
+                  💡 提示配置示例格式：
+                </p>
+                <pre className="text-gray-600 whitespace-pre-wrap break-all">
+{`{
+  "level_1": "第一级提示内容",
+  "level_2": "第二级提示内容",
+  "level_3": "第三级提示内容",
+  "_meta": {
+    "max_level": 3,
+    "score_deduction": [10, 20, 30]
+  }
+}`}
+                </pre>
+              </div>
+
+              <textarea
+                value={typeof formData.hints === 'object' ? JSON.stringify(formData.hints, null, 2) : (formData.hints || '')}
+                onChange={e => {
+                  const value = e.target.value.trim();
+                  if (!value) {
+                    setFormData(prev => ({ ...prev, hints: null }));
+                    return;
+                  }
+                  try {
+                    const parsed = JSON.parse(value);
+                    setFormData(prev => ({ ...prev, hints: parsed }));
+                  } catch {
+                    setFormData(prev => ({ ...prev, hints: value }));
+                  }
+                }}
+                placeholder="复制上方示例并修改内容..."
+                rows={6}
+                className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none font-mono text-sm"
+              />
+              
+              {typeof formData.hints === 'string' && formData.hints && (
+                <p className="mt-2 text-xs text-red-600">⚠️ JSON 格式错误，请检查</p>
+              )}
+            </div>
+          </>
           )}
         </div>
 

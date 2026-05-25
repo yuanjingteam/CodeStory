@@ -11,6 +11,7 @@ export interface ExerciseDetail {
   analysis: string | null;
   difficulty: number;
   metadata: any;
+  hints: any;
 }
 
 export interface UserAnswer {
@@ -53,7 +54,8 @@ export async function getExerciseDetail(
 export async function submitExercise(
   exerciseId: string,
   answer: string,
-  userId: string
+  userId: string,
+  hintLevelUsed: number = 0
 ): Promise<{ correct: boolean; score: number; feedback: string; analysis: string } | null> {
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
@@ -74,12 +76,32 @@ export async function submitExercise(
     const answerIndex = answer.trim().toUpperCase().charCodeAt(0) - 65;
     const selectedOption = options[answerIndex];
     correct = selectedOption === exercise.answer;
-    score = correct ? 100 : 0;
-    feedback = correct ? '回答正确，知识点掌握良好' : '回答错误，请重新思考';
+    
+    if (correct) {
+      const hints = exercise.hints as any;
+      const scoreDeduction = hints?._meta?.score_deduction || [0, 10, 25, 45];
+      score = Math.max(0, 100 - (scoreDeduction[hintLevelUsed] || 0));
+      feedback = hintLevelUsed > 0 
+        ? `回答正确！使用了 ${hintLevelUsed} 次提示，得分: ${score} 分` 
+        : '回答正确，知识点掌握良好';
+    } else {
+      score = 0;
+      feedback = '回答错误，请重新思考';
+    }
   } else if (exercise.type === 'code') {
     correct = answer.trim() === exercise.answer.trim();
-    score = correct ? 100 : 0;
-    feedback = correct ? '所有测试用例通过' : '部分测试用例未通过';
+    
+    if (correct) {
+      const hints = exercise.hints as any;
+      const scoreDeduction = hints?._meta?.score_deduction || [0, 10, 25, 45];
+      score = Math.max(0, 100 - (scoreDeduction[hintLevelUsed] || 0));
+      feedback = hintLevelUsed > 0 
+        ? `所有测试用例通过！使用了 ${hintLevelUsed} 次提示，得分: ${score} 分`
+        : '所有测试用例通过';
+    } else {
+      score = 0;
+      feedback = '部分测试用例未通过';
+    }
   }
 
   const existingAnswer = await prisma.answer.findUnique({
@@ -95,13 +117,15 @@ export async function submitExercise(
   const isFirstSubmission = !existingAnswer;
 
   if (existingAnswer) {
+    const finalScore = isFirstSubmission ? score : Math.max(existingAnswer.score, score);
     await prisma.answer.update({
       where: { id: existingAnswer.id },
       data: {
         answer,
         submission_count: existingAnswer.submission_count + 1,
         feedback,
-        score,
+        hint_level_used: Math.max(existingAnswer.hint_level_used, hintLevelUsed),
+        score: finalScore,
       },
     });
   } else {
@@ -113,7 +137,7 @@ export async function submitExercise(
         submission_count: 1,
         feedback,
         score,
-        hint_level_used: 0,
+        hint_level_used: hintLevelUsed,
       },
     });
   }
@@ -235,6 +259,7 @@ async function updateLessonAndCourseProgress(lessonId: string, userId: string): 
 }
 
 export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: UserAnswer | null) {
+  const hints = exercise.hints as any;
   return {
     id: uuidToShortId(exercise.id),
     lesson_id: uuidToShortId(exercise.lesson_id),
@@ -244,6 +269,9 @@ export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: Use
     analysis: exercise.analysis || '',
     difficulty: exercise.difficulty,
     metadata: exercise.metadata,
+    hints: hints ? {
+      _meta: hints._meta
+    } : null,
     userAnswer: userAnswer ? {
       answer: userAnswer.answer || '',
       submission_count: userAnswer.submission_count,
@@ -251,5 +279,119 @@ export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: Use
       hint_level_used: userAnswer.hint_level_used,
       score: userAnswer.score,
     } : null,
+  };
+}
+
+export async function getExerciseHint(
+  exerciseId: string,
+  hintLevel: number,
+  userId: string
+): Promise<{ content: string; level: number; maxLevel: number } | null> {
+  const resolvedId = await resolveShortId('exercises', exerciseId);
+  if (!resolvedId) return null;
+
+  const exercise = await prisma.exercises.findUnique({
+    where: { id: resolvedId, is_delete: 0 },
+  });
+
+  if (!exercise || !exercise.hints) return null;
+
+  const hints = exercise.hints as any;
+  const maxLevel = hints._meta?.max_level || 0;
+
+  if (hintLevel < 1 || hintLevel > maxLevel) {
+    return null;
+  }
+
+  const hintKey = `level_${hintLevel}` as const;
+  const hintContent = hints[hintKey];
+
+  if (!hintContent) {
+    return null;
+  }
+
+  const existingAnswer = await prisma.answer.findUnique({
+    where: {
+      user_id_exercise_id: {
+        user_id: userId,
+        exercise_id: resolvedId,
+      },
+      is_delete: 0,
+    },
+  });
+
+  if (existingAnswer) {
+    await prisma.answer.update({
+      where: { id: existingAnswer.id },
+      data: {
+        hint_level_used: Math.max(existingAnswer.hint_level_used, hintLevel),
+      },
+    });
+  } else {
+    await prisma.answer.create({
+      data: {
+        user_id: userId,
+        exercise_id: resolvedId,
+        answer: '',
+        submission_count: 0,
+        feedback: '',
+        score: 0,
+        hint_level_used: hintLevel,
+      },
+    });
+  }
+
+  return {
+    content: hintContent,
+    level: hintLevel,
+    maxLevel: maxLevel,
+  };
+}
+
+export async function getAcquiredHints(
+  exerciseId: string,
+  userId: string
+): Promise<{ hints: Array<{ level: number; content: string }>; currentLevel: number; maxLevel: number } | null> {
+  const resolvedId = await resolveShortId('exercises', exerciseId);
+  if (!resolvedId) return null;
+
+  const exercise = await prisma.exercises.findUnique({
+    where: { id: resolvedId, is_delete: 0 },
+  });
+
+  if (!exercise || !exercise.hints) return null;
+
+  const userAnswer = await prisma.answer.findUnique({
+    where: {
+      user_id_exercise_id: {
+        user_id: userId,
+        exercise_id: resolvedId,
+      },
+      is_delete: 0,
+    },
+  });
+
+  const currentLevel = userAnswer?.hint_level_used || 0;
+  const hints = exercise.hints as any;
+  const maxLevel = hints._meta?.max_level || 0;
+
+  const acquiredHints = [];
+  
+  for (let i = 1; i <= currentLevel && i <= maxLevel; i++) {
+    const hintKey = `level_${i}` as const;
+    const hintContent = hints[hintKey];
+    
+    if (hintContent) {
+      acquiredHints.push({
+        level: i,
+        content: hintContent,
+      });
+    }
+  }
+
+  return {
+    hints: acquiredHints,
+    currentLevel,
+    maxLevel,
   };
 }

@@ -4,6 +4,14 @@ export interface ExerciseDetailResponse {
   data: ExerciseDetailData;
 }
 
+export interface HintConfig {
+  [key: `level_${number}`]: string;
+  _meta: {
+    max_level: number;
+    score_deduction: number[];
+  };
+}
+
 export interface ExerciseDetailData {
   id: string;
   lesson_id: string;
@@ -13,6 +21,7 @@ export interface ExerciseDetailData {
   analysis: string;
   difficulty: number;
   metadata: ChoiceMetadata | CodeMetadata;
+  hints: HintConfig | null;
   userAnswer?: UserAnswer;
 }
 

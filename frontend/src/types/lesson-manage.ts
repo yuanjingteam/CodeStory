@@ -7,6 +7,16 @@ export interface ExerciseMetadata {
 
 export type MetadataValue = ExerciseMetadata | string | null;
 
+export interface HintConfig {
+  [key: `level_${number}`]: string;
+  _meta: {
+    max_level: number;
+    score_deduction: number[];
+  };
+}
+
+export type HintsValue = HintConfig | string | null;
+
 export interface LessonItem {
   id: string;
   lessonId: string;
@@ -24,6 +34,7 @@ export interface LessonItem {
   source: string;
   sortOrder: number;
   metadata: MetadataValue;
+  hints: HintsValue;
   createdAt: string;
   updateAt: string;
 }
@@ -46,6 +57,7 @@ export interface CreateLessonRequest {
   sortOrder?: number;
   answer?: string;
   metadata?: MetadataValue;
+  hints?: HintsValue;
 }
 
 export interface CreateLessonResponse {
@@ -62,6 +74,7 @@ export interface UpdateLessonRequest {
   sortOrder?: number;
   answer?: string;
   metadata?: MetadataValue;
+  hints?: HintsValue;
 }
 
 export interface UpdateLessonResponse {
