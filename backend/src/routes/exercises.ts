@@ -57,12 +57,13 @@ router.get('/hint', authMiddleware, async (req, res) => {
   try {
     const exerciseId = req.query.exercise_id as string;
     const hintLevel = parseInt(req.query.level as string);
+    const userId = req.user!.id;
 
     if (!exerciseId || isNaN(hintLevel)) {
       return badRequest(res, '缺少 exercise_id 或 level 参数');
     }
 
-    const result = await getExerciseHint(exerciseId, hintLevel);
+    const result = await getExerciseHint(exerciseId, hintLevel, userId);
     if (!result) {
       return notFound(res, '提示不存在或级别无效');
     }

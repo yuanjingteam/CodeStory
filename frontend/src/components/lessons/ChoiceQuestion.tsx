@@ -1,5 +1,5 @@
 'use client';
-import { useState, forwardRef, useImperativeHandle } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import type { ExerciseDetailData } from '@/types/exercise';
 import HintModal from './HintModal';
 import { BsLightbulb } from 'react-icons/bs';
@@ -18,7 +18,13 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
   ({ exercise, onSubmit, onHintUsed }, ref) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showHintModal, setShowHintModal] = useState(false);
-  const [hintLevelUsed, setHintLevelUsed] = useState(exercise.userAnswer?.hint_level_used || 0);
+  const [hintLevelUsed, setHintLevelUsed] = useState(0);
+
+  useEffect(() => {
+    if (exercise.userAnswer?.hint_level_used !== undefined) {
+      setHintLevelUsed(exercise.userAnswer.hint_level_used);
+    }
+  }, [exercise.userAnswer?.hint_level_used]);
 
   useImperativeHandle(ref, () => ({
     getSelectedAnswer: () => selectedOption,

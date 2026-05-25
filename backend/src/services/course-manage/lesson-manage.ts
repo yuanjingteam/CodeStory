@@ -93,6 +93,7 @@ export const getLessonList = async (req: Request, res: Response) => {
       source: exercise.source || '',
       sortOrder: exercise.lessons?.order || 0,
       metadata: exercise.metadata,
+      hints: exercise.hints,
       createdAt: exercise.created_at.toISOString().replace('T', ' ').slice(0, 19),
       updateAt: exercise.updated_at.toISOString().replace('T', ' ').slice(0, 19)
     }));
@@ -106,7 +107,7 @@ export const getLessonList = async (req: Request, res: Response) => {
 
 export const createLesson = async (req: Request, res: Response) => {
   try {
-    const { chapterId, lessonName, content, type, difficulty, sortOrder, answer, metadata } = req.body;
+    const { chapterId, lessonName, content, type, difficulty, sortOrder, answer, metadata, hints } = req.body;
     if (!chapterId || chapterId === '') return badRequest(res, '章节ID不能为空');
     if (!lessonName || !lessonName.trim()) return badRequest(res, '小节名称不能为空');
 
@@ -172,7 +173,8 @@ export const createLesson = async (req: Request, res: Response) => {
             content: String(content || ''),
             answer: String(answer || ''),
             difficulty: Number(difficulty) || 0,
-            metadata: metadata || null
+            metadata: metadata || null,
+            hints: hints || null
           }
         });
         exerciseType = exercise.type;
@@ -196,6 +198,7 @@ export const createLesson = async (req: Request, res: Response) => {
       type: exerciseType,
       answer: exerciseAnswer,
       metadata: exerciseMetadata,
+      hints: hints || null,
       difficulty: lesson.difficulty,
       sortOrder: lesson.order,
       exerciseCount: type || content || answer ? 1 : 0,
@@ -244,7 +247,7 @@ export const updateLesson = async (req: Request, res: Response) => {
     });
     if (!existing) return notFound(res, '小节不存在');
 
-    const { lessonName, content, type, difficulty, sortOrder, answer, metadata } = req.body;
+    const { lessonName, content, type, difficulty, sortOrder, answer, metadata, hints } = req.body;
     const updateData: Record<string, any> = {};
 
     if (lessonName !== undefined && lessonName !== '') {
@@ -269,8 +272,9 @@ export const updateLesson = async (req: Request, res: Response) => {
     let exerciseContent = '';
     let exerciseAnswer = '';
     let exerciseMetadata = null;
+    let exerciseHints = null;
 
-    if (type !== undefined || content !== undefined || answer !== undefined || metadata !== undefined) {
+    if (type !== undefined || content !== undefined || answer !== undefined || metadata !== undefined || hints !== undefined) {
       const existingExercise = await prisma.exercises.findFirst({
         where: { lesson_id: resolvedLessonId, is_delete: 0 },
         orderBy: { created_at: 'asc' }
@@ -290,6 +294,9 @@ export const updateLesson = async (req: Request, res: Response) => {
         if (metadata !== undefined) {
           exerciseUpdateData.metadata = metadata;
         }
+        if (hints !== undefined) {
+          exerciseUpdateData.hints = hints;
+        }
 
         const updatedExercise = await prisma.exercises.update({
           where: { id: existingExercise.id },
@@ -299,7 +306,8 @@ export const updateLesson = async (req: Request, res: Response) => {
         exerciseContent = updatedExercise.content || '';
         exerciseAnswer = updatedExercise.answer || '';
         exerciseMetadata = updatedExercise.metadata;
-      } else if (type || content || answer || metadata) {
+        exerciseHints = updatedExercise.hints;
+      } else if (type || content || answer || metadata || hints) {
         const newExercise = await prisma.exercises.create({
           data: {
             lesson_id: resolvedLessonId,
@@ -307,13 +315,15 @@ export const updateLesson = async (req: Request, res: Response) => {
             content: content || '',
             answer: answer || '',
             difficulty: lesson.difficulty,
-            metadata: metadata || null
+            metadata: metadata || null,
+            hints: hints || null
           }
         });
         exerciseType = newExercise.type;
         exerciseContent = newExercise.content;
         exerciseAnswer = newExercise.answer;
         exerciseMetadata = newExercise.metadata;
+        exerciseHints = newExercise.hints;
       }
     } else {
       const firstExercise = await prisma.exercises.findFirst({
@@ -325,6 +335,7 @@ export const updateLesson = async (req: Request, res: Response) => {
         exerciseContent = firstExercise.content || '';
         exerciseAnswer = firstExercise.answer || '';
         exerciseMetadata = firstExercise.metadata;
+        exerciseHints = firstExercise.hints;
       }
     }
 
@@ -352,6 +363,7 @@ export const updateLesson = async (req: Request, res: Response) => {
       type: exerciseType,
       answer: exerciseAnswer || '',
       metadata: exerciseMetadata,
+      hints: exerciseHints,
       difficulty: lesson.difficulty,
       sortOrder: lesson.order,
       exerciseCount,

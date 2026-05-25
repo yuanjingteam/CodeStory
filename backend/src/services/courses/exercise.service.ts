@@ -284,7 +284,8 @@ export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: Use
 
 export async function getExerciseHint(
   exerciseId: string,
-  hintLevel: number
+  hintLevel: number,
+  userId: string
 ): Promise<{ content: string; level: number; maxLevel: number } | null> {
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
@@ -307,6 +308,37 @@ export async function getExerciseHint(
 
   if (!hintContent) {
     return null;
+  }
+
+  const existingAnswer = await prisma.answer.findUnique({
+    where: {
+      user_id_exercise_id: {
+        user_id: userId,
+        exercise_id: resolvedId,
+      },
+      is_delete: 0,
+    },
+  });
+
+  if (existingAnswer) {
+    await prisma.answer.update({
+      where: { id: existingAnswer.id },
+      data: {
+        hint_level_used: Math.max(existingAnswer.hint_level_used, hintLevel),
+      },
+    });
+  } else {
+    await prisma.answer.create({
+      data: {
+        user_id: userId,
+        exercise_id: resolvedId,
+        answer: '',
+        submission_count: 0,
+        feedback: '',
+        score: 0,
+        hint_level_used: hintLevel,
+      },
+    });
   }
 
   return {

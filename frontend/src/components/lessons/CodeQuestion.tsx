@@ -22,7 +22,13 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
   const [userCode, setUserCode] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [showHintModal, setShowHintModal] = useState(false);
-  const [hintLevelUsed, setHintLevelUsed] = useState(exercise.userAnswer?.hint_level_used || 0);
+  const [hintLevelUsed, setHintLevelUsed] = useState(0);
+
+  useEffect(() => {
+    if (exercise.userAnswer?.hint_level_used !== undefined) {
+      setHintLevelUsed(exercise.userAnswer.hint_level_used);
+    }
+  }, [exercise.userAnswer?.hint_level_used]);
 
   useImperativeHandle(ref, () => ({
     getCode: () => userCode,
