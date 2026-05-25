@@ -4,6 +4,7 @@ import { FiX } from 'react-icons/fi';
 import type { CreateLessonRequest, UpdateLessonRequest, MetadataValue, HintsValue } from '@/types/lesson-manage';
 import chapterManageApi from '@/app/api/manage/chapter-manage';
 import { getExerciseTypeOptions } from '@/utils/exerciseType';
+import { SearchableSelect } from '@/components/common';
 import type { ChapterItem } from '@/types/chapter-manage';
 
 interface LessonModelProps {
@@ -146,19 +147,19 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         <div className="p-6 space-y-4 overflow-y-auto flex-1">
           <div>
             <label className="block text-sm font-bold mb-1">所属章节 *</label>
-            <select
+            <SearchableSelect
+              options={chapters.map(chapter => ({
+                label: `${chapter.courseName} - ${chapter.chapterName}`,
+                value: String(chapter.id),
+              }))}
               value={formData.chapterId}
-              onChange={e => setFormData(prev => ({ ...prev, chapterId: e.target.value }))}
+              onChange={val => setFormData(prev => ({ ...prev, chapterId: val }))}
+              placeholder="请选择章节"
+              searchPlaceholder="搜索章节..."
               disabled={isEdit}
-              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
-            >
-              <option value="">{loadingChapters ? '加载中...' : '请选择章节'}</option>
-              {chapters.map(chapter => (
-                <option key={chapter.id} value={String(chapter.id)}>
-                  {chapter.courseName} - {chapter.chapterName}
-                </option>
-              ))}
-            </select>
+              loading={loadingChapters}
+              emptyText="无匹配章节"
+            />
           </div>
 
           <div>
