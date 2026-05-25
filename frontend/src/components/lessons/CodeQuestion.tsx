@@ -89,9 +89,14 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
         </div>
       </div>
 
-      <div className={`border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] overflow-hidden transition-all duration-300 ${
-        isCollapsed ? 'h-[180px]' : 'flex-1 min-h-0'
+      <div className={`border-4 border-black rounded-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)] overflow-hidden transition-all duration-300 ${
+        isCollapsed ? 'h-[240px]' : 'flex-1 min-h-0'
       }`}>
+        <style>{`
+          .cm-editor .cm-content {
+            font-size: 16px;
+          }
+        `}</style>
         <CodeMirror
           value={userCode}
           onChange={setUserCode}
