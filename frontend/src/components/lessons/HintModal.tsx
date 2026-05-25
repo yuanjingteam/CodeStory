@@ -1,32 +1,35 @@
 'use client';
 
-import { useState } from 'react';
 import type { HintConfig } from '@/types/exercise';
+import { BsLightbulb } from 'react-icons/bs';
 
 interface HintModalProps {
   hints: HintConfig | null;
   currentLevel: number;
-  onUseHint: (newLevel: number) => void;
+  acquiredHints?: string[];
+  onUseHint: (newLevel: number, hintContent: string) => void;
   onClose: () => void;
 }
 
 export default function HintModal({ 
   hints, 
-  currentLevel, 
+  currentLevel,
+  acquiredHints = [],
   onUseHint,
   onClose 
 }: HintModalProps) {
-  const [localHints, setLocalHints] = useState<string[]>([]);
 
   if (!hints) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] p-6 max-w-md w-full mx-4">
-          <h3 className="text-xl font-bold mb-4">💡 提示</h3>
+        <div className="bg-white border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] p-6 max-w-md w-full mx-4">
+          <h3 className="text-xl font-bold mb-4">
+            <BsLightbulb className="w-5 h-5 mr-1" /> 提示
+          </h3>
           <p className="text-gray-600 mb-6">本题暂无提示</p>
           <button
             onClick={onClose}
-            className="w-full py-2 bg-yellow-400 border-4 border-black font-bold shadow-[4px_4px_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+            className="w-full py-1 bg-yellow-400 border-2 border-black font-bold shadow-[4px_4px_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
           >
             确定
           </button>
@@ -46,8 +49,7 @@ export default function HintModal({
     const hintContent = hints[hintKey];
     
     if (hintContent) {
-      setLocalHints(prev => [...prev, hintContent]);
-      onUseHint(nextLevel);
+      onUseHint(nextLevel, hintContent);
     }
   };
 
@@ -55,9 +57,12 @@ export default function HintModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white border-4 border-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
+      <div className="bg-white border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold">💡 学习助手</h3>
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            <BsLightbulb className="w-5 h-5" />
+              <span>学习助手</span>
+          </h3>
           <button 
             onClick={onClose}
             className="text-2xl font-bold hover:text-red-500"
@@ -66,19 +71,19 @@ export default function HintModal({
           </button>
         </div>
 
-        {localHints.length > 0 && (
+        {acquiredHints.length > 0 && (
           <div className="mb-4 space-y-3">
-            {localHints.map((hint, index) => (
+            {acquiredHints.map((hint, index) => (
               <div 
                 key={index}
-                className={`p-3 border-2 border-black ${
-                  index === localHints.length - 1 
+                className={`p-3 border-1 border-black ${
+                  index === acquiredHints.length - 1 
                     ? 'bg-yellow-50' 
                     : 'bg-gray-50'
                 }`}
               >
-                <div className="font-bold text-sm mb-1">
-                  📌 提示 {index + 1}
+                <div className="font-bold text-sm mb-1 flex items-center">
+                  提示 {index + 1}
                 </div>
                 <p className="text-sm text-gray-700">{hint}</p>
               </div>
@@ -98,19 +103,19 @@ export default function HintModal({
         {remainingHints > 0 ? (
           <button
             onClick={handleGetHint}
-            className="w-full py-3 bg-green-500 text-white border-4 border-black font-bold shadow-[4px_4px_0_#000] hover:bg-green-600 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+            className="w-full py-3 bg-green-500 text-white border-2 border-black font-bold shadow-[2px_2px_0_#000] hover:bg-green-600 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
           >
             👉 获取下一个提示 (剩余 {remainingHints} 次)
           </button>
-        ) : (
-          <div className="text-center py-3 bg-gray-100 border-2 border-black font-bold text-gray-500">
-            💪 已达最大提示次数，试试自己完成吧！
+        ) : currentLevel > 0 ? (
+          <div className="text-center py-3 bg-yellow-50 border-2 border-black font-bold text-gray-700">
+            ✅ 已获取所有提示 ({currentLevel}/{max_level})
           </div>
-        )}
+        ) : null}
 
         <button
           onClick={onClose}
-          className="w-full mt-3 py-2 bg-yellow-400 border-4 border-black font-bold shadow-[4px_4px_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+          className="w-full mt-3 py-2 bg-yellow-400 border-2 border-black font-bold shadow-[2px_2px_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
         >
           关闭
         </button>
