@@ -324,7 +324,7 @@ export default function UsersManagePage() {
       flex: 2,
       ellipsis: true,
       render: (value) => formatDate(value as string, 'YYYY-MM-DD HH:mm:ss'),
-      align: 'center',
+      align: 'left',
     },
     {
       id: 'updated_at',
@@ -333,7 +333,7 @@ export default function UsersManagePage() {
       flex: 2,
       ellipsis: true,
       render: (value) => formatDate(value as string, 'YYYY-MM-DD HH:mm:ss'),
-      align: 'center',
+      align: 'left',
     },
     {
       id: 'actions',
@@ -344,7 +344,7 @@ export default function UsersManagePage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleEditUser(item)}
-            className="px-3 py-1 bg-blue-400 text-white rounded-md text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+            className="px-3 py-1 bg-blue-400 text-white  text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
           >
             <FiEdit className="w-3 h-3" />
             编辑
@@ -352,14 +352,14 @@ export default function UsersManagePage() {
           {item.is_delete === 1 ? (
             <button
               onClick={() => handleRestore(item.id)}
-              className="px-3 py-1 bg-green-400 text-white rounded-md text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+              className="px-3 py-1 bg-green-400 text-white  text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
             >
               恢复
             </button>
           ) : (
             <button
               onClick={() => handleDelete(item.id)}
-              className="px-3 py-1 bg-red-400 text-white text-xs rounded-md font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+              className="px-3 py-1 bg-red-400 text-white text-xs  font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
             >
               <FiTrash2 className="w-3 h-3" />
               删除
