@@ -371,7 +371,7 @@ export default function UsersManagePage() {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <SearchFilter
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -402,7 +402,7 @@ export default function UsersManagePage() {
         getRowClassName={(user) =>
           user.is_delete === 1 ? 'bg-gray-100 opacity-60' : ''
         }
-        maxHeight="550px"
+        maxHeight="700px"
       />
 
       {/* 分页 */}
