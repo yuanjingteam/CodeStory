@@ -7,15 +7,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { BsPersonFill, BsSearch } from "react-icons/bs";
 
 const levelConfig: Record<number, { text: string; color: string }> = {
-  0: { text: '初级', color: 'bg-green-300' },
-  1: { text: '中级', color: 'bg-green-300' },
-  2: { text: '高级', color: 'bg-pink-300' },
+  0: { text: '初级', color: 'bg-green-400 rounded-lg' },
+  1: { text: '中级', color: 'bg-yellow-400 rounded-lg' },
+  2: { text: '高级', color: 'bg-red-400 rounded-lg' },
 };
 
 const learnStatusConfig: Record<number, { text: string; color: string }> = {
-  0: { text: '未开始', color: 'bg-gray-300' },
-  1: { text: '进行中', color: 'bg-yellow-300' },
-  2: { text: '已完成', color: 'bg-green-300' },
+  0: { text: '未开始', color: 'bg-gray-300 rounded-lg' },
+  1: { text: '进行中', color: 'bg-yellow-300 rounded-lg' },
+  2: { text: '已完成', color: 'bg-green-300 rounded-lg' },
 };
 
 const levelMap = {

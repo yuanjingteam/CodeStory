@@ -11,7 +11,7 @@ export default function NotFound() {
         <p className="text-gray-600 mb-8">抱歉，您访问的页面不存在</p>
         <Link
           href="/"
-          className="inline-block px-6 py-3 bg-yellow-400 border-4 border-black font-bold shadow-[4px_4px_0px_#000] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-100 relative z-10"
+          className="inline-block px-6 py-3 bg-yellow-400 rounded-lg border-4 border-black font-bold shadow-[4px_4px_0px_#000] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-100 relative z-10"
         >
           返回首页
         </Link>

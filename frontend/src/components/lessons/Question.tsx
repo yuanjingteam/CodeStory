@@ -181,7 +181,7 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
         </div>
         <button
           onClick={() => router.back()}
-          className="border-2 border-black px-3 py-1 bg-green-600 text-white font-bold shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+          className="border-2 border-black px-3 py-1 bg-green-600 text-white font-bold rounded-lg shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
         >
           <span>‹</span>
           <span>返回</span>
@@ -239,8 +239,8 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
                     disabled={!hasPrev}
                     className={`col-span-1 py-3 px-4 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2 text-base ${
                       hasPrev
-                        ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        ? 'bg-yellow-400 text-black hover:bg-yellow-500 rounded-lg hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed rounded-lg'
                     }`}
                   >
                     <span>‹</span>
@@ -260,7 +260,7 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
                         }
                       }
                     }}
-                    className={`col-span-3 py-3 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-lg ${
+                    className={`col-span-3 py-3 font-bold border-4 border-black rounded-lg shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-lg ${
                       exerciseData.type === 'code' 
                         ? 'bg-green-600 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none' 
                         : 'bg-green-600 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
@@ -273,8 +273,8 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
                     disabled={!hasNext}
                     className={`col-span-1 py-3 px-4 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2 text-base ${
                       hasNext
-                        ? 'bg-yellow-400 text-black hover:bg-yellow-500 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        ? 'bg-yellow-400 text-black hover:bg-yellow-500 rounded-lg hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed rounded-lg'
                     }`}
                   >
                     <span>下一题</span>

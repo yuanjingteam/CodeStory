@@ -116,7 +116,7 @@ export default function HomeMyInfo() {
                   width={96}
                   height={96}
                   alt="User Avatar"
-                  objectFit="cover"
+                  style={{ objectFit: 'cover' }}
                   className="w-20 h-20 rounded-full"
                 />
               ) : (

@@ -25,46 +25,52 @@ export async function getCourseList(params: CourseListParams, userId: string): P
     where.level = params.level;
   }
 
+  const allCourses = await prisma.courses.findMany({
+    where,
+    orderBy: { created_at: 'desc' },
+  });
+
+  const allCourseIds = allCourses.map(c => c.id);
+
+  const studentCountGroup = await prisma.courses_progress.groupBy({
+    by: ['course_id'],
+    where: { course_id: { in: allCourseIds }, is_delete: 0 },
+    _count: { user_id: true },
+  });
+
+  const studentCountMap = new Map(
+    studentCountGroup.map(g => [g.course_id, g._count.user_id])
+  );
+
+  let filteredCourses = allCourses;
+
   if (params.minStudentCount !== undefined || params.maxStudentCount !== undefined) {
-    where.student_count = {};
-    if (params.minStudentCount !== undefined) {
-      where.student_count.gte = params.minStudentCount;
-    }
-    if (params.maxStudentCount !== undefined) {
-      where.student_count.lte = params.maxStudentCount;
-    }
+    filteredCourses = allCourses.filter(course => {
+      const count = studentCountMap.get(course.id) || 0;
+      if (params.minStudentCount !== undefined && count < params.minStudentCount) return false;
+      if (params.maxStudentCount !== undefined && count > params.maxStudentCount) return false;
+      return true;
+    });
   }
 
-
-  const [total, courses] = await Promise.all([
-    prisma.courses.count({ where }),
-    prisma.courses.findMany({
-      where,
-      orderBy: { created_at: 'desc' },
-      skip: (page - 1) * size,
-      take: size,
-    }),
-  ]);
-
-  const courseIds = courses.map(c => c.id);
   const progressRecords = await prisma.courses_progress.findMany({
-    where: { user_id: userId, course_id: { in: courseIds }, is_delete: 0 },
+    where: { user_id: userId, course_id: { in: allCourseIds }, is_delete: 0 },
   });
 
   const progressMap = new Map(progressRecords.map(r => [r.course_id, r]));
 
-  let filteredCourses = courses;
-
   if (params.learnStatus !== undefined) {
-    console.log('🎯 筛选学习状态:', params.learnStatus);
-    filteredCourses = courses.filter(course => {
+    filteredCourses = filteredCourses.filter(course => {
       const p = progressMap.get(course.id);
       if (!p) return params.learnStatus === 0;
       return p.status === params.learnStatus;
     });
   }
 
-  const records = filteredCourses.map(course => {
+  const total = filteredCourses.length;
+  const pagedCourses = filteredCourses.slice((page - 1) * size, page * size);
+
+  const records = pagedCourses.map(course => {
     const p = progressMap.get(course.id);
     let percent = 0;
 
@@ -78,7 +84,7 @@ export async function getCourseList(params: CourseListParams, userId: string): P
       description: course.description,
       cover_url: course.cover_url,
       level: course.level,
-      studentCount: course.student_count || 0,
+      studentCount: studentCountMap.get(course.id) || 0,
       progress: percent,
       progressText: `${percent}%`,
       learnStatus: p?.status || 0,
