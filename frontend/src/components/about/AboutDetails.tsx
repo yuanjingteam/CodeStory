@@ -7,6 +7,7 @@ import {
   FiPhone,
   FiMessageCircle,
 } from 'react-icons/fi';
+import { IoLogoWechat } from "react-icons/io5";
 import { BsRobot } from 'react-icons/bs';
 import AboutCodeCard from './AboutCodeCard';
 import Img from 'next/image';
@@ -109,18 +110,18 @@ export default function AboutHero() {
         </div>
         {/* 电话 */}
         <div className="flex-1 flex flex-col items-center justify-center p-4 border-2 border-gray-500 rounded-lg bg-white ">
-          <div className="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-full border-2 border-blue-500 mb-2">
-            <FiPhone className="w-6 h-6 text-white" />
+          <div className="w-12 h-12 flex items-center justify-center bg-green-500 rounded-full border-2 border-green-500 mb-2">
+            <IoLogoWechat className="w-6 h-6 text-white" />
           </div>
-          <p className="text-gray-800 font-medium text-sm">400-400-4000</p>
+          <p className="text-gray-800 font-medium text-sm">ass456456</p>
           <p className="text-gray-500 text-xs mt-1">微信号</p>
         </div>
         {/* 电话 */}
         <div className="flex-1 flex flex-col items-center justify-center p-4 border-2 border-gray-500 rounded-lg bg-white ">
-          <div className="w-12 h-12 flex items-center justify-center bg-blue-500 rounded-full border-2 border-blue-500 mb-2">
-            <FiPhone className="w-6 h-6 text-white" />
+          <div className="w-12 h-12 flex items-center justify-center bg-purple-500 rounded-full border-2 border-purple-500 mb-2">
+            <FiMessageCircle className="w-6 h-6 text-white" />
           </div>
-          <p className="text-gray-800 font-medium text-sm">400-400-4000</p>
+          <p className="text-gray-800 font-medium text-sm">CodeStory</p>
           <p className="text-gray-500 text-xs mt-1">公众号</p>
         </div>
       </div>
