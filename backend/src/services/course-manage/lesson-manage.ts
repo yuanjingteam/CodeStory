@@ -161,6 +161,10 @@ export const createLesson = async (req: Request, res: Response) => {
       return fail(res, '创建小节失败');
     }
 
+    const courseId = chapterExists.course_id;
+
+    await updateCourseProgressForNewLesson(courseId);
+
     let exerciseType = '';
     let exerciseContent = '';
     let exerciseAnswer = '';
@@ -422,3 +426,37 @@ export const deleteLesson = async (req: Request, res: Response) => {
     return fail(res, '删除小节失败');
   }
 };
+
+async function updateCourseProgressForNewLesson(courseId: string): Promise<void> {
+  const chapterIds = (await prisma.chapters.findMany({
+    where: { course_id: courseId, is_delete: 0 },
+    select: { id: true },
+  })).map(ch => ch.id);
+
+  const totalLessons = await prisma.lessons.count({
+    where: {
+      chapter_id: { in: chapterIds },
+      is_delete: 0,
+    },
+  });
+
+  const progressRecords = await prisma.courses_progress.findMany({
+    where: {
+      course_id: courseId,
+      is_delete: 0,
+    },
+  });
+
+  for (const record of progressRecords) {
+    const newStatus = record.status === 2 ? 1 : record.status;
+
+    await prisma.courses_progress.update({
+      where: { id: record.id },
+      data: {
+        total_lessons: totalLessons,
+        status: newStatus,
+        updated_at: new Date(),
+      },
+    });
+  }
+}
