@@ -140,7 +140,7 @@ export default function CourseManage() {
       render: (value) => {
         const numLevel = typeof value === 'string' ? parseInt(value) : (value as number);
         return (
-          <span className={`px-3 py-1 font-bold border-2 border-black ${levelColorMap[numLevel] || 'bg-gray-300'}`}>
+          <span className={`px-3 py-1 font-bold border-2 border-black rounded-md ${levelColorMap[numLevel] || 'bg-gray-300'}`}>
             {levelMap[numLevel] || '未知'}
           </span>
         );
@@ -170,14 +170,14 @@ export default function CourseManage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleOpenEdit(item)}
-            className="px-3 py-1 bg-blue-400 text-white text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+            className="px-3 py-1 bg-blue-400 text-white text-xs font-bold border-2 border-black rounded-md shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
           >
             <FiEdit className="w-3 h-3" />
             编辑
           </button>
           <button
             onClick={() => handleOpenDelete(item)}
-            className="px-3 py-1 bg-red-400 text-white text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+            className="px-3 py-1 bg-red-400 text-white text-xs font-bold border-2 border-black rounded-md shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
           >
             <FiTrash2 className="w-3 h-3" />
             删除

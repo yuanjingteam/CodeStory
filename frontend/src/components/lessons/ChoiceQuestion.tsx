@@ -55,8 +55,8 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
           onClick={() => setShowHintModal(true)}
           disabled={!exercise.hints || hintLevelUsed >= exercise.hints?._meta.max_level}
           className={`
-            py-2 px-4 font-bold border-4 border-black
-            shadow-[4px_4px_0_0_rgba(0,0,0,1)]
+            py-2 px-4 font-bold border-2 border-black rounded-md
+            shadow-[2px_2px_0_0_rgba(0,0,0,1)]
             hover:translate-x-[2px] hover:translate-y-[2px]
             hover:shadow-none transition-all
             flex items-center justify-center
@@ -78,7 +78,7 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
           <div
             key={index}
             onClick={() => handleSelect(optionLabel)}
-            className={`py-3 px-4 border-4 border-black cursor-pointer transition-all font-bold ${
+            className={`py-3 px-4 border-4 border-black cursor-pointer rounded-md transition-all font-bold ${
               isSelected
                 ? 'bg-yellow-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] translate-x-[2px] translate-y-[2px]'
                 : 'bg-white hover:bg-gray-100 shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]'

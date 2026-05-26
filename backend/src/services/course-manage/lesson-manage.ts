@@ -92,6 +92,7 @@ export const getLessonList = async (req: Request, res: Response) => {
       difficulty: exercise.difficulty,
       source: exercise.source || '',
       sortOrder: exercise.lessons?.order || 0,
+      estimatedTime: exercise.lessons?.estimated_time || 0,
       metadata: exercise.metadata,
       hints: exercise.hints,
       createdAt: exercise.created_at.toISOString().replace('T', ' ').slice(0, 19),
@@ -107,7 +108,7 @@ export const getLessonList = async (req: Request, res: Response) => {
 
 export const createLesson = async (req: Request, res: Response) => {
   try {
-    const { chapterId, lessonName, content, type, difficulty, sortOrder, answer, metadata, hints } = req.body;
+    const { chapterId, lessonName, content, type, difficulty, sortOrder, answer, metadata, hints, estimatedTime } = req.body;
     if (!chapterId || chapterId === '') return badRequest(res, '章节ID不能为空');
     if (!lessonName || !lessonName.trim()) return badRequest(res, '小节名称不能为空');
 
@@ -141,7 +142,8 @@ export const createLesson = async (req: Request, res: Response) => {
             chapter_id: resolvedChapterId,
             title: lessonName.trim(),
             difficulty: Number(difficulty) || 0,
-            order: finalOrder
+            order: finalOrder,
+            estimated_time: Number(estimatedTime) || 0
           }
         });
         break;
@@ -247,7 +249,7 @@ export const updateLesson = async (req: Request, res: Response) => {
     });
     if (!existing) return notFound(res, '小节不存在');
 
-    const { lessonName, content, type, difficulty, sortOrder, answer, metadata, hints } = req.body;
+    const { lessonName, content, type, difficulty, sortOrder, answer, metadata, hints, estimatedTime } = req.body;
     const updateData: Record<string, any> = {};
 
     if (lessonName !== undefined && lessonName !== '') {
