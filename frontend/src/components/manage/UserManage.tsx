@@ -150,11 +150,7 @@ export default function UserManage() {
     }
   };
 
-  // 打开添加用户弹窗
-  const handleAddUser = () => {
-    setEditingUserId(null);
-    setShowUserModal(true);
-  };
+
 
   // 打开编辑用户弹窗
   const handleEditUser = (user: UserDetail) => {
@@ -382,14 +378,6 @@ export default function UserManage() {
           setPagination((prev) => ({ ...prev, currentPage: 1 }));
           fetchUsers();
         }}
-        actionSlot={
-          <button
-            onClick={handleAddUser}
-            className="px-6 py-2 rounded-sm bg-purple-500 text-white font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200 shrink-0"
-          >
-            + 添加用户
-          </button>
-        }
       />
       <div className="flex-1 min-h-0  flex flex-col">
         {/* 数据表格 */}

@@ -22,7 +22,6 @@ export default function UserModel({
   userId,
   loading = false,
 }: UserModelProps) {
-  const isEdit = !!userId;
   const [fetching, setFetching] = useState(false);
   const [formData, setFormData] = useState<UserDetailRequest>({
     email: '',
@@ -56,7 +55,7 @@ export default function UserModel({
   };
 
   useEffect(() => {
-    if (open && isEdit && userId) {
+    if (open && userId) {
       const fetchUserDetail = async () => {
         setFetching(true);
         try {
@@ -84,7 +83,7 @@ export default function UserModel({
       };
       fetchUserDetail();
     }
-  }, [open, userId, isEdit]);
+  }, [open, userId]);
 
   useEffect(() => {
     return () => {
@@ -130,7 +129,7 @@ export default function UserModel({
       await onSubmit({
         ...formData,
         avatar: avatarUrl,
-        id: isEdit ? userId : undefined,
+        id: userId,
       } as UserDetailRequest & { id?: string });
     } finally {
       setSubmitting(false);
@@ -163,9 +162,7 @@ export default function UserModel({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b-2 border-black">
-          <h2 className="text-xl font-bold">
-            {isEdit ? '编辑用户' : '新建用户'}
-          </h2>
+          <h2 className="text-xl font-bold">{'编辑用户'}</h2>
           <button
             onClick={handleClose}
             disabled={loading || submitting || fetching}
@@ -364,10 +361,8 @@ export default function UserModel({
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 保存中...
               </>
-            ) : isEdit ? (
-              '保存修改'
             ) : (
-              '确认添加'
+              '保存修改'
             )}
           </button>
         </div>
