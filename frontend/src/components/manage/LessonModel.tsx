@@ -183,7 +183,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
             <textarea
               value={formData.content}
               onChange={e => setFormData(prev => ({ ...prev, content: e.target.value }))}
-              placeholder="输入小节的详细内容（支持HTML格式）..."
+              placeholder="输入小节的详细内容（支持Markdown格式）..."
               rows={3}
               className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
             />
