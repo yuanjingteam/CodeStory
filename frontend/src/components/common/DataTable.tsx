@@ -23,7 +23,6 @@ interface DataTableProps<T> {
   emptyText?: string;
   emptyIcon?: React.ReactNode;
   getRowClassName?: (item: T, index: number) => string;
-  maxHeight?: string;
 }
 
 export default function DataTable<T>({
@@ -33,7 +32,6 @@ export default function DataTable<T>({
   emptyText = '暂无数据',
   emptyIcon = <FiUser className="w-16 h-16 text-gray-300" />,
   getRowClassName,
-  maxHeight,
 }: DataTableProps<T>) {
   const totalFlex = columns.reduce((sum, col) => sum + (col.flex || 1), 0);
 
@@ -92,10 +90,7 @@ export default function DataTable<T>({
   }
 
   return (
-    <div
-      className="bg-white border-2 rounded-sm border-gray-500  overflow-hidden flex flex-col"
-      style={{ height: maxHeight }}
-    >
+    <div className=" bg-white border-2 rounded-sm border-gray-500  overflow-hidden flex flex-col flex-1 min-h-0">
       <div className="overflow-y-auto flex-1">
         {/* 表头 */}
         <div

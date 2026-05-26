@@ -2,7 +2,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { showToast } from '@/utils/toast';
-import { SearchFilter, DataTable, Pagination, ConfirmDialog } from '@/components/common';
+import {
+  SearchFilter,
+  DataTable,
+  Pagination,
+  ConfirmDialog,
+} from '@/components/common';
 import type { FilterField, Column } from '@/components/common';
 import chapterManageApi from '@/app/api/manage/chapter-manage';
 import courseApi from '@/app/api/courses/courses';
@@ -23,14 +28,14 @@ export default function ChapterManage() {
       label: '课程',
       type: 'select',
       value: '',
-      options: [
-        { label: '全部课程', value: '' },
-      ],
+      options: [{ label: '全部课程', value: '' }],
     },
   ]);
   const [deleteTarget, setDeleteTarget] = useState<ChapterItem | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingChapter, setEditingChapter] = useState<ChapterItem | undefined>();
+  const [editingChapter, setEditingChapter] = useState<
+    ChapterItem | undefined
+  >();
   const hasMounted = useRef(false);
 
   useEffect(() => {
@@ -47,12 +52,17 @@ export default function ChapterManage() {
         label: course.title,
         value: String(course.id),
       }));
-      
-      setFilters(prev => prev.map(filter => 
-        filter.id === 'course' 
-          ? { ...filter, options: [{ label: '全部课程', value: '' }, ...courseOptions] }
-          : filter
-      ));
+
+      setFilters((prev) =>
+        prev.map((filter) =>
+          filter.id === 'course'
+            ? {
+                ...filter,
+                options: [{ label: '全部课程', value: '' }, ...courseOptions],
+              }
+            : filter
+        )
+      );
     } catch (error) {
       console.error('获取课程列表失败:', error);
     }
@@ -61,9 +71,12 @@ export default function ChapterManage() {
   const fetchChapters = async () => {
     setLoading(true);
     try {
-      const courseIdValue = filters.find(f => f.id === 'course')?.value;
+      const courseIdValue = filters.find((f) => f.id === 'course')?.value;
       const res = await chapterManageApi.getList({
-        courseId: courseIdValue !== '' && courseIdValue !== undefined ? String(courseIdValue) : undefined,
+        courseId:
+          courseIdValue !== '' && courseIdValue !== undefined
+            ? String(courseIdValue)
+            : undefined,
         keyword: searchTerm || undefined,
         page,
         size,
@@ -206,7 +219,7 @@ export default function ChapterManage() {
   ];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="h-[calc(100vh-130px)] flex flex-col gap-4">
       <SearchFilter
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -226,9 +239,13 @@ export default function ChapterManage() {
           </button>
         }
       />
-
-      <DataTable<ChapterItem> columns={columns} data={chapters} loading={loading} maxHeight="700px" />
-
+      <div className="flex-1 min-h-0  flex flex-col">
+        <DataTable<ChapterItem>
+          columns={columns}
+          data={chapters}
+          loading={loading}
+        />
+      </div>
       <Pagination
         currentPage={page}
         totalPages={Math.ceil(total / size) || 1}

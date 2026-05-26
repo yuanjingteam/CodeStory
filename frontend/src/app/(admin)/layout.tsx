@@ -8,9 +8,9 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="   bg-white">
       <AdminHeader />
-      <div className="flex">
+      <div className="flex ">
         <AdminSider />
         <main className="flex-1 p-4  relative z-10">{children}</main>
       </div>
