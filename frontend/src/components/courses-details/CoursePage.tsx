@@ -61,7 +61,7 @@ export default function CourseDetails({
 
         <button
           onClick={() => router.back()}
-          className="border-2 border-black px-4 py-2 bg-purple-500 text-white font-bold shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+          className="border-2 border-black px-4 py-2 bg-purple-500 text-white font-bold shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all rounded-md"
         >
           ← 返回
         </button>
@@ -69,15 +69,15 @@ export default function CourseDetails({
 
       {/* 课程信息卡片 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] bg-blue-50 p-4">
+        <div className="border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] bg-blue-50 p-4 rounded-lg">
           <div className="text-2xl font-black text-blue-600">{course.chapterCount}</div>
           <div className="text-sm text-gray-600">章节</div>
         </div>
-        <div className="border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] bg-green-50 p-4">
+        <div className="border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] bg-green-50 p-4 rounded-lg">
           <div className="text-2xl font-black text-green-600">{course.lessonCount}</div>
           <div className="text-sm text-gray-600">小节</div>
         </div>
-        <div className="border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] bg-purple-50 p-4">
+        <div className="border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] bg-purple-50 p-4 rounded-lg">
           <div className="text-2xl font-black text-purple-600">{course.estimatedTotalTime}分钟</div>
           <div className="text-sm text-gray-600">预计总时长</div>
         </div>
@@ -108,10 +108,10 @@ function ChapterItem({ chapter, courseId }: { chapter: Chapter; courseId: string
   };
 
   return (
-    <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] bg-white">
+    <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] bg-white rounded-lg">
       {/* 章标题 */}
       <div 
-        className="bg-gradient-to-r from-purple-100 to-purple-200 p-4 border-b-2 border-black cursor-pointer hover:from-purple-200 hover:to-purple-300 transition-colors"
+        className="bg-gradient-to-r from-purple-100 to-purple-200 p-4 border-b-2 border-black rounded-t-lg cursor-pointer hover:from-purple-200 hover:to-purple-300 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center justify-between">
@@ -145,7 +145,7 @@ function ChapterItem({ chapter, courseId }: { chapter: Chapter; courseId: string
                     <div className="font-bold">{lesson.title}</div>
                   </div>
                 </div>
-                <span className={`${difficulty.color} border-2 border-black px-3 py-1 text-xs font-bold`}>
+                <span className={`${difficulty.color} border-2 border-black px-3 py-1 text-xs font-bold rounded-lg`}>
                   {difficulty.text}
                 </span>
               </div>
