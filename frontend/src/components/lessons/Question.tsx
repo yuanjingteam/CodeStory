@@ -159,7 +159,23 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
         {/* 学习内容 */}
         {hasContent && (
           <div className="mb-8">
-            <MarkdownContent content={currentContent} />
+            <MarkdownContent 
+              content={currentContent} 
+              onExerciseClick={(exerciseId) => {
+                const exercise = exercises.find(ex => ex.id === exerciseId);
+                if (exercise) {
+                  setCurrentExerciseId(exercise.id);
+                  setModalOpen(true);
+                } else {
+                  const index = parseInt(exerciseId.split('_')[1] || '0');
+                  if (exercises[index]) {
+                    setCurrentExerciseId(exercises[index].id);
+                    setModalOpen(true);
+                  }
+                }
+              }}
+              completedExercises={completedExercises}
+            />
           </div>
         )}
 

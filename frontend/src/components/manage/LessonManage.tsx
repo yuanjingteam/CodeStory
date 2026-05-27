@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { showToast } from '@/utils/toast';
-import { getExerciseTypeLabel, getExerciseTypeColor } from '@/utils/exerciseType';
 import { SearchFilter, DataTable, Pagination, ConfirmDialog } from '@/components/common';
 import type { FilterField, Column } from '@/components/common';
 import lessonManageApi from '@/app/api/manage/lesson-manage';
@@ -213,20 +212,16 @@ export default function LessonManage() {
       ),
     },
     {
-      id: 'type',
-      key: 'type',
-      header: '题型',
+      id: 'exerciseCount',
+      key: 'exerciseCount',
+      header: '题目数',
       flex: 1.5,
       align: 'center',
-      render: (value) => {
-        const label = getExerciseTypeLabel(String(value));
-        const color = getExerciseTypeColor(String(value));
-        return (
-          <span className={`px-3 py-1 font-bold border-2 border-black rounded-md ${color} inline-block`}>
-            {label}
-          </span>
-        );
-      },
+      render: (_, item) => (
+        <span className="px-3 py-1 font-bold border-2 border-black rounded-md bg-purple-300 inline-block">
+          {item.exerciseCount || 0} 道
+        </span>
+      ),
     },
     {
       id: 'difficulty',

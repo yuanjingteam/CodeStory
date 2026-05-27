@@ -61,6 +61,7 @@ export default function TiptapEditor({
   exercises = [],
 }: TiptapEditorProps) {
   const [showHeadingMenu, setShowHeadingMenu] = useState(false)
+  const [showExerciseMenu, setShowExerciseMenu] = useState(false)
   const [activeStates, setActiveStates] = useState<ActiveStates>(defaultActiveStates)
   const onChangeRef = useRef(onChange)
   onChangeRef.current = onChange
@@ -122,14 +123,21 @@ export default function TiptapEditor({
     }
   }, [editor])
 
-  const handleInsertExercise = useCallback(() => {
-    if (!editor || exercises.length === 0) return
-    const exercise = exercises[0]
+  const contentRef = useRef(content)
+  useEffect(() => {
+    if (!editor || content === contentRef.current) return
+    contentRef.current = content
+    editor.commands.setContent(content || '')
+  }, [editor, content])
+
+  const handleInsertExercise = useCallback((exerciseId: string, exerciseTitle: string) => {
+    if (!editor) return
     editor.commands.insertExerciseButton({
-      exerciseId: exercise.id,
-      label: `请完成练习：${exercise.title}`,
+      exerciseId,
+      label: `💡 请完成练习：${exerciseTitle}`,
     })
-  }, [editor, exercises])
+    setShowExerciseMenu(false)
+  }, [editor])
 
   if (!editor) return <div className="p-4 text-gray-400">加载编辑器...</div>
 
@@ -293,19 +301,45 @@ export default function TiptapEditor({
         <div className="flex-1" />
 
         {/* 插入练习 */}
-        <button
-          onClick={handleInsertExercise}
-          disabled={exercises.length === 0}
-          className="ml-2 px-3 py-1.5 text-sm font-medium text-white bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-300 disabled:text-gray-500 rounded transition-colors shadow-sm flex items-center gap-1"
-          title="插入练习按钮"
-        >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="16"/>
-            <line x1="8" y1="12" x2="16" y2="12"/>
-          </svg>
-          练习
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowExerciseMenu(!showExerciseMenu)}
+            disabled={exercises.length === 0}
+            className="ml-2 px-3 py-1.5 text-sm font-medium text-white bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-300 disabled:text-gray-500 rounded transition-colors shadow-sm flex items-center gap-1"
+            title="插入练习按钮"
+            onBlur={() => setTimeout(() => setShowExerciseMenu(false), 150)}
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            练习
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {showExerciseMenu && exercises.length > 0 && (
+            <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 min-w-[180px] py-1 overflow-hidden">
+              {exercises.map((exercise, index) => (
+                <button
+                  key={exercise.id}
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => handleInsertExercise(exercise.id, exercise.title || `练习 ${index + 1}`)}
+                  className="w-full px-4 py-2 text-left hover:bg-emerald-50 transition-colors text-gray-700 hover:text-emerald-600 flex items-center gap-2"
+                >
+                  <span className="text-emerald-500">📝</span>
+                  <span>{exercise.title || `练习 ${index + 1}`}</span>
+                  <span className="text-xs text-gray-400 ml-auto">
+                    {exercise.type === 'choice' ? '选择题' : exercise.type === 'code' ? '编程题' : '填空题'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 编辑区域 */}

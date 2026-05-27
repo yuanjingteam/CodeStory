@@ -1,11 +1,13 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 
 interface MarkdownContentProps {
   content: string;
+  onExerciseClick?: (exerciseId: string) => void;
+  completedExercises?: Set<string>;
 }
 
 function CollapsibleTable({ children, ...props }: any) {
@@ -43,11 +45,41 @@ function CollapsibleTable({ children, ...props }: any) {
   );
 }
 
-export default function MarkdownContent({ content }: MarkdownContentProps) {
+export default function MarkdownContent({ content, onExerciseClick, completedExercises }: MarkdownContentProps) {
   const processedContent = content.replace(/\\n/g, '\n');
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current || !onExerciseClick) return;
+
+    const buttons = containerRef.current.querySelectorAll('[data-type="exercise-button"]');
+    
+    buttons.forEach((button) => {
+      const exerciseId = button.getAttribute('data-exercise-id');
+      const isCompleted = completedExercises?.has(exerciseId || '');
+      
+      if (isCompleted) {
+        button.setAttribute('data-status', 'completed');
+        const label = button.getAttribute('data-label') || '请完成练习';
+        button.textContent = '✅ ' + label;
+      }
+      
+      button.addEventListener('click', () => {
+        if (exerciseId && !isCompleted) {
+          onExerciseClick(exerciseId);
+        }
+      });
+    });
+
+    return () => {
+      buttons.forEach((button) => {
+        button.removeEventListener('click', () => {});
+      });
+    };
+  }, [content, onExerciseClick, completedExercises]);
 
   return (
-    <div className="markdown-content prose prose-sm max-w-none">
+    <div ref={containerRef} className="markdown-content prose prose-sm max-w-none">
       <style>{`
         .markdown-content li p {
           display: inline;
