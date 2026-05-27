@@ -88,25 +88,17 @@ export async function getLessonDetail(lessonId: string, userId: string): Promise
 
   const exercises = await prisma.exercises.findMany({
     where: { lesson_id: resolvedLessonId, is_delete: 0 },
-    orderBy: { created_at: 'asc' },
-    take: 1,
+    orderBy: { order: 'asc' },
   });
 
-  const exercise: LessonExercise = exercises.length > 0
-    ? {
-        id: uuidToShortId(exercises[0].id),
-        type: exercises[0].type as 'code' | 'choice' | 'fill',
-        content: exercises[0].content,
-        analysis: exercises[0].analysis || '',
-        metadata: exercises[0].metadata as Record<string, any>,
-      }
-    : {
-        id: '',
-        type: 'code',
-        content: '',
-        analysis: '',
-        metadata: { template: '' },
-      };
+  const exerciseList: LessonExercise[] = exercises.map(ex => ({
+    id: uuidToShortId(ex.id),
+    type: ex.type as 'code' | 'choice' | 'fill',
+    content: ex.content,
+    analysis: ex.analysis || '',
+    order: ex.order,
+    metadata: ex.metadata as Record<string, any>,
+  }));
 
   return {
     course: {
@@ -122,6 +114,6 @@ export async function getLessonDetail(lessonId: string, userId: string): Promise
       estimatedTime: lesson.estimated_time,
     },
     catalog,
-    exercise,
+    exercises: exerciseList,
   };
 }

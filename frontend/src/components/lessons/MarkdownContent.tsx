@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
 interface MarkdownContentProps {
   content: string;
@@ -47,8 +48,15 @@ export default function MarkdownContent({ content }: MarkdownContentProps) {
 
   return (
     <div className="markdown-content prose prose-sm max-w-none">
+      <style>{`
+        .markdown-content li p {
+          display: inline;
+          margin-bottom: 0;
+        }
+      `}</style>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw]}
         components={{
           h1: ({ node, ref, ...props }) => (
             <h1 className="text-2xl font-black mb-4 text-gray-800" {...props} />

@@ -6,6 +6,7 @@ import chapterManageApi from '@/app/api/manage/chapter-manage';
 import { getExerciseTypeOptions } from '@/utils/exerciseType';
 import { SearchableSelect } from '@/components/common';
 import type { ChapterItem } from '@/types/chapter-manage';
+import TiptapEditor from '@/components/tiptap/TiptapEditor';
 
 interface LessonModelProps {
   open: boolean;
@@ -33,6 +34,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
     chapterId: string;
     lessonName: string;
     content: string;
+    exerciseContent: string;
     type: string;
     difficulty: number;
     sortOrder: number;
@@ -44,6 +46,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
     chapterId: '',
     lessonName: '',
     content: '',
+    exerciseContent: '',
     type: '',
     difficulty: 0,
     sortOrder: 0,
@@ -62,6 +65,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         chapterId: initialData.chapterId || '',
         lessonName: initialData.lessonName || '',
         content: initialData.content || '',
+        exerciseContent: '',
         type: initialData.type || '',
         difficulty: initialData.difficulty ?? 0,
         sortOrder: initialData.sortOrder ?? 0,
@@ -76,6 +80,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         chapterId: '',
         lessonName: '',
         content: '',
+        exerciseContent: '',
         type: '',
         difficulty: 0,
         sortOrder: 0,
@@ -133,10 +138,13 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 pt-[10vh] pb-4 px-4 overflow-y-auto" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 pt-[10vh] pb-4 px-4 overflow-y-auto" onClick={(e) => {
+      if (window.getSelection()?.toString()) return
+      onClose()
+    }}>
       <div
-        className="bg-white border-3 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] w-full max-w-lg my-4 flex flex-col"
-        style={{ maxHeight: '80vh' }}
+        className="bg-white border-3 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] w-full max-w-4xl my-4 flex flex-col"
+        style={{ maxHeight: '85vh' }}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b-2 border-black flex-shrink-0">
@@ -180,12 +188,9 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
 
           <div>
             <label className="block text-sm font-bold mb-1">小节内容</label>
-            <textarea
-              value={formData.content}
-              onChange={e => setFormData(prev => ({ ...prev, content: e.target.value }))}
-              placeholder="输入小节的详细内容（支持Markdown格式）..."
-              rows={3}
-              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+            <TiptapEditor
+              content={formData.content}
+              onChange={(content) => setFormData(prev => ({ ...prev, content }))}
             />
           </div>
 
@@ -218,6 +223,19 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
               </select>
             </div>
           </div>
+
+          {formData.type && (
+            <div>
+              <label className="block text-sm font-bold mb-1">题目描述</label>
+              <textarea
+                value={formData.exerciseContent}
+                onChange={e => setFormData(prev => ({ ...prev, exerciseContent: e.target.value }))}
+                placeholder="请输入题目描述，例如：以下哪个是 Python 中定义变量的正确方式？"
+                rows={3}
+                className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+              />
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-bold mb-1">预估时长（分钟）</label>

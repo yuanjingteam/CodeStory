@@ -8,7 +8,7 @@ export interface LessonDetailData {
   course: CourseInfo;
   currentLesson: CurrentLesson;
   catalog: Chapter[];
-  exercise: Exercise;
+  exercises: Exercise[];
 }
 
 export interface CourseInfo {
@@ -42,6 +42,7 @@ export interface Exercise {
   type: 'code' | 'choice' | 'fill';
   content: string;
   analysis: string;
+  order: number;
   metadata: {
     template: string;
     testCases?: TestCase[];

@@ -5,6 +5,7 @@ export interface LessonExercise {
   type: ExerciseType;
   content: string;
   analysis: string;
+  order: number;
   metadata: Record<string, any>;
 }
 
@@ -38,5 +39,5 @@ export interface LessonDetailData {
   course: LessonCourseInfo;
   currentLesson: CurrentLessonInfo;
   catalog: CatalogChapter[];
-  exercise: LessonExercise;
+  exercises: LessonExercise[];
 }
