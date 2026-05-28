@@ -18,7 +18,13 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
   const [currentLessonTitle, setCurrentLessonTitle] = useState<string | undefined>(data?.currentLesson?.title)
   const [currentContent, setCurrentContent] = useState<string>(data?.currentLesson?.content || '')
   const [exercises, setExercises] = useState(data?.exercises || [])
-  const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set())
+  const [completedExercises, setCompletedExercises] = useState<Set<string>>(() => {
+    return new Set(
+      (data?.exercises || [])
+        .filter(ex => ex.isCompleted)
+        .map(ex => ex.id)
+    )
+  })
   const [modalOpen, setModalOpen] = useState(false)
   const [currentExerciseId, setCurrentExerciseId] = useState<string | null>(null)
   const [hasPrev, setHasPrev] = useState(false)
@@ -27,6 +33,8 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
   const [transitionDirection, setTransitionDirection] = useState<'left' | 'right' | null>(null)
   const exerciseButtonOrderRef = useRef<Map<string, number>>(new Map())
   const buttonIdToExerciseIdRef = useRef<Map<string, string>>(new Map())
+  const exercisesRef = useRef(exercises)
+  exercisesRef.current = exercises
   const onLessonCompletedRef = useRef(onLessonCompleted)
   onLessonCompletedRef.current = onLessonCompleted
 
@@ -211,6 +219,21 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
               }}
               onButtonOrderMapped={(buttonIdMap) => {
                 exerciseButtonOrderRef.current = buttonIdMap
+
+                const currentExercises = exercisesRef.current
+                setCompletedExercises(prev => {
+                  const next = new Set(prev)
+                  let hasNewIds = false
+                  buttonIdMap.forEach((index, buttonId) => {
+                    if (index < currentExercises.length && currentExercises[index] && prev.has(currentExercises[index].id)) {
+                      if (!next.has(buttonId)) {
+                        next.add(buttonId)
+                        hasNewIds = true
+                      }
+                    }
+                  })
+                  return hasNewIds ? next : prev
+                })
               }}
               completedExercises={completedExercises}
             />

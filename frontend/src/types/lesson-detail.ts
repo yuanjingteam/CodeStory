@@ -9,6 +9,12 @@ export interface LessonDetailData {
   currentLesson: CurrentLesson;
   catalog: Chapter[];
   exercises: Exercise[];
+  exerciseProgress: ExerciseProgress;
+}
+
+export interface ExerciseProgress {
+  completedCount: number;
+  totalCount: number;
 }
 
 export interface CourseInfo {

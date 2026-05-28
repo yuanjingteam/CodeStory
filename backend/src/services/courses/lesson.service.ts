@@ -76,12 +76,12 @@ export async function getLessonDetail(lessonId: string, userId: string): Promise
     id: uuidToShortId(ch.id),
     title: ch.title,
     lessons: ch.lessons.map(l => {
-      const status = lessonProgressMap.get(l.id);
+      const status = lessonProgressMap.get(l.id) ?? 0;
       const isCurrent = l.id === resolvedLessonId;
       return {
         id: uuidToShortId(l.id),
         title: l.title,
-        status: (isCurrent ? 1 : (status ?? 0)) as 0 | 1 | 2,
+        status: (isCurrent && status < 1 ? 1 : status) as 0 | 1 | 2,
       } as CatalogLesson;
     }),
   }));
@@ -91,12 +91,26 @@ export async function getLessonDetail(lessonId: string, userId: string): Promise
     orderBy: { order: 'asc' },
   });
 
+  const exerciseIds = exercises.map(ex => ex.id);
+
+  const userAnswers = await prisma.answer.findMany({
+    where: {
+      user_id: userId,
+      exercise_id: { in: exerciseIds },
+      is_delete: 0,
+      submission_count: { gte: 1 },
+    },
+    select: { exercise_id: true },
+  });
+  const completedExerciseIds = new Set(userAnswers.map(a => a.exercise_id));
+
   const exerciseList: LessonExercise[] = exercises.map(ex => ({
     id: uuidToShortId(ex.id),
     type: ex.type as 'code' | 'choice' | 'fill',
     content: ex.content,
     analysis: ex.analysis || '',
     order: ex.order,
+    isCompleted: completedExerciseIds.has(ex.id),
     metadata: ex.metadata as Record<string, any>,
   }));
 
@@ -115,5 +129,9 @@ export async function getLessonDetail(lessonId: string, userId: string): Promise
     },
     catalog,
     exercises: exerciseList,
+    exerciseProgress: {
+      completedCount: completedExerciseIds.size,
+      totalCount: exercises.length,
+    },
   };
 }
