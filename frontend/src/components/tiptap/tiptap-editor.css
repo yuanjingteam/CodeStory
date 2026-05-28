@@ -230,15 +230,19 @@
   border: 2px solid #e5e7eb;
 }
 
+.tiptap-content table colgroup col {
+  width: auto !important;
+}
+
 .tiptap-content table td,
 .tiptap-content table th {
-  min-width: 80px;
   border: 1px solid #e5e7eb;
   padding: 8px 12px;
   position: relative;
   text-align: left;
   vertical-align: top;
   box-sizing: border-box;
+  word-break: break-word;
 }
 
 .tiptap-content table th {

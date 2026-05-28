@@ -269,14 +269,14 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
             {hasExercises && (
               <div className="w-full max-w-md px-4">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-bold text-gray-600">练习进度</span>
+                  <span className="text-sm font-bold text-black-600">练习进度</span>
                   <span className="text-sm font-bold text-black-600">
                     {completedExerciseCount}/{exercises.length}
                   </span>
                 </div>
-                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
+                <div className="w-full h-3 bg-gray-200 rounded-sm overflow-hidden border-2 border-black">
                   <div
-                    className="h-full border-black bg-yellow-400 rounded-full transition-all duration-500"
+                    className="h-full bg-yellow-400 transition-all duration-500"
                     style={{ width: `${exercises.length > 0 ? (completedExerciseCount / exercises.length) * 100 : 0}%` }}
                   />
                 </div>

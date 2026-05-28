@@ -38,7 +38,7 @@ export default function TiptapViewer({ content, onExerciseClick, onButtonOrderMa
       }),
       TableKit.configure({
         table: {
-          resizable: true,
+          resizable: false,
         },
       }),
       ExerciseButton.configure({
