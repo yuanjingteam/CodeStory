@@ -53,9 +53,8 @@ export default function TiptapViewer({ content, onExerciseClick, onButtonOrderMa
       handleClickOn(view, pos, node, nodePos, event, direct) {
         if (node.type.name === 'exerciseButton') {
           const exerciseId = node.attrs.exerciseId as string
-          const status = node.attrs.status as string
 
-          if (exerciseId && status !== 'completed') {
+          if (exerciseId) {
             event.stopPropagation()
             handleExerciseClick(exerciseId)
             return true
@@ -118,7 +117,8 @@ export default function TiptapViewer({ content, onExerciseClick, onButtonOrderMa
 
       if (isCompleted) {
         button.setAttribute('data-status', 'completed')
-        const label = button.getAttribute('data-label') || '请完成练习'
+        const rawLabel = button.getAttribute('data-label') || '请完成练习'
+        const cleanLabel = rawLabel.replace(/^[💡\s]+/, '')
 
         button.innerHTML = ''
 
@@ -126,14 +126,21 @@ export default function TiptapViewer({ content, onExerciseClick, onButtonOrderMa
         contentDiv.className = 'btn-content'
 
         const icon = document.createElement('span')
+        icon.className = 'btn-icon'
         icon.textContent = '✅'
 
         const labelSpan = document.createElement('span')
-        labelSpan.textContent = label
+        labelSpan.className = 'btn-label'
+        labelSpan.textContent = cleanLabel
 
         contentDiv.appendChild(icon)
         contentDiv.appendChild(labelSpan)
         button.appendChild(contentDiv)
+
+        const arrow = document.createElement('span')
+        arrow.className = 'btn-arrow'
+        arrow.textContent = '›'
+        button.appendChild(arrow)
       } else {
         button.setAttribute('data-status', 'pending')
       }

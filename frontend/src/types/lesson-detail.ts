@@ -43,6 +43,7 @@ export interface Exercise {
   content: string;
   analysis: string;
   order: number;
+  isCompleted?: boolean;
   metadata: {
     template: string;
     testCases?: TestCase[];

@@ -6,17 +6,14 @@ import type { LessonDetailData } from '@/types/lesson-detail';
 import Question from './Question';
 import Chat from './Chat';
 import Content from './Content';
-import { useLessonProgress } from '@/hooks/courses/useLessonProgress';
 import { showToast } from '@/utils/toast';
 
 export default function LessonPage({ lessonId }: { lessonId: string }) {
   const [data, setData] = useState<LessonDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const progress = useLessonProgress();
 
   const handleLessonCompleted = useCallback((lessonId: string) => {
-    progress.saveProgress(lessonId);
     showToast.success('已记录学习进度');
 
     setData(prev => {
@@ -31,31 +28,23 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
         }))
       };
     });
-  }, [progress]);
+  }, []);
 
   const handleLessonSwitched = useCallback(async (newLessonId: string, newChapterId: string) => {
     try {
       const response = await lessonDetailApi.getById(newLessonId);
-      const dataWithProgress = {
-        ...response,
-        catalog: progress.applyProgressToCatalog(response.catalog)
-      };
-      setData(dataWithProgress);
+      setData(response);
     } catch (error) {
       console.error('❌ 切换小节失败:', error);
     }
-  }, [progress]);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const response = await lessonDetailApi.getById(lessonId);
-        const dataWithProgress = {
-          ...response,
-          catalog: progress.applyProgressToCatalog(response.catalog)
-        };
-        setData(dataWithProgress);
+        setData(response);
       } catch (error) {
         console.error('获取课程详情失败');
       } finally {

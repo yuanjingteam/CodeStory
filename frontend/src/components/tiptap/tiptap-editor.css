@@ -157,35 +157,39 @@
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 8px;
-  margin: 16px 0;
-  border-radius: 10px;
-  font-weight: 700;
+  width: 180px;
+  padding: 6px 10px;
+  margin: 12px 0;
+  border-radius: 6px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
   user-select: none;
   border: 1px solid #000;
-  font-size: 13px;
+  font-size: 12px;
+  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 1);
 }
 
 .tiptap-content [data-type="exercise-button"][data-status="pending"],
 .tiptap-content [data-type="exercise-button"]:not([data-status]) {
-  background: #9333ea;
-  color: white;
-  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 1);
+  background: #facc15;
+  color: #000;
 }
 
 .tiptap-content [data-type="exercise-button"][data-status="pending"]:hover,
 .tiptap-content [data-type="exercise-button"]:not([data-status]):hover {
-  transform: translate(2px, 2px);
+  transform: translate(1px, 1px);
   box-shadow: none;
 }
 
 .tiptap-content [data-type="exercise-button"][data-status="completed"] {
-  background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(to right, #34d399, #10b981);
   color: white;
-  cursor: default;
-  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 1);
+}
+
+.tiptap-content [data-type="exercise-button"][data-status="completed"]:hover {
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }
 
 .tiptap-content [data-type="exercise-button"] .btn-content {
@@ -195,7 +199,7 @@
 }
 
 .tiptap-content [data-type="exercise-button"] .btn-arrow {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
 }
 

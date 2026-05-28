@@ -20,6 +20,7 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
   const [submitResult, setSubmitResult] = useState<{ correct: boolean; score: number; feedback: string } | null>(null)
   const [currentHintLevelUsed, setCurrentHintLevelUsed] = useState(0)
   const [showResult, setShowResult] = useState(false)
+  const [hasSubmitted, setHasSubmitted] = useState(false)
 
   useEffect(() => {
     if (isOpen && exerciseId) {
@@ -27,6 +28,7 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
       setSubmitResult(null)
       setShowResult(false)
       setCurrentHintLevelUsed(0)
+      setHasSubmitted(false)
       exerciseApi.getDetail(exerciseId)
         .then(response => {
           setExerciseData(response)
@@ -42,6 +44,7 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
       setExerciseData(null)
       setSubmitResult(null)
       setShowResult(false)
+      setHasSubmitted(false)
     }
   }, [isOpen, exerciseId])
 
@@ -57,7 +60,8 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
       })
       setShowResult(true)
 
-      if (response.correct) {
+      if (!hasSubmitted) {
+        setHasSubmitted(true)
         onComplete(exerciseData.id)
       }
     } catch (error) {
@@ -124,19 +128,17 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
                 <p className="text-gray-700 text-sm">{submitResult.feedback}</p>
               </div>
               <div className="flex gap-3 justify-center mt-6">
-                {!submitResult.correct && (
-                  <button
-                    onClick={() => { setShowResult(false); setSubmitResult(null) }}
-                    className="px-6 py-3 bg-yellow-400 text-black font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
-                  >
-                    重新作答
-                  </button>
-                )}
                 <button
-                  onClick={submitResult.correct ? onClose : () => { setShowResult(false); setSubmitResult(null) }}
+                  onClick={() => { setShowResult(false); setSubmitResult(null) }}
+                  className="px-6 py-3 bg-yellow-400 text-black font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+                >
+                  重新作答
+                </button>
+                <button
+                  onClick={onClose}
                   className="px-6 py-3 bg-green-600 text-white font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
                 >
-                  {submitResult.correct ? '继续学习' : '关闭'}
+                  继续学习
                 </button>
               </div>
             </div>

@@ -117,7 +117,6 @@ export async function submitExercise(
   const isFirstSubmission = !existingAnswer;
 
   if (existingAnswer) {
-    const finalScore = isFirstSubmission ? score : Math.max(existingAnswer.score, score);
     await prisma.answer.update({
       where: { id: existingAnswer.id },
       data: {
@@ -125,7 +124,6 @@ export async function submitExercise(
         submission_count: existingAnswer.submission_count + 1,
         feedback,
         hint_level_used: Math.max(existingAnswer.hint_level_used, hintLevelUsed),
-        score: finalScore,
       },
     });
   } else {

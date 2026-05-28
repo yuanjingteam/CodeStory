@@ -98,29 +98,32 @@ export const ExerciseButton = Node.create<ExerciseButtonOptions>({
       const contentDiv = document.createElement('div')
       contentDiv.className = 'btn-content'
 
+      const rawLabel = node.attrs.label || '请完成练习'
+      const cleanLabel = rawLabel.replace(/^[💡\s]+/, '')
+
       const icon = document.createElement('span')
+      icon.className = 'btn-icon'
       icon.textContent = node.attrs.status === 'completed' ? '✅' : '💡'
 
       const labelSpan = document.createElement('span')
-      labelSpan.textContent = node.attrs.label || '请完成练习'
+      labelSpan.className = 'btn-label'
+      labelSpan.textContent = cleanLabel
 
       contentDiv.appendChild(icon)
       contentDiv.appendChild(labelSpan)
 
       dom.appendChild(contentDiv)
 
-      if (node.attrs.status !== 'completed') {
-        const arrow = document.createElement('span')
-        arrow.className = 'btn-arrow'
-        arrow.textContent = '›'
-        dom.appendChild(arrow)
-      }
+      const arrow = document.createElement('span')
+      arrow.className = 'btn-arrow'
+      arrow.textContent = '›'
+      dom.appendChild(arrow)
 
       dom.addEventListener('click', (event) => {
         event.preventDefault()
         event.stopPropagation()
 
-        if (this.options.onClick && node.attrs.status !== 'completed') {
+        if (this.options.onClick) {
           this.options.onClick(node.attrs.exerciseId)
         }
       })

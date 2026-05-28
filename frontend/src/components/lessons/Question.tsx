@@ -53,7 +53,8 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
     setHasNext(currentIndex < allLessons.length - 1)
   }, [currentLessonId, data?.catalog])
 
-  const allExercisesCompleted = exercises.length > 0 && completedExercises.size === exercises.length
+  const completedExerciseCount = exercises.filter(ex => completedExercises.has(ex.id)).length
+  const allExercisesCompleted = exercises.length > 0 && completedExerciseCount === exercises.length
 
   const handleExerciseComplete = useCallback((exerciseId: string) => {
     setCompletedExercises(prev => {
@@ -104,7 +105,13 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
         setCurrentLessonTitle(lessonDetail.currentLesson?.title)
         setCurrentContent(lessonDetail.currentLesson?.content || '')
         setExercises(lessonDetail.exercises || [])
-        setCompletedExercises(new Set())
+        
+        const completedIds = new Set(
+          (lessonDetail.exercises || [])
+            .filter(ex => ex.isCompleted)
+            .map(ex => ex.id)
+        )
+        setCompletedExercises(completedIds)
 
         setHasPrev(targetIndex > 0)
         setHasNext(targetIndex < allLessons.length - 1)
@@ -128,7 +135,13 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
       setCurrentLessonTitle(data.currentLesson.title)
       setCurrentContent(data.currentLesson.content || '')
       setExercises(data.exercises || [])
-      setCompletedExercises(new Set())
+      
+      const completedIds = new Set(
+        (data.exercises || [])
+          .filter(ex => ex.isCompleted)
+          .map(ex => ex.id)
+      )
+      setCompletedExercises(completedIds)
     }
   }, [data?.currentLesson?.id])
 
@@ -204,75 +217,7 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
           </div>
         )}
 
-        {/* 练习按钮列表 */}
-        {hasExercises && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-lg font-bold">📝 练习题</span>
-              <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                {completedExercises.size}/{exercises.length} 已完成
-              </span>
-            </div>
 
-            {exercises.map((exercise, index) => {
-              const isCompleted = completedExercises.has(exercise.id)
-              return (
-                <button
-                  key={exercise.id}
-                  onClick={() => {
-                    if (!isCompleted) {
-                      setCurrentExerciseId(exercise.id)
-                      setModalOpen(true)
-                    }
-                  }}
-                  className={`w-full py-4 px-6 font-bold border-4 border-black rounded-xl shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-left flex items-center justify-between ${
-                    isCompleted
-                      ? 'bg-gradient-to-r from-emerald-400 to-green-500 text-white cursor-default'
-                      : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none cursor-pointer'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{isCompleted ? '✅' : '💡'}</span>
-                    <div>
-                      <div className="text-base">
-                        {isCompleted ? '已完成' : `请完成练习 ${index + 1}`}
-                      </div>
-                      <div className={`text-sm ${isCompleted ? 'text-green-100' : 'text-purple-200'}`}>
-                        {exercise.type === 'choice' ? '选择题' : exercise.type === 'code' ? '编程题' : '填空题'}
-                      </div>
-                    </div>
-                  </div>
-                  {!isCompleted && (
-                    <span className="text-2xl">›</span>
-                  )}
-                </button>
-              )
-            })}
-
-            {/* 完成进度 */}
-            {hasExercises && (
-              <div className="mt-6 p-4 border-2 border-black rounded-lg bg-gray-50">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-sm">完成进度</span>
-                  <span className="font-bold text-sm text-purple-600">
-                    {completedExercises.size}/{exercises.length}
-                  </span>
-                </div>
-                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
-                  <div
-                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-500"
-                    style={{ width: `${exercises.length > 0 ? (completedExercises.size / exercises.length) * 100 : 0}%` }}
-                  />
-                </div>
-                {allExercisesCompleted && (
-                  <div className="mt-3 text-center text-green-600 font-bold">
-                    🎉 恭喜！所有练习已完成，小节已标记为已完成！
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
 
         {/* 无内容也无练习 */}
         {!hasContent && !hasExercises && (
@@ -299,9 +244,25 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
           </button>
           <div className="col-span-3 flex items-center justify-center">
             {hasExercises && (
-              <span className="text-sm text-gray-500">
-                {allExercisesCompleted ? '✅ 已完成所有练习' : `还需完成 ${exercises.length - completedExercises.size} 道练习`}
-              </span>
+              <div className="w-full max-w-md px-4">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-bold text-gray-600">练习进度</span>
+                  <span className="text-sm font-bold text-purple-600">
+                    {completedExerciseCount}/{exercises.length}
+                  </span>
+                </div>
+                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
+                  <div
+                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-500"
+                    style={{ width: `${exercises.length > 0 ? (completedExerciseCount / exercises.length) * 100 : 0}%` }}
+                  />
+                </div>
+                {allExercisesCompleted && (
+                  <div className="mt-1 text-center text-green-600 text-sm font-bold">
+                    🎉 所有练习已完成
+                  </div>
+                )}
+              </div>
             )}
           </div>
           <button
