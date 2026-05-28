@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { lessonDetailApi } from '@/app/api/courses/lesson-detail'
 import type { LessonDetailData } from '@/types/lesson-detail'
@@ -25,6 +25,10 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
   const [hasNext, setHasNext] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [transitionDirection, setTransitionDirection] = useState<'left' | 'right' | null>(null)
+  const exerciseButtonOrderRef = useRef<Map<string, number>>(new Map())
+  const buttonIdToExerciseIdRef = useRef<Map<string, string>>(new Map())
+  const onLessonCompletedRef = useRef(onLessonCompleted)
+  onLessonCompletedRef.current = onLessonCompleted
 
   const currentChapter = data?.catalog.find(ch =>
     ch.lessons.some(l => l.id === currentLessonId)
@@ -55,15 +59,22 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
     setCompletedExercises(prev => {
       const next = new Set(prev)
       next.add(exerciseId)
+
+      buttonIdToExerciseIdRef.current.forEach((realId, buttonId) => {
+        if (realId === exerciseId) {
+          next.add(buttonId)
+        }
+      })
+
       return next
     })
   }, [])
 
   useEffect(() => {
     if (allExercisesCompleted && currentLessonId) {
-      onLessonCompleted?.(currentLessonId)
+      onLessonCompletedRef.current?.(currentLessonId)
     }
-  }, [allExercisesCompleted, currentLessonId, onLessonCompleted])
+  }, [allExercisesCompleted, currentLessonId])
 
   const handleNavigate = async (direction: 'prev' | 'next') => {
     if (!currentLessonId || !courseId || !currentChapterId) return
@@ -159,20 +170,34 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
         {/* 学习内容 */}
         {hasContent && (
           <div className="mb-8">
-            <TiptapViewer 
-              content={currentContent} 
+            <TiptapViewer
+              content={currentContent}
               onExerciseClick={(exerciseId) => {
                 const exercise = exercises.find(ex => ex.id === exerciseId);
                 if (exercise) {
+                  buttonIdToExerciseIdRef.current.set(exerciseId, exercise.id)
                   setCurrentExerciseId(exercise.id);
                   setModalOpen(true);
                 } else {
-                  const index = parseInt(exerciseId.split('_')[1] || '0');
-                  if (exercises[index]) {
-                    setCurrentExerciseId(exercises[index].id);
+                  const buttonOrder = exerciseButtonOrderRef.current.get(exerciseId)
+                  if (buttonOrder !== undefined && exercises[buttonOrder]) {
+                    const realExerciseId = exercises[buttonOrder].id
+                    buttonIdToExerciseIdRef.current.set(exerciseId, realExerciseId)
+                    setCurrentExerciseId(realExerciseId);
                     setModalOpen(true);
+                  } else {
+                    const index = parseInt(exerciseId.split('_')[1] || '0');
+                    if (exercises[index]) {
+                      const realExerciseId = exercises[index].id
+                      buttonIdToExerciseIdRef.current.set(exerciseId, realExerciseId)
+                      setCurrentExerciseId(realExerciseId);
+                      setModalOpen(true);
+                    }
                   }
                 }
+              }}
+              onButtonOrderMapped={(buttonIdMap) => {
+                exerciseButtonOrderRef.current = buttonIdMap
               }}
               completedExercises={completedExercises}
             />

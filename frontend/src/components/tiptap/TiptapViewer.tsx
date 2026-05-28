@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { TableKit } from '@tiptap/extension-table/kit'
@@ -9,11 +9,23 @@ import './tiptap-editor.css'
 interface TiptapViewerProps {
   content: string
   onExerciseClick?: (exerciseId: string) => void
+  onButtonOrderMapped?: (buttonIdMap: Map<string, number>) => void
   completedExercises?: Set<string>
 }
 
-export default function TiptapViewer({ content, onExerciseClick, completedExercises }: TiptapViewerProps) {
+export default function TiptapViewer({ content, onExerciseClick, onButtonOrderMapped, completedExercises }: TiptapViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const onExerciseClickRef = useRef(onExerciseClick)
+  const onButtonOrderMappedRef = useRef(onButtonOrderMapped)
+  const mutationObserverRef = useRef<MutationObserver | null>(null)
+  onExerciseClickRef.current = onExerciseClick
+  onButtonOrderMappedRef.current = onButtonOrderMapped
+
+  const handleExerciseClick = useCallback((exerciseId: string) => {
+    if (onExerciseClickRef.current) {
+      onExerciseClickRef.current(exerciseId)
+    }
+  }, [])
 
   const editor = useEditor({
     immediatelyRender: true,
@@ -29,54 +41,99 @@ export default function TiptapViewer({ content, onExerciseClick, completedExerci
           resizable: true,
         },
       }),
-      ExerciseButton,
+      ExerciseButton.configure({
+        onClick: handleExerciseClick,
+      }),
     ],
     content: content || '',
     editorProps: {
       attributes: {
         class: 'tiptap-content prose prose-sm max-w-none',
       },
+      handleClickOn(view, pos, node, nodePos, event, direct) {
+        if (node.type.name === 'exerciseButton') {
+          const exerciseId = node.attrs.exerciseId as string
+          const status = node.attrs.status as string
+
+          if (exerciseId && status !== 'completed') {
+            event.stopPropagation()
+            handleExerciseClick(exerciseId)
+            return true
+          }
+        }
+        return false
+      },
     },
   })
 
-  useEffect(() => {
-    if (!editor || !onExerciseClick) return
+  const updateButtonOrderMap = useCallback(() => {
+    if (!editor || !onButtonOrderMappedRef.current) return
 
-    const handleClick = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      const button = target.closest('[data-type="exercise-button"]')
-      
-      if (button) {
-        const exerciseId = button.getAttribute('data-exercise-id')
-        const status = button.getAttribute('data-status')
-        
-        if (exerciseId && status !== 'completed') {
-          onExerciseClick(exerciseId)
-        }
-      }
+    const buttons = editor.view.dom.querySelectorAll('[data-type="exercise-button"]')
+    if (buttons.length === 0) return
+
+    const buttonIdMap = new Map<string, number>()
+    buttons.forEach((btn, index) => {
+      const btnId = btn.getAttribute('data-exercise-id') || ''
+      buttonIdMap.set(btnId, index)
+    })
+    onButtonOrderMappedRef.current(buttonIdMap)
+  }, [editor])
+
+  useEffect(() => {
+    if (!editor) return
+
+    const dom = editor.view.dom
+
+    if (mutationObserverRef.current) {
+      mutationObserverRef.current.disconnect()
     }
 
-    const container = containerRef.current
-    container?.addEventListener('click', handleClick)
+    const observer = new MutationObserver(() => {
+      updateButtonOrderMap()
+    })
+
+    observer.observe(dom, { childList: true, subtree: true })
+    mutationObserverRef.current = observer
+
+    const timeouts = [50, 200, 500].map(delay =>
+      setTimeout(updateButtonOrderMap, delay)
+    )
 
     return () => {
-      container?.removeEventListener('click', handleClick)
+      observer.disconnect()
+      mutationObserverRef.current = null
+      timeouts.forEach(clearTimeout)
     }
-  }, [editor, onExerciseClick])
+  }, [editor, content, updateButtonOrderMap])
 
   useEffect(() => {
     if (!editor || !completedExercises) return
 
     const buttons = editor.view.dom.querySelectorAll('[data-type="exercise-button"]')
-    
+
     buttons.forEach((button) => {
       const exerciseId = button.getAttribute('data-exercise-id')
       const isCompleted = completedExercises.has(exerciseId || '')
-      
+
       if (isCompleted) {
         button.setAttribute('data-status', 'completed')
         const label = button.getAttribute('data-label') || '请完成练习'
-        button.textContent = '✅ ' + label
+
+        button.innerHTML = ''
+
+        const contentDiv = document.createElement('div')
+        contentDiv.className = 'btn-content'
+
+        const icon = document.createElement('span')
+        icon.textContent = '✅'
+
+        const labelSpan = document.createElement('span')
+        labelSpan.textContent = label
+
+        contentDiv.appendChild(icon)
+        contentDiv.appendChild(labelSpan)
+        button.appendChild(contentDiv)
       } else {
         button.setAttribute('data-status', 'pending')
       }

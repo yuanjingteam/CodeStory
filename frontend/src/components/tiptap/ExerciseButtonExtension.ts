@@ -2,6 +2,7 @@ import { Node, mergeAttributes } from '@tiptap/core'
 
 export interface ExerciseButtonOptions {
   HTMLAttributes: Record<string, string>
+  onClick?: (exerciseId: string) => void
 }
 
 declare module '@tiptap/core' {
@@ -22,6 +23,7 @@ export const ExerciseButton = Node.create<ExerciseButtonOptions>({
   addOptions() {
     return {
       HTMLAttributes: {},
+      onClick: undefined,
     }
   },
 
@@ -91,11 +93,44 @@ export const ExerciseButton = Node.create<ExerciseButtonOptions>({
       dom.setAttribute('data-type', 'exercise-button')
       dom.setAttribute('data-exercise-id', node.attrs.exerciseId || '')
       dom.setAttribute('data-status', node.attrs.status || 'pending')
-      
-      const icon = node.attrs.status === 'completed' ? '✅ ' : '💡 '
-      dom.textContent = icon + (node.attrs.label || '请完成练习')
+      dom.contentEditable = 'false'
 
-      return { dom }
+      const contentDiv = document.createElement('div')
+      contentDiv.className = 'btn-content'
+
+      const icon = document.createElement('span')
+      icon.textContent = node.attrs.status === 'completed' ? '✅' : '💡'
+
+      const labelSpan = document.createElement('span')
+      labelSpan.textContent = node.attrs.label || '请完成练习'
+
+      contentDiv.appendChild(icon)
+      contentDiv.appendChild(labelSpan)
+
+      dom.appendChild(contentDiv)
+
+      if (node.attrs.status !== 'completed') {
+        const arrow = document.createElement('span')
+        arrow.className = 'btn-arrow'
+        arrow.textContent = '›'
+        dom.appendChild(arrow)
+      }
+
+      dom.addEventListener('click', (event) => {
+        event.preventDefault()
+        event.stopPropagation()
+
+        if (this.options.onClick && node.attrs.status !== 'completed') {
+          this.options.onClick(node.attrs.exerciseId)
+        }
+      })
+
+      return {
+        dom,
+        stopEvent(event: Event): boolean {
+          return true
+        },
+      }
     }
   },
 })

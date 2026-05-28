@@ -154,35 +154,49 @@
 
 /* 练习按钮 */
 .tiptap-content [data-type="exercise-button"] {
-  display: block;
-  padding: 14px 20px;
-  margin: 20px 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px;
+  margin: 16px 0;
   border-radius: 10px;
   font-weight: 700;
-  text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   user-select: none;
+  border: 1px solid #000;
+  font-size: 13px;
 }
 
 .tiptap-content [data-type="exercise-button"][data-status="pending"],
 .tiptap-content [data-type="exercise-button"]:not([data-status]) {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: #9333ea;
   color: white;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 1);
 }
 
 .tiptap-content [data-type="exercise-button"][data-status="pending"]:hover,
 .tiptap-content [data-type="exercise-button"]:not([data-status]):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+  transform: translate(2px, 2px);
+  box-shadow: none;
 }
 
 .tiptap-content [data-type="exercise-button"][data-status="completed"] {
   background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
   color: white;
   cursor: default;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 1);
+}
+
+.tiptap-content [data-type="exercise-button"] .btn-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tiptap-content [data-type="exercise-button"] .btn-arrow {
+  font-size: 18px;
+  font-weight: bold;
 }
 
 /* 硬换行 */
