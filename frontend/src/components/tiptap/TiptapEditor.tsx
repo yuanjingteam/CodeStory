@@ -321,19 +321,19 @@ export default function TiptapEditor({
           </button>
           
           {showExerciseMenu && exercises.length > 0 && (
-            <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 min-w-[180px] py-1 overflow-hidden">
+            <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 min-w-[140px] py-1 overflow-hidden">
               {exercises.map((exercise, index) => (
                 <button
                   key={exercise.id}
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => handleInsertExercise(exercise.id, exercise.title || `练习 ${index + 1}`)}
-                  className="w-full px-4 py-2 text-left hover:bg-emerald-50 transition-colors text-gray-700 hover:text-emerald-600 flex items-center gap-2"
+                  onClick={() => handleInsertExercise(exercise.id, `练习 ${index + 1}`)}
+                  className="w-full px-4 py-2 text-left hover:bg-emerald-50 transition-colors text-gray-700 hover:text-emerald-600 flex items-center gap-2 whitespace-nowrap"
                 >
-                  <span className="text-emerald-500">📝</span>
-                  <span>{exercise.title || `练习 ${index + 1}`}</span>
-                  <span className="text-xs text-gray-400 ml-auto">
-                    {exercise.type === 'choice' ? '选择题' : exercise.type === 'code' ? '编程题' : '填空题'}
+                  <span className="text-lg flex-shrink-0">{exercise.type === 'code' ? '💻' : '📝'}</span>
+                  <span className="font-medium flex-shrink-0">练习 {index + 1}</span>
+                  <span className="text-xs text-gray-400 ml-auto flex-shrink-0">
+                    {exercise.type === 'code' ? '代码' : '选择'}
                   </span>
                 </button>
               ))}

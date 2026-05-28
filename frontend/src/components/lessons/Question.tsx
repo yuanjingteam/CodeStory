@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { lessonDetailApi } from '@/app/api/courses/lesson-detail'
 import type { LessonDetailData } from '@/types/lesson-detail'
 import ExerciseModal from './ExerciseModal'
-import MarkdownContent from './MarkdownContent'
+import TiptapViewer from '@/components/tiptap/TiptapViewer'
 
 interface QuestionProps {
   data: LessonDetailData
@@ -159,7 +159,7 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
         {/* 学习内容 */}
         {hasContent && (
           <div className="mb-8">
-            <MarkdownContent 
+            <TiptapViewer 
               content={currentContent} 
               onExerciseClick={(exerciseId) => {
                 const exercise = exercises.find(ex => ex.id === exerciseId);

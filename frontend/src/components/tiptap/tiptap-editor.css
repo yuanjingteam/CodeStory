@@ -7,6 +7,11 @@
   color: #1f2937;
 }
 
+.tiptap-viewer .tiptap-content {
+  padding: 0;
+  min-height: auto;
+}
+
 .tiptap-content > *:first-child {
   margin-top: 0;
 }

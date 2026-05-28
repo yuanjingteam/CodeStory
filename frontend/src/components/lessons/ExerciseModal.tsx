@@ -5,7 +5,7 @@ import { exerciseApi } from '@/app/api/courses/exercise'
 import type { ExerciseDetailData } from '@/types/exercise'
 import ChoiceQuestion, { ChoiceQuestionHandle } from './ChoiceQuestion'
 import CodeQuestion, { CodeQuestionHandle } from './CodeQuestion'
-import MarkdownContent from './MarkdownContent'
+import TiptapViewer from '@/components/tiptap/TiptapViewer'
 
 interface ExerciseModalProps {
   isOpen: boolean
@@ -143,7 +143,7 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
           ) : (
             <div>
               <div className="mb-6">
-                <MarkdownContent content={exerciseData.content} />
+                <TiptapViewer content={exerciseData.content} />
               </div>
 
               {exerciseData.type === 'single_choice' ? (
