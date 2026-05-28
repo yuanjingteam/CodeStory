@@ -76,7 +76,7 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b-2 border-black flex-shrink-0 bg-purple-600 text-white">
+      <div className="flex items-center justify-between p-2 border-t-1 border-b-2 border-black flex-shrink-0 bg-gray-100 text-black">
         <div className="flex items-center gap-2">
           <span className="text-xl">💡</span>
           <h2 className=" font-bold">练习题</h2>
@@ -88,7 +88,7 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
         </div>
         <button
           onClick={onClose}
-          className="w-8 h-8 flex items-center justify-center border-2 border-white hover:bg-white/20 rounded transition-colors"
+          className="w-8 h-8 flex items-center justify-center border-2 border-black hover:bg-white/20 rounded transition-colors"
         >
           <FiX className="w-5 h-5" />
         </button>

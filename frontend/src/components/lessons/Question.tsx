@@ -50,8 +50,10 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
   onLessonCompletedRef.current = onLessonCompleted
   const contentScrollRef = useRef<HTMLDivElement>(null)
   const savedScrollPositionRef = useRef(0)
-  const initialAllCompleted = (data?.exercises || []).length > 0 && (data?.exercises || []).every(ex => ex.isCompleted)
-  const prevAllExercisesCompletedRef = useRef(initialAllCompleted)
+  const initExercises = data?.exercises || []
+  const initAllDone = initExercises.length > 0 && initExercises.every(ex => ex.isCompleted)
+  const serverCompletedLessonsRef = useRef<Set<string>>(initAllDone ? new Set([data!.currentLesson.id]) : new Set())
+  const notifiedLessonsRef = useRef<Set<string>>(initAllDone ? new Set([data!.currentLesson.id]) : new Set())
 
   const currentChapter = data?.catalog.find(ch =>
     ch.lessons.some(l => l.id === currentLessonId)
@@ -95,9 +97,10 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
   }, [])
 
   useEffect(() => {
-    const prevCompleted = prevAllExercisesCompletedRef.current
-    prevAllExercisesCompletedRef.current = allExercisesCompleted
-    if (allExercisesCompleted && !prevCompleted && currentLessonId) {
+    if (!currentLessonId || !allExercisesCompleted) return
+    if (notifiedLessonsRef.current.has(currentLessonId)) return
+    notifiedLessonsRef.current.add(currentLessonId)
+    if (!serverCompletedLessonsRef.current.has(currentLessonId)) {
       onLessonCompletedRef.current?.(currentLessonId)
     }
   }, [allExercisesCompleted, currentLessonId])
@@ -170,6 +173,13 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
         )
         setCompletedExercises(completedIds)
 
+        const serverAllDone = (lessonDetail.exercises || []).length > 0 && completedIds.size === (lessonDetail.exercises || []).length
+        if (serverAllDone) {
+          serverCompletedLessonsRef.current.add(targetLessonId)
+        } else {
+          serverCompletedLessonsRef.current.delete(targetLessonId)
+        }
+
         setHasPrev(targetIndex > 0)
         setHasNext(targetIndex < allLessons.length - 1)
 
@@ -199,6 +209,13 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
           .map(ex => ex.id)
       )
       setCompletedExercises(completedIds)
+
+      const serverAllDone = (data.exercises || []).length > 0 && completedIds.size === (data.exercises || []).length
+      if (serverAllDone) {
+        serverCompletedLessonsRef.current.add(data.currentLesson.id)
+      } else {
+        serverCompletedLessonsRef.current.delete(data.currentLesson.id)
+      }
     }
   }, [data?.currentLesson?.id])
 

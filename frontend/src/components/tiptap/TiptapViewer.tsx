@@ -65,6 +65,13 @@ export default function TiptapViewer({ content, onExerciseClick, onButtonOrderMa
     },
   })
 
+  const contentRef = useRef(content)
+  useEffect(() => {
+    if (!editor || content === contentRef.current) return
+    contentRef.current = content
+    editor.commands.setContent(content || '')
+  }, [editor, content])
+
   const updateButtonOrderMap = useCallback(() => {
     if (!editor || !onButtonOrderMappedRef.current) return
 

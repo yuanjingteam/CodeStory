@@ -19,9 +19,11 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
     setData(prev => {
       if (!prev) return prev;
       const totalLessons = prev.catalog.reduce((sum, ch) => sum + ch.lessons.length, 0);
+      const currentLesson = prev.catalog.flatMap(ch => ch.lessons).find(l => l.id === lessonId);
+      const isAlreadyCompleted = currentLesson?.status === 2;
       const completedLessons = prev.catalog.reduce((sum, ch) =>
         sum + ch.lessons.filter(l => l.status === 2).length, 0
-      ) + 1;
+      ) + (isAlreadyCompleted ? 0 : 1);
       const newProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
       return {
         ...prev,
