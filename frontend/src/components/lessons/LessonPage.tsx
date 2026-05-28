@@ -18,8 +18,14 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
 
     setData(prev => {
       if (!prev) return prev;
+      const totalLessons = prev.catalog.reduce((sum, ch) => sum + ch.lessons.length, 0);
+      const completedLessons = prev.catalog.reduce((sum, ch) =>
+        sum + ch.lessons.filter(l => l.status === 2).length, 0
+      ) + 1;
+      const newProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
       return {
         ...prev,
+        course: { ...prev.course, progress: newProgress },
         catalog: prev.catalog.map(chapter => ({
           ...chapter,
           lessons: chapter.lessons.map(lesson =>

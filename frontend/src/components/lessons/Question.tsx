@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { lessonDetailApi } from '@/app/api/courses/lesson-detail'
 import type { LessonDetailData } from '@/types/lesson-detail'
 import ExerciseModal from './ExerciseModal'
@@ -14,6 +14,7 @@ interface QuestionProps {
 
 export default function Question({ data, onLessonCompleted, onLessonSwitched }: QuestionProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [currentLessonId, setCurrentLessonId] = useState<string | undefined>(data?.currentLesson?.id)
   const [currentLessonTitle, setCurrentLessonTitle] = useState<string | undefined>(data?.currentLesson?.title)
   const [currentContent, setCurrentContent] = useState<string>(data?.currentLesson?.content || '')
@@ -25,8 +26,18 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
         .map(ex => ex.id)
     )
   })
-  const [modalOpen, setModalOpen] = useState(false)
-  const [currentExerciseId, setCurrentExerciseId] = useState<string | null>(null)
+  const [modalOpen, setModalOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return searchParams.get('exercise') === 'open'
+    }
+    return false
+  })
+  const [currentExerciseId, setCurrentExerciseId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return searchParams.get('exerciseId') || null
+    }
+    return null
+  })
   const [hasPrev, setHasPrev] = useState(false)
   const [hasNext, setHasNext] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
@@ -37,6 +48,10 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
   exercisesRef.current = exercises
   const onLessonCompletedRef = useRef(onLessonCompleted)
   onLessonCompletedRef.current = onLessonCompleted
+  const contentScrollRef = useRef<HTMLDivElement>(null)
+  const savedScrollPositionRef = useRef(0)
+  const initialAllCompleted = (data?.exercises || []).length > 0 && (data?.exercises || []).every(ex => ex.isCompleted)
+  const prevAllExercisesCompletedRef = useRef(initialAllCompleted)
 
   const currentChapter = data?.catalog.find(ch =>
     ch.lessons.some(l => l.id === currentLessonId)
@@ -80,10 +95,44 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
   }, [])
 
   useEffect(() => {
-    if (allExercisesCompleted && currentLessonId) {
+    const prevCompleted = prevAllExercisesCompletedRef.current
+    prevAllExercisesCompletedRef.current = allExercisesCompleted
+    if (allExercisesCompleted && !prevCompleted && currentLessonId) {
       onLessonCompletedRef.current?.(currentLessonId)
     }
   }, [allExercisesCompleted, currentLessonId])
+
+  const updateUrlWithExercise = useCallback((exerciseOpen: boolean, exerciseId: string | null) => {
+    if (!courseId || !currentChapterId || !currentLessonId) return
+    const basePath = `/courses/${courseId}/chapters/${currentChapterId}/lessons/${currentLessonId}`
+    const params = new URLSearchParams()
+    if (exerciseOpen && exerciseId) {
+      params.set('exercise', 'open')
+      params.set('exerciseId', exerciseId)
+    }
+    const queryString = params.toString()
+    const newUrl = queryString ? `${basePath}?${queryString}` : basePath
+    window.history.replaceState({ path: newUrl }, '', newUrl)
+  }, [courseId, currentChapterId, currentLessonId])
+
+  const openExercise = useCallback((exerciseId: string) => {
+    if (contentScrollRef.current) {
+      savedScrollPositionRef.current = contentScrollRef.current.scrollTop
+    }
+    setCurrentExerciseId(exerciseId)
+    setModalOpen(true)
+    updateUrlWithExercise(true, exerciseId)
+  }, [updateUrlWithExercise])
+
+  const closeExercise = useCallback(() => {
+    setModalOpen(false)
+    updateUrlWithExercise(false, null)
+    requestAnimationFrame(() => {
+      if (contentScrollRef.current) {
+        contentScrollRef.current.scrollTop = savedScrollPositionRef.current
+      }
+    })
+  }, [updateUrlWithExercise])
 
   const handleNavigate = async (direction: 'prev' | 'next') => {
     if (!currentLessonId || !courseId || !currentChapterId) return
@@ -182,70 +231,74 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
 
       {/* 主内容区 */}
       <div
-        className={`flex-1 overflow-y-auto p-6 transition-all duration-300 ease-in-out ${
+        className={`flex-1 overflow-hidden transition-all duration-300 ease-in-out ${
           isTransitioning
             ? 'opacity-0 ' + (transitionDirection === 'left' ? '-translate-x-4' : 'translate-x-4')
             : 'opacity-100 translate-x-0'
         }`}
       >
-        {/* 学习内容 */}
-        {hasContent && (
-          <div className="mb-8">
-            <TiptapViewer
-              content={currentContent}
-              onExerciseClick={(exerciseId) => {
-                const exercise = exercises.find(ex => ex.id === exerciseId);
-                if (exercise) {
-                  buttonIdToExerciseIdRef.current.set(exerciseId, exercise.id)
-                  setCurrentExerciseId(exercise.id);
-                  setModalOpen(true);
-                } else {
-                  const buttonOrder = exerciseButtonOrderRef.current.get(exerciseId)
-                  if (buttonOrder !== undefined && exercises[buttonOrder]) {
-                    const realExerciseId = exercises[buttonOrder].id
-                    buttonIdToExerciseIdRef.current.set(exerciseId, realExerciseId)
-                    setCurrentExerciseId(realExerciseId);
-                    setModalOpen(true);
-                  } else {
-                    const index = parseInt(exerciseId.split('_')[1] || '0');
-                    if (exercises[index]) {
-                      const realExerciseId = exercises[index].id
-                      buttonIdToExerciseIdRef.current.set(exerciseId, realExerciseId)
-                      setCurrentExerciseId(realExerciseId);
-                      setModalOpen(true);
-                    }
-                  }
-                }
-              }}
-              onButtonOrderMapped={(buttonIdMap) => {
-                exerciseButtonOrderRef.current = buttonIdMap
-
-                const currentExercises = exercisesRef.current
-                setCompletedExercises(prev => {
-                  const next = new Set(prev)
-                  let hasNewIds = false
-                  buttonIdMap.forEach((index, buttonId) => {
-                    if (index < currentExercises.length && currentExercises[index] && prev.has(currentExercises[index].id)) {
-                      if (!next.has(buttonId)) {
-                        next.add(buttonId)
-                        hasNewIds = true
+        {modalOpen ? (
+          <ExerciseModal
+            isOpen={modalOpen}
+            exerciseId={currentExerciseId}
+            onClose={closeExercise}
+            onComplete={handleExerciseComplete}
+          />
+        ) : (
+          <div ref={contentScrollRef} className="h-full overflow-y-auto p-6">
+            {hasContent && (
+              <div className="mb-8">
+                <TiptapViewer
+                  content={currentContent}
+                  onExerciseClick={(exerciseId) => {
+                    const exercise = exercises.find(ex => ex.id === exerciseId);
+                    if (exercise) {
+                      buttonIdToExerciseIdRef.current.set(exerciseId, exercise.id)
+                      openExercise(exercise.id);
+                    } else {
+                      const buttonOrder = exerciseButtonOrderRef.current.get(exerciseId)
+                      if (buttonOrder !== undefined && exercises[buttonOrder]) {
+                        const realExerciseId = exercises[buttonOrder].id
+                        buttonIdToExerciseIdRef.current.set(exerciseId, realExerciseId)
+                        openExercise(realExerciseId);
+                      } else {
+                        const index = parseInt(exerciseId.split('_')[1] || '0');
+                        if (exercises[index]) {
+                          const realExerciseId = exercises[index].id
+                          buttonIdToExerciseIdRef.current.set(exerciseId, realExerciseId)
+                          openExercise(realExerciseId);
+                        }
                       }
                     }
-                  })
-                  return hasNewIds ? next : prev
-                })
-              }}
-              completedExercises={completedExercises}
-            />
-          </div>
-        )}
+                  }}
+                  onButtonOrderMapped={(buttonIdMap) => {
+                    exerciseButtonOrderRef.current = buttonIdMap
 
+                    const currentExercises = exercisesRef.current
+                    setCompletedExercises(prev => {
+                      const next = new Set(prev)
+                      let hasNewIds = false
+                      buttonIdMap.forEach((index, buttonId) => {
+                        if (index < currentExercises.length && currentExercises[index] && prev.has(currentExercises[index].id)) {
+                          if (!next.has(buttonId)) {
+                            next.add(buttonId)
+                            hasNewIds = true
+                          }
+                        }
+                      })
+                      return hasNewIds ? next : prev
+                    })
+                  }}
+                  completedExercises={completedExercises}
+                />
+              </div>
+            )}
 
-
-        {/* 无内容也无练习 */}
-        {!hasContent && !hasExercises && (
-          <div className="flex items-center justify-center h-full">
-            <span className="font-bold text-gray-400">暂无内容</span>
+            {!hasContent && !hasExercises && (
+              <div className="flex items-center justify-center h-full">
+                <span className="font-bold text-gray-400">暂无内容</span>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -303,13 +356,6 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
         </div>
       </div>
 
-      {/* 题目弹窗 */}
-      <ExerciseModal
-        isOpen={modalOpen}
-        exerciseId={currentExerciseId}
-        onClose={() => setModalOpen(false)}
-        onComplete={handleExerciseComplete}
-      />
     </div>
   )
 }
