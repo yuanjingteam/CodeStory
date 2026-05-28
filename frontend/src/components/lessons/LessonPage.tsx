@@ -11,6 +11,7 @@ import { showToast } from '@/utils/toast';
 export default function LessonPage({ lessonId }: { lessonId: string }) {
   const [data, setData] = useState<LessonDetailData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const progress = useLessonProgress();
 
   const handleLessonCompleted = useCallback((lessonId: string) => {
@@ -84,13 +85,22 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
   return (
     <div className="flex gap-3 p-3 box-border h-[calc(100vh-110px)]">
       <div
-        className="flex-shrink-0 border-4 border-black rounded-lg shadow-[1px_1px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col overflow-hidden"
-        style={{ width: '320px' }}
+        className={`border-4 border-black rounded-lg shadow-[1px_1px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${
+          sidebarCollapsed ? 'w-12' : 'w-[320px]'
+        }`}
       >
-        <Content data={data} onLessonClick={handleLessonSwitched} />
+        {!sidebarCollapsed && (
+          <Content data={data} onLessonClick={handleLessonSwitched} />
+        )}
+        <button
+          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          className="absolute top-3 right-[-18px] z-20 w-7 h-7 bg-white border-2 border-black rounded-full shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all duration-150 flex items-center justify-center font-bold text-sm"
+        >
+          {sidebarCollapsed ? '›' : '‹'}
+        </button>
       </div>
 
-      <div className="flex-1 border-4 border-black rounded-lg shadow-[1px_1px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col overflow-hidden">
+      <div className="flex-1 border-4 border-black rounded-lg shadow-[1px_1px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col overflow-hidden min-w-0">
         <Question
           data={data}
           onLessonCompleted={handleLessonCompleted}
@@ -99,8 +109,8 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
       </div>
 
       <div
-        className="flex-shrink-0 border-4 border-black rounded-lg shadow-[1px_1px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col overflow-hidden"
-        style={{ width: '320px' }}
+        className="border-4 border-black rounded-lg shadow-[1px_1px_0_0_rgba(0,0,0,1)] bg-white z-10 relative flex flex-col overflow-hidden transition-all duration-300 ease-in-out flex-shrink-0"
+        style={{ width: sidebarCollapsed ? 'calc(320px + 320px - 48px)' : '320px' }}
       >
         <Chat />
       </div>
