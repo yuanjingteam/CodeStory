@@ -173,7 +173,7 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
         </div>
         <button
           onClick={() => router.back()}
-          className="border-2 border-white px-3 py-1 bg-purple-700 text-white font-bold rounded-lg shadow-[2px_2px_0_0_rgba(0,0,0,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+          className="border-2 border-black px-3 py-1 bg-green-500 text-white font-bold rounded-lg shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
         >
           <span>‹</span>
           <span>返回</span>
@@ -270,18 +270,18 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
               <div className="w-full max-w-md px-4">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-bold text-gray-600">练习进度</span>
-                  <span className="text-sm font-bold text-purple-600">
+                  <span className="text-sm font-bold text-black-600">
                     {completedExerciseCount}/{exercises.length}
                   </span>
                 </div>
                 <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
                   <div
-                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-500"
+                    className="h-full border-black bg-yellow-400 rounded-full transition-all duration-500"
                     style={{ width: `${exercises.length > 0 ? (completedExerciseCount / exercises.length) * 100 : 0}%` }}
                   />
                 </div>
                 {allExercisesCompleted && (
-                  <div className="mt-1 text-center text-green-600 text-sm font-bold">
+                  <div className="mt-1 text-center text-black-600 text-sm font-bold">
                     🎉 所有练习已完成
                   </div>
                 )}
