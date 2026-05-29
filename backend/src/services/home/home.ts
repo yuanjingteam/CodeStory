@@ -7,27 +7,30 @@ class HomeService {
         is_delete: 0,
       },
       orderBy: {
-        student_count: 'desc',
+        created_at: 'desc',
       },
       take: 4,
       include: {
-        courses_progress: userId
-          ? {
-              where: {
-                user_id: userId,
-                is_delete: 0,
-              },
-              select: {
-                completed_lessons: true,
-                total_lessons: true,
-              },
-            }
-          : false,
+        courses_progress: {
+          where: {
+            is_delete: 0,
+          },
+          select: {
+            user_id: true,
+            completed_lessons: true,
+            total_lessons: true,
+          },
+        },
       },
     });
 
     return courses.map((course) => {
-      const progress = course.courses_progress?.[0];
+      const progressList = course.courses_progress;
+      const studentCount = progressList.length;
+      const progress = userId
+        ? progressList.find((p) => p.user_id === userId)
+        : progressList[0];
+
       return {
         id: course.id,
         title: course.title,
@@ -35,7 +38,7 @@ class HomeService {
         description: course.description || '',
         level: course.level || 0,
         course_seq: course.course_seq || 0,
-        student_count: course.student_count || 0,
+        student_count: studentCount,
         completed_lessons: progress?.completed_lessons || 0,
         total_lessons: progress?.total_lessons || 0,
       };

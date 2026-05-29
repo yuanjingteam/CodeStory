@@ -148,8 +148,6 @@ model exercises {
   created_at DateTime @default(now()) @db.Timestamp(6)
   updated_at DateTime @updatedAt @db.Timestamp(6)
   is_delete  Int      @default(0) @db.SmallInt
-  hints      Json?    @db.Json
-  order      Int      @default(0)
   answers    answer[]
   lessons    lessons  @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
 
