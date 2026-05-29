@@ -8,15 +8,13 @@ export const getLessonList = async (req: Request, res: Response) => {
     const { chapterId, courseId, keyword, difficulty, page = 1, size = 10 } = req.query;
 
     const where: Record<string, any> = {
-      is_delete: 0,
-      lessons: { is_delete: 0 }
+      is_delete: 0
     };
 
     if (chapterId && chapterId !== '') {
       const resolvedChapterId = await resolveShortId('chapters', String(chapterId));
       if (!resolvedChapterId) return badRequest(res, '章节不存在');
-      where.lesson_id = undefined;
-      where.lessons = { ...where.lessons, chapter_id: resolvedChapterId };
+      where.chapter_id = resolvedChapterId;
     }
 
     if (courseId && courseId !== '') {
@@ -28,22 +26,13 @@ export const getLessonList = async (req: Request, res: Response) => {
         select: { id: true }
       });
 
-      const lessonsInChapters = await prisma.lessons.findMany({
-        where: {
-          chapter_id: { in: chapters.map(c => c.id) },
-          is_delete: 0
-        },
-        select: { id: true }
-      });
-
-      where.lesson_id = { in: lessonsInChapters.map(l => l.id) };
+      where.chapter_id = { in: chapters.map(c => c.id) };
     }
 
     if (keyword && keyword !== '') {
       where.OR = [
-        { content: { contains: String(keyword) } },
-        { knowledge: { contains: String(keyword) } },
-        { lessons: { title: { contains: String(keyword) } } }
+        { title: { contains: String(keyword) } },
+        { content: { contains: String(keyword) } }
       ];
     }
 
@@ -51,52 +40,64 @@ export const getLessonList = async (req: Request, res: Response) => {
       where.difficulty = Number(difficulty);
     }
 
-    const total = await prisma.exercises.count({ where });
+    const total = await prisma.lessons.count({ where });
 
-    const exercises = await prisma.exercises.findMany({
+    const lessons = await prisma.lessons.findMany({
       where,
-      orderBy: { created_at: 'asc' },
+      orderBy: { order: 'asc' },
       skip: (Number(page) - 1) * Number(size),
       take: Number(size),
       include: {
-        lessons: {
+        chapters: {
           include: {
-            chapters: {
-              include: {
-                courses: {
-                  select: {
-                    id: true,
-                    title: true
-                  }
-                }
+            courses: {
+              select: {
+                id: true,
+                title: true
               }
             }
+          }
+        },
+        exercises: {
+          where: { is_delete: 0 },
+          orderBy: { order: 'asc' },
+          select: {
+            id: true,
+            type: true,
+            content: true,
+            answer: true,
+            metadata: true,
+            hints: true,
+            order: true
           }
         }
       }
     });
 
-    const data = exercises.map(exercise => ({
-      id: uuidToShortId(exercise.id),
-      lessonId: uuidToShortId(exercise.lesson_id),
-      lessonName: exercise.lessons?.title || '',
-      courseId: uuidToShortId(exercise.lessons?.chapters?.courses?.id || ''),
-      courseName: exercise.lessons?.chapters?.courses?.title || '',
-      chapterId: uuidToShortId(exercise.lessons?.chapter_id || ''),
-      chapterName: exercise.lessons?.chapters?.title || '',
-      type: exercise.type,
-      content: exercise.content,
-      knowledge: exercise.knowledge || '',
-      answer: exercise.answer,
-      analysis: exercise.analysis || '',
-      difficulty: exercise.difficulty,
-      source: exercise.source || '',
-      sortOrder: exercise.lessons?.order || 0,
-      estimatedTime: exercise.lessons?.estimated_time || 0,
-      metadata: exercise.metadata,
-      hints: exercise.hints,
-      createdAt: exercise.created_at.toISOString().replace('T', ' ').slice(0, 19),
-      updateAt: exercise.updated_at.toISOString().replace('T', ' ').slice(0, 19)
+    const data = lessons.map(lesson => ({
+      id: uuidToShortId(lesson.id),
+      lessonId: uuidToShortId(lesson.id),
+      lessonName: lesson.title,
+      courseId: uuidToShortId(lesson.chapters?.courses?.id || ''),
+      courseName: lesson.chapters?.courses?.title || '',
+      chapterId: uuidToShortId(lesson.chapter_id || ''),
+      chapterName: lesson.chapters?.title || '',
+      content: lesson.content || '',
+      difficulty: lesson.difficulty,
+      sortOrder: lesson.order,
+      estimatedTime: lesson.estimated_time || 0,
+      exercises: lesson.exercises.map((ex: any) => ({
+        id: uuidToShortId(ex.id),
+        type: ex.type,
+        exerciseContent: ex.content,
+        answer: ex.answer,
+        metadata: ex.metadata,
+        hints: ex.hints,
+        order: ex.order
+      })),
+      exerciseCount: lesson.exercises.length,
+      createdAt: lesson.created_at.toISOString().replace('T', ' ').slice(0, 19),
+      updateAt: lesson.updated_at.toISOString().replace('T', ' ').slice(0, 19)
     }));
 
     return success(res, { total, data });
@@ -108,7 +109,7 @@ export const getLessonList = async (req: Request, res: Response) => {
 
 export const createLesson = async (req: Request, res: Response) => {
   try {
-    const { chapterId, lessonName, content, type, difficulty, sortOrder, answer, metadata, hints, estimatedTime } = req.body;
+    const { chapterId, lessonName, content, difficulty, sortOrder, estimatedTime, exercises } = req.body;
     if (!chapterId || chapterId === '') return badRequest(res, '章节ID不能为空');
     if (!lessonName || !lessonName.trim()) return badRequest(res, '小节名称不能为空');
 
@@ -141,6 +142,7 @@ export const createLesson = async (req: Request, res: Response) => {
           data: {
             chapter_id: resolvedChapterId,
             title: lessonName.trim(),
+            content: content || '',
             difficulty: Number(difficulty) || 0,
             order: finalOrder,
             estimated_time: Number(estimatedTime) || 0
@@ -161,31 +163,42 @@ export const createLesson = async (req: Request, res: Response) => {
       return fail(res, '创建小节失败');
     }
 
-    let exerciseType = '';
-    let exerciseContent = '';
-    let exerciseAnswer = '';
-    let exerciseMetadata = null;
+    const courseId = chapterExists.course_id;
 
-    if (type || content || answer) {
-      try {
-        const exercise = await prisma.exercises.create({
-          data: {
-            lesson_id: lesson.id,
-            type: String(type || ''),
-            content: String(content || ''),
-            answer: String(answer || ''),
-            difficulty: Number(difficulty) || 0,
-            metadata: metadata || null,
-            hints: hints || null
-          }
-        });
-        exerciseType = exercise.type;
-        exerciseContent = exercise.content;
-        exerciseAnswer = exercise.answer;
-        exerciseMetadata = exercise.metadata;
+    await updateCourseProgressForNewLesson(courseId);
 
-      } catch (exerciseError) {
-        console.error('创建题目失败:', exerciseError);
+    const createdExercises: any[] = [];
+
+    if (exercises && Array.isArray(exercises) && exercises.length > 0) {
+      for (let i = 0; i < exercises.length; i++) {
+        const ex = exercises[i];
+        if (!ex.type && !ex.exerciseContent && !ex.answer) continue;
+        
+        try {
+          const exercise = await prisma.exercises.create({
+            data: {
+              lesson_id: lesson.id,
+              type: String(ex.type || ''),
+              content: String(ex.exerciseContent || ''),
+              answer: String(ex.answer || ''),
+              difficulty: Number(difficulty) || 0,
+              metadata: ex.metadata || null,
+              hints: ex.hints || null,
+              order: i + 1
+            }
+          });
+          createdExercises.push({
+            id: uuidToShortId(exercise.id),
+            type: exercise.type,
+            content: exercise.content,
+            answer: exercise.answer,
+            metadata: exercise.metadata,
+            hints: exercise.hints,
+            order: exercise.order
+          });
+        } catch (exerciseError) {
+          console.error(`创建题目 ${i + 1} 失败:`, exerciseError);
+        }
       }
     }
 
@@ -196,14 +209,11 @@ export const createLesson = async (req: Request, res: Response) => {
       chapterId: uuidToShortId(lesson.chapter_id),
       chapterName: chapterExists.title,
       lessonName: lesson.title,
-      content: exerciseContent,
-      type: exerciseType,
-      answer: exerciseAnswer,
-      metadata: exerciseMetadata,
-      hints: hints || null,
+      content: lesson.content || '',
+      exercises: createdExercises,
       difficulty: lesson.difficulty,
       sortOrder: lesson.order,
-      exerciseCount: type || content || answer ? 1 : 0,
+      exerciseCount: createdExercises.length,
       createdAt: lesson.created_at.toISOString().replace('T', ' ').slice(0, 19),
       updateAt: lesson.updated_at.toISOString().replace('T', ' ').slice(0, 19)
     });
@@ -249,7 +259,7 @@ export const updateLesson = async (req: Request, res: Response) => {
     });
     if (!existing) return notFound(res, '小节不存在');
 
-    const { lessonName, content, type, difficulty, sortOrder, answer, metadata, hints, estimatedTime } = req.body;
+    const { lessonName, content, difficulty, sortOrder, estimatedTime, exercises } = req.body;
     const updateData: Record<string, any> = {};
 
     if (lessonName !== undefined && lessonName !== '') {
@@ -270,80 +280,61 @@ export const updateLesson = async (req: Request, res: Response) => {
       data: updateData
     });
 
-    let exerciseType = '';
-    let exerciseContent = '';
-    let exerciseAnswer = '';
-    let exerciseMetadata = null;
-    let exerciseHints = null;
+    const updatedExercises: any[] = [];
 
-    if (type !== undefined || content !== undefined || answer !== undefined || metadata !== undefined || hints !== undefined) {
-      const existingExercise = await prisma.exercises.findFirst({
+    if (exercises && Array.isArray(exercises)) {
+      await prisma.exercises.updateMany({
         where: { lesson_id: resolvedLessonId, is_delete: 0 },
-        orderBy: { created_at: 'asc' }
+        data: { is_delete: 1 }
       });
 
-      if (existingExercise) {
-        const exerciseUpdateData: Record<string, any> = {};
-        if (type !== undefined) {
-          exerciseUpdateData.type = type;
+      for (let i = 0; i < exercises.length; i++) {
+        const ex = exercises[i];
+        if (!ex.type && !ex.exerciseContent && !ex.answer) continue;
+        
+        try {
+          const exercise = await prisma.exercises.create({
+            data: {
+              lesson_id: resolvedLessonId,
+              type: String(ex.type || ''),
+              content: String(ex.exerciseContent || ''),
+              answer: String(ex.answer || ''),
+              difficulty: lesson.difficulty,
+              metadata: ex.metadata || null,
+              hints: ex.hints || null,
+              order: i + 1
+            }
+          });
+          updatedExercises.push({
+            id: uuidToShortId(exercise.id),
+            type: exercise.type,
+            content: exercise.content,
+            answer: exercise.answer,
+            metadata: exercise.metadata,
+            hints: exercise.hints,
+            order: exercise.order
+          });
+        } catch (exerciseError) {
+          console.error(`更新题目 ${i + 1} 失败:`, exerciseError);
         }
-        if (content !== undefined) {
-          exerciseUpdateData.content = content;
-        }
-        if (answer !== undefined) {
-          exerciseUpdateData.answer = answer;
-        }
-        if (metadata !== undefined) {
-          exerciseUpdateData.metadata = metadata;
-        }
-        if (hints !== undefined) {
-          exerciseUpdateData.hints = hints;
-        }
-
-        const updatedExercise = await prisma.exercises.update({
-          where: { id: existingExercise.id },
-          data: exerciseUpdateData
-        });
-        exerciseType = updatedExercise.type || '';
-        exerciseContent = updatedExercise.content || '';
-        exerciseAnswer = updatedExercise.answer || '';
-        exerciseMetadata = updatedExercise.metadata;
-        exerciseHints = updatedExercise.hints;
-      } else if (type || content || answer || metadata || hints) {
-        const newExercise = await prisma.exercises.create({
-          data: {
-            lesson_id: resolvedLessonId,
-            type: type || '',
-            content: content || '',
-            answer: answer || '',
-            difficulty: lesson.difficulty,
-            metadata: metadata || null,
-            hints: hints || null
-          }
-        });
-        exerciseType = newExercise.type;
-        exerciseContent = newExercise.content;
-        exerciseAnswer = newExercise.answer;
-        exerciseMetadata = newExercise.metadata;
-        exerciseHints = newExercise.hints;
       }
     } else {
-      const firstExercise = await prisma.exercises.findFirst({
+      const existingExercises = await prisma.exercises.findMany({
         where: { lesson_id: resolvedLessonId, is_delete: 0 },
-        orderBy: { created_at: 'asc' }
+        orderBy: { order: 'asc' }
       });
-      if (firstExercise) {
-        exerciseType = firstExercise.type || '';
-        exerciseContent = firstExercise.content || '';
-        exerciseAnswer = firstExercise.answer || '';
-        exerciseMetadata = firstExercise.metadata;
-        exerciseHints = firstExercise.hints;
+      for (const ex of existingExercises) {
+        updatedExercises.push({
+          id: uuidToShortId(ex.id),
+          type: ex.type,
+          content: ex.content,
+          answer: ex.answer,
+          metadata: ex.metadata,
+          hints: ex.hints,
+          order: ex.order
+        });
       }
     }
-
-    const exerciseCount = await prisma.exercises.count({
-      where: { lesson_id: resolvedLessonId, is_delete: 0 }
-    });
 
     const chapterInfo = await prisma.chapters.findUnique({
       where: { id: lesson.chapter_id },
@@ -361,14 +352,11 @@ export const updateLesson = async (req: Request, res: Response) => {
       chapterId: uuidToShortId(lesson.chapter_id),
       chapterName: chapterInfo?.title || '',
       lessonName: lesson.title,
-      content: exerciseContent || lesson.content || '',
-      type: exerciseType,
-      answer: exerciseAnswer || '',
-      metadata: exerciseMetadata,
-      hints: exerciseHints,
+      content: lesson.content || '',
+      exercises: updatedExercises,
       difficulty: lesson.difficulty,
       sortOrder: lesson.order,
-      exerciseCount,
+      exerciseCount: updatedExercises.length,
       createdAt: lesson.created_at.toISOString().replace('T', ' ').slice(0, 19),
       updateAt: lesson.updated_at.toISOString().replace('T', ' ').slice(0, 19)
     });
@@ -422,3 +410,37 @@ export const deleteLesson = async (req: Request, res: Response) => {
     return fail(res, '删除小节失败');
   }
 };
+
+async function updateCourseProgressForNewLesson(courseId: string): Promise<void> {
+  const chapterIds = (await prisma.chapters.findMany({
+    where: { course_id: courseId, is_delete: 0 },
+    select: { id: true },
+  })).map(ch => ch.id);
+
+  const totalLessons = await prisma.lessons.count({
+    where: {
+      chapter_id: { in: chapterIds },
+      is_delete: 0,
+    },
+  });
+
+  const progressRecords = await prisma.courses_progress.findMany({
+    where: {
+      course_id: courseId,
+      is_delete: 0,
+    },
+  });
+
+  for (const record of progressRecords) {
+    const newStatus = record.status === 2 ? 1 : record.status;
+
+    await prisma.courses_progress.update({
+      where: { id: record.id },
+      data: {
+        total_lessons: totalLessons,
+        status: newStatus,
+        updated_at: new Date(),
+      },
+    });
+  }
+}

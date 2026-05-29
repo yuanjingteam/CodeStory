@@ -115,6 +115,18 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
         />
       </div>
 
+      <button
+        onClick={handleSubmit}
+        disabled={!userCode.trim()}
+        className={`w-full py-3 font-bold border-4 border-black rounded-lg shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-lg mt-4 ${
+          userCode.trim()
+            ? 'bg-green-600 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+        }`}
+      >
+        运行代码
+      </button>
+
       {showHintModal && (
         <HintModal
           exerciseId={exercise.id}

@@ -76,37 +76,43 @@ export async function getLessonDetail(lessonId: string, userId: string): Promise
     id: uuidToShortId(ch.id),
     title: ch.title,
     lessons: ch.lessons.map(l => {
-      const status = lessonProgressMap.get(l.id);
+      const status = lessonProgressMap.get(l.id) ?? 0;
       const isCurrent = l.id === resolvedLessonId;
       return {
         id: uuidToShortId(l.id),
         title: l.title,
-        status: (isCurrent ? 1 : (status ?? 0)) as 0 | 1 | 2,
+        status: (isCurrent && status < 1 ? 1 : status) as 0 | 1 | 2,
       } as CatalogLesson;
     }),
   }));
 
   const exercises = await prisma.exercises.findMany({
     where: { lesson_id: resolvedLessonId, is_delete: 0 },
-    orderBy: { created_at: 'asc' },
-    take: 1,
+    orderBy: { order: 'asc' },
   });
 
-  const exercise: LessonExercise = exercises.length > 0
-    ? {
-        id: uuidToShortId(exercises[0].id),
-        type: exercises[0].type as 'code' | 'choice' | 'fill',
-        content: exercises[0].content,
-        analysis: exercises[0].analysis || '',
-        metadata: exercises[0].metadata as Record<string, any>,
-      }
-    : {
-        id: '',
-        type: 'code',
-        content: '',
-        analysis: '',
-        metadata: { template: '' },
-      };
+  const exerciseIds = exercises.map(ex => ex.id);
+
+  const userAnswers = await prisma.answer.findMany({
+    where: {
+      user_id: userId,
+      exercise_id: { in: exerciseIds },
+      is_delete: 0,
+      submission_count: { gte: 1 },
+    },
+    select: { exercise_id: true },
+  });
+  const completedExerciseIds = new Set(userAnswers.map(a => a.exercise_id));
+
+  const exerciseList: LessonExercise[] = exercises.map(ex => ({
+    id: uuidToShortId(ex.id),
+    type: ex.type as 'code' | 'choice' | 'fill',
+    content: ex.content,
+    analysis: ex.analysis || '',
+    order: ex.order,
+    isCompleted: completedExerciseIds.has(ex.id),
+    metadata: ex.metadata as Record<string, any>,
+  }));
 
   return {
     course: {
@@ -122,6 +128,10 @@ export async function getLessonDetail(lessonId: string, userId: string): Promise
       estimatedTime: lesson.estimated_time,
     },
     catalog,
-    exercise,
+    exercises: exerciseList,
+    exerciseProgress: {
+      completedCount: completedExerciseIds.size,
+      totalCount: exercises.length,
+    },
   };
 }
