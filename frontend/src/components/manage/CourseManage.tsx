@@ -2,7 +2,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { showToast } from '@/utils/toast';
-import { SearchFilter, DataTable, Pagination, ConfirmDialog } from '@/components/common';
+import {
+  SearchFilter,
+  DataTable,
+  Pagination,
+  ConfirmDialog,
+} from '@/components/common';
 import type { FilterField, Column } from '@/components/common';
 import CourseModel from './CourseModel';
 import courseApi from '@/app/api/courses/courses';
@@ -30,7 +35,9 @@ export default function CourseManage() {
   const [size, setSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingCourse, setEditingCourse] = useState<(CourseFormData & { id: string; cover_url?: string }) | undefined>();
+  const [editingCourse, setEditingCourse] = useState<
+    (CourseFormData & { id: string; cover_url?: string }) | undefined
+  >();
   const [deleteTarget, setDeleteTarget] = useState<Course | null>(null);
   const hasMounted = useRef(false);
   const [filters, setFilters] = useState<FilterField[]>([
@@ -51,10 +58,13 @@ export default function CourseManage() {
   const fetchCourses = async () => {
     setLoading(true);
     try {
-      const levelValue = filters.find(f => f.id === 'level')?.value;
+      const levelValue = filters.find((f) => f.id === 'level')?.value;
       const res = await courseApi.getList({
         keyword: searchTerm || undefined,
-        level: levelValue !== '' && levelValue !== undefined ? Number(levelValue) : undefined,
+        level:
+          levelValue !== '' && levelValue !== undefined
+            ? Number(levelValue)
+            : undefined,
         page,
         size,
       });
@@ -138,7 +148,8 @@ export default function CourseManage() {
       flex: 1,
       align: 'center',
       render: (value) => {
-        const numLevel = typeof value === 'string' ? parseInt(value) : (value as number);
+        const numLevel =
+          typeof value === 'string' ? parseInt(value) : (value as number);
         return (
           <span className={`px-3 py-1 font-bold border-2 border-black rounded-md ${levelColorMap[numLevel] || 'bg-gray-300'}`}>
             {levelMap[numLevel] || '未知'}
@@ -154,7 +165,11 @@ export default function CourseManage() {
       align: 'center',
       render: (value) =>
         value ? (
-          <img src={String(value)} alt="" className="w-9 h-9 object-cover border-2 border-black" />
+          <img
+            src={String(value)}
+            alt=""
+            className="w-9 h-9 object-cover border-2 border-black"
+          />
         ) : (
           <div className="w-9 h-9 bg-gray-200 border-2 border-black flex items-center justify-center text-xs font-bold">
             暂无
@@ -188,7 +203,7 @@ export default function CourseManage() {
   ];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="h-[calc(100vh-130px)] flex flex-col gap-4">
       <SearchFilter
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -208,8 +223,9 @@ export default function CourseManage() {
           </button>
         }
       />
-
-      <DataTable<Course> columns={columns} data={courses} loading={loading} maxHeight="700px" />
+      <div className="flex-1 min-h-0  flex flex-col">
+        <DataTable<Course> columns={columns} data={courses} loading={loading} />
+      </div>
 
       <Pagination
         currentPage={page}

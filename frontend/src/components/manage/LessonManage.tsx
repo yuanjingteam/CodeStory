@@ -286,7 +286,7 @@ export default function LessonManage() {
   ];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="h-[calc(100vh-130px)] flex flex-col gap-4">
       <SearchFilter
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -307,7 +307,12 @@ export default function LessonManage() {
         }
       />
 
-      <DataTable<LessonItem> columns={columns} data={lessons} loading={loading} maxHeight="700px" />
+      <DataTable<LessonItem>
+        columns={columns}
+        data={lessons}
+        loading={loading}
+        maxHeight="700px"
+      />
 
       <Pagination
         currentPage={page}
