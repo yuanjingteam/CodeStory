@@ -117,12 +117,14 @@ export async function submitExercise(
   const isFirstSubmission = !existingAnswer;
 
   if (existingAnswer) {
+    const newScore = correct ? score : existingAnswer.score;
     await prisma.answer.update({
       where: { id: existingAnswer.id },
       data: {
         answer,
         submission_count: existingAnswer.submission_count + 1,
         feedback,
+        score: newScore,
         hint_level_used: Math.max(existingAnswer.hint_level_used, hintLevelUsed),
       },
     });
@@ -139,6 +141,15 @@ export async function submitExercise(
       },
     });
   }
+
+  const totalScore = await prisma.answer.aggregate({
+    where: { user_id: userId, is_delete: 0 },
+    _sum: { score: true },
+  });
+  await prisma.users.update({
+    where: { id: userId },
+    data: { score: totalScore._sum.score || 0 },
+  });
 
   await updateLessonAndCourseProgress(exercise.lesson_id, userId);
 
