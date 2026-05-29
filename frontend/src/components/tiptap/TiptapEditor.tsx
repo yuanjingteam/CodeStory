@@ -152,25 +152,25 @@ export default function TiptapEditor({
     : '正文'
 
   return (
-    <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
+    <div className="border-2 border-black rounded-lg overflow-hidden bg-white">
       {/* 工具栏 */}
-      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-gray-200 bg-gray-50/80 flex-wrap">
+      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b-2 border-black bg-purple-50 flex-wrap">
         
         {/* 标题选择器 */}
         <div className="relative">
           <button
             onClick={() => setShowHeadingMenu(!showHeadingMenu)}
-            className="px-2.5 py-1.5 text-sm border border-gray-300 rounded hover:bg-white bg-white flex items-center gap-1.5 min-w-[72px] justify-between"
+            className="px-2.5 py-1.5 text-sm border-1 border-black hover:bg-purple-100 bg-white flex items-center gap-1.5 min-w-[72px] justify-between font-bold"
             onBlur={() => setTimeout(() => setShowHeadingMenu(false), 150)}
           >
-            <span className="font-medium">{activeLabel}</span>
-            <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span>{activeLabel}</span>
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
           
           {showHeadingMenu && (
-            <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 min-w-[120px] py-1 overflow-hidden">
+            <div className="absolute top-full left-0 mt-1 bg-white border-2 border-black shadow-[1px_1px_0_0_rgba(0,0,0,1)] z-50 min-w-[120px] py-1 overflow-hidden">
               <HeadingMenuItem
                 active={activeStates.paragraph && !activeStates.heading1 && !activeStates.heading2 && !activeStates.heading3 && !activeStates.heading4}
                 onClick={() => { editor.chain().focus().setParagraph().run(); setShowHeadingMenu(false); }}
@@ -307,7 +307,7 @@ export default function TiptapEditor({
           <button
             onClick={() => setShowExerciseMenu(!showExerciseMenu)}
             disabled={exercises.length === 0}
-            className="ml-2 px-3 py-1.5 text-sm font-medium text-white bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-300 disabled:text-gray-500 rounded transition-colors shadow-sm flex items-center gap-1"
+            className="ml-2 px-3 py-1.5 text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-300 disabled:text-gray-500 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
             title="插入练习按钮"
             onBlur={() => setTimeout(() => setShowExerciseMenu(false), 150)}
           >
@@ -323,7 +323,7 @@ export default function TiptapEditor({
           </button>
           
           {showExerciseMenu && exercises.length > 0 && (
-            <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 min-w-[140px] py-1 overflow-hidden">
+            <div className="absolute top-full right-0 mt-1 bg-white border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] z-50 min-w-[140px] py-1 overflow-hidden">
               {exercises.map((exercise, index) => (
                 <button
                   key={exercise.id}
@@ -365,12 +365,12 @@ function ToolBtn({ children, active = false, disabled = false, onClick, title }:
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${
+      className={`w-8 h-8 flex items-center justify-center border-2 border-black rounded active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
         active
-          ? 'bg-blue-100 text-blue-600'
+          ? 'bg-purple-500 text-white'
           : disabled
-            ? 'text-gray-300 cursor-not-allowed'
-            : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
+            ? 'text-gray-300 border-gray-300 cursor-not-allowed'
+            : 'text-gray-700'
       }`}
     >
       {children}
@@ -379,7 +379,7 @@ function ToolBtn({ children, active = false, disabled = false, onClick, title }:
 }
 
 function Sep() {
-  return <div className="w-px h-5 bg-gray-300 mx-1" />
+  return <div className="w-px h-6 bg-black mx-1" />
 }
 
 function HeadingMenuItem({ children, active, onClick, style }: {
@@ -393,8 +393,8 @@ function HeadingMenuItem({ children, active, onClick, style }: {
       type="button"
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
-      className={`w-full px-4 py-2 text-left hover:bg-blue-50 transition-colors ${
-        active ? 'bg-blue-100 text-blue-600' : 'text-gray-700'
+      className={`w-full px-4 py-2 text-left hover:bg-purple-50 transition-colors font-bold ${
+        active ? 'bg-purple-100 text-purple-600' : 'text-gray-700'
       }`}
       style={style}
     >
