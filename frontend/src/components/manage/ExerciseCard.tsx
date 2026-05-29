@@ -31,7 +31,7 @@ export default function ExerciseCard({ exercise, index, isExpanded, onToggleExpa
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <span className="text-lg">{typeIcon}</span>
           <div className="flex-1 min-w-0">
-            <div className="font-bold text-purple-600 truncate">
+            <div className="font-bold text-black truncate">
               题目 {index + 1}：{title.slice(0, 30)}{title.length > 30 ? '...' : ''}
             </div>
             <div className="text-xs text-gray-500">{typeLabel}</div>
