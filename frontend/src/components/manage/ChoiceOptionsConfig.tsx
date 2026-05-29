@@ -1,5 +1,4 @@
 'use client';
-import { FiPlus, FiTrash2 } from 'react-icons/fi';
 import type { ExerciseMetadata } from '@/types/lesson-manage';
 
 interface ChoiceOptionsConfigProps {
@@ -8,7 +7,7 @@ interface ChoiceOptionsConfigProps {
 }
 
 export default function ChoiceOptionsConfig({ metadata, onChange }: ChoiceOptionsConfigProps) {
-  const options = (metadata && Array.isArray(metadata.options)) ? metadata.options : ['', ''];
+  const options = (metadata && Array.isArray(metadata.options)) ? metadata.options : ['', '', '', ''];
   const correctAnswer = (metadata as Record<string, unknown> | null)?.correctAnswer as string || '';
 
   const updateOptions = (newOpts: string[], newCorrectAnswer: string) => {
@@ -27,21 +26,10 @@ export default function ChoiceOptionsConfig({ metadata, onChange }: ChoiceOption
     updateOptions(newOpts, newCorrectAnswer);
   };
 
-  const handleRemoveOption = (optIdx: number) => {
-    const newOpts = [...options];
-    newOpts.splice(optIdx, 1);
-    const newCorrectAnswer = newOpts.includes(correctAnswer) ? correctAnswer : '';
-    updateOptions(newOpts, newCorrectAnswer);
-  };
-
-  const handleAddOption = () => {
-    updateOptions([...options, ''], correctAnswer);
-  };
-
   return (
     <div className="border-2 border-dashed border-blue-300 p-3 rounded-lg bg-blue-50">
       <label className="block text-sm font-bold mb-2">📋 选项配置</label>
-      <p className="text-xs text-gray-500 mb-2">添加选项后，点击 ○ 标记正确答案（答案会自动填入上方"答案"框）</p>
+      <p className="text-xs text-gray-500 mb-2">点击 ○ 标记正确答案（答案会自动填入上方"答案"框）</p>
       <div className="space-y-2">
         {options.map((option: string, optIdx: number) => {
           const isCorrect = correctAnswer === option && option !== '';
@@ -71,27 +59,10 @@ export default function ChoiceOptionsConfig({ metadata, onChange }: ChoiceOption
                 placeholder={`选项 ${String.fromCharCode(65 + optIdx)} 内容`}
                 className="flex-1 px-2 py-1.5 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm"
               />
-              {options.length > 2 && (
-                <button
-                  type="button"
-                  onClick={() => handleRemoveOption(optIdx)}
-                  className="p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                >
-                  <FiTrash2 className="w-3.5 h-3.5" />
-                </button>
-              )}
             </div>
           );
         })}
       </div>
-      <button
-        type="button"
-        onClick={handleAddOption}
-        className="mt-2 flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-100 border-2 border-blue-300 rounded transition-colors"
-      >
-        <FiPlus className="w-3.5 h-3.5" />
-        添加选项
-      </button>
     </div>
   );
 }

@@ -83,7 +83,9 @@ export default function TiptapEditor({
     ],
     content: content || '',
     onUpdate: ({ editor }) => {
-      onChangeRef.current(editor.getHTML())
+      const html = editor.getHTML()
+      contentRef.current = html
+      onChangeRef.current(html)
     },
     editorProps: {
       attributes: {

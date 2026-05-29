@@ -1,4 +1,5 @@
 'use client';
+import { useRef, useCallback } from 'react';
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
 import type { HintsValue, HintConfig } from '@/types/lesson-manage';
 
@@ -8,6 +9,18 @@ interface HintsConfigProps {
 }
 
 export default function HintsConfig({ hints, onChange }: HintsConfigProps) {
+  const textareaRefs = useRef<Map<number, HTMLTextAreaElement>>(new Map());
+
+  const setTextareaRef = useCallback((level: number, el: HTMLTextAreaElement | null) => {
+    if (el) {
+      textareaRefs.current.set(level, el);
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 'px';
+    } else {
+      textareaRefs.current.delete(level);
+    }
+  }, []);
+
   const hintConfig = (typeof hints === 'object' && hints !== null) ? hints as HintConfig : null;
 
   const hintLevels: Array<{ level: number; content: string }> = [];
@@ -65,11 +78,17 @@ export default function HintsConfig({ hints, onChange }: HintsConfigProps) {
               第 {hint.level} 级
             </span>
             <textarea
+              ref={el => setTextareaRef(hint.level, el)}
               value={hint.content}
-              onChange={e => handleHintChange(hint.level, e.target.value)}
+              onChange={e => {
+                handleHintChange(hint.level, e.target.value);
+                const el = e.target;
+                el.style.height = 'auto';
+                el.style.height = el.scrollHeight + 'px';
+              }}
               placeholder={`输入第 ${hint.level} 级提示内容`}
-              rows={2}
-              className="flex-1 px-2 py-1.5 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm resize-none"
+              rows={1}
+              className="flex-1 px-2 py-1.5 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm resize-none overflow-hidden"
             />
             {hintLevels.length > 1 && (
               <button

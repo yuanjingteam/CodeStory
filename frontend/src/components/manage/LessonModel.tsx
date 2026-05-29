@@ -130,13 +130,12 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 pt-[10vh] pb-4 px-4 overflow-y-auto" onClick={(e) => {
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={(e) => {
       if (window.getSelection()?.toString()) return
       onClose()
     }}>
       <div
-        className="bg-white border-3 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] w-full max-w-4xl my-4 flex flex-col"
-        style={{ maxHeight: '85vh' }}
+        className="bg-white border-3 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] w-full max-w-4xl flex flex-col max-h-[85vh]"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b-2 border-black flex-shrink-0">
