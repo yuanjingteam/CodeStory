@@ -5,6 +5,8 @@ export interface LessonExercise {
   type: ExerciseType;
   content: string;
   analysis: string;
+  order: number;
+  isCompleted: boolean;
   metadata: Record<string, any>;
 }
 
@@ -34,9 +36,15 @@ export interface CurrentLessonInfo {
   estimatedTime: number;
 }
 
+export interface ExerciseProgress {
+  completedCount: number;
+  totalCount: number;
+}
+
 export interface LessonDetailData {
   course: LessonCourseInfo;
   currentLesson: CurrentLessonInfo;
   catalog: CatalogChapter[];
-  exercise: LessonExercise;
+  exercises: LessonExercise[];
+  exerciseProgress: ExerciseProgress;
 }

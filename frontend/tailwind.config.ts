@@ -1,5 +1,5 @@
-// d:\learningforever\front-end\agent\CodeStory\frontend\tailwind.config.ts
 import type { Config } from 'tailwindcss';
+import typography from '@tailwindcss/typography';
 
 const config: Config = {
   content: [
@@ -14,7 +14,6 @@ const config: Config = {
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
-      // 添加自定义阴影
       boxShadow: {
         'neo-brutalism': '8px 8px 0px 0px rgba(0, 0, 0, 1)', // 大阴影
         'neo-brutalism-sm': '4px 4px 0px 0px rgba(0, 0, 0, 1)', // 小阴影
@@ -29,7 +28,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [typography],
 };
 
 export default config;

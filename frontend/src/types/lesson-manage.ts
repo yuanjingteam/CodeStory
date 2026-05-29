@@ -17,6 +17,16 @@ export interface HintConfig {
 
 export type HintsValue = HintConfig | string | null;
 
+export interface ExerciseItem {
+  id: string;
+  type: string;
+  exerciseContent: string;
+  answer: string;
+  metadata: MetadataValue;
+  hints: HintsValue;
+  order?: number;
+}
+
 export interface LessonItem {
   id: string;
   lessonId: string;
@@ -25,17 +35,12 @@ export interface LessonItem {
   courseName: string;
   chapterId: string;
   chapterName: string;
-  type: string;
   content: string;
-  knowledge: string;
-  answer: string;
-  analysis: string;
   difficulty: number;
-  source: string;
   sortOrder: number;
   estimatedTime: number;
-  metadata: MetadataValue;
-  hints: HintsValue;
+  exercises: ExerciseItem[];
+  exerciseCount: number;
   createdAt: string;
   updateAt: string;
 }

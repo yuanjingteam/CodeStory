@@ -1,11 +1,14 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { FiX } from 'react-icons/fi';
-import type { CreateLessonRequest, UpdateLessonRequest, MetadataValue, HintsValue } from '@/types/lesson-manage';
+import type { CreateLessonRequest, UpdateLessonRequest } from '@/types/lesson-manage';
 import chapterManageApi from '@/app/api/manage/chapter-manage';
-import { getExerciseTypeOptions } from '@/utils/exerciseType';
 import { SearchableSelect } from '@/components/common';
 import type { ChapterItem } from '@/types/chapter-manage';
+import TiptapEditor from '@/components/tiptap/TiptapEditor';
+import type { ExerciseItem } from '@/utils/exerciseHelpers';
+import { generateExerciseId } from '@/utils/exerciseHelpers';
+import ExerciseList from './ExerciseList';
 
 interface LessonModelProps {
   open: boolean;
@@ -16,13 +19,10 @@ interface LessonModelProps {
     chapterId: string;
     lessonName: string;
     content?: string;
-    type?: string;
     difficulty: number;
     sortOrder: number;
-    answer?: string;
-    metadata?: MetadataValue;
-    hints?: HintsValue;
     estimatedTime?: number;
+    exercises?: ExerciseItem[];
   };
 }
 
@@ -33,42 +33,42 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
     chapterId: string;
     lessonName: string;
     content: string;
-    type: string;
     difficulty: number;
     sortOrder: number;
-    answer: string;
-    metadata: MetadataValue;
-    hints: HintsValue;
     estimatedTime: number;
+    exercises: ExerciseItem[];
   }>({
     chapterId: '',
     lessonName: '',
     content: '',
-    type: '',
     difficulty: 0,
     sortOrder: 0,
-    answer: '',
-    metadata: null,
-    hints: null,
     estimatedTime: 0,
+    exercises: [],
   });
   const [submitting, setSubmitting] = useState(false);
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
   const [loadingChapters, setLoadingChapters] = useState(false);
 
   useEffect(() => {
-    if (open && initialData && isEdit) {
+    if (open && initialData?.id) {
       setFormData({
         chapterId: initialData.chapterId || '',
         lessonName: initialData.lessonName || '',
         content: initialData.content || '',
-        type: initialData.type || '',
         difficulty: initialData.difficulty ?? 0,
         sortOrder: initialData.sortOrder ?? 0,
-        answer: initialData.answer || '',
-        metadata: initialData.metadata || null,
-        hints: initialData.hints || null,
         estimatedTime: initialData.estimatedTime ?? 0,
+        exercises: initialData.exercises && initialData.exercises.length > 0
+          ? initialData.exercises.map(ex => ({
+              id: ex.id || generateExerciseId(),
+              type: ex.type || '',
+              exerciseContent: ex.exerciseContent || '',
+              answer: ex.answer || '',
+              metadata: ex.metadata || null,
+              hints: ex.hints || null,
+            }))
+          : [],
       });
     }
     if (!open) {
@@ -76,16 +76,13 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         chapterId: '',
         lessonName: '',
         content: '',
-        type: '',
         difficulty: 0,
         sortOrder: 0,
-        answer: '',
-        metadata: null,
-        hints: null,
         estimatedTime: 0,
+        exercises: [],
       });
     }
-  }, [open, initialData, isEdit]);
+  }, [open, initialData]);
 
   useEffect(() => {
     if (open) {
@@ -133,10 +130,12 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 pt-[10vh] pb-4 px-4 overflow-y-auto" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={(e) => {
+      if (window.getSelection()?.toString()) return
+      onClose()
+    }}>
       <div
-        className="bg-white border-3 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] w-full max-w-lg my-4 flex flex-col"
-        style={{ maxHeight: '80vh' }}
+        className="bg-white border-3 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] w-full max-w-4xl flex flex-col max-h-[85vh]"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b-2 border-black flex-shrink-0">
@@ -180,43 +179,28 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
 
           <div>
             <label className="block text-sm font-bold mb-1">小节内容</label>
-            <textarea
-              value={formData.content}
-              onChange={e => setFormData(prev => ({ ...prev, content: e.target.value }))}
-              placeholder="输入小节的详细内容（支持HTML格式）..."
-              rows={3}
-              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+            <TiptapEditor
+              content={formData.content}
+              onChange={(content) => setFormData(prev => ({ ...prev, content }))}
+              exercises={formData.exercises.map((ex, index) => ({
+                id: ex.id,
+                title: ex.exerciseContent || `练习 ${index + 1}`,
+                type: ex.type,
+              }))}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold mb-1">题型</label>
-              <select
-                value={formData.type}
-                onChange={e => setFormData(prev => ({ ...prev, type: e.target.value }))}
-                className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
-              >
-                <option value="">请选择题型</option>
-                {getExerciseTypeOptions().map(option => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-bold mb-1">难度</label>
-              <select
-                value={formData.difficulty}
-                onChange={e => setFormData(prev => ({ ...prev, difficulty: Number(e.target.value) }))}
-                className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
-              >
-                <option value={0}>简单</option>
-                <option value={1}>中等</option>
-                <option value={2}>困难</option>
-              </select>
-            </div>
+          <div>
+            <label className="block text-sm font-bold mb-1">难度</label>
+            <select
+              value={formData.difficulty}
+              onChange={e => setFormData(prev => ({ ...prev, difficulty: Number(e.target.value) }))}
+              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
+            >
+              <option value={0}>简单</option>
+              <option value={1}>中等</option>
+              <option value={2}>困难</option>
+            </select>
           </div>
 
           <div>
@@ -231,109 +215,10 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-bold mb-1">答案</label>
-            <textarea
-              value={formData.answer}
-              onChange={e => setFormData(prev => ({ ...prev, answer: e.target.value }))}
-              placeholder="输入正确答案（选择题填正确选项内容，编程题填参考代码）"
-              rows={2}
-              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
-            />
-          </div>
-
-          {formData.type && (
-          <>
-            <div className="border-2 border-dashed border-blue-300 p-4 rounded-lg bg-blue-50">
-              <label className="block text-sm font-bold mb-2">题目配置</label>
-              
-              <div className="mb-3 p-3 bg-white border border-gray-200 rounded text-xs">
-                <p className="font-semibold mb-2 text-gray-700">
-                  {formData.type === 'single_choice' ? '📝 选择题示例格式：' : '💻 编程题示例格式：'}
-                </p>
-                <pre className="text-gray-600 whitespace-pre-wrap break-all">
-                  {formData.type === 'single_choice' 
-                    ? `{
-  "template": "单选题模板",
-  "options": ["<link>", "<a>", "<href>", "<url>"]
-}`
-                    : `{
-  "codeTemplate": "# 在此编写代码\\ndef solve():\\n    pass"
-}`
-                   }</pre>
-              </div>
-
-              <textarea
-                value={typeof formData.metadata === 'object' ? JSON.stringify(formData.metadata, null, 2) : (formData.metadata || '')}
-                onChange={e => {
-                  const value = e.target.value.trim();
-                  if (!value) {
-                    setFormData(prev => ({ ...prev, metadata: null }));
-                    return;
-                  }
-                  try {
-                    const parsed = JSON.parse(value);
-                    setFormData(prev => ({ ...prev, metadata: parsed }));
-                  } catch {
-                    setFormData(prev => ({ ...prev, metadata: value }));
-                  }
-                }}
-                placeholder={`复制上方示例并修改内容...`}
-                rows={6}
-                className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none font-mono text-sm"
-              />
-              
-              {typeof formData.metadata === 'string' && formData.metadata && (
-                <p className="mt-2 text-xs text-red-600">⚠️ JSON 格式错误，请检查</p>
-              )}
-            </div>
-
-            <div className="border-2 border-dashed border-yellow-300 p-4 rounded-lg bg-yellow-50">
-              <label className="block text-sm font-bold mb-2">配置提示</label>
-              
-              <div className="mb-3 p-3 bg-white border border-gray-200 rounded text-xs">
-                <p className="font-semibold mb-2 text-gray-700">
-                  💡 提示配置示例格式：
-                </p>
-                <pre className="text-gray-600 whitespace-pre-wrap break-all">
-{`{
-  "level_1": "第一级提示内容",
-  "level_2": "第二级提示内容",
-  "level_3": "第三级提示内容",
-  "_meta": {
-    "max_level": 3,
-    "score_deduction": [10, 20, 30]
-  }
-}`}
-                </pre>
-              </div>
-
-              <textarea
-                value={typeof formData.hints === 'object' ? JSON.stringify(formData.hints, null, 2) : (formData.hints || '')}
-                onChange={e => {
-                  const value = e.target.value.trim();
-                  if (!value) {
-                    setFormData(prev => ({ ...prev, hints: null }));
-                    return;
-                  }
-                  try {
-                    const parsed = JSON.parse(value);
-                    setFormData(prev => ({ ...prev, hints: parsed }));
-                  } catch {
-                    setFormData(prev => ({ ...prev, hints: value }));
-                  }
-                }}
-                placeholder="复制上方示例并修改内容..."
-                rows={6}
-                className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none font-mono text-sm"
-              />
-              
-              {typeof formData.hints === 'string' && formData.hints && (
-                <p className="mt-2 text-xs text-red-600">⚠️ JSON 格式错误，请检查</p>
-              )}
-            </div>
-          </>
-          )}
+          <ExerciseList
+            exercises={formData.exercises}
+            onChange={exercises => setFormData(prev => ({ ...prev, exercises }))}
+          />
         </div>
 
         <div className="flex gap-3 p-4 border-t-2 border-black justify-end flex-shrink-0">

@@ -117,7 +117,6 @@ export async function submitExercise(
   const isFirstSubmission = !existingAnswer;
 
   if (existingAnswer) {
-    const finalScore = isFirstSubmission ? score : Math.max(existingAnswer.score, score);
     await prisma.answer.update({
       where: { id: existingAnswer.id },
       data: {
@@ -125,7 +124,6 @@ export async function submitExercise(
         submission_count: existingAnswer.submission_count + 1,
         feedback,
         hint_level_used: Math.max(existingAnswer.hint_level_used, hintLevelUsed),
-        score: finalScore,
       },
     });
   } else {
@@ -142,9 +140,7 @@ export async function submitExercise(
     });
   }
 
-  if (isFirstSubmission) {
-    await updateLessonAndCourseProgress(exercise.lesson_id, userId);
-  }
+  await updateLessonAndCourseProgress(exercise.lesson_id, userId);
 
   return {
     correct,
@@ -166,6 +162,25 @@ async function updateLessonAndCourseProgress(lessonId: string, userId: string): 
 
   const courseId = lesson.chapters.courses.id;
 
+  const totalExercises = await prisma.exercises.count({
+    where: { lesson_id: lessonId, is_delete: 0 },
+  });
+
+  const completedExercises = await prisma.answer.count({
+    where: {
+      user_id: userId,
+      is_delete: 0,
+      submission_count: { gte: 1 },
+      exercises: {
+        lesson_id: lessonId,
+        is_delete: 0,
+      },
+    },
+  });
+
+  const allExercisesCompleted = totalExercises > 0 && completedExercises >= totalExercises;
+  const newLessonStatus = allExercisesCompleted ? 2 : 1;
+
   const existingLessonProgress = await prisma.lessons_progress.findUnique({
     where: {
       user_id_lesson_id: {
@@ -176,26 +191,20 @@ async function updateLessonAndCourseProgress(lessonId: string, userId: string): 
   });
 
   if (existingLessonProgress) {
-    if (existingLessonProgress.status === 0) {
-      await prisma.lessons_progress.update({
-        where: { id: existingLessonProgress.id },
-        data: {
-          status: 1,
-          last_learned_at: now,
-        },
-      });
-    } else {
-      await prisma.lessons_progress.update({
-        where: { id: existingLessonProgress.id },
-        data: { last_learned_at: now },
-      });
-    }
+    const shouldUpdateStatus = newLessonStatus > existingLessonProgress.status;
+    await prisma.lessons_progress.update({
+      where: { id: existingLessonProgress.id },
+      data: {
+        status: shouldUpdateStatus ? newLessonStatus : existingLessonProgress.status,
+        last_learned_at: now,
+      },
+    });
   } else {
     await prisma.lessons_progress.create({
       data: {
         user_id: userId,
         lesson_id: lessonId,
-        status: 1,
+        status: newLessonStatus,
         mastery_level: 0,
         last_learned_at: now,
       },
@@ -217,7 +226,7 @@ async function updateLessonAndCourseProgress(lessonId: string, userId: string): 
   const completedLessons = await prisma.lessons_progress.count({
     where: {
       user_id: userId,
-      status: { gte: 1 },
+      status: 2,
       is_delete: 0,
       lessons: {
         chapter_id: { in: chapterIds },
