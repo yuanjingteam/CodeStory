@@ -22,6 +22,7 @@ interface LessonModelProps {
     answer?: string;
     metadata?: MetadataValue;
     hints?: HintsValue;
+    estimatedTime?: number;
   };
 }
 
@@ -38,6 +39,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
     answer: string;
     metadata: MetadataValue;
     hints: HintsValue;
+    estimatedTime: number;
   }>({
     chapterId: '',
     lessonName: '',
@@ -48,6 +50,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
     answer: '',
     metadata: null,
     hints: null,
+    estimatedTime: 0,
   });
   const [submitting, setSubmitting] = useState(false);
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
@@ -65,6 +68,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         answer: initialData.answer || '',
         metadata: initialData.metadata || null,
         hints: initialData.hints || null,
+        estimatedTime: initialData.estimatedTime ?? 0,
       });
     }
     if (!open) {
@@ -78,6 +82,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         answer: '',
         metadata: null,
         hints: null,
+        estimatedTime: 0,
       });
     }
   }, [open, initialData, isEdit]);
@@ -215,6 +220,18 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
           </div>
 
           <div>
+            <label className="block text-sm font-bold mb-1">预估时长（分钟）</label>
+            <input
+              type="number"
+              min={0}
+              value={formData.estimatedTime || ''}
+              onChange={e => setFormData(prev => ({ ...prev, estimatedTime: Number(e.target.value) || 0 }))}
+              placeholder="请输入预估学习时长，例如：15"
+              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-bold mb-1">答案</label>
             <textarea
               value={formData.answer}
@@ -241,11 +258,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
   "options": ["<link>", "<a>", "<href>", "<url>"]
 }`
                     : `{
-  "template": "代码题模板",
-  "testCases": [
-    {"input": "1, 2", "output": "3"},
-    {"input": "5, 10", "output": "15"}
-  ]
+  "codeTemplate": "# 在此编写代码\\ndef solve():\\n    pass"
 }`
                    }</pre>
               </div>

@@ -222,7 +222,7 @@ export default function LessonManage() {
         const label = getExerciseTypeLabel(String(value));
         const color = getExerciseTypeColor(String(value));
         return (
-          <span className={`px-3 py-1 font-bold border-2 border-black ${color} inline-block`}>
+          <span className={`px-3 py-1 font-bold border-2 border-black rounded-md ${color} inline-block`}>
             {label}
           </span>
         );
@@ -238,7 +238,7 @@ export default function LessonManage() {
         const levelMap: Record<number, string> = { 0: '简单', 1: '中等', 2: '困难' };
         const colorMap: Record<number, string> = { 0: 'bg-green-300', 1: 'bg-yellow-300', 2: 'bg-red-300' };
         return (
-          <span className={`px-3 py-1 font-bold border-2 border-black ${colorMap[value as number] || 'bg-gray-300'} inline-block`}>
+          <span className={`px-3 py-1 font-bold border-2 border-black rounded-md ${colorMap[value as number] || 'bg-gray-300'} inline-block`}>
             {levelMap[value as number] || `${value}`}
           </span>
         );
@@ -273,14 +273,14 @@ export default function LessonManage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleOpenEdit(item)}
-            className="px-3 py-1 bg-blue-400 text-white text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+            className="px-3 py-1 bg-blue-400 text-white text-xs font-bold border-2 border-black rounded-md shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
           >
             <FiEdit className="w-3 h-3" />
             编辑
           </button>
           <button
             onClick={() => handleOpenDelete(item)}
-            className="px-3 py-1 bg-red-400 text-white text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+            className="px-3 py-1 bg-red-400 text-white text-xs font-bold border-2 border-black rounded-md shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
           >
             <FiTrash2 className="w-3 h-3" />
             删除

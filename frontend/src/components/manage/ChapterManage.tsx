@@ -167,7 +167,7 @@ export default function ChapterManage() {
       flex: 1,
       align: 'center',
       render: (value) => (
-        <span className="px-3 py-1 font-bold border-2 border-black bg-blue-300 inline-block">
+        <span className="px-3 py-1 font-bold border-2 border-black rounded-md bg-blue-300 inline-block">
           {String(value)} 节
         </span>
       ),
@@ -201,14 +201,14 @@ export default function ChapterManage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleOpenEdit(item)}
-            className="px-3 py-1 bg-blue-400 text-white text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+            className="px-3 py-1 bg-blue-400 text-white text-xs font-bold border-2 border-black rounded-md shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
           >
             <FiEdit className="w-3 h-3" />
             编辑
           </button>
           <button
             onClick={() => handleOpenDelete(item)}
-            className="px-3 py-1 bg-red-400 text-white text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+            className="px-3 py-1 bg-red-400 text-white text-xs font-bold border-2 border-black rounded-md shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
           >
             <FiTrash2 className="w-3 h-3" />
             删除

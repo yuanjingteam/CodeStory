@@ -33,6 +33,7 @@ export interface LessonItem {
   difficulty: number;
   source: string;
   sortOrder: number;
+  estimatedTime: number;
   metadata: MetadataValue;
   hints: HintsValue;
   createdAt: string;
@@ -58,6 +59,7 @@ export interface CreateLessonRequest {
   answer?: string;
   metadata?: MetadataValue;
   hints?: HintsValue;
+  estimatedTime?: number;
 }
 
 export interface CreateLessonResponse {
@@ -75,6 +77,7 @@ export interface UpdateLessonRequest {
   answer?: string;
   metadata?: MetadataValue;
   hints?: HintsValue;
+  estimatedTime?: number;
 }
 
 export interface UpdateLessonResponse {
