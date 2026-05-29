@@ -311,7 +311,6 @@ export default function LessonManage() {
         columns={columns}
         data={lessons}
         loading={loading}
-        maxHeight="700px"
       />
 
       <Pagination
