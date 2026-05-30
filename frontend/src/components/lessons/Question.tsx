@@ -165,6 +165,7 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
         setCurrentLessonTitle(lessonDetail.currentLesson?.title)
         setCurrentContent(lessonDetail.currentLesson?.content || '')
         setExercises(lessonDetail.exercises || [])
+        setModalOpen(false)
         
         const completedIds = new Set(
           (lessonDetail.exercises || [])
@@ -202,6 +203,7 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
       setCurrentLessonTitle(data.currentLesson.title)
       setCurrentContent(data.currentLesson.content || '')
       setExercises(data.exercises || [])
+      setModalOpen(false)
       
       const completedIds = new Set(
         (data.exercises || [])

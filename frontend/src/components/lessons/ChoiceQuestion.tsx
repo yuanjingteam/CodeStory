@@ -31,6 +31,7 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
   }), [selectedOption]);
 
   const options = (exercise.metadata as any)?.options || [];
+  const alreadyCorrect = (exercise.userAnswer?.score ?? 0) > 0;
 
   const handleSelect = (option: string) => {
     setSelectedOption(option);
@@ -53,20 +54,21 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
         <div className="font-bold text-lg">请选择正确答案：</div>
         <button
           onClick={() => setShowHintModal(true)}
-          disabled={!exercise.hints || hintLevelUsed >= exercise.hints?._meta.max_level}
+          disabled={!exercise.hints || alreadyCorrect}
           className={`
             py-2 px-4 font-bold border-2 border-black rounded-md
             shadow-[2px_2px_0_0_rgba(0,0,0,1)]
             hover:translate-x-[2px] hover:translate-y-[2px]
             hover:shadow-none transition-all
             flex items-center justify-center
-            ${exercise.hints && hintLevelUsed < exercise.hints._meta.max_level
+            ${exercise.hints && !alreadyCorrect
               ? 'bg-yellow-400 text-black cursor-pointer'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }
           `}
         >
-          <BsLightbulb className="w-5 h-5 mr-1" /> 提示 {exercise.hints ? `(${exercise.hints._meta.max_level - hintLevelUsed})` : ''}
+          <BsLightbulb className="w-5 h-5 mr-1" />
+          {!exercise.hints ? '提示' : hintLevelUsed >= exercise.hints._meta.max_level ? '查看提示' : `提示 (${exercise.hints._meta.max_level - hintLevelUsed})`}
         </button>
       </div>
 
@@ -92,14 +94,14 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
 
       <button
         onClick={handleSubmit}
-        disabled={!selectedOption}
+        disabled={!selectedOption || alreadyCorrect}
         className={`w-full py-3 font-bold border-4 border-black rounded-lg shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-lg mt-4 ${
-          selectedOption
+          selectedOption && !alreadyCorrect
             ? 'bg-green-600 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
             : 'bg-gray-300 text-gray-500 cursor-not-allowed'
         }`}
       >
-        提交答案
+        {alreadyCorrect ? '已完成' : '提交答案'}
       </button>
 
       {showHintModal && (

@@ -78,9 +78,8 @@ export async function submitExercise(
     correct = selectedOption === exercise.answer;
     
     if (correct) {
-      const hints = exercise.hints as any;
-      const scoreDeduction = hints?._meta?.score_deduction || [0, 10, 25, 45];
-      score = Math.max(0, 100 - (scoreDeduction[hintLevelUsed] || 0));
+      const SCORE_DEDUCTION = [0, 10, 20, 30];
+      score = Math.max(0, 100 - (SCORE_DEDUCTION[hintLevelUsed] || 0));
       feedback = hintLevelUsed > 0 
         ? `回答正确！使用了 ${hintLevelUsed} 次提示，得分: ${score} 分` 
         : '回答正确，知识点掌握良好';
@@ -92,9 +91,8 @@ export async function submitExercise(
     correct = answer.trim() === exercise.answer.trim();
     
     if (correct) {
-      const hints = exercise.hints as any;
-      const scoreDeduction = hints?._meta?.score_deduction || [0, 10, 25, 45];
-      score = Math.max(0, 100 - (scoreDeduction[hintLevelUsed] || 0));
+      const SCORE_DEDUCTION = [0, 10, 20, 30];
+      score = Math.max(0, 100 - (SCORE_DEDUCTION[hintLevelUsed] || 0));
       feedback = hintLevelUsed > 0 
         ? `所有测试用例通过！使用了 ${hintLevelUsed} 次提示，得分: ${score} 分`
         : '所有测试用例通过';

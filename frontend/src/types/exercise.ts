@@ -8,7 +8,6 @@ export interface HintConfig {
   [key: `level_${number}`]: string;
   _meta: {
     max_level: number;
-    score_deduction: number[];
   };
 }
 
