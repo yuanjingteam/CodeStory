@@ -12,7 +12,6 @@ export default function HomeCourses() {
   const [homeCourses, setHomeCourses] = useState<Course[]>([]);
   const [hoveredCourse, setHoveredCourse] = useState<string | null>(null);
   const router = useRouter();
-
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -87,7 +86,7 @@ export default function HomeCourses() {
 
             <div className="w-full bg-gray-200 h-2 border-2 border-black rounded overflow-hidden">
               <div
-                className={`h-full transition-all duration-300`}
+                className={`h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300`}
                 style={{
                   width: `${formatPercentage(course.completed_lessons, course.total_lessons)}`,
                 }}
