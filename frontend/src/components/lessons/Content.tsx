@@ -14,6 +14,7 @@ function areEqual(prevProps: ContentProps, nextProps: ContentProps) {
   return (
     prevProps.data.course.id === nextProps.data.course.id &&
     prevProps.data.course.progress === nextProps.data.course.progress &&
+    prevProps.data.currentLesson.id === nextProps.data.currentLesson.id &&
     prevProps.data.catalog.length === nextProps.data.catalog.length &&
     prevProps.data.catalog.every((chapter, index) => {
       const nextChapter = nextProps.data.catalog[index];
@@ -122,8 +123,9 @@ export default memo(function Content({ data, onLessonClick }: ContentProps) {
               {expandedChapters.has(chapter.id) && (
                 <div className="bg-white">
                   {chapter.lessons.map((lesson) => {
+                    const isActive = lesson.id === data.currentLesson.id;
                     const isCompleted = lesson.status === 2;
-                    const isCurrent = lesson.status === 1;
+                    const isInProgress = lesson.status === 1;
                     const isNotStarted = lesson.status === 0;
 
                     return (
@@ -131,30 +133,30 @@ export default memo(function Content({ data, onLessonClick }: ContentProps) {
                         key={lesson.id}
                         onClick={() => handleLessonClick(lesson.id, chapter.id)}
                         className={`flex items-center justify-between px-4 py-3 border-l-4 cursor-pointer transition-colors ${
-                          isCurrent
+                          isActive
                             ? 'bg-yellow-400 border-yellow-500'
                             : isCompleted
                             ? 'bg-gray-50 border-green-500'
-                            : isNotStarted
-                            ? 'bg-white border-transparent hover:bg-gray-50'
+                            : isInProgress
+                            ? 'bg-white border-black hover:bg-gray-50'
                             : 'bg-white border-transparent hover:bg-gray-50'
                         }`}
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          {isCurrent ? (
+                          {isCompleted ? (
                             <div className="w-6 h-6 rounded-full border-2 border-black bg-black flex items-center justify-center flex-shrink-0">
-                              <span className="text-yellow-400 text-sm">▶</span>
-                            </div>
-                          ) : isCompleted ? (
-                            <div className="w-6 h-6 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center flex-shrink-0">
                               <span className="text-white text-xs">✓</span>
                             </div>
+                          ) : isInProgress ? (
+                            <div className="w-6 h-6 rounded-full border-2 border-black bg-black flex items-center justify-center flex-shrink-0">
+                              <span className="text-white text-xs">▶</span>
+                            </div>
                           ) : (
-                            <div className="w-6 h-6 rounded-full border-2 border-gray-400 bg-transparent flex items-center justify-center flex-shrink-0">
+                            <div className="w-6 h-6 rounded-full border-2 border-black bg-transparent flex items-center justify-center flex-shrink-0">
                             </div>
                           )}
                           <span 
-                            className={`flex-1 truncate ${isCurrent ? 'font-bold' : ''}`} 
+                            className={`flex-1 truncate ${isActive ? 'font-bold' : ''}`} 
                             title={lesson.title}
                           >
                             {lesson.title}

@@ -12,6 +12,7 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
   const [data, setData] = useState<LessonDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [chatCollapsed, setChatCollapsed] = useState(false);
 
   const handleLessonCompleted = useCallback((lessonId: string) => {
     showToast.success('已记录学习进度');
@@ -120,9 +121,20 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
           <div className="w-1 h-8 bg-gray-400 rounded-full hover:bg-purple-600 active:bg-purple-700 transition-colors duration-150" />
         </Separator>
 
-        <Panel defaultSize="28%" minSize="15%" maxSize="50%">
+        <Panel defaultSize="28%" minSize="3%" maxSize="50%" collapsible collapsedSize="3%"
+          onResize={(size) => {
+            setChatCollapsed(size.asPercentage <= 3)
+          }}
+        >
           <div className="h-full border-4 border-black rounded-lg shadow-[1px_1px_0_0_rgba(0,0,0,1)] bg-white relative flex flex-col overflow-hidden">
-            <Chat />
+            {!chatCollapsed && (
+              <Chat />
+            )}
+            {chatCollapsed && (
+              <div className="flex items-center justify-center h-full">
+                <span className="text-gray-400 text-sm font-bold tracking-widest" style={{ writingMode: 'vertical-rl' }}>AI 助手</span>
+              </div>
+            )}
           </div>
         </Panel>
       </Group>
