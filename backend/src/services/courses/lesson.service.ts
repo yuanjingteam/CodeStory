@@ -77,11 +77,10 @@ export async function getLessonDetail(lessonId: string, userId: string): Promise
     title: ch.title,
     lessons: ch.lessons.map(l => {
       const status = lessonProgressMap.get(l.id) ?? 0;
-      const isCurrent = l.id === resolvedLessonId;
       return {
         id: uuidToShortId(l.id),
         title: l.title,
-        status: (isCurrent && status < 1 ? 1 : status) as 0 | 1 | 2,
+        status: status as 0 | 1 | 2,
       } as CatalogLesson;
     }),
   }));
