@@ -13,7 +13,6 @@ yarn-error.log*
 *.tsbuildinfo
 
 # Prisma
-prisma/migrations/
 prisma/seed.js
 prisma/seed.ts
 

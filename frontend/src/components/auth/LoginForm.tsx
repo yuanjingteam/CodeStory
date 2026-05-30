@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { IoLogoWechat } from 'react-icons/io5';
 import Link from 'next/link';
@@ -27,6 +27,7 @@ type FieldStatus = 'success' | 'error' | null;
 
 export default function LoginForm() {
   const { addUser: setUserLogin } = useUserStore();
+  const captchaRef = useRef<{ refresh: () => void }>(null);
 
   const getInitialLoginInput = (): LoginRequest => {
     try {
@@ -129,12 +130,14 @@ export default function LoginForm() {
         }, 500);
         return;
       } else {
-        toast.error(res.message );
+        toast.error(res.message);
+        captchaRef.current?.refresh();
       }
     } catch (error) {
       console.error(error);
-      toast.error( '登录失败');
+      toast.error('登录失败');
       setLoginInput((prev) => ({ ...prev, password: '' }));
+      captchaRef.current?.refresh();
     } finally {
       setLoading(false);
     }
@@ -197,6 +200,7 @@ export default function LoginForm() {
 
         <div>
           <CaptchaImage
+            ref={captchaRef}
             value={loginInput.captchaCode}
             error={errors.captcha}
             onChange={({ captchaCode, captchaId }) => {

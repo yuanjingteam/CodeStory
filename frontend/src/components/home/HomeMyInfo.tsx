@@ -109,7 +109,7 @@ export default function HomeMyInfo() {
         <div className="flex items-start gap-4 mb-6">
           {/* Avatar */}
           <div className="relative flex-shrink-0">
-            <div className="w-24 h-24 bg-purple-100 border-3 border-black rounded-full flex items-center justify-center">
+            <div className=" border-2 border-purple-300 rounded-full flex items-center justify-center">
               {userInfo.avatar ? (
                 <Img
                   src={userInfo.avatar}
@@ -117,7 +117,7 @@ export default function HomeMyInfo() {
                   height={96}
                   alt="User Avatar"
                   style={{ objectFit: 'cover' }}
-                  className="w-20 h-20 rounded-full"
+                  className=" rounded-full"
                 />
               ) : (
                 <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
@@ -155,11 +155,12 @@ export default function HomeMyInfo() {
         <div className="grid grid-cols-2 gap-3">
           {/* 等级卡片 */}
           <div
-            className={`${userLevelMap[userInfo.level || 0]?.color || 'bg-gray-700 text-white'}  px-4 py-3 rounded-md flex flex-col items-center justify-center`}
+            className={`${userLevelMap[Math.min(userInfo.level || 0, 9)]?.color || 'bg-gray-700 text-white'}  px-4 py-3 rounded-md flex flex-col items-center justify-center`}
           >
-            <div className="text-xs font-bold opacity-80 mb-1">等级</div>
+            <div className="text-xs font-bold opacity-80 mb-1">等级评价</div>
             <div className="text-lg font-black">
-              {userLevelMap[userInfo.level || 0]?.text || '无等级'}
+              {userLevelMap[Math.min(Math.floor(userInfo.level || 0), 9)]
+                ?.text || '无等级'}
             </div>
             <div className="flex items-center gap-0.5 mt-1">
               {Array(Math.min(userInfo.level || 0, 5))
@@ -167,7 +168,7 @@ export default function HomeMyInfo() {
                 .map((_, i) => (
                   <FaStar
                     key={i}
-                    className="w-4 h-4 text-yellow-400 flex-shrink-0"
+                    className={`w-4 h-4 flex-shrink-0 ${userLevelMap[Math.min(userInfo.level || 0, 9)]?.starColor || 'text-yellow-400'}`}
                   />
                 ))}
             </div>
@@ -189,7 +190,7 @@ export default function HomeMyInfo() {
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-bold text-gray-600">经验值</span>
             <span className="text-sm font-black text-gray-800">
-              Lv.{userInfo.level }
+              Lv.{userInfo.level}
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -198,13 +199,13 @@ export default function HomeMyInfo() {
                 <div
                   className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
                   style={{
-                    width: `${Math.min(100, ((userInfo.level * 100 + 20) / ((userInfo.level + 1) * 100)) * 100)}%`,
+                    width: `${Math.min(100, ((userInfo.score % 1500) / 1500) * 100)}%`,
                   }}
                 />
               </div>
             </div>
             <span className="text-xs font-medium text-gray-500 min-w-[100px] text-right">
-              {userInfo.level * 100 + 20} / {(userInfo.level + 1) * 100}
+              {userInfo.score % 1500}/1500
             </span>
           </div>
         </div>

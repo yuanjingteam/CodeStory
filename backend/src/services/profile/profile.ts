@@ -31,7 +31,16 @@ class ProfileService {
       throw new Error('用户不存在');
     }
 
-    return user;
+    const level = Math.floor(user.score / 1500);
+    await prisma.users.update({
+      where: { id: userId },
+      data: { level },
+    });
+
+    return {
+      ...user,
+      level,
+    };
   }
 
   async getProfileCourses(userId: string): Promise<UserCourse[]> {

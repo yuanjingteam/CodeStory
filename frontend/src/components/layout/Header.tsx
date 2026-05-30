@@ -64,7 +64,7 @@ const Header: React.FC = () => {
             <div className="flex items-center space-x-5">
               <div className="relative" ref={dropdownRef}>
                 <div className="flex items-center space-x-2 px-2 py-1 ">
-                  <div className=" rounded-full border-2 border-black overflow-hidden bg-gray-300 flex items-center justify-center">
+                  <div className=" rounded-full border-1 border-purple-300 overflow-hidden bg-gray-300 flex items-center justify-center">
                     {isLoading ? (
                       <span className="text-xs text-gray-500">...</span>
                     ) : (
@@ -72,8 +72,8 @@ const Header: React.FC = () => {
                         src={user?.avatar || '/default-avatar.png'}
                         alt="avatar"
                         className="h-full w-full object-cover"
-                        width={40}
-                        height={40}
+                        width={45}
+                        height={45}
                         priority
                       />
                     )}
@@ -84,7 +84,7 @@ const Header: React.FC = () => {
                   </span>
                   <button
                     onClick={handleLogout}
-                    className="w-full flex justify-end items-center  hover:bg-red-300 cursor-pointer transition-all font-bold text-purple-700 "
+                    className="w-full flex justify-end items-center  hover:text-purple-500 cursor-pointer transition-all font-bold text-purple-700 "
                   >
                     <FiLogOut />
                     退出登录
