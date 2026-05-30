@@ -43,6 +43,8 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
     onSubmit(userCode);
   };
 
+  const alreadyCorrect = (exercise.userAnswer?.score ?? 0) > 0;
+
   const handleUseHint = (newLevel: number, hintContent: string) => {
     setHintLevelUsed(newLevel);
     onHintUsed?.(newLevel);
@@ -71,20 +73,21 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
           </button>
           <button
             onClick={() => setShowHintModal(true)}
-            disabled={!exercise.hints || hintLevelUsed >= exercise.hints?._meta.max_level}
+            disabled={!exercise.hints || alreadyCorrect}
             className={`
               py-2 px-4 font-bold border-2 border-black rounded-lg
               shadow-[2px_2px_0_0_rgba(0,0,0,1)]
               hover:translate-x-[2px] hover:translate-y-[2px]
               hover:shadow-none transition-all
               flex items-center justify-center
-              ${exercise.hints && hintLevelUsed < exercise.hints._meta.max_level
+              ${exercise.hints && !alreadyCorrect
                 ? 'bg-yellow-400 text-black cursor-pointer'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }
             `}
           >
-            <BsLightbulb className="w-5 h-5 mr-1" /> 提示 {exercise.hints ? `(${exercise.hints._meta.max_level - hintLevelUsed})` : ''}
+            <BsLightbulb className="w-5 h-5 mr-1" />
+            {!exercise.hints ? '提示' : hintLevelUsed >= exercise.hints._meta.max_level ? '查看提示' : `提示 (${exercise.hints._meta.max_level - hintLevelUsed})`}
           </button>
         </div>
       </div>
@@ -117,14 +120,14 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
 
       <button
         onClick={handleSubmit}
-        disabled={!userCode.trim()}
+        disabled={!userCode.trim() || alreadyCorrect}
         className={`w-full py-3 font-bold border-4 border-black rounded-lg shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-lg mt-4 ${
-          userCode.trim()
+          userCode.trim() && !alreadyCorrect
             ? 'bg-green-600 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
             : 'bg-gray-300 text-gray-500 cursor-not-allowed'
         }`}
       >
-        运行代码
+        {alreadyCorrect ? '已完成' : '运行代码'}
       </button>
 
       {showHintModal && (

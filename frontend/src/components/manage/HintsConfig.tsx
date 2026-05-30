@@ -53,7 +53,7 @@ export default function HintsConfig({ hints, onChange }: HintsConfigProps) {
       reindexed[`level_${i + 1}`] = updated[key];
     });
     const meta = hintConfig._meta;
-    onChange({ ...reindexed, _meta: meta || { max_level: Object.keys(reindexed).length, score_deduction: Array(Object.keys(reindexed).length).fill(10) } });
+    onChange({ ...reindexed, _meta: { max_level: Object.keys(reindexed).length } });
   };
 
   const handleAddHint = () => {
@@ -61,10 +61,7 @@ export default function HintsConfig({ hints, onChange }: HintsConfigProps) {
     const existingLevels = Object.keys(prevHints).filter(k => k.startsWith('level_')).length;
     const newLevel = existingLevels + 1;
     const updated: HintConfig = { ...prevHints, [`level_${newLevel}`]: '' } as HintConfig;
-    const meta = prevHints._meta;
-    const deduction = meta?.score_deduction ? [...meta.score_deduction] : [];
-    deduction.push(10);
-    onChange({ ...updated, _meta: meta ? { ...meta, max_level: newLevel, score_deduction: deduction } : { max_level: newLevel, score_deduction: Array(newLevel).fill(10) } });
+    onChange({ ...updated, _meta: { max_level: newLevel } });
   };
 
   return (

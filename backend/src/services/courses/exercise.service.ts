@@ -78,9 +78,8 @@ export async function submitExercise(
     correct = selectedOption === exercise.answer;
     
     if (correct) {
-      const hints = exercise.hints as any;
-      const scoreDeduction = hints?._meta?.score_deduction || [0, 10, 25, 45];
-      score = Math.max(0, 100 - (scoreDeduction[hintLevelUsed] || 0));
+      const SCORE_DEDUCTION = [0, 10, 20, 30];
+      score = Math.max(0, 100 - (SCORE_DEDUCTION[hintLevelUsed] || 0));
       feedback = hintLevelUsed > 0 
         ? `回答正确！使用了 ${hintLevelUsed} 次提示，得分: ${score} 分` 
         : '回答正确，知识点掌握良好';
@@ -89,12 +88,27 @@ export async function submitExercise(
       feedback = '回答错误，请重新思考';
     }
   } else if (exercise.type === 'code') {
-    correct = answer.trim() === exercise.answer.trim();
+    const normalizeCode = (code: string): string => {
+      let result = code;
+      result = result.replace(/--.*$/gm, '');
+      result = result.replace(/\/\*[\s\S]*?\*\//g, '');
+      result = result.replace(/'''[\s\S]*?'''/g, '');
+      result = result.replace(/"""[\s\S]*?"""/g, '');
+      result = result.replace(/#.*$/gm, '');
+      result = result.replace(/\/\/.*$/gm, '');
+      result = result.replace(/%.*$/gm, '');
+      result = result.replace(/REM\s+.*$/gim, '');
+      result = result.replace(/;.*$/gm, '');
+      result = result.replace(/\s+/g, ' ');
+      return result.trim();
+    };
+    const normalizedAnswer = normalizeCode(answer);
+    const normalizedCorrect = normalizeCode(exercise.answer);
+    correct = normalizedAnswer === normalizedCorrect;
     
     if (correct) {
-      const hints = exercise.hints as any;
-      const scoreDeduction = hints?._meta?.score_deduction || [0, 10, 25, 45];
-      score = Math.max(0, 100 - (scoreDeduction[hintLevelUsed] || 0));
+      const SCORE_DEDUCTION = [0, 10, 20, 30];
+      score = Math.max(0, 100 - (SCORE_DEDUCTION[hintLevelUsed] || 0));
       feedback = hintLevelUsed > 0 
         ? `所有测试用例通过！使用了 ${hintLevelUsed} 次提示，得分: ${score} 分`
         : '所有测试用例通过';
@@ -117,12 +131,14 @@ export async function submitExercise(
   const isFirstSubmission = !existingAnswer;
 
   if (existingAnswer) {
+    const newScore = correct ? score : existingAnswer.score;
     await prisma.answer.update({
       where: { id: existingAnswer.id },
       data: {
         answer,
         submission_count: existingAnswer.submission_count + 1,
         feedback,
+        score: newScore,
         hint_level_used: Math.max(existingAnswer.hint_level_used, hintLevelUsed),
       },
     });
@@ -139,6 +155,15 @@ export async function submitExercise(
       },
     });
   }
+
+  const totalScore = await prisma.answer.aggregate({
+    where: { user_id: userId, is_delete: 0 },
+    _sum: { score: true },
+  });
+  await prisma.users.update({
+    where: { id: userId },
+    data: { score: totalScore._sum.score || 0 },
+  });
 
   await updateLessonAndCourseProgress(exercise.lesson_id, userId);
 
