@@ -88,7 +88,23 @@ export async function submitExercise(
       feedback = '回答错误，请重新思考';
     }
   } else if (exercise.type === 'code') {
-    correct = answer.trim() === exercise.answer.trim();
+    const normalizeCode = (code: string): string => {
+      let result = code;
+      result = result.replace(/--.*$/gm, '');
+      result = result.replace(/\/\*[\s\S]*?\*\//g, '');
+      result = result.replace(/'''[\s\S]*?'''/g, '');
+      result = result.replace(/"""[\s\S]*?"""/g, '');
+      result = result.replace(/#.*$/gm, '');
+      result = result.replace(/\/\/.*$/gm, '');
+      result = result.replace(/%.*$/gm, '');
+      result = result.replace(/REM\s+.*$/gim, '');
+      result = result.replace(/;.*$/gm, '');
+      result = result.replace(/\s+/g, ' ');
+      return result.trim();
+    };
+    const normalizedAnswer = normalizeCode(answer);
+    const normalizedCorrect = normalizeCode(exercise.answer);
+    correct = normalizedAnswer === normalizedCorrect;
     
     if (correct) {
       const SCORE_DEDUCTION = [0, 10, 20, 30];
