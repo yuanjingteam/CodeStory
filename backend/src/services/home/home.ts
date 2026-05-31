@@ -45,7 +45,6 @@ class HomeService {
     });
   }
 
-  //获取开始学习的课程路径
   async getStartLearningCourse(userId: string) {
     const progress = await prisma.courses_progress.findFirst({
       where: {
@@ -61,6 +60,34 @@ class HomeService {
       return null;
     }
     return `/courses/${progress.course_id}`;
+  }
+
+  async getHomeStats() {
+    const [totalCourses, totalUsers, progress, totalLessons] = await Promise.all([
+      prisma.courses.count({ where: { is_delete: 0 } }),
+      prisma.users.count({ where: { is_delete: 0 } }),
+      prisma.courses_progress.aggregate({
+        where: { is_delete: 0 },
+        _sum: {
+          completed_lessons: true,
+          total_lessons: true,
+        },
+      }),
+      prisma.lessons.count({ where: { is_delete: 0 } }),
+    ]);
+
+    const totalCompleted = progress._sum.completed_lessons || 0;
+    const totalLessonsStudied = progress._sum.total_lessons || 0;
+    const completionRate = totalLessonsStudied > 0 
+      ? Math.round((totalCompleted / totalLessonsStudied) * 100) 
+      : 0;
+
+    return {
+      course_count: totalCourses,
+      lesson_count: totalLessons,
+      completion_rate: completionRate,
+      user_count: totalUsers,
+    };
   }
 }
 

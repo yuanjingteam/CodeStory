@@ -3,7 +3,7 @@ import { ApiResponse } from 'shared/types/auth';
 import {
   GetUserListRequest,
   UserListResponse,
-  UserDetailRequest,
+  UpdateUserDetailRequest,
 } from 'shared/types/user-manage';
 
 // 获取用户列表
@@ -15,21 +15,15 @@ export const getUserList = async (
 
 export const getUserDetailById = async (
   userId: string
-): Promise<ApiResponse<UserDetailRequest>> => {
+): Promise<ApiResponse<UpdateUserDetailRequest>> => {
   return request.get(`/admin/user-manage/detail/${userId}`);
 };
 
-// 新增用户
-export const addUser = async (
-  data: UserDetailRequest
-): Promise<ApiResponse<void>> => {
-  return request.post('/admin/user-manage/adduser', data);
-};
 
 // 编辑用户信息
 export const updateUserDetail = async (
   userId: string,
-  data: Partial<UserDetailRequest>
+  data: Partial<UpdateUserDetailRequest>
 ): Promise<ApiResponse<void>> => {
   return request.put(`/admin/user-manage/update-detail/${userId}`, data);
 };

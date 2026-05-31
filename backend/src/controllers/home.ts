@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { homeService } from '@/services/home/home';
 
 class HomeController {
-  // 获取热门课程控制器
   async getHomeCourses(req: Request, res: Response) {
     const userId = req.user?.id;
     try {
@@ -21,7 +20,7 @@ class HomeController {
       });
     }
   }
-  //开始学习跳转控制器
+
   async startLearning(req: Request, res: Response) {
     try {
       const userId = req.user?.id;
@@ -33,7 +32,7 @@ class HomeController {
         });
       }
 
-      const path = await homeService.getStartLearningCourse(userId );
+      const path = await homeService.getStartLearningCourse(userId);
       return res.status(200).json({
         code: 200,
         message: '成功跳转学习',
@@ -46,6 +45,24 @@ class HomeController {
       return res.status(500).json({
         code: 500,
         message: '跳转学习失败',
+        data: null,
+      });
+    }
+  }
+
+  async getLearningStats(req: Request, res: Response) {
+    try {
+      const data = await homeService.getHomeStats();
+      return res.status(200).json({
+        code: 200,
+        message: '成功获取学习统计数据',
+        data,
+      });
+    } catch (error) {
+      console.error('Failed to get learning stats:', error);
+      return res.status(500).json({
+        code: 500,
+        message: '获取学习统计数据失败',
         data: null,
       });
     }

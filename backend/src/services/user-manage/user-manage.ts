@@ -1,7 +1,7 @@
 import prisma from '@/config/prisma';
 import type {
   GetUserListRequest,
-  UserDetailRequest,
+  UpdateUserDetailRequest,
   UserDetail,
   UserListResponse,
 } from 'shared/types/user-manage';
@@ -47,7 +47,6 @@ class UserManageService {
       },
     });
     const total = await prisma.users.count({ where });
-
     return {
       list: data,
       pagination: {
@@ -85,40 +84,11 @@ class UserManageService {
   }
 
   /**
-   * 创建新用户
-   */
-  async createUser(data: UserDetailRequest): Promise<void> {
-    const existingUser = await prisma.users.findUnique({
-      where: { email: data.email },
-    });
-
-    if (existingUser) {
-      throw new Error('该邮箱已被注册');
-    }
-
-    await prisma.users.create({
-      data: {
-        email: data.email,
-        password: '123456',
-        nickname: data.nickname,
-        avatar: data.avatar || '',
-        sex: data.sex,
-        occupation: data.occupation || '',
-        role: data.role,
-        level: data.level,
-        score: data.score,
-        is_delete: 0,
-        updated_at: new Date(),
-      },
-    });
-  }
-
-  /**
    * 更新用户信息
    */
   async updateUser(
     id: string,
-    data: Partial<UserDetailRequest>
+    data: Partial<UpdateUserDetailRequest>
   ): Promise<void> {
     // 如果更新邮箱，检查新邮箱是否已被其他用户使用
     if (data.email) {
@@ -133,6 +103,15 @@ class UserManageService {
         throw new Error('该邮箱已被注册');
       }
     }
+    if (data.score) {
+      const level = Math.floor(data.score / 1500);
+      await prisma.users.update({
+        where: { id },
+        data: {
+          level: level,
+        },
+      });
+    }
 
     await prisma.users.update({
       where: { id },
@@ -143,7 +122,6 @@ class UserManageService {
         sex: data.sex,
         occupation: data.occupation,
         role: data.role,
-        level: data.level,
         score: data.score,
         updated_at: new Date(),
       },

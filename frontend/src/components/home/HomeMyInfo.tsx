@@ -155,7 +155,7 @@ export default function HomeMyInfo() {
         <div className="grid grid-cols-2 gap-3">
           {/* 等级卡片 */}
           <div
-            className={`${userLevelMap[Math.min(userInfo.level || 0, 9)]?.color || 'bg-gray-700 text-white'}  px-4 py-3 rounded-md flex flex-col items-center justify-center`}
+            className={`${userLevelMap[Math.min(userInfo.level || 0, 9)]?.color || 'bg-gray-700 text-white'} border-2  px-4 py-3 rounded-md flex flex-col items-center justify-center`}
           >
             <div className="text-xs font-bold opacity-80 mb-1">等级评价</div>
             <div className="text-lg font-black">
@@ -163,7 +163,7 @@ export default function HomeMyInfo() {
                 ?.text || '无等级'}
             </div>
             <div className="flex items-center gap-0.5 mt-1">
-              {Array(Math.min(userInfo.level || 0, 5))
+              {Array(Math.min(userInfo.level || 0, 9))
                 .fill(0)
                 .map((_, i) => (
                   <FaStar

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Course } from 'shared/types/home-courses';
+import { HomeCourse } from 'shared/types/home';
 import { getHomeCourses } from '@/api/home';
 import Img from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -9,7 +9,7 @@ import { formatPercentage } from '@/utils/format';
 import { LuArrowRight } from 'react-icons/lu';
 import { FiUsers } from 'react-icons/fi';
 export default function HomeCourses() {
-  const [homeCourses, setHomeCourses] = useState<Course[]>([]);
+  const [homeCourses, setHomeCourses] = useState<HomeCourse[]>([]);
   const [hoveredCourse, setHoveredCourse] = useState<string | null>(null);
   const router = useRouter();
   useEffect(() => {

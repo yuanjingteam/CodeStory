@@ -1,4 +1,4 @@
-export interface Course {
+export interface HomeCourse {
   id: string;
   title: string;
   cover_url: string;
@@ -8,4 +8,11 @@ export interface Course {
   student_count: number;
   completed_lessons: number;
   total_lessons: number;
+}
+
+export interface HomeData {
+  course_count: number;
+  lesson_count: number;
+  completion_rate: number;
+  user_count: number;
 }

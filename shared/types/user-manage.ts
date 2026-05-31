@@ -13,7 +13,7 @@ export interface UserDetail {
   is_delete: number;
 }
 
-export interface UserDetailRequest {
+export interface UpdateUserDetailRequest {
   id: string;
   email: string;
   role: number;
@@ -22,7 +22,6 @@ export interface UserDetailRequest {
   sex: number;
   occupation: string | null;
   score: number;
-  level: number;
 }
 
 export interface GetUserListRequest {

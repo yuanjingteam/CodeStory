@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { FiEdit, FiTrash2, FiUser, FiMail } from 'react-icons/fi';
-import type { UserDetail, UserDetailRequest } from 'shared/types/user-manage';
+import type { UserDetail, UpdateUserDetailRequest } from 'shared/types/user-manage';
 import {
   SearchFilter,
   DataTable,
@@ -13,7 +13,6 @@ import type { PaginationResponse } from 'shared/types/user-manage';
 import { userRoleMap, userSexMap } from '@/utils/constants';
 import {
   getUserList,
-  addUser,
   updateUserDetail,
   deleteUser as deleteUserApi,
   restoreUser as restoreUserApi,
@@ -159,7 +158,7 @@ export default function UserManage() {
   };
 
   // 提交用户数据
-  const handleSubmitUser = async (data: UserDetailRequest) => {
+  const handleSubmitUser = async (data: UpdateUserDetailRequest) => {
     try {
       if (data.id) {
         // 编辑用户
@@ -170,7 +169,6 @@ export default function UserManage() {
           sex: data.sex,
           occupation: data.occupation,
           role: data.role,
-          level: data.level,
           score: data.score,
         });
         if (res.code === 200) {
@@ -181,24 +179,7 @@ export default function UserManage() {
           );
           toast.success('更新成功');
         }
-      } else {
-        const res = await addUser({
-          id: data.id,
-          email: data.email,
-          nickname: data.nickname,
-          avatar: data.avatar,
-          sex: data.sex,
-          occupation: data.occupation,
-          role: data.role,
-          level: data.level,
-          score: data.score,
-        });
-        if (res.code === 200) {
-          // 刷新列表
-          setPagination((prev) => ({ ...prev, currentPage: 1 }));
-          toast.success('添加成功');
-        }
-      }
+      } 
     } catch (error) {
       console.error('保存用户失败:', error);
     }

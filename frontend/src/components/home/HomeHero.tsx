@@ -1,4 +1,7 @@
 'use client';
+import { useState, useEffect } from 'react';
+import { getHomeStats } from '@/api/home';
+import type { HomeData } from 'shared/types/home';
 import { useRouter } from 'next/navigation';
 import { LuBot } from 'react-icons/lu';
 import HeroIllustration from '@/components/home/HeroIllustration';
@@ -6,12 +9,49 @@ import { useUserStore } from '@/store/useUserStore';
 import { getStartLearningCourse } from '@/api/home';
 
 export default function HomeHero() {
-  const stats = [
-    { value: '50+', label: '精品课程', color: 'bg-green-500' },
-    { value: '1200+', label: '学习小节', color: 'bg-purple-500' },
-    { value: '85%', label: '学习完成率', color: 'bg-yellow-500' },
-    { value: '30K+', label: '注册用户', color: 'bg-blue-500 text-black' },
+  const [homeStats, setHomeStats] = useState<HomeData>({
+    course_count: 0,
+    lesson_count: 0,
+    completion_rate: 0,
+    user_count: 0,
+  });
+  useEffect(() => {
+    const fetchHomeStats = async () => {
+      const res = await getHomeStats();
+      try {
+        if (res.code === 200 && res.data) {
+          setHomeStats(res.data);
+        }
+      } catch (error) {
+        console.error('获取首页统计失败:', error);
+      }
+    };
+    fetchHomeStats();
+  }, []);
+
+  const statsList = [
+    {
+      value: `${homeStats.course_count}+`,
+      label: '精品课程',
+      color: 'bg-green-500',
+    },
+    {
+      value: `${homeStats.lesson_count}+`,
+      label: '学习小节',
+      color: 'bg-purple-500',
+    },
+    {
+      value: `${homeStats.completion_rate}%`,
+      label: '学习完成率',
+      color: 'bg-yellow-500',
+    },
+    {
+      value: `${homeStats.user_count}+`,
+      label: '注册用户',
+      color: 'bg-blue-500 text-black',
+    },
   ];
+
   const router = useRouter();
   const { user } = useUserStore();
   const startLearning = async () => {
@@ -23,7 +63,7 @@ export default function HomeHero() {
       router.push(res.data.path ?? '/courses');
     } catch (error) {
       console.error('获取开始学习课程失败:', error);
-    } 
+    }
   };
   return (
     <section
@@ -81,7 +121,7 @@ export default function HomeHero() {
       {/* Stats Section */}
       <div className="px-8 py-8 ">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat, index) => (
+          {statsList.map((stat, index) => (
             <div
               key={index}
               className={`${stat.color} text-white p-4 border-2 border-black rounded-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)] text-center hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200`}

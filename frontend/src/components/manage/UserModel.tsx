@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { LuX } from 'react-icons/lu';
 import { userSexMap } from '@/utils/constants';
-import type { UserDetailRequest } from 'shared/types/user-manage';
+import type { UpdateUserDetailRequest } from 'shared/types/user-manage';
 import { uploadAvatar } from '@/api/profile';
 import Img from 'next/image';
 import { getUserDetailById } from '@/app/api/manage/user-manage';
@@ -10,7 +10,7 @@ import { getUserDetailById } from '@/app/api/manage/user-manage';
 interface UserModelProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: UserDetailRequest & { id?: string }) => Promise<void>;
+  onSubmit: (data: UpdateUserDetailRequest & { id?: string }) => Promise<void>;
   userId?: string | null;
   loading?: boolean;
 }
@@ -23,7 +23,7 @@ export default function UserModel({
   loading = false,
 }: UserModelProps) {
   const [fetching, setFetching] = useState(false);
-  const [formData, setFormData] = useState<UserDetailRequest>({
+  const [formData, setFormData] = useState<UpdateUserDetailRequest>({
     email: '',
     role: 0,
     nickname: '',
@@ -31,7 +31,6 @@ export default function UserModel({
     sex: 0,
     occupation: '',
     score: 0,
-    level: 0,
     id: '',
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -47,7 +46,6 @@ export default function UserModel({
       sex: 0,
       occupation: '',
       score: 0,
-      level: 0,
       id: '',
     });
     setAvatarFile(null);
@@ -70,7 +68,6 @@ export default function UserModel({
               sex: userData.sex ?? 0,
               occupation: userData.occupation || '',
               score: userData.score ?? 0,
-              level: userData.level ?? 1,
               id: userId,
             });
             setPreviewUrl(userData.avatar || '');
@@ -94,7 +91,7 @@ export default function UserModel({
   }, [previewUrl]);
 
   const handleChange = (
-    field: keyof UserDetailRequest,
+    field: keyof UpdateUserDetailRequest,
     value: string | number
   ) => {
     setFormData((prev) => ({
@@ -130,7 +127,7 @@ export default function UserModel({
         ...formData,
         avatar: avatarUrl,
         id: userId,
-      } as UserDetailRequest & { id?: string });
+      } as UpdateUserDetailRequest & { id?: string });
     } finally {
       setSubmitting(false);
       resetForm();
@@ -313,25 +310,23 @@ export default function UserModel({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold mb-1">等级</label>
-                  <input
-                    type="number"
-                    value={formData.level}
-                    onChange={(e) =>
-                      handleChange('level', Number(e.target.value) || 1)
-                    }
-                    min={1}
-                    disabled={loading || submitting || fetching}
-                    className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:opacity-50"
-                  />
+                  <div className="w-full px-3 py-2 border-2 border-gray-300 bg-gray-100 text-gray-600 font-bold">
+                    {Math.floor((formData.score || 0) / 1500)}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-bold mb-1">积分</label>
                   <input
                     type="number"
                     value={formData.score}
-                    onChange={(e) =>
-                      handleChange('score', Number(e.target.value) || 0)
-                    }
+                    onChange={(e) => {
+                      const newScore = Number(e.target.value) || 0;
+                      setFormData((prev) => ({
+                        ...prev,
+                        score: newScore,
+                        level: Math.floor(newScore / 1500),
+                      }));
+                    }}
                     min={0}
                     disabled={loading || submitting || fetching}
                     className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:opacity-50"
