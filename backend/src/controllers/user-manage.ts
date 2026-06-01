@@ -58,27 +58,7 @@ class UserManageController {
     }
   }
 
-  /**
-   * 添加用户
-   */
-  async addUser(req: Request, res: Response) {
-    try {
-      const userData = req.body;
-      if (!userData) {
-        throw new Error('用户数据不能为空');
-      }
-      await userManageService.createUser(userData);
-      return res.status(200).json({
-        code: 200,
-        message: '添加用户成功',
-      });
-    } catch (error) {
-      return res.status(400).json({
-        code: 400,
-        message: '添加用户失败',
-      });
-    }
-  }
+
 
   /**
    * 更新用户信息

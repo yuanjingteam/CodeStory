@@ -1,7 +1,7 @@
 import prisma from '@/config/prisma';
 import { hashPassword } from '@/utils/bcrypt';
 import { captchaService } from '@/services/auth/captcha';
-import { RegisterRequest } from 'shared/types/auth';
+import type { RegisterRequest } from '@/types/auth';
 import { deleteCache } from '@/utils/cache';
 import {
   validateEmail,

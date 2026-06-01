@@ -8,7 +8,6 @@ const router = express.Router();
 
 router.post('/list', userManageController.getUserList);
 router.get('/detail/:id', userManageController.getUserDetailById);
-router.post('/adduser', userManageController.addUser);
 router.put('/update-detail/:id', userManageController.updateUserDetail);
 router.post(
   '/upload-avatar/:id',

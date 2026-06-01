@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { forgetPasswordService } from '@/services/auth/forgetpassword';
-import { ForgetPasswordRequest } from 'shared/types/auth';
+import type { ForgetPasswordRequest } from '@/types/auth';
 
 class ForgetPasswordController {
   async forgetPassword(req: Request, res: Response) {

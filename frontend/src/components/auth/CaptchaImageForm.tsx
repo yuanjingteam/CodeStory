@@ -2,7 +2,7 @@
 
 import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { getImageCaptcha } from '@/api/auth/auth';
-import type { ImageCaptchaData } from 'shared/types/auth';
+import type { ImageCaptchaData } from '@/types/auth';
 import { toast } from 'sonner';
 
 interface CaptchaImageProps {

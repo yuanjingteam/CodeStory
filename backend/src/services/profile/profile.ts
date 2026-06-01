@@ -1,5 +1,5 @@
 import prisma from '@/config/prisma';
-import { UpdateUserInfopRequest, UserCourse } from 'shared/types/profile';
+import type { UpdateUserInfopRequest, UserCourse } from '@/types/profile';
 import fs from 'fs';
 import path from 'path';
 

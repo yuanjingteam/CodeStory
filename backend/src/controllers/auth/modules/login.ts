@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { loginService } from '@/services/auth/login';
-import type { LoginRequest } from 'shared/types/auth';
+import type { LoginRequest } from '@/types/auth';
 class LoginController {
   async login(req: Request, res: Response) {
     try {

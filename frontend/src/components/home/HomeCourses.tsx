@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { HomeCourse } from 'shared/types/home';
+import type { HomeCourse } from '@/types/home';
 import { getHomeCourses } from '@/api/home';
 import Img from 'next/image';
 import { useRouter } from 'next/navigation';

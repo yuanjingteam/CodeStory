@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { IoLogoWechat } from 'react-icons/io5';
 import Link from 'next/link';
-import { LoginRequest } from 'shared/types/auth';
+import type { LoginRequest } from '@/types/auth';
 import { login } from '@/api/auth/auth';
 import CaptchaImage from './CaptchaImageForm';
 import type { ValidateResult } from '@/utils/validate';

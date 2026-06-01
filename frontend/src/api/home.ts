@@ -1,6 +1,6 @@
 import request from '@/utils/request';
-import type { ApiResponse } from 'shared/types/auth';
-import type { HomeCourse, HomeData } from 'shared/types/home';
+import type { ApiResponse } from '@/types/auth';
+import type { HomeCourse, HomeData } from '@/types/home';
 
 export const getHomeCourses = async (): Promise<ApiResponse<HomeCourse[]>> => {
   return request.get('/home/home-courses');

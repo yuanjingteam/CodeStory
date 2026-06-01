@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { getHomeStats } from '@/api/home';
-import type { HomeData } from 'shared/types/home';
+import type { HomeData } from '@/types/home';
 import { useRouter } from 'next/navigation';
 import { LuBot } from 'react-icons/lu';
 import HeroIllustration from '@/components/home/HeroIllustration';

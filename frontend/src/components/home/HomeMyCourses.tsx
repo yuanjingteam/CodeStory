@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { getUserCourses } from '@/api/profile';
-import { UserCourse } from 'shared/types/profile';
+import type { UserCourse } from '@/types/profile';
 import { LuBookOpen, LuBadgeCheck, LuBadgeX, LuPlus } from 'react-icons/lu';
 import Img from 'next/image';
 import { useRouter } from 'next/navigation';

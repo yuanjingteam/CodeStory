@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { FiEdit, FiTrash2, FiUser, FiMail } from 'react-icons/fi';
-import type { UserDetail, UpdateUserDetailRequest } from 'shared/types/user-manage';
+import type { UserDetail, UpdateUserDetailRequest } from '@/types/user-manage';
 import {
   SearchFilter,
   DataTable,
@@ -9,7 +9,7 @@ import {
   type FilterField,
   type Column,
 } from '@/components/common';
-import type { PaginationResponse } from 'shared/types/user-manage';
+import type { PaginationResponse } from '@/types/user-manage';
 import { userRoleMap, userSexMap } from '@/utils/constants';
 import {
   getUserList,

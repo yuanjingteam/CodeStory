@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import type { UpdateUserInfopRequest } from 'shared/types/profile';
+import type { UpdateUserInfopRequest } from '@/types/profile';
 import { userSexMap } from '@/utils/constants';
 import { LuX } from 'react-icons/lu';
 import { uploadAvatar } from '@/api/profile';

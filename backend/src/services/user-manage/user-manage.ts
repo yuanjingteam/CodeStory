@@ -4,7 +4,7 @@ import type {
   UpdateUserDetailRequest,
   UserDetail,
   UserListResponse,
-} from 'shared/types/user-manage';
+} from '@/types/user-manage';
 
 class UserManageService {
   async getUserList(params: GetUserListRequest): Promise<UserListResponse> {

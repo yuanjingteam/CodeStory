@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { registerService } from '@/services/auth/register';
-import { RegisterRequest } from 'shared/types/auth';
+import type { RegisterRequest } from '@/types/auth';
 
 class RegisterController {
   async register(req: Request, res: Response) {

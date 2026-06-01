@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import type { RegisterRequest } from 'shared/types/auth';
+import type { RegisterRequest } from '@/types/auth';
 import { register, getEmailCaptcha } from '@/api/auth/auth';
 import FormInput from './FormInput';
 import type { ValidateResult } from '@/utils/validate';

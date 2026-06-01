@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/useUserStore';
 import { updateUserProfile } from '@/api/profile';
-import type { LoginUserInfo } from 'shared/types/auth';
+import type { LoginUserInfo } from '@/types/auth';
 import type {
   UserProfileInfo,
   UpdateUserInfopRequest,
-} from 'shared/types/profile';
+} from '@/types/profile';
 import { userSexMap, userRoleMap, userLevelMap } from '@/utils/constants';
 import { getProfile } from '@/api/profile';
 import { LuMail } from 'react-icons/lu';

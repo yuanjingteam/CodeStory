@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { LuX } from 'react-icons/lu';
 import { userSexMap } from '@/utils/constants';
-import type { UpdateUserDetailRequest } from 'shared/types/user-manage';
+import type { UpdateUserDetailRequest } from '@/types/user-manage';
 import { uploadAvatar } from '@/api/profile';
 import Img from 'next/image';
 import { getUserDetailById } from '@/app/api/manage/user-manage';
