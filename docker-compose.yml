@@ -1,4 +1,3 @@
-# docker-compose.yml
 version: '3.8'
 
 services:
@@ -12,26 +11,66 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - '5432:5432'
     restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: codestory-redis
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - codestory-network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: codepractice-backend
-    environment:
-      NODE_ENV: development
-      PORT: 3001
-      DATABASE_URL: postgresql://codepractice:codepractice_password@postgres:5432/codepractice
+    container_name: codestory-backend
     ports:
-      - "3001:3001"
+      - 4001:4001
+    environment:
+      NODE_ENV: production
+      PORT: 4001
+      DATABASE_URL: postgresql://codezoo:X4pWSrktPjHAhS8C@192.168.10.5:5432/codezoo
+      REDIS_URL: redis://redis:6379
+      EMAIL_USER: 2917972337@qq.com
+      EMAIL_PASS: ctllwvfnttpfddic
+      JWT_SECRET: codezoo_X4pWSrktPjHAhS8C
+      JWT_EXPIRES_IN: 7d
     depends_on:
       - postgres
+      - redis
     volumes:
-      - ./backend:/app
-      - /app/node_modules
+      - ./backend/uploads:/app/uploads
     restart: unless-stopped
+    networks:
+      - codestory-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: codestory-frontend
+    ports:
+      - 3001:3001
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      NEXT_PUBLIC_API_BASE_URL: 'http://backend:4001'
+      NEXT_PUBLIC_UPLOAD_PROXY_URL: 'http://backend:4001'
+      NEXT_PUBLIC_AUTH_TOKEN_KEY: 'auth_token'
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - codestory-network
 
 volumes:
   postgres_data:
+  redis_data:
+
+networks:
+  codestory-network:
+    driver: bridge

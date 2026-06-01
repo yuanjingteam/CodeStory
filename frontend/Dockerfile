@@ -12,6 +12,6 @@ COPY . .
 
 RUN pnpm build
 
-EXPOSE 4001
+EXPOSE 3001
 
-CMD ["node", "dist/app.js"]
+CMD ["pnpm", "start"]

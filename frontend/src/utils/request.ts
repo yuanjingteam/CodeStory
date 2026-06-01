@@ -10,7 +10,7 @@ import { useUserStore } from '@/store/useUserStore';
 import { showToast } from './toast';
 
 const service: AxiosInstance = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'}/api/v1`,
+  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1`,
   timeout: 5000,
 });
 
@@ -60,8 +60,16 @@ service.interceptors.response.use(
 
 interface RequestMethods {
   get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>;
-  post<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
-  put<T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>;
+  post<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<T>;
+  put<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<T>;
   delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>;
 }
 
