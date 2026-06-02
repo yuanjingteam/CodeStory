@@ -7,7 +7,7 @@ import type {
   RegisterRequest,
   ImageCaptchaData,
   ForgetPasswordRequest,
-} from 'shared/types/auth';
+} from '@/types/auth';
 // 登录
 export const login = async (data: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
   return request.post('/auth/login', data);

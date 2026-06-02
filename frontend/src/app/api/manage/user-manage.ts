@@ -1,10 +1,10 @@
 import request from '@/utils/request';
-import { ApiResponse } from 'shared/types/auth';
+import { ApiResponse } from '@/types/auth';
 import {
   GetUserListRequest,
   UserListResponse,
   UpdateUserDetailRequest,
-} from 'shared/types/user-manage';
+} from '@/types/user-manage';
 
 // 获取用户列表
 export const getUserList = async (
