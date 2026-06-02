@@ -12,7 +12,7 @@ export const createCourse = async (req: Request, res: Response) => {
 
     let coverUrl = '';
     if ((req as any).file) {
-      coverUrl = `${req.protocol || 'http'}://${req.get('host')}/uploads/courses/${(req as any).file.filename}`;
+      coverUrl = `/uploads/courses/${(req as any).file.filename}`;
     }
 
     const course = await prisma.courses.create({
@@ -56,7 +56,7 @@ export const updateCourse = async (req: Request, res: Response) => {
     if (level !== undefined) updateData.level = parseInt(level);
 
     if ((req as any).file) {
-      updateData.cover_url = `${req.protocol || 'http'}://${req.get('host')}/uploads/courses/${(req as any).file.filename}`;
+      updateData.cover_url = `/uploads/courses/${(req as any).file.filename}`;
     }
 
     const course = await prisma.courses.update({
