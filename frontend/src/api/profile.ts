@@ -1,10 +1,10 @@
-import type { ApiResponse } from 'shared/types/auth';
+import type { ApiResponse } from '@/types/auth';
 import request from '@/utils/request';
 import type {
   UserProfileInfo,
   UserCourse,
   UpdateUserInfopRequest,
-} from 'shared/types/profile';
+} from '@/types/profile';
 
 export async function getProfile(): Promise<ApiResponse<UserProfileInfo>> {
   return request.get('/profile/user-info');

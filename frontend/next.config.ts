@@ -8,8 +8,10 @@ const nextConfig: NextConfig = {
   experimental: {
     externalDir: true,
   },
+  turbopack: {
+    root: process.cwd(),
+  },
   images: {
-    domains: [uploadUrlObj.hostname],
     remotePatterns: [
       {
         protocol: uploadUrlObj.protocol.replace(':', '') as 'http' | 'https',

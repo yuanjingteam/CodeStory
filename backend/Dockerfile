@@ -1,4 +1,5 @@
-FROM node:18-alpine
+# 这个文件做的事情就是 准备 Node 环境 -> 安装依赖 -> 生成 Prisma -> 编译后端 -> 启动 Express 服务
+FROM node:22-alpine
 
 WORKDIR /app
 
@@ -8,10 +9,14 @@ COPY package.json pnpm-lock.yaml ./
 
 RUN pnpm install
 
+COPY prisma ./prisma
+
+RUN npx prisma generate
+
 COPY . .
 
 RUN pnpm build
 
 EXPOSE 4001
 
-CMD ["node", "dist/app.js"]
+CMD ["pnpm", "start"]

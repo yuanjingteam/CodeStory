@@ -1,19 +1,4 @@
-version: '3.8'
-
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: codepractice-postgres
-    environment:
-      POSTGRES_DB: codepractice
-      POSTGRES_USER: codepractice
-      POSTGRES_PASSWORD: codepractice_password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
-    restart: unless-stopped
-
   redis:
     image: redis:7-alpine
     container_name: codestory-redis
@@ -28,19 +13,18 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: codestory-backend
-    ports:
-      - 4001:4001
+    expose:
+      - '4001'
     environment:
-      NODE_ENV: production
+      NODE_ENV: ${NODE_ENV}
       PORT: 4001
-      DATABASE_URL: postgresql://codezoo:X4pWSrktPjHAhS8C@192.168.10.5:5432/codezoo
-      REDIS_URL: redis://redis:6379
-      EMAIL_USER: 2917972337@qq.com
-      EMAIL_PASS: ctllwvfnttpfddic
-      JWT_SECRET: codezoo_X4pWSrktPjHAhS8C
-      JWT_EXPIRES_IN: 7d
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
     depends_on:
-      - postgres
       - redis
     volumes:
       - ./backend/uploads:/app/uploads
@@ -52,23 +36,39 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        NEXT_PUBLIC_UPLOAD_PROXY_URL: ${NEXT_PUBLIC_UPLOAD_PROXY_URL}
     container_name: codestory-frontend
-    ports:
-      - 3001:3001
+    expose:
+      - '3001'
     environment:
-      NODE_ENV: production
+      NODE_ENV: ${NODE_ENV}
       PORT: 3001
-      NEXT_PUBLIC_API_BASE_URL: 'http://backend:4001'
-      NEXT_PUBLIC_UPLOAD_PROXY_URL: 'http://backend:4001'
-      NEXT_PUBLIC_AUTH_TOKEN_KEY: 'auth_token'
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+      NEXT_PUBLIC_UPLOAD_PROXY_URL: ${NEXT_PUBLIC_UPLOAD_PROXY_URL}
     depends_on:
       - backend
     restart: unless-stopped
     networks:
       - codestory-network
 
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: codestory-nginx
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./backend/uploads:/app/uploads:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    networks:
+      - codestory-network
+
 volumes:
-  postgres_data:
   redis_data:
 
 networks:
