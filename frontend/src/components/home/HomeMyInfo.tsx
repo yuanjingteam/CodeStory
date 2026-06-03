@@ -4,16 +4,14 @@ import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/useUserStore';
 import { updateUserProfile } from '@/api/profile';
 import type { LoginUserInfo } from '@/types/auth';
-import type {
-  UserProfileInfo,
-  UpdateUserInfopRequest,
-} from '@/types/profile';
+import type { UserProfileInfo, UpdateUserInfopRequest } from '@/types/profile';
 import { userSexMap, userRoleMap, userLevelMap } from '@/utils/constants';
 import { getProfile } from '@/api/profile';
 import { LuMail } from 'react-icons/lu';
 import { FaUserEdit, FaStar } from 'react-icons/fa';
 import Img from 'next/image';
 import UpdateUserInfoForm from '@/components/home/UpdateUserInfoForm';
+import ErrorDataCard from '@/components/common/ErrorDataCard';
 export default function HomeMyInfo() {
   const { user, isLoggedIn, isLoading, updateUserInfo } = useUserStore();
   const router = useRouter();
@@ -81,7 +79,12 @@ export default function HomeMyInfo() {
     try {
       const res = await updateUserProfile(data);
       if (res.code === 200) {
+        setUserInfo((prev) => ({
+          ...prev,
+          ...res.data,
+        }));
         updateUserInfo(res.data);
+        setIsOpen(false);
       }
     } catch (error) {
       console.error('更新用户信息失败:', error);
@@ -97,120 +100,120 @@ export default function HomeMyInfo() {
   return (
     <section className="w-full max-w-md mr-6">
       {/* 个人信息卡片 */}
-      <div className="relative bg-white border-2 border-black rounded-sm p-6">
-        {/* 角色标签 */}
-        <span
-          className={`rounded-full absolute -top-3 -right-3 px-3 py-1 text-xs font-black border-2 border-black ${userRoleMap[userInfo.role]?.color || 'bg-gray-400 text-white'} `}
-        >
-          {userRoleMap[userInfo.role]?.text || '普通用户'}
-        </span>
+      
+        <div className="relative bg-white border-2 border-gray-200 rounded-sm p-6">
+          {/* 角色标签 */}
+          <span
+            className={`rounded-full absolute -top-3 -right-3 px-3 py-1 text-xs font-black border-2 border-black ${userRoleMap[userInfo.role]?.color || 'bg-gray-400 text-white'} `}
+          >
+            {userRoleMap[userInfo.role]?.text || '普通用户'}
+          </span>
 
-        {/* 头像和基本信息 */}
-        <div className="flex items-start gap-4 mb-6">
-          {/* Avatar */}
-          <div className="relative flex-shrink-0">
-            <div className=" border-2 border-purple-300 rounded-full flex items-center justify-center">
-              {userInfo.avatar ? (
-                <Img
-                  src={userInfo.avatar}
-                  width={96}
-                  height={96}
-                  alt="User Avatar"
-                  style={{ objectFit: 'cover' }}
-                  className=" rounded-full"
-                />
-              ) : (
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                  <span className="text-gray-500 text-2xl font-black">?</span>
-                </div>
-              )}
+          {/* 头像和基本信息 */}
+          <div className="flex items-start gap-4 mb-6">
+            {/* Avatar */}
+            <div className="relative flex-shrink-0">
+              <div className=" border-2 border-purple-300 rounded-full flex items-center justify-center">
+                {userInfo.avatar ? (
+                  <Img
+                    src={userInfo.avatar}
+                    width={96}
+                    height={96}
+                    alt="User Avatar"
+                    style={{ objectFit: 'cover' }}
+                    className=" rounded-full"
+                  />
+                ) : (
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                    <span className="text-gray-500 text-2xl font-black">?</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* User Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-start mb-2">
+                <h2 className="text-xl font-black text-black  truncate">
+                  {userInfo.nickname || '用户'}
+                </h2>
+                <button
+                  onClick={() => setIsOpen(true)}
+                  className=" mx-4 cursor-pointer"
+                >
+                  <FaUserEdit className="w-6 h-6 text-gray-500 text-center" />
+                </button>
+              </div>
+              <div className="flex flex-col gap-1 text-sm text-gray-600">
+                <span>性别: {userSexMap[userInfo.sex] || '未设置'}</span>
+                <span>职业: {userInfo.occupation || '未设置'}</span>
+                <span className="flex items-center gap-1">
+                  <LuMail className="w-3 h-3" />
+                  {userInfo.email}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* User Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-start mb-2">
-              <h2 className="text-xl font-black text-black  truncate">
-                {userInfo.nickname || '用户'}
-              </h2>
-              <button
-                onClick={() => setIsOpen(true)}
-                className=" mx-4 cursor-pointer"
-              >
-                <FaUserEdit className="w-6 h-6 text-gray-500 text-center" />
-              </button>
+          {/* 等级和积分卡片 */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* 等级卡片 */}
+            <div
+              className={`${userLevelMap[Math.min(userInfo.level || 0, 9)]?.color || 'bg-gray-700 text-white'} border-2  px-4 py-3 rounded-md flex flex-col items-center justify-center`}
+            >
+              <div className="text-xs font-bold opacity-80 mb-1">等级评价</div>
+              <div className="text-lg font-black">
+                {userLevelMap[Math.min(Math.floor(userInfo.level || 0), 9)]
+                  ?.text || '无等级'}
+              </div>
+              <div className="flex items-center gap-0.5 mt-1">
+                {Array(Math.min(userInfo.level || 0, 9))
+                  .fill(0)
+                  .map((_, i) => (
+                    <FaStar
+                      key={i}
+                      className={`w-4 h-4 flex-shrink-0 ${userLevelMap[Math.min(userInfo.level || 0, 9)]?.starColor || 'text-yellow-400'}`}
+                    />
+                  ))}
+              </div>
             </div>
-            <div className="flex flex-col gap-1 text-sm text-gray-600">
-              <span>性别: {userSexMap[userInfo.sex] || '未设置'}</span>
-              <span>职业: {userInfo.occupation || '未设置'}</span>
-              <span className="flex items-center gap-1">
-                <LuMail className="w-3 h-3" />
-                {userInfo.email}
+
+            {/* 积分卡片 */}
+            <div className="bg-gradient-to-br from-purple-400 to-purple-600  px-4 py-3 rounded-md flex flex-col items-center justify-center">
+              <div className="text-xs font-bold text-white opacity-80 mb-1">
+                积分
+              </div>
+              <div className="text-xl font-black text-white">
+                {userInfo.score || 0}
+              </div>
+            </div>
+          </div>
+
+          {/* 经验条 */}
+          <div className="mt-4 pt-4 ">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-bold text-gray-600">经验值</span>
+              <span className="text-sm font-black text-gray-800">
+                Lv.{userInfo.level}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.min(100, ((userInfo.score % 1500) / 1500) * 100)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+              <span className="text-xs font-medium text-gray-500 min-w-[100px] text-right">
+                {userInfo.score % 1500}/1500
               </span>
             </div>
           </div>
         </div>
-
-        {/* 等级和积分卡片 */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* 等级卡片 */}
-          <div
-            className={`${userLevelMap[Math.min(userInfo.level || 0, 9)]?.color || 'bg-gray-700 text-white'} border-2  px-4 py-3 rounded-md flex flex-col items-center justify-center`}
-          >
-            <div className="text-xs font-bold opacity-80 mb-1">等级评价</div>
-            <div className="text-lg font-black">
-              {userLevelMap[Math.min(Math.floor(userInfo.level || 0), 9)]
-                ?.text || '无等级'}
-            </div>
-            <div className="flex items-center gap-0.5 mt-1">
-              {Array(Math.min(userInfo.level || 0, 9))
-                .fill(0)
-                .map((_, i) => (
-                  <FaStar
-                    key={i}
-                    className={`w-4 h-4 flex-shrink-0 ${userLevelMap[Math.min(userInfo.level || 0, 9)]?.starColor || 'text-yellow-400'}`}
-                  />
-                ))}
-            </div>
-          </div>
-
-          {/* 积分卡片 */}
-          <div className="bg-gradient-to-br from-purple-400 to-purple-600  px-4 py-3 rounded-md flex flex-col items-center justify-center">
-            <div className="text-xs font-bold text-white opacity-80 mb-1">
-              积分
-            </div>
-            <div className="text-xl font-black text-white">
-              {userInfo.score || 0}
-            </div>
-          </div>
-        </div>
-
-        {/* 经验条 */}
-        <div className="mt-4 pt-4 ">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-bold text-gray-600">经验值</span>
-            <span className="text-sm font-black text-gray-800">
-              Lv.{userInfo.level}
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
-                  style={{
-                    width: `${Math.min(100, ((userInfo.score % 1500) / 1500) * 100)}%`,
-                  }}
-                />
-              </div>
-            </div>
-            <span className="text-xs font-medium text-gray-500 min-w-[100px] text-right">
-              {userInfo.score % 1500}/1500
-            </span>
-          </div>
-        </div>
-      </div>
-
       <UpdateUserInfoForm
         isOpen={isOpen}
         onClose={onClose}

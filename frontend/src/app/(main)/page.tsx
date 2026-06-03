@@ -10,7 +10,7 @@ export default function Home() {
     <main className="container mx-auto px-4">
       {/* Hero Section */}
       <HomeHero />
-      <div className="flex justify-between items-center my-4">
+      <div className="flex justify-between items-center my-8">
         {/* my Info */}
         <HomeMyInfo />
         {/* my study */}

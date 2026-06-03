@@ -6,6 +6,7 @@ import { LuBookOpen, LuBadgeCheck, LuBadgeX, LuPlus } from 'react-icons/lu';
 import Img from 'next/image';
 import { useRouter } from 'next/navigation';
 import { formatPercentage } from '@/utils/format';
+import ErrorDataCard from '@/components/common/ErrorDataCard';
 
 export default function HomeMyCourses() {
   const [courses, setCourses] = useState<UserCourse[]>([]);
@@ -44,7 +45,7 @@ export default function HomeMyCourses() {
       <div
         key={`${course.id}-${course.last_learned_at}`}
         onClick={() => router.push(`/courses/${course.id}`)}
-        className="group flex items-center gap-4 p-4 rounded-xl bg-white border border-gray-200 hover:shadow-lg hover:border-blue-300 hover:border-2 transition-all  cursor-pointer"
+        className="group flex items-center gap-4 p-4 rounded-xl bg-white border-2 border-gray-200 hover:shadow-lg hover:border-blue-300 hover:border-2 transition-all  cursor-pointer"
       >
         <div className="relative w-20 h-20 flex-shrink-0">
           {course.cover_url ? (
@@ -60,15 +61,6 @@ export default function HomeMyCourses() {
               <LuBookOpen className="w-8 h-8 text-white" />
             </div>
           )}
-
-          {/* 状态标签 */}
-          <span className="absolute -top-1 -left-1 px-2 py-0.5 bg-yellow-400 text-xs font-black text-black rounded-full border border-black shadow-sm">
-            {course.status === 2
-              ? '已完成'
-              : course.status === 1
-                ? '学习中'
-                : '未开始'}
-          </span>
         </div>
 
         {/* 课程信息 */}
@@ -148,41 +140,41 @@ export default function HomeMyCourses() {
   ];
 
   return (
-    <section className="flex-1 h-[350px] flex flex-col">
+    <section className="flex-1 h-[350px] flex flex-col border-2 border-gray-200 rounded-sm p-6">
       {/* 标题行 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-1 h-6 bg-purple-500 rounded-full" />
           <h2 className="text-xl font-bold text-gray-900">我的学习</h2>
         </div>
-
         {/* 统计信息 */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5 text-sm">
             <LuBookOpen className="w-4 h-4 text-yellow-500" />
             <span className="font-medium text-gray-600">学习中</span>
             <span className="font-bold text-gray-900">
-              {inProgressCourses.length}
+              {inProgressCourses.length || 0}
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-sm">
             <LuBadgeCheck className="w-4 h-4 text-green-500" />
             <span className="font-medium text-gray-600">已学完</span>
             <span className="font-bold text-gray-900">
-              {completedCourses.length}
+              {completedCourses.length || 0}
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-sm">
             <LuBadgeX className="w-4 h-4 text-red-500" />
             <span className="font-medium text-gray-600">未学习</span>
             <span className="font-bold text-gray-900">
-              {noStartCourses.length}
+              {noStartCourses.length || 0}
             </span>
           </div>
         </div>
       </div>
 
       {/* 课程列表 */}
+      {courses.length > 0 ? (
       <div className="flex-1 overflow-hidden">
         <style>{`
           .scrollbar-hidden::-webkit-scrollbar {
@@ -190,7 +182,7 @@ export default function HomeMyCourses() {
           }
         `}</style>
         <div
-          className="h-full flex flex-col gap-3 overflow-y-auto scrollbar-hidden"
+          className="h-full flex flex-col gap-4 overflow-y-auto scrollbar-hidden"
           style={{
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -203,7 +195,10 @@ export default function HomeMyCourses() {
               <div key={`ellipsis-${index}`}>{renderEllipsisCard()}</div>
             ))}
         </div>
-      </div>
+        </div>
+        ) : (
+          <ErrorDataCard title="暂无数据" description="当前没有可展示的信息" />
+        )}
     </section>
   );
 }

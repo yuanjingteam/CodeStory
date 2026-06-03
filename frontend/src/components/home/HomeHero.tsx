@@ -69,7 +69,7 @@ export default function HomeHero() {
     <section
       className="  
         bg-white 
-        py-8
+        pt-8
         transition-all duration-150 
         relative z-10
       "
@@ -124,7 +124,7 @@ export default function HomeHero() {
           {statsList.map((stat, index) => (
             <div
               key={index}
-              className={`${stat.color} text-white p-4 border-2 border-black rounded-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)] text-center hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200`}
+              className={`${stat.color} text-white p-4 border-2 border-black rounded-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)] text-center hover:translate-x-[8px] hover:translate-y-[8px] hover:shadow-none transition-all duration-200`}
             >
               <div className="text-3xl font-black">{stat.value}</div>
               <div className="text-sm font-bold">{stat.label}</div>

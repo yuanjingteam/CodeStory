@@ -78,7 +78,6 @@ export function isTokenValid(token: string): boolean {
   if (isTokenExpired(token)) {
     return false;
   }
-
   return true;
 }
 
