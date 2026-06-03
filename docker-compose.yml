@@ -15,6 +15,9 @@ services:
     container_name: codestory-backend
     expose:
       - '4001'
+    dns:
+      - 223.5.5.5
+      - 8.8.8.8
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: 4001
@@ -47,6 +50,9 @@ services:
     container_name: codestory-frontend
     expose:
       - '3001'
+    dns:
+      - 223.5.5.5
+      - 8.8.8.8
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: 3001
@@ -62,7 +68,7 @@ services:
     image: nginx:1.27-alpine
     container_name: codestory-nginx
     ports:
-      - '80:80'
+      - '18080:80'
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./backend/uploads:/app/uploads:ro
