@@ -1,40 +1,12 @@
-// 上传中间件
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { getOSSClient, OSS_BUCKET } from '../config/oss';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-// 课程封面存储策略
-const courseStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    const dir = path.join(process.cwd(), 'uploads/courses');
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}${ext}`);
-  },
-});
-
-// 用户头像存储策略
-const avatarStorage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    const dir = path.join(process.cwd(), 'uploads/avatars');
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `avatar_${Date.now()}${ext}`);
-  },
-});
+const memoryStorage = multer.memoryStorage();
 
 const fileFilter = (
   _req: Express.Request,
@@ -48,14 +20,63 @@ const fileFilter = (
   }
 };
 
-export const uploadCourseCover = multer({
-  storage: courseStorage,
+const upload = multer({
+  storage: memoryStorage,
   limits: { fileSize: MAX_FILE_SIZE },
   fileFilter,
 });
 
-export const uploadAvatar = multer({
-  storage: avatarStorage,
-  limits: { fileSize: MAX_FILE_SIZE },
-  fileFilter,
-});
+export const uploadCourseCover = upload.single('coverImage');
+export const uploadAvatar = upload.single('avatar');
+
+export async function uploadToOSS(
+  file: Express.Multer.File,
+  folder: 'avatars' | 'courses'
+): Promise<string> {
+  const ext = path.extname(file.originalname);
+  const timestamp = Date.now();
+  const prefix = folder === 'avatars' ? 'avatar_' : '';
+  const filename = `${prefix}${timestamp}${ext}`;
+  const objectKey = `uploads/${folder}/${filename}`;
+
+  if (OSS_BUCKET) {
+    const client = getOSSClient();
+    const result = await client.put(objectKey, file.buffer, {
+      headers: {
+        'Content-Type': file.mimetype,
+      },
+    });
+    return result.url;
+  }
+
+  return saveToLocal(file, folder, filename);
+}
+
+function saveToLocal(
+  file: Express.Multer.File,
+  folder: string,
+  filename: string
+): string {
+  const dir = path.join(process.cwd(), 'uploads', folder);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  fs.writeFileSync(path.join(dir, filename), file.buffer);
+  return `/uploads/${folder}/${filename}`;
+}
+
+export async function deleteFromOSS(objectKey: string): Promise<void> {
+  if (OSS_BUCKET && objectKey.startsWith('uploads/')) {
+    try {
+      const client = getOSSClient();
+      await client.delete(objectKey);
+    } catch (error) {
+      console.error('删除 OSS 文件失败:', error);
+    }
+  }
+}
+
+export function extractOSSKey(url: string): string | null {
+  const match = url.match(/\/(uploads\/(?:avatars|courses)\/.+)/);
+  return match ? match[1] : null;
+}

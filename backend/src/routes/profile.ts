@@ -14,7 +14,7 @@ router.put(
 );
 router.post(
   '/upload-avatar',
-  [authMiddleware, uploadAvatar.single('avatar')],
+  [authMiddleware, uploadAvatar],
   profileController.uploadAvatar
 );
 

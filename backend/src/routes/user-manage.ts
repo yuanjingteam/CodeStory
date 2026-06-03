@@ -11,7 +11,7 @@ router.get('/detail/:id', userManageController.getUserDetailById);
 router.put('/update-detail/:id', userManageController.updateUserDetail);
 router.post(
   '/upload-avatar/:id',
-  uploadAvatar.single('avatar'),
+  uploadAvatar,
   profileController.uploadAvatar
 );
 router.delete('/:id', userManageController.deleteUser);

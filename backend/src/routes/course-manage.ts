@@ -7,13 +7,13 @@ const router = Router();
 
 router.post('/', 
   authMiddleware, 
-  uploadCourseCover.single('coverImage'), 
+  uploadCourseCover, 
   createCourse
 );
 
 router.put('/:id', 
   authMiddleware, 
-  uploadCourseCover.single('coverImage'), 
+  uploadCourseCover, 
   updateCourse
 );
 

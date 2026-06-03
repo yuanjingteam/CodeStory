@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../../config/prisma';
 import { success, fail, badRequest, notFound } from '../../utils/response';
 import { uuidToShortId, resolveShortId } from '../../utils/idTransform';
+import { uploadToOSS, deleteFromOSS, extractOSSKey } from '@/middleware/upload';
 
 export const createCourse = async (req: Request, res: Response) => {
   try {
@@ -12,7 +13,7 @@ export const createCourse = async (req: Request, res: Response) => {
 
     let coverUrl = '';
     if ((req as any).file) {
-      coverUrl = `/uploads/courses/${(req as any).file.filename}`;
+      coverUrl = await uploadToOSS((req as any).file, 'courses');
     }
 
     const course = await prisma.courses.create({
@@ -56,7 +57,13 @@ export const updateCourse = async (req: Request, res: Response) => {
     if (level !== undefined) updateData.level = parseInt(level);
 
     if ((req as any).file) {
-      updateData.cover_url = `/uploads/courses/${(req as any).file.filename}`;
+      if (existing.cover_url) {
+        const oldKey = extractOSSKey(existing.cover_url);
+        if (oldKey) {
+          await deleteFromOSS(oldKey);
+        }
+      }
+      updateData.cover_url = await uploadToOSS((req as any).file, 'courses');
     }
 
     const course = await prisma.courses.update({
@@ -92,6 +99,13 @@ export const deleteCourse = async (req: Request, res: Response) => {
       where: { id: resolvedId },
       data: { is_delete: 1 },
     });
+
+    if (existing.cover_url) {
+      const ossKey = extractOSSKey(existing.cover_url);
+      if (ossKey) {
+        await deleteFromOSS(ossKey);
+      }
+    }
 
     return success(res, null);
   } catch (error) {
