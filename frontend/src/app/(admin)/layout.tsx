@@ -8,7 +8,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="   bg-white">
+    <div className="bg-white">
       <AdminHeader />
       <div className="flex ">
         <AdminSider />
