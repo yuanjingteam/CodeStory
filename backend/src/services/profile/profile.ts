@@ -2,6 +2,7 @@ import prisma from '@/config/prisma';
 import type { UpdateUserInfopRequest, UserCourse } from '@/types/profile';
 import fs from 'fs';
 import path from 'path';
+import { uploadToOSS, deleteFromOSS, extractOSSKey } from '@/middleware/upload';
 
 class ProfileService {
   async getProfile(userId?: string) {
@@ -144,7 +145,7 @@ class ProfileService {
       throw new Error('文件不能为空');
     }
 
-    const avatarUrl = `/uploads/avatars/${file.filename}`;
+    const avatarUrl = await uploadToOSS(file, 'avatars');
 
     const updatedUser = await prisma.users.update({
       where: {
@@ -178,7 +179,12 @@ class ProfileService {
       },
     });
 
-    if (user?.avatar && user.avatar.startsWith('/uploads/avatars/')) {
+    if (!user?.avatar) return;
+
+    const ossKey = extractOSSKey(user.avatar);
+    if (ossKey) {
+      await deleteFromOSS(ossKey);
+    } else if (user.avatar.startsWith('/uploads/avatars/')) {
       const filePath = path.join(process.cwd(), user.avatar);
       try {
         if (fs.existsSync(filePath)) {
