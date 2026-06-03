@@ -1,0 +1,19 @@
+import { Router } from 'express';
+import { success, fail, notFound } from '../utils/response';
+import { authMiddleware } from '../middleware/auth';
+import { getLessonDetail } from '../services/courses/lesson.service';
+
+const router = Router();
+
+router.get('/:lessonId', authMiddleware, async (req, res) => {
+  try {
+    const result = await getLessonDetail(req.params.lessonId as string, req.user!.id);
+    if (!result) return notFound(res, '小节不存在');
+    return success(res, result);
+  } catch (error) {
+    console.error('获取小节详情失败:', error);
+    return fail(res);
+  }
+});
+
+export default router;

@@ -1,0 +1,176 @@
+import Progress from './Progress';
+import { useState, useEffect, memo } from 'react';
+import { useRouter } from 'next/navigation';
+import type { LessonDetailData, Chapter } from '@/types/lesson-detail';
+
+interface ContentProps {
+  data: LessonDetailData;
+  onLessonClick?: (lessonId: string, chapterId: string) => void;
+}
+
+const EXPANDED_CHAPTERS_STORAGE_KEY = 'expandedChapters';
+
+function areEqual(prevProps: ContentProps, nextProps: ContentProps) {
+  return (
+    prevProps.data.course.id === nextProps.data.course.id &&
+    prevProps.data.course.progress === nextProps.data.course.progress &&
+    prevProps.data.currentLesson.id === nextProps.data.currentLesson.id &&
+    prevProps.data.catalog.length === nextProps.data.catalog.length &&
+    prevProps.data.catalog.every((chapter, index) => {
+      const nextChapter = nextProps.data.catalog[index];
+      return (
+        chapter.id === nextChapter.id &&
+        chapter.title === nextChapter.title &&
+        chapter.lessons.length === nextChapter.lessons.length &&
+        chapter.lessons.every((lesson, lessonIndex) => {
+          const nextLesson = nextChapter.lessons[lessonIndex];
+          return (
+            lesson.id === nextLesson.id &&
+            lesson.title === nextLesson.title &&
+            lesson.status === nextLesson.status
+          );
+        })
+      );
+    })
+  );
+}
+
+export default memo(function Content({ data, onLessonClick }: ContentProps) {
+  const router = useRouter();
+  
+  const getStoredExpandedChapters = () => {
+    if (typeof window === 'undefined') return new Set<string>();
+    const stored = localStorage.getItem(EXPANDED_CHAPTERS_STORAGE_KEY);
+    if (!stored) return new Set<string>(['chapter_id_1']);
+    const chapters = JSON.parse(stored) as string[];
+    return new Set<string>(chapters);
+  };
+
+  const [expandedChapters, setExpandedChapters] = useState<Set<string>>(getStoredExpandedChapters);
+
+  useEffect(() => {
+    const stored = getStoredExpandedChapters();
+    if (stored.size === 0) {
+      const currentChapter = data.catalog.find((ch) =>
+        ch.lessons.some((l) => l.status === 1)
+      );
+      if (currentChapter) {
+        const initial = new Set([currentChapter.id]);
+        setExpandedChapters(initial);
+        localStorage.setItem(EXPANDED_CHAPTERS_STORAGE_KEY, JSON.stringify([...initial]));
+      }
+    } else {
+      setExpandedChapters(stored);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(EXPANDED_CHAPTERS_STORAGE_KEY, JSON.stringify([...expandedChapters]));
+  }, [expandedChapters]);
+
+  const toggleChapter = (chapterId: string) => {
+    setExpandedChapters((prev) => {
+      const next = new Set(prev);
+      if (next.has(chapterId)) {
+        next.delete(chapterId);
+      } else {
+        next.add(chapterId);
+      }
+      return next;
+    });
+  };
+
+  const handleLessonClick = (lessonId: string, chapterId: string) => {
+    if (onLessonClick) {
+      onLessonClick(lessonId, chapterId);
+    } else {
+      const courseId = data.course.id;
+      router.push(`/courses/${courseId}/chapters/${chapterId}/lessons/${lessonId}`);
+    }
+  };
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* 进度条 */}
+      <Progress data={data.course} />
+
+      {/* 章节目录 */}
+      <div className="flex-1 overflow-auto relative z-10 bg-white">
+        {/* 章节目录标题 */}
+        <div className="flex items-center justify-between px-4 py-3 bg-white border-b-2 border-black">
+          <span className="font-bold">章节目录</span>
+          <button className="text-xl transition-transform duration-200">
+            ▲
+          </button>
+        </div>
+
+        {/* 章节列表 */}
+        <div className="divide-y-2 divide-black">
+          {data.catalog.map((chapter: Chapter) => (
+            <div key={chapter.id}>
+              {/* 章节标题 */}
+              <div
+                className="flex items-center justify-between px-4 py-3 bg-gray-200 cursor-pointer hover:bg-gray-300 transition-colors"
+                onClick={() => toggleChapter(chapter.id)}
+              >
+                <span className="font-bold">{chapter.title}</span>
+                <span className="text-xl">
+                  {expandedChapters.has(chapter.id) ? '−' : '+'}
+                </span>
+              </div>
+
+              {/* 小节列表 */}
+              {expandedChapters.has(chapter.id) && (
+                <div className="bg-white">
+                  {chapter.lessons.map((lesson) => {
+                    const isActive = lesson.id === data.currentLesson.id;
+                    const isCompleted = lesson.status === 2;
+                    const isInProgress = lesson.status === 1;
+                    const isNotStarted = lesson.status === 0;
+
+                    return (
+                      <div
+                        key={lesson.id}
+                        onClick={() => handleLessonClick(lesson.id, chapter.id)}
+                        className={`flex items-center justify-between px-4 py-3 border-l-4 cursor-pointer transition-colors ${
+                          isActive
+                            ? 'bg-yellow-400 border-yellow-500'
+                            : isCompleted
+                            ? 'bg-gray-50 border-green-500'
+                            : isInProgress
+                            ? 'bg-white border-black hover:bg-gray-50'
+                            : 'bg-white border-transparent hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          {isCompleted ? (
+                            <div className="w-6 h-6 rounded-full border-2 border-black bg-black flex items-center justify-center flex-shrink-0">
+                              <span className="text-white text-xs">✓</span>
+                            </div>
+                          ) : isInProgress ? (
+                            <div className="w-6 h-6 rounded-full border-2 border-black bg-black flex items-center justify-center flex-shrink-0">
+                              <span className="text-white text-xs">▶</span>
+                            </div>
+                          ) : (
+                            <div className="w-6 h-6 rounded-full border-2 border-black bg-transparent flex items-center justify-center flex-shrink-0">
+                            </div>
+                          )}
+                          <span 
+                            className={`flex-1 truncate ${isActive ? 'font-bold' : ''}`} 
+                            title={lesson.title}
+                          >
+                            {lesson.title}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+})
