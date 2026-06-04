@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { useMemo } from 'react';
 import AdminHeader from '@/components/layout/AdminHeader';
