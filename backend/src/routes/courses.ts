@@ -8,7 +8,7 @@ import {
 
 const router = Router();
 
-router.get('/list', async (req, res) => {
+router.get('/list',  authMiddleware, async (req, res) => {
   try {
     const result = await getCourseList(
       {

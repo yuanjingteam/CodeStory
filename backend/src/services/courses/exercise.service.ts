@@ -268,13 +268,16 @@ async function updateLessonAndCourseProgress(lessonId: string, userId: string): 
     },
   });
 
+  const courseStatus = completedLessons === 0 ? 0 : completedLessons >= totalLessons ? 2 : 1;
+
   if (existingCourseProgress) {
+    const newStatus = Math.max(existingCourseProgress.status, courseStatus);
     await prisma.courses_progress.update({
       where: { id: existingCourseProgress.id },
       data: {
         completed_lessons: completedLessons,
         total_lessons: totalLessons,
-        status: 1,
+        status: newStatus,
         last_learned_at: now,
       },
     });
@@ -285,7 +288,7 @@ async function updateLessonAndCourseProgress(lessonId: string, userId: string): 
         course_id: courseId,
         completed_lessons: completedLessons,
         total_lessons: totalLessons,
-        status: 1,
+        status: courseStatus,
         last_learned_at: now,
       },
     });
