@@ -38,16 +38,12 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
     }
     return null
   })
-  const [hasPrev, setHasPrev] = useState(false)
-  const [hasNext, setHasNext] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [transitionDirection, setTransitionDirection] = useState<'left' | 'right' | null>(null)
   const exerciseButtonOrderRef = useRef<Map<string, number>>(new Map())
   const buttonIdToExerciseIdRef = useRef<Map<string, string>>(new Map())
   const exercisesRef = useRef(exercises)
-  exercisesRef.current = exercises
   const onLessonCompletedRef = useRef(onLessonCompleted)
-  onLessonCompletedRef.current = onLessonCompleted
   const contentScrollRef = useRef<HTMLDivElement>(null)
   const savedScrollPositionRef = useRef(0)
   const initExercises = data?.exercises || []
@@ -55,28 +51,26 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
   const serverCompletedLessonsRef = useRef<Set<string>>(initAllDone ? new Set([data!.currentLesson.id]) : new Set())
   const notifiedLessonsRef = useRef<Set<string>>(initAllDone ? new Set([data!.currentLesson.id]) : new Set())
 
+  useEffect(() => {
+    exercisesRef.current = exercises
+  }, [exercises])
+
+  useEffect(() => {
+    onLessonCompletedRef.current = onLessonCompleted
+  }, [onLessonCompleted])
+
   const currentChapter = data?.catalog.find(ch =>
     ch.lessons.some(l => l.id === currentLessonId)
   )
   const currentChapterId = currentChapter?.id
   const courseId = data?.course?.id
 
-  const getAllLessons = () => {
-    return data?.catalog.flatMap(ch => ch.lessons) || []
-  }
-
-  const getCurrentLessonIndex = () => {
-    if (!currentLessonId) return -1
-    const allLessons = getAllLessons()
-    return allLessons.findIndex(l => l.id === currentLessonId)
-  }
-
-  const updateNavigationState = useCallback(() => {
-    const currentIndex = getCurrentLessonIndex()
-    const allLessons = getAllLessons()
-    setHasPrev(currentIndex > 0)
-    setHasNext(currentIndex < allLessons.length - 1)
-  }, [currentLessonId, data?.catalog])
+  const allLessons = data?.catalog.flatMap(ch => ch.lessons) || []
+  const currentLessonIndex = currentLessonId
+    ? allLessons.findIndex(l => l.id === currentLessonId)
+    : -1
+  const hasPrev = currentLessonIndex > 0
+  const hasNext = currentLessonIndex >= 0 && currentLessonIndex < allLessons.length - 1
 
   const completedExerciseCount = exercises.filter(ex => completedExercises.has(ex.id)).length
   const allExercisesCompleted = exercises.length > 0 && completedExerciseCount === exercises.length
@@ -141,8 +135,7 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
     if (!currentLessonId || !courseId || !currentChapterId) return
 
     try {
-      const allLessons = getAllLessons()
-      const currentIndex = allLessons.findIndex(l => l.id === currentLessonId)
+      const currentIndex = currentLessonIndex
       const targetIndex = direction === 'prev' ? currentIndex - 1 : currentIndex + 1
 
       if (targetIndex < 0 || targetIndex >= allLessons.length) return
@@ -181,9 +174,6 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
           serverCompletedLessonsRef.current.delete(targetLessonId)
         }
 
-        setHasPrev(targetIndex > 0)
-        setHasNext(targetIndex < allLessons.length - 1)
-
         const newUrl = `/courses/${courseId}/chapters/${targetChapterId}/lessons/${targetLessonId}`
         window.history.pushState({ path: newUrl }, '', newUrl)
         onLessonSwitched?.(targetLessonId, targetChapterId)
@@ -197,33 +187,36 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
     }
   }
 
-  useEffect(() => {
-    if (data?.currentLesson?.id && data.currentLesson.id !== currentLessonId) {
-      setCurrentLessonId(data.currentLesson.id)
-      setCurrentLessonTitle(data.currentLesson.title)
-      setCurrentContent(data.currentLesson.content || '')
-      setExercises(data.exercises || [])
-      setModalOpen(false)
-      
-      const completedIds = new Set(
-        (data.exercises || [])
-          .filter(ex => ex.isCompleted)
-          .map(ex => ex.id)
-      )
-      setCompletedExercises(completedIds)
+useEffect(() => {
+  if (data?.currentLesson?.id && data.currentLesson.id !== currentLessonId) {
+    const updateLessonInfo = async () => {
+      try {
+        setCurrentLessonId(data.currentLesson.id)
+        setCurrentLessonTitle(data.currentLesson.title)
+        setCurrentContent(data.currentLesson.content || '')
+        setExercises(data.exercises || [])
+        setModalOpen(false)
+        
+        const completedIds = new Set(
+          (data.exercises || [])
+            .filter(ex => ex.isCompleted)
+            .map(ex => ex.id)
+        )
+        setCompletedExercises(completedIds)
 
-      const serverAllDone = (data.exercises || []).length > 0 && completedIds.size === (data.exercises || []).length
-      if (serverAllDone) {
-        serverCompletedLessonsRef.current.add(data.currentLesson.id)
-      } else {
-        serverCompletedLessonsRef.current.delete(data.currentLesson.id)
+        const serverAllDone = (data.exercises || []).length > 0 && completedIds.size === (data.exercises || []).length
+        if (serverAllDone) {
+          serverCompletedLessonsRef.current.add(data.currentLesson.id)
+        } else {
+          serverCompletedLessonsRef.current.delete(data.currentLesson.id)
+        }
+      } catch (err) {
+        console.error('更新课时信息异常：', err)
       }
     }
-  }, [data?.currentLesson?.id])
-
-  useEffect(() => {
-    updateNavigationState()
-  }, [currentLessonId, updateNavigationState])
+    updateLessonInfo()
+  }
+}, [data?.currentLesson?.id, currentLessonId])
 
   const currentChapterTitle = currentChapter?.title || ''
 

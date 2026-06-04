@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { FiX, FiUpload } from 'react-icons/fi';
 import type { CourseFormData } from '@/types/course-manage';
 
@@ -16,39 +16,20 @@ const levelOptions = [
   { label: '高级', value: 2 },
 ];
 
+const getInitialFormData = (initialData?: CourseModelProps['initialData']): CourseFormData => ({
+  title: initialData?.title || '',
+  description: initialData?.description || '',
+  level: initialData?.level ?? 0,
+  coverImage: undefined,
+});
+
 export default function CourseModel({ open, onClose, onSubmit, initialData }: CourseModelProps) {
   const isEdit = !!initialData?.id;
 
-  const [formData, setFormData] = useState<CourseFormData>({
-    title: '',
-    description: '',
-    level: 0,
-    coverImage: undefined,
-  });
-  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [formData, setFormData] = useState<CourseFormData>(() => getInitialFormData(initialData));
+  const [previewUrl, setPreviewUrl] = useState<string>(() => initialData?.cover_url || '');
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (open && initialData) {
-      setFormData({
-        title: initialData.title || '',
-        description: initialData.description || '',
-        level: initialData.level ?? 0,
-        coverImage: undefined,
-      });
-      setPreviewUrl(initialData.cover_url || '');
-    }
-    if (!open) {
-      setFormData({
-        title: '',
-        description: '',
-        level: 0,
-        coverImage: undefined,
-      });
-      setPreviewUrl('');
-    }
-  }, [open, initialData]);
 
   if (!open) return null;
 
