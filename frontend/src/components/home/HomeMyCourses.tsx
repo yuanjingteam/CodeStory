@@ -7,8 +7,10 @@ import Img from 'next/image';
 import { useRouter } from 'next/navigation';
 import { formatPercentage } from '@/utils/format';
 import ErrorDataCard from '@/components/common/ErrorDataCard';
+import { useUserStore } from '@/store/useUserStore';
 
 export default function HomeMyCourses() {
+  const { isLoggedIn } = useUserStore();
   const [courses, setCourses] = useState<UserCourse[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -165,31 +167,31 @@ export default function HomeMyCourses() {
       </div>
 
       {/* 课程列表 */}
-      {courses.length > 0 ? (
-      <div className="flex-1 overflow-hidden">
-        <style>{`
+      {courses.length > 0 && isLoggedIn ? (
+        <div className="flex-1 overflow-hidden">
+          <style>{`
           .scrollbar-hidden::-webkit-scrollbar {
             display: none;
           }
         `}</style>
-        <div
-          className="h-full flex flex-col gap-4 overflow-y-auto scrollbar-hidden"
-          style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-          }}
-        >
-          {displayCourses.map(renderCourseCard)}
-          {Array(getEllipsisCount(displayCourses.length))
-            .fill(0)
-            .map((_, index) => (
-              <div key={`ellipsis-${index}`}>{renderEllipsisCard()}</div>
-            ))}
+          <div
+            className="h-full flex flex-col gap-4 overflow-y-auto scrollbar-hidden"
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+          >
+            {displayCourses.map(renderCourseCard)}
+            {Array(getEllipsisCount(displayCourses.length))
+              .fill(0)
+              .map((_, index) => (
+                <div key={`ellipsis-${index}`}>{renderEllipsisCard()}</div>
+              ))}
+          </div>
         </div>
-        </div>
-        ) : (
-          <ErrorDataCard title="暂无数据" description="当前没有可展示的信息" />
-        )}
+      ) : (
+        <ErrorDataCard title="暂无数据" description="当前没有可展示的信息" />
+      )}
     </section>
   );
 }
