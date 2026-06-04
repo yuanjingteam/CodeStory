@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
-import type { ExerciseDetailData } from '@/types/exercise';
+import type { CodeMetadata, ExerciseDetailData } from '@/types/exercise';
 import HintModal from './HintModal';
 import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
@@ -35,7 +35,7 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
   }), [userCode]);
 
   useEffect(() => {
-    const code = (exercise.metadata as any)?.codeTemplate || '';
+    const code = (exercise.metadata as CodeMetadata).codeTemplate || '';
     setUserCode(code);
   }, [exercise]);
 
@@ -142,5 +142,7 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
     </div>
   );
 });
+
+CodeQuestion.displayName = 'CodeQuestion';
 
 export default CodeQuestion;

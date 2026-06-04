@@ -29,7 +29,9 @@ export default function ChoiceOptionsConfig({ metadata, onChange }: ChoiceOption
   return (
     <div className="border-2 border-dashed border-blue-300 p-3 rounded-lg bg-blue-50">
       <label className="block text-sm font-bold mb-2">📋 选项配置</label>
-      <p className="text-xs text-gray-500 mb-2">点击 ○ 标记正确答案（答案会自动填入上方"答案"框）</p>
+      <p className="text-xs text-gray-500 mb-2">
+        {'点击 ○ 标记正确答案（答案会自动填入上方答案框）'}
+      </p>
       <div className="space-y-2">
         {options.map((option: string, optIdx: number) => {
           const isCorrect = correctAnswer === option && option !== '';

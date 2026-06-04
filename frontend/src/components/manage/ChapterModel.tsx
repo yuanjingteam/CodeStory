@@ -17,6 +17,12 @@ interface ChapterModelProps {
   };
 }
 
+const getInitialFormData = (initialData?: ChapterModelProps['initialData']) => ({
+  courseId: initialData?.courseId || '',
+  chapterName: initialData?.chapterName || '',
+  sortOrder: initialData?.sortOrder ?? 0,
+});
+
 export default function ChapterModel({ open, onClose, onSubmit, initialData }: ChapterModelProps) {
   const isEdit = !!initialData?.id;
 
@@ -24,37 +30,10 @@ export default function ChapterModel({ open, onClose, onSubmit, initialData }: C
     courseId: string;
     chapterName: string;
     sortOrder: number;
-  }>({
-    courseId: '',
-    chapterName: '',
-    sortOrder: 0,
-  });
+  }>(() => getInitialFormData(initialData));
   const [submitting, setSubmitting] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
-
-  useEffect(() => {
-    if (open && initialData && isEdit) {
-      setFormData({
-        courseId: initialData.courseId || '',
-        chapterName: initialData.chapterName || '',
-        sortOrder: initialData.sortOrder ?? 0,
-      });
-    }
-    if (!open) {
-      setFormData({
-        courseId: '',
-        chapterName: '',
-        sortOrder: 0,
-      });
-    }
-  }, [open, initialData, isEdit]);
-
-  useEffect(() => {
-    if (open) {
-      fetchCourses();
-    }
-  }, [open]);
 
   const fetchCourses = async () => {
     setLoadingCourses(true);
@@ -70,6 +49,19 @@ export default function ChapterModel({ open, onClose, onSubmit, initialData }: C
       setLoadingCourses(false);
     }
   };
+
+ useEffect(() => {
+  if (open) {
+    const load = async () => {
+      try {
+        await fetchCourses();
+      } catch (err) {
+        console.error('加载课程失败：', err);
+      }
+    };
+    load();
+  }
+}, [open]);
 
   if (!open) return null;
 

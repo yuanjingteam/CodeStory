@@ -11,7 +11,11 @@ import {
 import type { FilterField, Column } from '@/components/common';
 import chapterManageApi from '@/app/api/manage/chapter-manage';
 import courseApi from '@/app/api/courses/courses';
-import type { ChapterItem } from '@/types/chapter-manage';
+import type {
+  ChapterItem,
+  CreateChapterRequest,
+  UpdateChapterRequest,
+} from '@/types/chapter-manage';
 import type { Course } from '@/types/course';
 import ChapterModel from './ChapterModel';
 
@@ -37,10 +41,6 @@ export default function ChapterManage() {
     ChapterItem | undefined
   >();
   const hasMounted = useRef(false);
-
-  useEffect(() => {
-    fetchCourses();
-  }, []);
 
   const fetchCourses = async () => {
     try {
@@ -68,6 +68,17 @@ export default function ChapterManage() {
     }
   };
 
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        await fetchCourses();
+      } catch (err) {
+        console.error('加载课程失败：', err);
+      }
+    };
+    loadData();
+  }, []);
+
   const fetchChapters = async () => {
     setLoading(true);
     try {
@@ -93,13 +104,27 @@ export default function ChapterManage() {
   useEffect(() => {
     if (!hasMounted.current) {
       hasMounted.current = true;
-      fetchChapters();
+        const init = async () => {
+          try {
+            await fetchChapters();
+          } catch (err) {
+            console.error("加载章节失败：", err);
+          }
+        };
+        init();
     }
   }, []);
-
   useEffect(() => {
-    if (hasMounted.current) {
-      fetchChapters();
+  if (hasMounted.current) {
+      const load = async () => {
+        try {
+          await fetchChapters();
+        } catch (err) {
+          console.error('获取章节失败：', err);
+        }
+      };
+      
+      load();
     }
   }, [page, size]);
 
@@ -113,12 +138,14 @@ export default function ChapterManage() {
     setModalOpen(true);
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (
+    data: (CreateChapterRequest | UpdateChapterRequest) & { id?: string }
+  ) => {
     if (data.id) {
-      await chapterManageApi.update(data.id, data);
+      await chapterManageApi.update(data.id, data as UpdateChapterRequest);
       showToast.success('章节更新成功');
     } else {
-      await chapterManageApi.create(data);
+      await chapterManageApi.create(data as CreateChapterRequest);
       showToast.success('章节创建成功');
     }
     fetchChapters();
@@ -269,12 +296,15 @@ export default function ChapterManage() {
         onCancel={() => setDeleteTarget(null)}
       />
 
-      <ChapterModel
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleSubmit}
-        initialData={editingChapter}
-      />
+      {modalOpen && (
+        <ChapterModel
+          key={editingChapter?.id ?? 'create'}
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleSubmit}
+          initialData={editingChapter}
+        />
+      )}
     </div>
   );
 }

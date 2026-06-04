@@ -64,6 +64,7 @@ export default function TiptapEditor({
   const [showExerciseMenu, setShowExerciseMenu] = useState(false)
   const [activeStates, setActiveStates] = useState<ActiveStates>(defaultActiveStates)
   const onChangeRef = useRef(onChange)
+  // eslint-disable-next-line react-hooks/refs
   onChangeRef.current = onChange
 
   const editor = useEditor({

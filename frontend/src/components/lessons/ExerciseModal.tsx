@@ -23,7 +23,19 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
   const [hasSubmitted, setHasSubmitted] = useState(false)
 
   useEffect(() => {
-    if (isOpen && exerciseId) {
+    let cancelled = false
+
+    void Promise.resolve().then(() => {
+      if (cancelled) return
+
+      if (!isOpen || !exerciseId) {
+        setExerciseData(null)
+        setSubmitResult(null)
+        setShowResult(false)
+        setHasSubmitted(false)
+        return
+      }
+
       setLoading(true)
       setSubmitResult(null)
       setShowResult(false)
@@ -31,23 +43,25 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
       setHasSubmitted(false)
       exerciseApi.getDetail(exerciseId)
         .then(response => {
+          if (cancelled) return
           setExerciseData(response)
           if (response.userAnswer?.hint_level_used !== undefined) {
             setCurrentHintLevelUsed(response.userAnswer.hint_level_used)
           }
         })
         .catch(error => {
+          if (cancelled) return
           console.error('获取题目详情失败:', error)
           setExerciseData(null)
         })
         .finally(() => {
+          if (cancelled) return
           setLoading(false)
         })
-    } else {
-      setExerciseData(null)
-      setSubmitResult(null)
-      setShowResult(false)
-      setHasSubmitted(false)
+    })
+
+    return () => {
+      cancelled = true
     }
   }, [isOpen, exerciseId])
 

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import courseApi from '@/app/api/courses/courses';
-import type { Course } from '@/types/course';
+import type { Course, CourseListRequest } from '@/types/course';
 import { BsPersonFill, BsSearch } from 'react-icons/bs';
 import { useUserStore } from '@/store/useUserStore';
 import { courseLevelMap, courseStatusMap } from '@/utils/constants';
@@ -75,7 +75,7 @@ export default function CoursesSection() {
   const fetchCourses = async () => {
     setLoading(true);
     try {
-      const params: Record<string, any> = {
+      const params: CourseListRequest = {
         keyword: searchTerm.trim() || undefined,
         level: levelMap[selectedLevel as keyof typeof levelMap],
         learnStatus:
@@ -105,7 +105,10 @@ export default function CoursesSection() {
   };
 
   useEffect(() => {
-    fetchCourses();
+    const run = async () => {
+     await fetchCourses()
+    }
+    run()
   }, [selectedLevel, selectedStatus, selectedStudentRange]);
 
   return (
