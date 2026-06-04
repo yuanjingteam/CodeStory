@@ -5,7 +5,6 @@ import { getHomeCourses } from '@/api/home';
 import Img from 'next/image';
 import { useRouter } from 'next/navigation';
 import { courseLevelMap } from '@/utils/constants';
-import { formatPercentage } from '@/utils/format';
 import { LuArrowRight } from 'react-icons/lu';
 import { FiUsers } from 'react-icons/fi';
 import ErrorDataCard from '@/components/common/ErrorDataCard';
@@ -26,7 +25,7 @@ export default function HomeCourses() {
   }, []);
 
   return (
-    <section className="mx-8 my-10 bg-white border-2 border-gray-300 rounded-sm  mx-auto">
+    <section className="w-full mx-8 my-10 bg-white border-2 border-gray-300 rounded-sm  mx-auto">
       <div className="flex p-4  items-center justify-between mb-4 border-b-2 border-gray-300">
         <h2 className="text-xl font-black text-black">热门课程</h2>
         <button
@@ -38,7 +37,7 @@ export default function HomeCourses() {
       </div>
       {/* 课程列表 */}
       {homeCourses.length > 0 ? (
-        <div className="px-4 mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="px-6 py-4 mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {homeCourses.map((course) => (
             <div
               key={course.id}
@@ -78,24 +77,9 @@ export default function HomeCourses() {
                   </div>
                   <div className="flex items-center gap-1 text-xs text-gray-400 font-bold">
                     <FiUsers className="w-4 h-4" />{' '}
-                    {`${course.student_count}人学习`}
+                    {`${course.study_count}人学习`}
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-gray-500 font-bold">
-                  进度{' '}
-                  {`${formatPercentage(course.completed_lessons, course.total_lessons)}`}
-                </span>
-              </div>
-
-              <div className="w-full bg-gray-200 h-2 border-2 border-black rounded overflow-hidden">
-                <div
-                  className={`h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300`}
-                  style={{
-                    width: `${formatPercentage(course.completed_lessons, course.total_lessons)}`,
-                  }}
-                />
               </div>
             </div>
           ))}

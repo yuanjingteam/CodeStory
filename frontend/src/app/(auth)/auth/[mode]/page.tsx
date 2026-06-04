@@ -1,5 +1,5 @@
 'use client';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
@@ -8,6 +8,7 @@ import AuthBackground from '@/components/auth/AuthBackground';
 
 export default function AuthPage() {
   const params = useParams();
+  const router = useRouter();
   const mode = params.mode as
     | 'login'
     | 'register'
@@ -112,11 +113,12 @@ export default function AuthPage() {
             <h1 className="text-xl font-black text-black">{pageInfo.title}</h1>
             <p className="text-sm text-gray-600">{pageInfo.subtitle}</p>
           </div>
-          <div
-            className={`px-4 py-1 border-2 rounded-sm  border-black hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none duration-200 font-bold text-sm text-white ${pageInfo.color} shadow-[2px_2px_0_0_rgba(0,0,0,1)]`}
+          <button
+            onClick={() => router.push('/')}
+            className={`px-4 py-1 border-2 rounded-sm bg-blue-500 border-black hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none duration-200 font-bold text-sm text-white  shadow-[2px_2px_0_0_rgba(0,0,0,1)]`}
           >
-            {pageInfo.label}
-          </div>
+            回首页
+          </button>
         </div>
         {renderForm()}
         {renderFooter()}

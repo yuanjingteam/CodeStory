@@ -122,15 +122,6 @@ export default function HomeMyCourses() {
       </section>
     );
   }
-
-  if (courses.length === 0) {
-    return (
-      <section className="flex-1 h-[280px] flex items-center justify-center">
-        <div className="text-lg font-black text-gray-500">暂无课程</div>
-      </section>
-    );
-  }
-
   const displayCourses = [
     ...inProgressCourses.slice(0, maxCourses),
     ...completedCourses.slice(

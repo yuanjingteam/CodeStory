@@ -14,7 +14,7 @@ export default function ErrorDataCard({
   icon,
 }: ErrorDataCardProps) {
   return (
-    <div className=" rounded-md border-2 border-dashed border-gray-300 bg-white  p-4 m-4 ">
+    <div className="  flex-1 rounded-md border-2 border-dashed border-gray-300 bg-white  p-4 m-4 ">
       <div className="flex flex-col items-center justify-center text-center">
         {icon}
         <h3 className=" mt-4 text-lg font-black text-gray-700">{title}</h3>

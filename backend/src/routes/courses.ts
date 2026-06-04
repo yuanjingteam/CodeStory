@@ -26,9 +26,9 @@ router.get('/list', authMiddleware, async (req, res) => {
   }
 });
 
-router.get('/:courseId', async (req, res) => {
+router.get('/:courseId', authMiddleware, async (req, res) => {
   try {
-    const result = await getCourseDetail(req.params.courseId);
+    const result = await getCourseDetail(req.params.courseId as string);
     if (!result) return notFound(res, '课程不存在');
     return success(res, result);
   } catch (error) {

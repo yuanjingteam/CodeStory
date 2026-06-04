@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/useUserStore';
 import { updateUserProfile } from '@/api/profile';
 import type { LoginUserInfo } from '@/types/auth';
@@ -14,7 +13,6 @@ import UpdateUserInfoForm from '@/components/home/UpdateUserInfoForm';
 import ErrorDataCard from '@/components/common/ErrorDataCard';
 export default function HomeMyInfo() {
   const { user, isLoggedIn, isLoading, updateUserInfo } = useUserStore();
-  const router = useRouter();
   const [userInfo, setUserInfo] = useState<UserProfileInfo>({
     email: user?.email || '',
     nickname: user?.nickname || '',
@@ -29,12 +27,6 @@ export default function HomeMyInfo() {
 
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  useEffect(() => {
-    if (!isLoading && !isLoggedIn) {
-      router.push('/login');
-    }
-  }, [isLoading, isLoggedIn, router]);
-
   useEffect(() => {
     if (!isLoggedIn || isLoading) return;
     const fetchUserProfile = async () => {
@@ -98,13 +90,13 @@ export default function HomeMyInfo() {
   };
 
   return (
-    <section className="w-full max-w-md mr-6">
+    <section className="w-full flex-1 max-w-md bg-white border-2 border-gray-200 rounded-sm p-6 relative">
       {/* 个人信息卡片 */}
-      
-        <div className="relative bg-white border-2 border-gray-200 rounded-sm p-6">
+      {isLoggedIn ? (
+        <div>
           {/* 角色标签 */}
           <span
-            className={`rounded-full absolute -top-3 -right-3 px-3 py-1 text-xs font-black border-2 border-black ${userRoleMap[userInfo.role]?.color || 'bg-gray-400 text-white'} `}
+            className={`absolute top-[-7px] right-[-7px] rounded-full px-3 py-1 text-xs font-black border-2 border-black ${userRoleMap[userInfo.role]?.color || 'bg-gray-400 text-white'} `}
           >
             {userRoleMap[userInfo.role]?.text || '普通用户'}
           </span>
@@ -154,7 +146,6 @@ export default function HomeMyInfo() {
               </div>
             </div>
           </div>
-
           {/* 等级和积分卡片 */}
           <div className="grid grid-cols-2 gap-3">
             {/* 等级卡片 */}
@@ -188,7 +179,6 @@ export default function HomeMyInfo() {
               </div>
             </div>
           </div>
-
           {/* 经验条 */}
           <div className="mt-4 pt-4 ">
             <div className="flex items-center justify-between mb-2">
@@ -214,6 +204,7 @@ export default function HomeMyInfo() {
             </div>
           </div>
         </div>
+      ) : (<ErrorDataCard title="未登录" description="请先登录以查看个人信息" />)}
       <UpdateUserInfoForm
         isOpen={isOpen}
         onClose={onClose}
