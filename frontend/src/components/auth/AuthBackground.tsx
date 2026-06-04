@@ -22,10 +22,10 @@ const panels = [
   },
 
   {
-    fill: 'url(#purpleGlow)',
+    fill: '#9d2cff',
     points: [
       [0, 36],
-      [33, 43],
+      [53, 47],
       [35, 65],
       [0, 75],
     ],
@@ -62,19 +62,6 @@ export default function AuthBackground() {
         viewBox="0 0 100 100"
         preserveAspectRatio="xMidYMid slice"
       >
-        <defs>
-          {/* 网点 */}
-          <pattern id="dots" width="3" height="3" patternUnits="userSpaceOnUse">
-            <circle cx="0.75" cy="0.75" r="0.3" fill="rgba(0,0,0,.18)" />
-          </pattern>
-
-          {/* 紫色渐变 */}
-          <radialGradient id="purpleGlow">
-            <stop offset="0%" stopColor="#d67dff" />
-            <stop offset="100%" stopColor="#9d2cff" />
-          </radialGradient>
-        </defs>
-
         {/* 色块 */}
         {panels.map((panel, index) => (
           <polygon
@@ -83,25 +70,9 @@ export default function AuthBackground() {
             fill={panel.fill}
             stroke="black"
             strokeWidth="0.3"
+            className="hover:translate-x-[1px] hover:translate-y-[1px]  duration-200 "
           />
         ))}
-
-        {/* 网点层 */}
-
-        {/* 黄色 */}
-        <circle cx="16" cy="12" r="7" fill="url(#dots)" opacity="0.5" />
-
-        {/* 绿色 */}
-        <circle cx="86" cy="18" r="8" fill="url(#dots)" opacity="0.5" />
-
-        {/* 紫色 */}
-        <circle cx="12" cy="78" r="10" fill="url(#dots)" opacity="0.45" />
-
-        {/* 蓝色 */}
-        <circle cx="88" cy="80" r="11" fill="url(#dots)" opacity="0.45" />
-
-        {/* 粉色 */}
-        <circle cx="48" cy="87" r="7" fill="url(#dots)" opacity="0.4" />
       </svg>
     </div>
   );

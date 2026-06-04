@@ -6,6 +6,7 @@ import type { Course, CourseListRequest } from '@/types/course';
 import { BsPersonFill, BsSearch } from 'react-icons/bs';
 import { useUserStore } from '@/store/useUserStore';
 import { courseLevelMap, courseStatusMap } from '@/utils/constants';
+import { toast } from 'sonner';
 
 const levelMap = {
   全部难度: undefined,
@@ -59,9 +60,9 @@ export default function CoursesSection() {
   const { isLoggedIn } = useUserStore();
   const handleCourseClick = (courseId: string | number) => {
     if (!isLoggedIn) {
-      router.push('/auth/login');
+      toast.error('请先登录');
       return;
-    }
+    };
     router.push(`/courses/${courseId}`);
   };
 
