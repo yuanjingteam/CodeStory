@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import type { RegisterRequest } from '@/types/auth';
 import { register, getEmailCaptcha } from '@/api/auth/auth';
 import FormInput from './FormInput';
@@ -88,6 +89,7 @@ export default function RegisterForm() {
     const result = validator(value);
     return result.isValid ? 'success' : 'error';
   };
+  const router = useRouter();
 
   const nicknameStatus = getFieldStatus(
     'nickname',
@@ -183,12 +185,11 @@ export default function RegisterForm() {
     try {
       setLoading(true);
       const res = await register(registerInput);
-      if (res.code === 200 || res.code === 201) {
+      if (res.code === 200) {
         localStorage.removeItem(STORAGE_KEY);
         toast.success('注册成功');
-      } else {
-        toast.error(res.message || '注册失败');
-      }
+        router.push('/auth/login');
+      } 
     } catch (error) {
       console.error(error);
       toast.error('注册失败，请稍后重试');

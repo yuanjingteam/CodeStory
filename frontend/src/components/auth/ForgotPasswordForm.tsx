@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import FormInput from './FormInput';
 import { getEmailCaptcha, forgetPassword } from '@/api/auth/auth';

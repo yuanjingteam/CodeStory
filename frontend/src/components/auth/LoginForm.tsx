@@ -31,6 +31,7 @@ export default function LoginForm() {
 
   const getInitialLoginInput = (): LoginRequest => {
     try {
+      if (typeof window === 'undefined') return defaultLoginInput;
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed: LoginStorage = JSON.parse(stored);
@@ -45,13 +46,15 @@ export default function LoginForm() {
     } catch (e) {
       console.error('Failed to parse login storage:', e);
     }
-    return {
-      email: '',
-      password: '',
-      captchaCode: '',
-      captchaId: '',
-      rememberMe: false,
-    };
+    return defaultLoginInput;
+  };
+
+  const defaultLoginInput: LoginRequest = {
+    email: '',
+    password: '',
+    captchaCode: '',
+    captchaId: '',
+    rememberMe: false,
   };
 
   const [loginInput, setLoginInput] =
@@ -145,10 +148,7 @@ export default function LoginForm() {
 
   return (
     <section>
-      <form
-        onSubmit={handleSubmit}
-        className={"space-y-4"}
-      >
+      <form onSubmit={handleSubmit} className={'space-y-4'}>
         {/* 邮箱 */}
         <FormInput
           label="邮箱"
