@@ -26,6 +26,25 @@ interface LessonModelProps {
   };
 }
 
+const getInitialFormData = (initialData?: LessonModelProps['initialData']) => ({
+  chapterId: initialData?.chapterId || '',
+  lessonName: initialData?.lessonName || '',
+  content: initialData?.content || '',
+  difficulty: initialData?.difficulty ?? 0,
+  sortOrder: initialData?.sortOrder ?? 0,
+  estimatedTime: initialData?.estimatedTime ?? 0,
+  exercises: initialData?.exercises && initialData.exercises.length > 0
+    ? initialData.exercises.map(ex => ({
+        id: ex.id || generateExerciseId(),
+        type: ex.type || '',
+        exerciseContent: ex.exerciseContent || '',
+        answer: ex.answer || '',
+        metadata: ex.metadata || null,
+        hints: ex.hints || null,
+      }))
+    : [],
+});
+
 export default function LessonModel({ open, onClose, onSubmit, initialData }: LessonModelProps) {
   const isEdit = !!initialData?.id;
 
@@ -37,58 +56,10 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
     sortOrder: number;
     estimatedTime: number;
     exercises: ExerciseItem[];
-  }>({
-    chapterId: '',
-    lessonName: '',
-    content: '',
-    difficulty: 0,
-    sortOrder: 0,
-    estimatedTime: 0,
-    exercises: [],
-  });
+  }>(() => getInitialFormData(initialData));
   const [submitting, setSubmitting] = useState(false);
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
   const [loadingChapters, setLoadingChapters] = useState(false);
-
-  useEffect(() => {
-    if (open && initialData?.id) {
-      setFormData({
-        chapterId: initialData.chapterId || '',
-        lessonName: initialData.lessonName || '',
-        content: initialData.content || '',
-        difficulty: initialData.difficulty ?? 0,
-        sortOrder: initialData.sortOrder ?? 0,
-        estimatedTime: initialData.estimatedTime ?? 0,
-        exercises: initialData.exercises && initialData.exercises.length > 0
-          ? initialData.exercises.map(ex => ({
-              id: ex.id || generateExerciseId(),
-              type: ex.type || '',
-              exerciseContent: ex.exerciseContent || '',
-              answer: ex.answer || '',
-              metadata: ex.metadata || null,
-              hints: ex.hints || null,
-            }))
-          : [],
-      });
-    }
-    if (!open) {
-      setFormData({
-        chapterId: '',
-        lessonName: '',
-        content: '',
-        difficulty: 0,
-        sortOrder: 0,
-        estimatedTime: 0,
-        exercises: [],
-      });
-    }
-  }, [open, initialData]);
-
-  useEffect(() => {
-    if (open) {
-      fetchChapters();
-    }
-  }, [open]);
 
   const fetchChapters = async () => {
     setLoadingChapters(true);
@@ -104,6 +75,20 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
       setLoadingChapters(false);
     }
   };
+
+ useEffect(() => {
+  if (open) {
+    const loadData = async () => {
+      try {
+        await fetchChapters();
+      } catch (err) {
+        console.error("加载章节失败：", err);
+      }
+    };
+
+    loadData();
+  }
+}, [open]);
 
   if (!open) return null;
 

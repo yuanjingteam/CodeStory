@@ -18,7 +18,9 @@ export default function TiptapViewer({ content, onExerciseClick, onButtonOrderMa
   const onExerciseClickRef = useRef(onExerciseClick)
   const onButtonOrderMappedRef = useRef(onButtonOrderMapped)
   const mutationObserverRef = useRef<MutationObserver | null>(null)
+  // eslint-disable-next-line react-hooks/refs
   onExerciseClickRef.current = onExerciseClick
+  // eslint-disable-next-line react-hooks/refs
   onButtonOrderMappedRef.current = onButtonOrderMapped
 
   const handleExerciseClick = useCallback((exerciseId: string) => {
@@ -41,6 +43,7 @@ export default function TiptapViewer({ content, onExerciseClick, onButtonOrderMa
           resizable: false,
         },
       }),
+      // eslint-disable-next-line react-hooks/refs
       ExerciseButton.configure({
         onClick: handleExerciseClick,
       }),

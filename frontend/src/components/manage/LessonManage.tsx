@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState, useEffect, useRef } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { showToast } from '@/utils/toast';
@@ -7,7 +7,11 @@ import type { FilterField, Column } from '@/components/common';
 import lessonManageApi from '@/app/api/manage/lesson-manage';
 import courseApi from '@/app/api/courses/courses';
 import chapterManageApi from '@/app/api/manage/chapter-manage';
-import type { LessonItem } from '@/types/lesson-manage';
+import type {
+  CreateLessonRequest,
+  LessonItem,
+  UpdateLessonRequest,
+} from '@/types/lesson-manage';
 import type { Course } from '@/types/course';
 import type { ChapterItem } from '@/types/chapter-manage';
 import LessonModel from '@/components/manage/LessonModel';
@@ -55,24 +59,6 @@ export default function LessonManage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingLesson, setEditingLesson] = useState<LessonItem | undefined>();
   const hasMounted = useRef(false);
-
-  useEffect(() => {
-    fetchCourses();
-    fetchChapters();
-  }, []);
-
-  useEffect(() => {
-    if (!hasMounted.current) {
-      hasMounted.current = true;
-      fetchLessons();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (hasMounted.current) {
-      fetchLessons();
-    }
-  }, [page, size]);
 
   const fetchCourses = async () => {
     try {
@@ -134,11 +120,31 @@ export default function LessonManage() {
       setLessons(res.data);
       setTotal(res.total);
     } catch (error) {
-      console.error('获取小节列表失败:', error);
+      console.error('获取课程列表失败:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    void Promise.resolve().then(() => {
+      fetchCourses();
+      fetchChapters();
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      void Promise.resolve().then(fetchLessons);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (hasMounted.current) {
+      void Promise.resolve().then(fetchLessons);
+    }
+  }, [page, size]);
 
   const handleOpenCreate = () => {
     setEditingLesson(undefined);
@@ -150,19 +156,22 @@ export default function LessonManage() {
     setModalOpen(true);
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (
+    data: (CreateLessonRequest | UpdateLessonRequest) & { id?: string }
+  ) => {
     try {
       if (data.id) {
-        await lessonManageApi.update(data.id, data);
+        await lessonManageApi.update(data.id, data as UpdateLessonRequest);
         showToast.success('小节更新成功');
       } else {
-        await lessonManageApi.create(data);
+        await lessonManageApi.create(data as CreateLessonRequest);
         showToast.success('小节创建成功');
       }
       fetchLessons();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('保存小节失败:', error);
-      showToast.error(error?.message || '保存失败，请重试');
+      const message = error instanceof Error ? error.message : '保存小节失败，请重试';
+      showToast.error(message);
     }
   };
 
@@ -336,12 +345,15 @@ export default function LessonManage() {
         onCancel={() => setDeleteTarget(null)}
       />
 
-      <LessonModel
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleSubmit}
-        initialData={editingLesson}
-      />
+      {modalOpen && (
+        <LessonModel
+          key={editingLesson?.id ?? 'create'}
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleSubmit}
+          initialData={editingLesson}
+        />
+      )}
     </div>
   );
 }

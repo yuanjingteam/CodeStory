@@ -239,12 +239,15 @@ export default function CourseManage() {
         }}
       />
 
-      <CourseModel
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleSubmit}
-        initialData={editingCourse}
-      />
+      {modalOpen && (
+        <CourseModel
+          key={editingCourse?.id ?? 'create'}
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleSubmit}
+          initialData={editingCourse}
+        />
+      )}
 
       <ConfirmDialog
         open={!!deleteTarget}

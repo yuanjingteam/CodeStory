@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
-import type { ExerciseDetailData } from '@/types/exercise';
+import type { ChoiceMetadata, ExerciseDetailData } from '@/types/exercise';
 import HintModal from './HintModal';
 import { BsLightbulb } from 'react-icons/bs';
 
@@ -30,7 +30,7 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
     getSelectedAnswer: () => selectedOption,
   }), [selectedOption]);
 
-  const options = (exercise.metadata as any)?.options || [];
+  const options = (exercise.metadata as ChoiceMetadata).options || [];
   const alreadyCorrect = (exercise.userAnswer?.score ?? 0) > 0;
 
   const handleSelect = (option: string) => {
@@ -116,5 +116,7 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
     </div>
   );
 });
+
+ChoiceQuestion.displayName = 'ChoiceQuestion';
 
 export default ChoiceQuestion;
