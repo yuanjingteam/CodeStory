@@ -2,13 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { courseDetailApi } from '@/app/api/courses/course-detail';
-import type { CourseDetailData, Chapter, Lesson } from '@/types/course-detail';
-
-const difficultyMap: Record<number, { text: string; color: string }> = {
-  0: { text: '简单', color: 'bg-green-300' },
-  1: { text: '中等', color: 'bg-yellow-300' },
-  2: { text: '困难', color: 'bg-red-300' },
-};
+import type { CourseDetailData, Chapter } from '@/types/course-detail';
+import { courseLevelMap } from '@/utils/constants';
 
 export default function CourseDetails({
   courseId,
@@ -132,7 +127,7 @@ function ChapterItem({ chapter, courseId }: { chapter: Chapter; courseId: string
       {isExpanded && (
         <div className="divide-y-2 divide-black">
           {chapter.lessons.map((lesson) => {
-            const difficulty = difficultyMap[lesson.difficulty] || { text: '未知', color: 'bg-gray-300' };
+            const difficulty = courseLevelMap[lesson.difficulty] || { text: '未知', color: 'bg-gray-300' };
             return (
               <div
                 key={lesson.id}

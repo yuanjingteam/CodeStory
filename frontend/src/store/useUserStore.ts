@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { LoginUserInfo, LoginResponse } from '@/types/auth';
-
+import { parseJwt } from '@/utils/jwt';
 interface UserState {
   token: string | null;
   user: LoginUserInfo | null;
@@ -14,6 +14,7 @@ interface UserActions {
   clearUser: () => void;
   updateUserInfo: (info: Partial<LoginUserInfo>) => void;
   initUser: () => void;
+  getRoleByToken: () => number;
 }
 
 type UserStore = UserState & UserActions;
@@ -70,6 +71,12 @@ export const useUserStore = create<UserStore>()(
           isLoggedIn: false,
           isLoading: false,
         });
+      },
+
+      getRoleByToken: () => {
+        const token = get().token;
+        if (!token) return 0;
+        return parseJwt(token)?.role || 0;
       },
     }),
     {

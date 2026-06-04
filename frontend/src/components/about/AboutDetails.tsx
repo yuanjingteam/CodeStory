@@ -1,5 +1,4 @@
 'use client';
-import { useAuth } from '@/hooks/useAuth';
 import {
   FiMonitor,
   FiTarget,
@@ -12,7 +11,6 @@ import { BsRobot } from 'react-icons/bs';
 import AboutCodeCard from './AboutCodeCard';
 import Img from 'next/image';
 export default function AboutHero() {
-  useAuth();
   return (
     <section
       className="

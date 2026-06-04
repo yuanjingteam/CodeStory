@@ -37,9 +37,9 @@ app.use('/api/v1/auth', authRouters);
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use('/api/v1/courses', coursesRouter);
 app.use('/api/v1/home', homeRouter);
-app.use('/api/v1/profile', profileRouter);
-app.use('/api/v1/chapter/lesson', lessonsRouter);
-app.use('/api/v1/exercises', exercisesRouter);
+app.use('/api/v1/profile', authMiddleware, profileRouter);
+app.use('/api/v1/chapter/lesson',authMiddleware, lessonsRouter);
+app.use('/api/v1/exercises', authMiddleware, exercisesRouter);
 app.use(
   '/api/v1/admin/user-manage',
   [authMiddleware, requireAdmin],

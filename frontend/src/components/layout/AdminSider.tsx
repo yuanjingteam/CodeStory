@@ -17,7 +17,6 @@ const menuItems = [
 
 const AdminSider: React.FC = () => {
   const pathname = usePathname();
-
   const isActive = (href: string) => {
     return pathname === href || pathname.startsWith(href);
   };

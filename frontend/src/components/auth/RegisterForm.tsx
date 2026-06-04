@@ -268,10 +268,13 @@ export default function RegisterForm() {
               h-[51px]
               px-4
               whitespace-nowrap
-              font-black text-sm
+              font-black 
+              text-sm
               bg-yellow-400
-              border-2 border-black
-              shadow-[4px_4px_0_0_rgba(0,0,0,1)]
+              border-2 
+              rounded-sm
+              border-black
+              shadow-[2px_2px_0_0_rgba(0,0,0,1)]
               hover:translate-x-[2px]
               hover:translate-y-[2px]
               hover:shadow-none
@@ -352,10 +355,12 @@ export default function RegisterForm() {
           w-full py-3
           font-black text-white
           bg-green-500
-          border-2 border-black
-          shadow-[4px_4px_0_0_rgba(0,0,0,1)]
-          hover:translate-x-[4px]
-          hover:translate-y-[4px]
+          border-2 
+          rounded-sm
+          border-black
+          shadow-[2px_2px_0_0_rgba(0,0,0,1)]
+          hover:translate-x-[2px]
+          hover:translate-y-[2px]
           hover:shadow-none
           transition-all duration-200
           disabled:opacity-50

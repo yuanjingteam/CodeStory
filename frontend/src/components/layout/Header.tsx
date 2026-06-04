@@ -1,19 +1,20 @@
 'use client';
 import Link from 'next/link';
 import React from 'react';
-import { useEffect, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useUserStore } from '@/store/useUserStore';
 import { useRouter } from 'next/navigation';
-import { FiLogOut } from 'react-icons/fi';
+import { FiLogIn, FiLogOut } from 'react-icons/fi';
 import Img from 'next/image';
+
 const Header: React.FC = () => {
   const router = useRouter();
-  const { user, clearUser, isLoading } = useUserStore();
-  const isAdmin = user?.role === 1;
-
+  const { user, clearUser, isLoading, isLoggedIn, getRoleByToken } =
+    useUserStore();
+  const isAdmin = useMemo(() => getRoleByToken() === 1, [getRoleByToken]);
   const handleLogout = async () => {
     clearUser();
-    router.push('/auth/login');
+    router.push('/');
   };
   const dropdownRef = useRef<HTMLDivElement>(null);
   return (
@@ -50,7 +51,7 @@ const Header: React.FC = () => {
                 >
                   关于我们
                 </Link>
-                {isAdmin && (
+                {isAdmin && isLoggedIn && (
                   <Link
                     href="/users-manage"
                     className="hover:underline underline-offset-4 decoration-2 decoration-black"
@@ -64,31 +65,42 @@ const Header: React.FC = () => {
             <div className="flex items-center space-x-5">
               <div className="relative" ref={dropdownRef}>
                 <div className="flex items-center space-x-2 px-2 py-1 ">
-                  <div className=" rounded-full border-1 border-purple-300 overflow-hidden bg-gray-300 flex items-center justify-center">
-                    {isLoading ? (
-                      <span className="text-xs text-gray-500">...</span>
-                    ) : (
-                      <Img
-                        src={user?.avatar || '/default-avatar.png'}
-                        alt="avatar"
-                        className="h-full w-full object-cover"
-                        width={45}
-                        height={45}
-                        priority
-                      />
-                    )}
-                  </div>
-
-                  <span className="font-bold text-black text-sm min-w-[60px]">
-                    {isLoading ? '...' : user?.nickname || 'UserName'}
-                  </span>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex justify-end items-center  hover:text-purple-500 cursor-pointer transition-all font-bold text-purple-700 "
-                  >
-                    <FiLogOut />
-                    退出登录
-                  </button>
+                  {isLoggedIn ? (
+                    <div className="flex flex items-center space-x-1">
+                      <div className=" rounded-full border-1 border-purple-300 overflow-hidden bg-gray-300 flex items-center justify-center">
+                        {isLoading ? (
+                          <span className="text-xs text-gray-500">...</span>
+                        ) : (
+                          <Img
+                            src={user?.avatar || '/default-avatar.png'}
+                            alt="avatar"
+                            className="h-full w-full object-cover"
+                            width={45}
+                            height={45}
+                            priority
+                          />
+                        )}
+                      </div>
+                      <span className="font-bold text-black text-sm min-w-[60px]">
+                        {isLoading ? '...' : user?.nickname || 'UserName'}
+                      </span>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex justify-end items-center  hover:text-purple-500 cursor-pointer transition-all font-bold text-purple-700 "
+                      >
+                        <FiLogOut />
+                        退出登录
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => router.push('/auth/login')}
+                      className="w-full flex justify-end items-center  hover:text-purple-500 cursor-pointer transition-all font-bold text-purple-700 "
+                    >
+                      登录
+                      <FiLogIn />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
