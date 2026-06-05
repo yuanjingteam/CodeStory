@@ -262,7 +262,7 @@ export default function CoursesSection() {
                           {course.progress}%
                         </span>
                         <span
-                          className={`${statusConfig.color} border-2 border-black px-2 py-1 text-xs font-bold shrink-0`}
+                          className={`${statusConfig.color} border-2 border-black px-2 py-1 text-xs font-bold shrink-0 rounded-md`}
                         >
                           {statusConfig.text}
                         </span>
@@ -270,7 +270,7 @@ export default function CoursesSection() {
 
                       <div className="flex items-center justify-between">
                         <span
-                          className={`${levelConfigItem.color} border-2 border-black px-2 py-0.5 text-xs font-bold`}
+                          className={`${levelConfigItem.color} border-2 border-black px-2 py-0.5 text-xs font-bold rounded-md`}
                         >
                           {levelConfigItem.text}
                         </span>

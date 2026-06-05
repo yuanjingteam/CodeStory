@@ -84,6 +84,32 @@ export const authMiddleware = (
   }
 };
 
+export const optionalAuthMiddleware = (
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction
+) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return next();
+
+    const [bearer, token] = authHeader.split(' ');
+    if (bearer !== 'Bearer' || !token) return next();
+
+    if (!process.env.JWT_SECRET) return next();
+    if (loginService.isTokenBlacklisted(token)) return next();
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as TokenPayload;
+    if (decoded.id && decoded.email && decoded.role !== undefined) {
+      req.user = decoded;
+    }
+  } catch (error) {
+    // token 无效或过期，放行当作未登录
+    console.warn('optionalAuth: token 解析失败', error instanceof Error ? error.message : error);
+  }
+  next();
+};
+
 export const requireAdmin = (
   req: AuthRequest,
   res: Response,
