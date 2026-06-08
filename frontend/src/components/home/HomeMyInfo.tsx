@@ -107,14 +107,15 @@ export default function HomeMyInfo() {
             <div className="relative flex-shrink-0">
               <div className=" border-2 border-purple-300 rounded-full flex items-center justify-center">
                 {userInfo.avatar ? (
-                  <Img
-                    src={userInfo.avatar}
-                    width={96}
-                    height={96}
-                    alt="User Avatar"
-                    style={{ objectFit: 'cover' }}
-                    className=" rounded-full"
-                  />
+                  <div className="w-24 h-24 rounded-full overflow-hidden">
+                    <Img
+                      src={userInfo.avatar || '/default-avatar.png'}
+                      width={96}
+                      height={96}
+                      alt="User Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 ) : (
                   <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
                     <span className="text-gray-500 text-2xl font-black">?</span>
@@ -204,7 +205,9 @@ export default function HomeMyInfo() {
             </div>
           </div>
         </div>
-      ) : (<ErrorDataCard title="未登录" description="请先登录以查看个人信息" />)}
+      ) : (
+        <ErrorDataCard title="未登录" description="请先登录以查看个人信息" />
+      )}
       <UpdateUserInfoForm
         isOpen={isOpen}
         onClose={onClose}
