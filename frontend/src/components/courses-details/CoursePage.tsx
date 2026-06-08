@@ -4,17 +4,20 @@ import { useRouter } from 'next/navigation';
 import { courseDetailApi } from '@/app/api/courses/course-detail';
 import type { CourseDetailData, Chapter } from '@/types/course-detail';
 import { courseLevelMap } from '@/utils/constants';
+import { useUserStore } from '@/store/useUserStore';
 
 export default function CourseDetails({
   courseId,
 }: {
   courseId: string;
-}) {
+  }) {
+  const { isLoggedIn, isLoading } = useUserStore();
   const router = useRouter();
   const [course, setCourse] = useState<CourseDetailData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isLoggedIn || isLoading) return;
     const fetchCourseDetail = async () => {
       try {
         setLoading(true);
