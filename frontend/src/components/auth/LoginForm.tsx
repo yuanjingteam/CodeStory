@@ -133,8 +133,9 @@ export default function LoginForm() {
         }, 500);
         return;
       } else {
-        toast.error(res.message);
-        captchaRef.current?.refresh();
+        setTimeout(() => {
+          captchaRef.current?.refresh();
+        }, 1000);
       }
     } catch (error) {
       console.error(error);

@@ -168,14 +168,14 @@ export default function HomeMyCourses() {
 
       {/* 课程列表 */}
       {courses.length > 0 && isLoggedIn ? (
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden border-y-2  border-gray-200 rounded-xl">
           <style>{`
           .scrollbar-hidden::-webkit-scrollbar {
             display: none;
           }
         `}</style>
           <div
-            className="h-full flex flex-col gap-4 overflow-y-auto scrollbar-hidden"
+            className="h-full flex flex-col gap-5 overflow-y-auto scrollbar-hidden"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',

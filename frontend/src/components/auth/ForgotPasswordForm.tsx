@@ -112,13 +112,15 @@ export default function ForgotPasswordForm() {
         throw new Error(emailResult.message);
       }
       try {
-        await getEmailCaptcha({
+        const res = await getEmailCaptcha({
           email: formData.email,
         });
-        toast.success('验证码发送成功');
+        if (res.code === 200) {
+          toast.success('验证码发送成功');
+        } 
       } catch (error) {
+        toast.error('获取验证码失败');
         console.error(error);
-        toast.error('验证码发送失败，请稍后重试');
       }
     },
   });
@@ -168,12 +170,10 @@ export default function ForgotPasswordForm() {
         setTimeout(() => {
           router.push('/auth/login');
         }, 500);
-      } else {
-        toast.error(res.message || '密码重置失败');
       }
     } catch (error) {
+      toast.error('密码重置失败');
       console.error(error);
-      toast.error('密码重置失败，请稍后重试');
     } finally {
       setLoading(false);
     }
