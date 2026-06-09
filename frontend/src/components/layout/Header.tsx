@@ -12,6 +12,7 @@ const Header: React.FC = () => {
   const { user, clearUser, isLoading, isLoggedIn, getRoleByToken } =
     useUserStore();
   const isAdmin = useMemo(() => getRoleByToken() === 1, [getRoleByToken]);
+  const canManage = useMemo(() => isAdmin && isLoggedIn, [isAdmin, isLoggedIn]);
   const handleLogout = async () => {
     clearUser();
     router.push('/');
@@ -51,7 +52,7 @@ const Header: React.FC = () => {
                 >
                   关于我们
                 </Link>
-                {isAdmin && isLoggedIn && (
+                {canManage && (
                   <Link
                     href="/users-manage"
                     className="hover:underline underline-offset-4 decoration-2 decoration-black"
@@ -62,31 +63,26 @@ const Header: React.FC = () => {
               </nav>
             </div>
 
-            <div className="flex items-center space-x-5">
+            <div className="flex items-center ">
               <div className="relative" ref={dropdownRef}>
-                <div className="flex items-center space-x-2 px-2 py-1 ">
+                <div className="px-2 py-1 ">
                   {isLoggedIn ? (
-                    <div className="flex flex items-center space-x-1">
-                      <div className=" rounded-full border-1 border-purple-300 overflow-hidden bg-gray-300 flex items-center justify-center">
-                        {isLoading ? (
-                          <span className="text-xs text-gray-500">...</span>
-                        ) : (
-                          <Img
-                            src={user?.avatar || '/default-avatar.png'}
-                            alt="avatar"
-                            className="h-full w-full object-cover"
-                            width={45}
-                            height={45}
-                            priority
-                          />
-                        )}
+                    <div className="flex  justify-center items-center  gap-2">
+                      <div className=" relative w-8 h-8 rounded-full overflow-hidden border-1 border-purple-300">
+                        <Img
+                          src={user?.avatar || '/default-avatar.png'}
+                          alt="avatar"
+                          width={48}
+                          height={48}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <span className="font-bold text-black text-sm min-w-[60px]">
+                      <div className="font-bold text-black text-sm whitespace-nowrap overflow-hidden text-ellipsis min-w-[60px] max-w-[100px] mr-2">
                         {isLoading ? '...' : user?.nickname || 'UserName'}
-                      </span>
+                      </div>
                       <button
                         onClick={handleLogout}
-                        className="w-full flex justify-end items-center  hover:text-purple-500 cursor-pointer transition-all font-bold text-purple-700 "
+                        className=" flex justify-end items-center  hover:text-purple-500 cursor-pointer transition-all font-bold text-purple-700 "
                       >
                         <FiLogOut />
                         退出登录

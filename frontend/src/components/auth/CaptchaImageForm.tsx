@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { getImageCaptcha } from '@/api/auth/auth';
 import type { ImageCaptchaData } from '@/types/auth';

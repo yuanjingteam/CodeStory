@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import type { RegisterRequest } from '@/types/auth';
 import { register, getEmailCaptcha } from '@/api/auth/auth';
 import FormInput from './FormInput';
@@ -88,6 +89,7 @@ export default function RegisterForm() {
     const result = validator(value);
     return result.isValid ? 'success' : 'error';
   };
+  const router = useRouter();
 
   const nicknameStatus = getFieldStatus(
     'nickname',
@@ -127,16 +129,13 @@ export default function RegisterForm() {
         throw new Error(emailResult.message);
       }
       try {
-        await getEmailCaptcha({ email: registerInput.email });
-        toast.success('验证码发送成功', {
-          className: 'bg-green-400 text-black',
-        });
+        const res = await getEmailCaptcha({ email: registerInput.email });
+        if (res.code === 200) {
+          toast.success('验证码发送成功');
+        } 
       } catch (error) {
+        toast.error('获取验证码失败');
         console.error(error);
-        toast.error('获取验证码失败，请稍后重试', {
-          className: 'bg-red-400 text-black',
-        });
-        throw new Error('获取验证码失败，请稍后重试');
       }
     },
   });
@@ -183,15 +182,14 @@ export default function RegisterForm() {
     try {
       setLoading(true);
       const res = await register(registerInput);
-      if (res.code === 200 || res.code === 201) {
+      if (res.code === 200) {
         localStorage.removeItem(STORAGE_KEY);
         toast.success('注册成功');
-      } else {
-        toast.error(res.message || '注册失败');
-      }
+        router.push('/auth/login');
+      } 
     } catch (error) {
+      toast.error('注册失败');
       console.error(error);
-      toast.error('注册失败，请稍后重试');
     } finally {
       setLoading(false);
     }

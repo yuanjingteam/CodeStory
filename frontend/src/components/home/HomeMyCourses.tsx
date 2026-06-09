@@ -10,11 +10,11 @@ import ErrorDataCard from '@/components/common/ErrorDataCard';
 import { useUserStore } from '@/store/useUserStore';
 
 export default function HomeMyCourses() {
-  const { isLoggedIn } = useUserStore();
+  const { isLoggedIn, isLoading } = useUserStore();
   const [courses, setCourses] = useState<UserCourse[]>([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
+    if (!isLoggedIn || isLoading) return;
     const fetchCourses = async () => {
       try {
         setLoading(true);
@@ -117,7 +117,7 @@ export default function HomeMyCourses() {
     return maxCourses - courseCount;
   };
 
-  if (loading) {
+  if (loading && isLoggedIn) {
     return (
       <section className="flex-1 h-[280px] flex items-center justify-center">
         <div className="text-lg font-black text-gray-500">加载中...</div>
@@ -168,14 +168,14 @@ export default function HomeMyCourses() {
 
       {/* 课程列表 */}
       {courses.length > 0 && isLoggedIn ? (
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden border-y-2  border-gray-200 rounded-xl">
           <style>{`
           .scrollbar-hidden::-webkit-scrollbar {
             display: none;
           }
         `}</style>
           <div
-            className="h-full flex flex-col gap-4 overflow-y-auto scrollbar-hidden"
+            className="h-full flex flex-col gap-5 overflow-y-auto scrollbar-hidden"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',
