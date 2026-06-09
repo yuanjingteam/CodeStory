@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { TableKit } from '@tiptap/extension-table/kit'
 import { ExerciseButton } from './ExerciseButtonExtension'
+import { CodeBlockWindow } from './CodeBlockWindow'
 import './tiptap-editor.css'
 
 interface TiptapViewerProps {
@@ -37,7 +38,9 @@ export default function TiptapViewer({ content, onExerciseClick, onButtonOrderMa
         heading: {
           levels: [1, 2, 3, 4],
         },
+        codeBlock: false,
       }),
+      CodeBlockWindow,
       TableKit.configure({
         table: {
           resizable: false,
