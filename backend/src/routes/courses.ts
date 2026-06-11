@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { success, fail, notFound } from '../utils/response';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth';
 import {
   getCourseList,
   getCourseDetail,
@@ -8,7 +8,7 @@ import {
 
 const router = Router();
 
-router.get('/list', async (req, res) => {
+router.get('/list', optionalAuthMiddleware, async (req, res) => {
   try {
     const result = await getCourseList(
       {

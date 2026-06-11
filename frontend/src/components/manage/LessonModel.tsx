@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiX } from 'react-icons/fi';
 import type { CreateLessonRequest, UpdateLessonRequest } from '@/types/lesson-manage';
 import chapterManageApi from '@/app/api/manage/chapter-manage';
@@ -8,6 +8,8 @@ import type { ChapterItem } from '@/types/chapter-manage';
 import TiptapEditor from '@/components/tiptap/TiptapEditor';
 import type { ExerciseItem } from '@/utils/exerciseHelpers';
 import { generateExerciseId } from '@/utils/exerciseHelpers';
+import { validateExercise } from '@/utils/exerciseValidation';
+import { clearLessonDraft, loadLessonDraft, saveLessonDraft } from '@/utils/lessonDraft';
 import ExerciseList from './ExerciseList';
 
 interface LessonModelProps {
@@ -45,21 +47,18 @@ const getInitialFormData = (initialData?: LessonModelProps['initialData']) => ({
     : [],
 });
 
+type LessonFormData = ReturnType<typeof getInitialFormData>;
+
 export default function LessonModel({ open, onClose, onSubmit, initialData }: LessonModelProps) {
   const isEdit = !!initialData?.id;
 
-  const [formData, setFormData] = useState<{
-    chapterId: string;
-    lessonName: string;
-    content: string;
-    difficulty: number;
-    sortOrder: number;
-    estimatedTime: number;
-    exercises: ExerciseItem[];
-  }>(() => getInitialFormData(initialData));
+  const [formData, setFormData] = useState<LessonFormData>(() => getInitialFormData(initialData));
   const [submitting, setSubmitting] = useState(false);
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
   const [loadingChapters, setLoadingChapters] = useState(false);
+  const [draftReady, setDraftReady] = useState(isEdit);
+  const [initialSnapshot] = useState(() => JSON.stringify(getInitialFormData(initialData)));
+  const submittedRef = useRef(false);
 
   const fetchChapters = async () => {
     setLoadingChapters(true);
@@ -90,7 +89,76 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
   }
 }, [open]);
 
+  useEffect(() => {
+    if (!open || isEdit) return;
+
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+
+      const draft = loadLessonDraft<LessonFormData>();
+      if (draft) {
+        const savedAt = new Date(draft.savedAt).toLocaleString('zh-CN');
+        const shouldRestore = window.confirm(`检测到 ${savedAt} 保存的未提交小节草稿，是否恢复？`);
+
+        if (shouldRestore) {
+          setFormData(draft.data);
+        } else {
+          clearLessonDraft();
+        }
+      }
+      setDraftReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isEdit, open]);
+
+  const isDirty = JSON.stringify(formData) !== initialSnapshot;
+
+  useEffect(() => {
+    if (!open || isEdit || !draftReady || submittedRef.current) return;
+
+    const timer = window.setTimeout(() => {
+      if (isDirty) {
+        saveLessonDraft(formData);
+      } else {
+        clearLessonDraft();
+      }
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [draftReady, formData, isDirty, isEdit, open]);
+
   if (!open) return null;
+
+  const requestClose = ({ discard = false, skipConfirm = false } = {}) => {
+    if (submittedRef.current || !isDirty) {
+      onClose();
+      return;
+    }
+
+    if (!isEdit) {
+      if (discard) {
+        const shouldDiscard = window.confirm('确定放弃当前草稿吗？已填写的小节内容和题目将无法恢复。');
+        if (!shouldDiscard) return;
+        clearLessonDraft();
+        onClose();
+        return;
+      }
+
+      saveLessonDraft(formData);
+      if (skipConfirm || window.confirm('当前小节尚未创建，关闭后草稿会保留，下次新建小节时可以恢复。是否关闭？')) {
+        onClose();
+      }
+      return;
+    }
+
+    if (skipConfirm || window.confirm('当前修改尚未保存，确定关闭吗？')) {
+      onClose();
+    }
+  };
 
   const handleSubmit = async () => {
     if (!formData.chapterId) {
@@ -102,22 +170,36 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
       return;
     }
 
+    for (let index = 0; index < formData.exercises.length; index += 1) {
+      const errors = validateExercise(formData.exercises[index]);
+      if (errors.length > 0) {
+        alert(`题目 ${index + 1} 尚未完成配置：\n${errors.join('\n')}`);
+        return;
+      }
+    }
+
     setSubmitting(true);
     try {
       const submitData = { ...formData };
       delete (submitData as Record<string, unknown>).sortOrder;
       
       await onSubmit(isEdit ? { ...submitData, id: initialData!.id } : submitData);
+      submittedRef.current = true;
+      if (!isEdit) {
+        clearLessonDraft();
+      }
       onClose();
+    } catch {
+      return;
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={(e) => {
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => {
       if (window.getSelection()?.toString()) return
-      onClose()
+      requestClose()
     }}>
       <div
         className="bg-white border-3 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] w-full max-w-4xl flex flex-col max-h-[85vh]"
@@ -126,7 +208,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         <div className="flex items-center justify-between p-4 border-b-2 border-black flex-shrink-0">
           <h2 className="text-xl font-bold">{isEdit ? '编辑小节' : '新建小节'}</h2>
           <button
-            onClick={onClose}
+            onClick={() => requestClose()}
             className="w-8 h-8 flex items-center justify-center border-2 border-black hover:bg-gray-100 font-bold"
           >
             <FiX className="w-5 h-5" />
@@ -206,13 +288,23 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
           />
         </div>
 
-        <div className="flex gap-3 p-4 border-t-2 border-black justify-end flex-shrink-0">
+        <div className="flex gap-3 p-4 border-t-2 border-black items-center justify-end flex-shrink-0">
+          {!isEdit && isDirty && (
+            <button
+              type="button"
+              onClick={() => requestClose({ discard: true })}
+              disabled={submitting}
+              className="mr-auto px-2 py-2 text-sm font-bold text-red-500 hover:text-red-700 disabled:opacity-50"
+            >
+              放弃草稿
+            </button>
+          )}
           <button
-            onClick={onClose}
+            onClick={() => requestClose({ skipConfirm: !isEdit })}
             disabled={submitting}
             className="px-5 py-2 border-2 border-black font-bold hover:bg-gray-100 transition-colors disabled:opacity-50"
           >
-            取消
+            {isEdit ? '取消' : '暂存并关闭'}
           </button>
           <button
             onClick={handleSubmit}

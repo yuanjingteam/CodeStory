@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FiPlus } from 'react-icons/fi';
 import type { ExerciseItem } from '@/utils/exerciseHelpers';
 import { createEmptyExercise } from '@/utils/exerciseHelpers';
+import { validateExercise } from '@/utils/exerciseValidation';
 import ExerciseCard from './ExerciseCard';
 
 interface ExerciseListProps {
@@ -12,6 +13,33 @@ interface ExerciseListProps {
 
 export default function ExerciseList({ exercises, onChange }: ExerciseListProps) {
   const [expandedExercises, setExpandedExercises] = useState<Set<string>>(new Set());
+  const [configuredExercises, setConfiguredExercises] = useState<Set<string>>(
+    () => new Set(
+      exercises
+        .filter(exercise => validateExercise(exercise).length === 0)
+        .map(exercise => exercise.id)
+    )
+  );
+  const knownExerciseIdsRef = useRef(new Set(exercises.map(exercise => exercise.id)));
+
+  useEffect(() => {
+    const currentIds = new Set(exercises.map(exercise => exercise.id));
+    const restoredConfiguredIds = exercises
+      .filter(exercise =>
+        !knownExerciseIdsRef.current.has(exercise.id)
+        && validateExercise(exercise).length === 0
+      )
+      .map(exercise => exercise.id);
+
+    setConfiguredExercises(prev => {
+      const next = new Set(
+        [...prev].filter(id => currentIds.has(id))
+      );
+      restoredConfiguredIds.forEach(id => next.add(id));
+      return next;
+    });
+    knownExerciseIdsRef.current = currentIds;
+  }, [exercises]);
 
   const toggleExpand = (id: string) => {
     setExpandedExercises(prev => {
@@ -38,12 +66,31 @@ export default function ExerciseList({ exercises, onChange }: ExerciseListProps)
       next.delete(id);
       return next;
     });
+    setConfiguredExercises(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   };
 
   const handleUpdate = (index: number, updates: Partial<ExerciseItem>) => {
     const newExercises = [...exercises];
     newExercises[index] = { ...newExercises[index], ...updates };
     onChange(newExercises);
+    setConfiguredExercises(prev => {
+      const next = new Set(prev);
+      next.delete(newExercises[index].id);
+      return next;
+    });
+  };
+
+  const handleComplete = (id: string) => {
+    setConfiguredExercises(prev => new Set(prev).add(id));
+    setExpandedExercises(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   };
 
   return (
@@ -70,9 +117,11 @@ export default function ExerciseList({ exercises, onChange }: ExerciseListProps)
           exercise={exercise}
           index={index}
           isExpanded={expandedExercises.has(exercise.id)}
+          isConfigured={configuredExercises.has(exercise.id)}
           onToggleExpand={() => toggleExpand(exercise.id)}
           onDelete={() => handleDelete(exercise.id)}
           onUpdate={updates => handleUpdate(index, updates)}
+          onComplete={() => handleComplete(exercise.id)}
         />
       ))}
     </div>

@@ -172,6 +172,7 @@ export default function LessonManage() {
       console.error('保存小节失败:', error);
       const message = error instanceof Error ? error.message : '保存小节失败，请重试';
       showToast.error(message);
+      throw error;
     }
   };
 

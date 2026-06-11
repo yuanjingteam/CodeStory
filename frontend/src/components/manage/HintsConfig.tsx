@@ -2,6 +2,8 @@
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
 import type { HintsValue, HintConfig } from '@/types/lesson-manage';
 
+const MAX_HINT_LEVELS = 3;
+
 interface HintsConfigProps {
   hints: HintsValue;
   onChange: (hints: HintConfig) => void;
@@ -39,13 +41,14 @@ export default function HintsConfig({ hints, onChange }: HintsConfigProps) {
     Object.keys(updated).sort((a, b) => Number(a.split('_')[1]) - Number(b.split('_')[1])).forEach((key, i) => {
       reindexed[`level_${i + 1}`] = updated[key];
     });
-    const meta = hintConfig._meta;
     onChange({ ...reindexed, _meta: { max_level: Object.keys(reindexed).length } });
   };
 
   const handleAddHint = () => {
     const prevHints = hintConfig || {} as HintConfig;
     const existingLevels = Object.keys(prevHints).filter(k => k.startsWith('level_')).length;
+    if (existingLevels >= MAX_HINT_LEVELS) return;
+
     const newLevel = existingLevels + 1;
     const updated: HintConfig = { ...prevHints, [`level_${newLevel}`]: '' } as HintConfig;
     onChange({ ...updated, _meta: { max_level: newLevel } });
@@ -53,8 +56,13 @@ export default function HintsConfig({ hints, onChange }: HintsConfigProps) {
 
   return (
     <div className="border-2 border-dashed border-yellow-300 p-3 rounded-lg bg-yellow-50">
-      <label className="block text-sm font-bold mb-2">💡 提示配置</label>
-      <p className="text-xs text-gray-500 mb-2">设置分层提示，学生可逐级获取帮助（每级提示会扣分）</p>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <label className="text-sm font-bold">💡 提示配置</label>
+        <span className="text-xs font-bold text-yellow-700">
+          {hintLevels.length}/{MAX_HINT_LEVELS}
+        </span>
+      </div>
+      <p className="text-xs text-gray-500 mb-2">最多配置三级提示，学生可逐级获取帮助（每级提示会扣分）</p>
       <div className="space-y-2">
         {hintLevels.length > 0 ? hintLevels.map((hint) => (
           <div key={hint.level} className="flex items-start gap-2">
@@ -90,10 +98,11 @@ export default function HintsConfig({ hints, onChange }: HintsConfigProps) {
       <button
         type="button"
         onClick={handleAddHint}
-        className="mt-2 flex items-center gap-1 px-3 py-1.5 text-sm text-yellow-700 hover:bg-yellow-100 border-2 border-yellow-300 rounded transition-colors"
+        disabled={hintLevels.length >= MAX_HINT_LEVELS}
+        className="mt-2 flex items-center gap-1 px-3 py-1.5 text-sm text-yellow-700 hover:bg-yellow-100 border-2 border-yellow-300 rounded transition-colors disabled:cursor-not-allowed disabled:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400"
       >
         <FiPlus className="w-3.5 h-3.5" />
-        添加下一级提示
+        {hintLevels.length >= MAX_HINT_LEVELS ? '已达到三级上限' : '添加下一级提示'}
       </button>
     </div>
   );

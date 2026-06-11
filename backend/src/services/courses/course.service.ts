@@ -61,11 +61,13 @@ export async function getCourseList(params: CourseListParams, userId: string): P
     });
   }
 
-  const progressRecords = await prisma.courses_progress.findMany({
-    where: { user_id: userId, course_id: { in: filteredCourseIds }, is_delete: 0 },
-  });
-
-  const progressMap = new Map(progressRecords.map(r => [r.course_id, r]));
+  const progressMap = new Map();
+  if (userId) {
+    const progressRecords = await prisma.courses_progress.findMany({
+      where: { user_id: userId, course_id: { in: filteredCourseIds }, is_delete: 0 },
+    });
+    progressRecords.forEach(r => progressMap.set(r.course_id, r));
+  }
 
   if (params.learnStatus !== undefined) {
     filteredCourseIds = filteredCourseIds.filter(courseId => {

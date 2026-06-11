@@ -1,0 +1,62 @@
+/* 表格 */
+.tiptap-content table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 16px 0;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+}
+
+.tiptap-content table colgroup col {
+  width: auto !important;
+}
+
+.tiptap-content table td,
+.tiptap-content table th {
+  border: 1px solid #e5e7eb;
+  padding: 8px 12px;
+  position: relative;
+  text-align: left;
+  vertical-align: top;
+  box-sizing: border-box;
+  word-break: break-word;
+}
+
+.tiptap-content table th {
+  background-color: #f3f4f6;
+  font-weight: 700;
+  color: #374151;
+}
+
+.tiptap-content table td {
+  background-color: #fff;
+}
+
+.tiptap-content table tr:hover td {
+  background-color: #f9fafb;
+}
+
+.tiptap-content table .selectedCell {
+  background-color: #ede9fe;
+}
+
+.tiptap-content table .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background-color: #8b5cf6;
+  pointer-events: none;
+}
+
+.tiptap-content .tableWrapper {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.tiptap-content .resize-cursor {
+  cursor: col-resize;
+}
