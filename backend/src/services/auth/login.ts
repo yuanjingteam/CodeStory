@@ -9,22 +9,24 @@ import {
 } from '@/utils/validate';
 import { comparePassword } from '@/utils/bcrypt';
 import { generateToken, verifyToken } from '@/utils/jwt';
+import { badRequest } from '../../utils/response';
 
 const tokenBlacklist = new Set<string>();
 class LoginService {
   async login(body: LoginRequest) {
     const { email, password, captchaId, captchaCode } = body;
     const emailResult = validateEmail(email);
+    
     if (!emailResult.isValid) {
-      throw new Error(emailResult.message);
+      return badRequest(emailResult.message);
     }
     const passwordResult = validatePassword(password);
     if (!passwordResult.isValid) {
-      throw new Error(passwordResult.message);
+      return badRequest(passwordResult.message);
     }
     const captchaResult = validateCode(captchaCode);
     if (!captchaResult.isValid) {
-      throw new Error(captchaResult.message);
+      return badRequest(captchaResult.message);
     }
 
     await captchaService.verifyImageCaptcha(captchaId, captchaCode);
@@ -34,11 +36,15 @@ class LoginService {
     });
 
     if (!user) {
-      throw new Error('用户不存在');
+      return badRequest('用户不存在');
+    }
+
+    if (user.is_delete === 1) {
+      return badRequest('该账户已被删除，无法登录');
     }
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
-      throw new Error('密码错误');
+      return badRequest('密码错误');
     }
     const token = generateToken(
       {
@@ -63,6 +69,7 @@ class LoginService {
         sex: user.sex,
         occupation: user.occupation,
       },
+      message: '',
     };
   }
 

@@ -5,7 +5,7 @@ import type {
   UserDetail,
   UserListResponse,
 } from '@/types/user-manage';
-
+import { success, fail, badRequest, notFound } from '../../utils/response';
 class UserManageService {
   async getUserList(params: GetUserListRequest): Promise<UserListResponse> {
     const { page = 1, pageSize = 10, search, role, status } = params;
@@ -22,15 +22,13 @@ class UserManageService {
     }
     if (status !== undefined && status !== null && status !== '') {
       where.is_delete = Number(status);
-    } else {
-      where.is_delete = 0;
     }
 
     const data = await prisma.users.findMany({
       where,
       skip,
       take: pageSize,
-      orderBy: { created_at: 'desc' },
+      orderBy: [{ is_delete: 'asc' }, { created_at: 'asc' }],
       select: {
         id: true,
         email: true,
@@ -72,12 +70,12 @@ class UserManageService {
     });
 
     if (!user) {
-      throw new Error('用户不存在');
+      return notFound('用户不存在');
     }
 
     // 如果不允许查看已删除用户且用户已被删除
     if (!includeDeleted && user.is_delete === 1) {
-      throw new Error('用户已被删除');
+      return notFound('用户已被删除');
     }
 
     return user;
@@ -100,7 +98,7 @@ class UserManageService {
       });
 
       if (existingUser) {
-        throw new Error('该邮箱已被注册');
+        return badRequest('该邮箱已被注册');
       }
     }
     if (data.score) {

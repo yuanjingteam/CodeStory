@@ -133,9 +133,9 @@ export default function HomeMyCourses() {
   ];
 
   return (
-    <section className="flex-1 h-[350px] flex flex-col border-2 border-gray-200 rounded-sm p-6">
+    <section className="flex-1 h-[350px] flex flex-col border-2 border-gray-200 rounded-sm px-6 pt-6">
       {/* 标题行 */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between pb-4 border-b-2 border-gray-200">
         <div className="flex items-center gap-3">
           <div className="w-1 h-6 bg-purple-500 rounded-full" />
           <h2 className="text-xl font-bold text-gray-900">我的学习</h2>
@@ -168,14 +168,14 @@ export default function HomeMyCourses() {
 
       {/* 课程列表 */}
       {courses.length > 0 && isLoggedIn ? (
-        <div className="flex-1 overflow-hidden border-y-2  border-gray-200 rounded-xl">
+        <div className="flex-1 overflow-hidden border-gray-200">
           <style>{`
           .scrollbar-hidden::-webkit-scrollbar {
             display: none;
           }
         `}</style>
           <div
-            className="h-full flex flex-col gap-5 overflow-y-auto scrollbar-hidden"
+            className="h-full flex flex-col gap-5 pt-3 overflow-y-auto scrollbar-hidden"
             style={{
               scrollbarWidth: 'none',
               msOverflowStyle: 'none',

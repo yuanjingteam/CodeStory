@@ -3,6 +3,7 @@ import { hashPassword } from '@/utils/bcrypt';
 import { captchaService } from '@/services/auth/captcha';
 import type { ForgetPasswordRequest } from '@/types/auth';
 import { deleteCache } from '@/utils/cache';
+import { badRequest } from '../../utils/response';
 import {
   validateEmail,
   validatePassword,
@@ -15,27 +16,27 @@ class ForgetPasswordService {
 
     const emailResult = validateEmail(email);
     if (!emailResult.isValid) {
-      throw new Error(emailResult.message);
+      return badRequest(emailResult.message);
     }
 
     const passwordResult = validatePassword(password);
     if (!passwordResult.isValid) {
-      throw new Error(passwordResult.message);
+      return badRequest(passwordResult.message);
     }
 
     const codeResult = validateCode(emailCode);
     if (!codeResult.isValid) {
-      throw new Error(codeResult.message);
+      return badRequest(codeResult.message);
     }
     const existingUser = await prisma.users.findUnique({
       where: { email },
     });
     if (!existingUser) {
-      throw new Error('该邮箱未注册');
+      return badRequest('该邮箱未注册');
     }
     const verifyResult = await captchaService.verifyEmailCode(email, emailCode);
     if (!verifyResult) {
-      throw new Error('验证码错误或已过期');
+      return badRequest('验证码错误或已过期');
     }
     const hashedPassword = await hashPassword(password);
     const updatedUser = await prisma.users.update({
