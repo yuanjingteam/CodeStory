@@ -233,7 +233,7 @@ useEffect(() => {
           <span>{currentLessonTitle}</span>
         </div>
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push(`/courses/${courseId}`)}
           className="border-2 border-black px-3 py-1 bg-green-500 text-white font-bold rounded-lg shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
         >
           <span>‹</span>

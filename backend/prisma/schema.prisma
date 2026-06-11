@@ -23,6 +23,7 @@ model users {
   updated_at       DateTime           @updatedAt @db.Timestamp(6)
   is_delete        Int                @default(0) @db.SmallInt
   ai_chat_sessions ai_chat_sessions[]
+  code_submissions code_submissions[]
   answers          answer[]
   courses_progress courses_progress[]
   lessons_progress lessons_progress[]
@@ -133,23 +134,24 @@ model lessons_progress {
 }
 
 model exercises {
-  id         String   @id @default(uuid()) @db.Char(36)
-  lesson_id  String   @db.Char(36)
-  type       String   @db.VarChar(20)
-  knowledge  String?
-  content    String
-  answer     String
-  analysis   String?
-  difficulty Int      @default(1) @db.SmallInt
-  source     String?  @db.VarChar(20)
-  metadata   Json?    @db.Json
-  hints      Json?    @db.Json
-  order      Int      @default(0)
-  created_at DateTime @default(now()) @db.Timestamp(6)
-  updated_at DateTime @updatedAt @db.Timestamp(6)
-  is_delete  Int      @default(0) @db.SmallInt
-  answers    answer[]
-  lessons    lessons  @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+  id               String             @id @default(uuid()) @db.Char(36)
+  lesson_id        String             @db.Char(36)
+  type             String             @db.VarChar(20)
+  knowledge        String?
+  content          String
+  answer           String
+  analysis         String?
+  difficulty       Int                @default(1) @db.SmallInt
+  source           String?            @db.VarChar(20)
+  metadata         Json?              @db.Json
+  hints            Json?              @db.Json
+  order            Int                @default(0)
+  created_at       DateTime           @default(now()) @db.Timestamp(6)
+  updated_at       DateTime           @updatedAt @db.Timestamp(6)
+  is_delete        Int                @default(0) @db.SmallInt
+  answers          answer[]
+  code_submissions code_submissions[]
+  lessons          lessons            @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
 
   @@index([lesson_id])
   @@index([type])
@@ -180,23 +182,77 @@ model answer {
 }
 
 model ai_chat_sessions {
-  id                  String   @id @default(uuid()) @db.Char(36)
-  user_id             String   @db.Char(36)
-  lesson_id           String   @db.Char(36)
-  state               Int      @default(0) @db.SmallInt
-  current_exercise_id String?  @db.Char(36)
-  hint_level          Int      @default(0)
-  context             Json?    @db.Json
-  created_at          DateTime @default(now()) @db.Timestamp(6)
-  updated_at          DateTime @updatedAt @db.Timestamp(6)
-  is_delete           Int      @default(0) @db.SmallInt
-  lessons             lessons  @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
-  users               users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id                  String             @id @default(uuid()) @db.Char(36)
+  user_id             String             @db.Char(36)
+  lesson_id           String             @db.Char(36)
+  state               Int                @default(0) @db.SmallInt
+  current_exercise_id String?            @db.Char(36)
+  hint_level          Int                @default(0)
+  context             Json?              @db.Json
+  created_at          DateTime           @default(now()) @db.Timestamp(6)
+  updated_at          DateTime           @updatedAt @db.Timestamp(6)
+  is_delete           Int                @default(0) @db.SmallInt
+  messages            ai_chat_messages[]
+  lessons             lessons            @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+  users               users              @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id, lesson_id])
   @@index([user_id])
   @@index([lesson_id])
   @@index([state])
+  @@index([is_delete])
+}
+
+model ai_chat_messages {
+  id           String           @id @default(uuid()) @db.Char(36)
+  session_id   String           @db.Char(36)
+  role         String           @db.VarChar(20)
+  message_type String           @default("chat") @db.VarChar(30)
+  content      String
+  metadata     Json?            @db.Json
+  created_at   DateTime         @default(now()) @db.Timestamp(6)
+  is_delete    Int              @default(0) @db.SmallInt
+  session      ai_chat_sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@index([session_id])
+  @@index([created_at])
+  @@index([is_delete])
+}
+
+model code_submissions {
+  id                String    @id @default(uuid()) @db.Char(36)
+  user_id           String    @db.Char(36)
+  exercise_id       String    @db.Char(36)
+  code              String
+  language          String    @db.VarChar(30)
+  status            String    @default("queued") @db.VarChar(30)
+  submission_no     Int
+  compile_success   Boolean?
+  passed_count      Int       @default(0)
+  total_count       Int       @default(0)
+  error_type        String?   @db.VarChar(30)
+  execution_time_ms Int?
+  memory_used_kb    Int?
+  test_result       Json?     @db.Json
+  functional_score  Int       @default(0)
+  quality_score     Int       @default(0)
+  hint_deduction    Int       @default(0)
+  final_score       Int       @default(0)
+  ai_review_status  String?   @db.VarChar(30)
+  ai_review         Json?     @db.Json
+  model             String?   @db.VarChar(100)
+  rubric_version    String?   @db.VarChar(30)
+  created_at        DateTime  @default(now()) @db.Timestamp(6)
+  updated_at        DateTime  @updatedAt @db.Timestamp(6)
+  is_delete         Int       @default(0) @db.SmallInt
+  user              users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  exercise          exercises @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, exercise_id, submission_no])
+  @@index([user_id])
+  @@index([exercise_id])
+  @@index([status])
+  @@index([created_at])
   @@index([is_delete])
 }
 

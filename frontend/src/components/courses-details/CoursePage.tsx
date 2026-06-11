@@ -58,7 +58,7 @@ export default function CourseDetails({
         </div>
 
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push('/courses')}
           className="border-2 border-black px-4 py-2 bg-purple-500 text-white font-bold shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all rounded-md"
         >
           ← 返回
