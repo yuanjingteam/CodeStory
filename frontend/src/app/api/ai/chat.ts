@@ -1,4 +1,5 @@
 import { getToken } from '@/utils/jwt';
+import { useUserStore } from '@/store/useUserStore';
 
 interface StreamChatParams {
   lessonId: string;
@@ -51,6 +52,14 @@ export async function streamLessonChat({
   );
 
   if (!response.ok) {
+    if (response.status === 401) {
+      const { isLoggedIn } = useUserStore.getState();
+      if (isLoggedIn) {
+        useUserStore.getState().clearUser();
+        window.location.href = '/auth/login';
+      }
+      throw new Error('登录已过期，请重新登录');
+    }
     throw new Error(await getErrorMessage(response));
   }
 

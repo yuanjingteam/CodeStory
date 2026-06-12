@@ -5,7 +5,7 @@ import axios, {
   InternalAxiosRequestConfig,
   type AxiosError,
 } from 'axios';
-import { getToken, isTokenValid } from './jwt';
+import { getToken } from './jwt';
 import { useUserStore } from '@/store/useUserStore';
 import { showToast } from './toast';
 
@@ -17,7 +17,7 @@ const service: AxiosInstance = axios.create({
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = getToken();
-    if (token && isTokenValid(token)) {
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
