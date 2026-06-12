@@ -15,6 +15,7 @@ import {
   courseManageRouter,
   chapterManageRouter,
   lessonManageRouter,
+  aiRouter,
 } from './routes/index';
 
 dotenv.config();
@@ -40,6 +41,7 @@ app.use('/api/v1/home', homeRouter);
 app.use('/api/v1/profile', authMiddleware, profileRouter);
 app.use('/api/v1/chapter/lesson',authMiddleware, lessonsRouter);
 app.use('/api/v1/exercises', authMiddleware, exercisesRouter);
+app.use('/api/v1/ai', aiRouter);
 app.use(
   '/api/v1/admin/user-manage',
   [authMiddleware, requireAdmin],

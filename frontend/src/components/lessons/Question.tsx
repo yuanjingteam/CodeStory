@@ -10,9 +10,15 @@ interface QuestionProps {
   data: LessonDetailData
   onLessonCompleted?: (lessonId: string) => void
   onLessonSwitched?: (lessonId: string, chapterId: string) => void
+  onCurrentExerciseChange?: (exerciseId: string | null) => void
 }
 
-export default function Question({ data, onLessonCompleted, onLessonSwitched }: QuestionProps) {
+export default function Question({
+  data,
+  onLessonCompleted,
+  onLessonSwitched,
+  onCurrentExerciseChange,
+}: QuestionProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [currentLessonId, setCurrentLessonId] = useState<string | undefined>(data?.currentLesson?.id)
@@ -130,6 +136,10 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
       }
     })
   }, [updateUrlWithExercise])
+
+  useEffect(() => {
+    onCurrentExerciseChange?.(modalOpen ? currentExerciseId : null)
+  }, [currentExerciseId, modalOpen, onCurrentExerciseChange])
 
   const handleNavigate = async (direction: 'prev' | 'next') => {
     if (!currentLessonId || !courseId || !currentChapterId) return
