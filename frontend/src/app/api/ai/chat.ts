@@ -1,5 +1,9 @@
 import { getToken } from '@/utils/jwt';
-import { useUserStore } from '@/store/useUserStore';
+import {
+  handleAuthenticationFailure,
+  isRefreshSessionExpired,
+  refreshAccessToken,
+} from '@/utils/auth-session';
 
 interface StreamChatParams {
   lessonId: string;
@@ -24,20 +28,27 @@ async function getErrorMessage(response: Response): Promise<string> {
   }
 }
 
-export async function streamLessonChat({
-  lessonId,
-  exerciseId,
-  message,
-  signal,
-  onToken,
-}: StreamChatParams): Promise<void> {
-  const token = getToken();
-  if (!token) throw new Error('登录状态已失效，请重新登录');
+async function getErrorCode(response: Response): Promise<string | undefined> {
+  try {
+    const data = (await response.clone().json()) as { code?: string };
+    return data.code;
+  } catch {
+    return undefined;
+  }
+}
 
-  const response = await fetch(
+function requestChatStream(
+  token: string,
+  lessonId: string,
+  exerciseId: string | null | undefined,
+  message: string,
+  signal: AbortSignal
+) {
+  return fetch(
     `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/ai/chat/stream`,
     {
       method: 'POST',
+      credentials: 'include',
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
@@ -50,14 +61,51 @@ export async function streamLessonChat({
       signal,
     }
   );
+}
+
+export async function streamLessonChat({
+  lessonId,
+  exerciseId,
+  message,
+  signal,
+  onToken,
+}: StreamChatParams): Promise<void> {
+  const token = getToken();
+  if (!token) throw new Error('登录状态已失效，请重新登录');
+
+  let response = await requestChatStream(
+    token,
+    lessonId,
+    exerciseId,
+    message,
+    signal
+  );
+
+  if (
+    response.status === 401 &&
+    (await getErrorCode(response)) === 'ACCESS_TOKEN_EXPIRED'
+  ) {
+    try {
+      const refreshed = await refreshAccessToken();
+      response = await requestChatStream(
+        refreshed.accessToken,
+        lessonId,
+        exerciseId,
+        message,
+        signal
+      );
+    } catch (error) {
+      if (isRefreshSessionExpired(error)) {
+        handleAuthenticationFailure();
+        throw new Error('登录已过期，请重新登录');
+      }
+      throw new Error('网络异常，暂时无法续期登录状态');
+    }
+  }
 
   if (!response.ok) {
     if (response.status === 401) {
-      const { isLoggedIn } = useUserStore.getState();
-      if (isLoggedIn) {
-        useUserStore.getState().clearUser();
-        window.location.href = '/auth/login';
-      }
+      handleAuthenticationFailure();
       throw new Error('登录已过期，请重新登录');
     }
     throw new Error(await getErrorMessage(response));

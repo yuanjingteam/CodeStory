@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from 'sonner';
+import AuthBootstrap from '@/components/auth/AuthBootstrap';
 export const metadata: Metadata = {
   title: 'CodeStory',
   description: 'Code practice platform',
@@ -13,6 +14,7 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className="relative ">
+        <AuthBootstrap />
         <div className="fixed inset-0 pointer-events-none z-0">
           <div className="absolute inset-0 bg-[radial-gradient(circle,_#000_1px,_transparent_1px)] bg-[size:20px_20px]"></div>
         </div>

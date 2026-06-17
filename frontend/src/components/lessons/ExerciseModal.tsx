@@ -66,7 +66,7 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
   }, [isOpen, exerciseId])
 
   const handleSubmit = async (answer: string) => {
-    if (!exerciseData?.id) return
+    if (!exerciseData?.id) return false
 
     try {
       const response = await exerciseApi.submit(exerciseData.id, answer, currentHintLevelUsed)
@@ -81,8 +81,10 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
         setHasSubmitted(true)
         onComplete(exerciseData.id)
       }
+      return response.correct
     } catch (error) {
       console.error('提交答案失败:', error)
+      return false
     }
   }
 
@@ -157,12 +159,14 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
 
             {exerciseData.type === 'single_choice' ? (
               <ChoiceQuestion
+                key={exerciseData.id}
                 exercise={exerciseData}
                 onSubmit={handleSubmit}
                 onHintUsed={setCurrentHintLevelUsed}
               />
             ) : exerciseData.type === 'code' ? (
               <CodeQuestion
+                key={exerciseData.id}
                 exercise={exerciseData}
                 onSubmit={handleSubmit}
                 onHintUsed={setCurrentHintLevelUsed}

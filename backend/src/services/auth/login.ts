@@ -1,6 +1,10 @@
+import { randomUUID } from 'node:crypto';
 import prisma from '@/config/prisma';
 import type { LoginRequest } from '@/types/auth';
+import type { AuthSession } from '@/types/auth-session';
 import { captchaService } from '@/services/auth/captcha';
+import { createAuthSession } from '@/services/auth/session';
+import { createAuthSessionTimes } from '@/config/auth-session';
 import { deleteCache } from '@/utils/cache';
 import {
   validateEmail,
@@ -8,25 +12,27 @@ import {
   validateCode,
 } from '@/utils/validate';
 import { comparePassword } from '@/utils/bcrypt';
-import { generateToken, verifyToken } from '@/utils/jwt';
-import { badRequest } from '../../utils/response';
+import {
+  hashRefreshToken,
+  issueAccessToken,
+  issueRefreshToken,
+} from '@/utils/auth-token';
 
-const tokenBlacklist = new Set<string>();
 class LoginService {
   async login(body: LoginRequest) {
     const { email, password, captchaId, captchaCode } = body;
     const emailResult = validateEmail(email);
     
     if (!emailResult.isValid) {
-      return badRequest(emailResult.message);
+      throw new Error(emailResult.message);
     }
     const passwordResult = validatePassword(password);
     if (!passwordResult.isValid) {
-      return badRequest(passwordResult.message);
+      throw new Error(passwordResult.message);
     }
     const captchaResult = validateCode(captchaCode);
     if (!captchaResult.isValid) {
-      return badRequest(captchaResult.message);
+      throw new Error(captchaResult.message);
     }
 
     await captchaService.verifyImageCaptcha(captchaId, captchaCode);
@@ -36,27 +42,54 @@ class LoginService {
     });
 
     if (!user) {
-      return badRequest('用户不存在');
+      throw new Error('用户不存在');
     }
 
     if (user.is_delete === 1) {
-      return badRequest('该账户已被删除，无法登录');
+      throw new Error('该账户已被删除，无法登录');
     }
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
-      return badRequest('密码错误');
+      throw new Error('密码错误');
     }
-    const token = generateToken(
-      {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      },
-      body.rememberMe
-    );
+    const sessionId = randomUUID();
+    const tokenId = randomUUID();
+    const rememberMe = body.rememberMe === true;
+    const sessionTimes = createAuthSessionTimes();
+    const accessToken = issueAccessToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      sessionId,
+    });
+    const refreshToken = issueRefreshToken({
+      userId: user.id,
+      sessionId,
+      tokenId,
+    });
+    const authSession: AuthSession = {
+      sessionId,
+      userId: user.id,
+      currentTokenId: tokenId,
+      refreshTokenHash: hashRefreshToken(refreshToken.token),
+      rememberMe,
+      createdAt: sessionTimes.createdAt,
+      lastRefreshedAt: sessionTimes.createdAt,
+      refreshExpiresAt: sessionTimes.refreshExpiresAt,
+      sessionExpiresAt: sessionTimes.sessionExpiresAt,
+      revokedAt: null,
+    };
+
     await deleteCache(`emailCode:${captchaId}`);
+    await createAuthSession(authSession);
+
     return {
-      token,
+      accessToken: accessToken.token,
+      accessExpiresAt: accessToken.expiresAt,
+      token: accessToken.token,
+      refreshToken: refreshToken.token,
+      refreshExpiresAt: sessionTimes.refreshExpiresAt,
+      rememberMe,
       user: {
         id: user.id,
         email: user.email,
@@ -71,16 +104,6 @@ class LoginService {
       },
       message: '',
     };
-  }
-
-  isTokenBlacklisted(token: string): boolean {
-    try {
-      const decoded = verifyToken(token);
-      const jti = `${decoded.id}-${decoded.email}`;
-      return tokenBlacklist.has(jti);
-    } catch {
-      return true;
-    }
   }
 }
 

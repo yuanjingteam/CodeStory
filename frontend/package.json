@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "check": "pnpm run typecheck && pnpm run lint"
   },
   "dependencies": {
     "@codemirror/lang-python": "^6.2.1",

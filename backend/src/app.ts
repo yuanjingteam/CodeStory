@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import { corsOptions } from './config/cors';
 import errorHandler from './middleware/errorHandler';
 import { authMiddleware, requireAdmin } from './middleware/auth';
 import {
@@ -29,7 +30,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 

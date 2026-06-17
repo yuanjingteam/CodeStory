@@ -1,5 +1,4 @@
 import request from '@/utils/request';
-import type { AxiosResponse } from 'axios';
 import type {
   LoginRequest,
   ApiResponse,
@@ -7,6 +6,7 @@ import type {
   RegisterRequest,
   ImageCaptchaData,
   ForgetPasswordRequest,
+  LoginUserInfo,
 } from '@/types/auth';
 // 登录
 export const login = async (data: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
@@ -16,6 +16,10 @@ export const login = async (data: LoginRequest): Promise<ApiResponse<LoginRespon
 //登出
 export const logout = async (): Promise<ApiResponse<void>> => {
   return request.post('/auth/logout');
+};
+
+export const getCurrentUser = async (): Promise<ApiResponse<LoginUserInfo>> => {
+  return request.get('/auth/me');
 };
 
 // 注册

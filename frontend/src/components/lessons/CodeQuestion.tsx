@@ -6,6 +6,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import { python } from '@codemirror/lang-python';
 import { EditorView } from '@codemirror/view';
 import { BsLightbulb } from 'react-icons/bs';
+import { useExerciseDraft } from '@/hooks/useExerciseDraft';
 
 export interface CodeQuestionHandle {
   getCode: () => string;
@@ -13,16 +14,31 @@ export interface CodeQuestionHandle {
 
 interface CodeQuestionProps {
   exercise: ExerciseDetailData;
-  onSubmit: (answer: string) => void;
+  onSubmit: (answer: string) => Promise<boolean>;
   onHintUsed?: (level: number) => void;
 }
 
 const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
   ({ exercise, onSubmit, onHintUsed }, ref) => {
-  const [userCode, setUserCode] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [showHintModal, setShowHintModal] = useState(false);
   const [hintLevelUsed, setHintLevelUsed] = useState(0);
+  const alreadyCorrect = (exercise.userAnswer?.score ?? 0) > 0;
+  const initialCode =
+    exercise.userAnswer?.answer ||
+    (exercise.metadata as CodeMetadata).codeTemplate ||
+    '';
+  const {
+    value: userCode,
+    setValue: setUserCode,
+    clearDraft,
+    status: draftStatus,
+  } = useExerciseDraft({
+    exerciseId: exercise.id,
+    exerciseType: exercise.type,
+    initialValue: initialCode,
+    disabled: alreadyCorrect,
+  });
 
   useEffect(() => {
     if (exercise.userAnswer?.hint_level_used !== undefined) {
@@ -34,16 +50,12 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
     getCode: () => userCode,
   }), [userCode]);
 
-  useEffect(() => {
-    const code = (exercise.metadata as CodeMetadata).codeTemplate || '';
-    setUserCode(code);
-  }, [exercise]);
-
-  const handleSubmit = () => {
-    onSubmit(userCode);
+  const handleSubmit = async () => {
+    const correct = await onSubmit(userCode);
+    if (correct) {
+      clearDraft();
+    }
   };
-
-  const alreadyCorrect = (exercise.userAnswer?.score ?? 0) > 0;
 
   const handleUseHint = (newLevel: number, hintContent: string) => {
     setHintLevelUsed(newLevel);
@@ -54,7 +66,20 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-4">
         <div className="font-bold text-lg">请编写代码：</div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          {!alreadyCorrect && (
+            <span
+              className={`text-xs font-bold ${
+                draftStatus === 'error' ? 'text-red-600' : 'text-gray-500'
+              }`}
+            >
+              {draftStatus === 'error'
+                ? '草稿保存失败'
+                : draftStatus === 'saved'
+                  ? '草稿已保存到本机'
+                  : ''}
+            </span>
+          )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="py-2 px-4 bg-purple-500 rounded-lg text-white font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
@@ -119,7 +144,7 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
       </div>
 
       <button
-        onClick={handleSubmit}
+        onClick={() => void handleSubmit()}
         disabled={!userCode.trim() || alreadyCorrect}
         className={`w-full py-3 font-bold border-4 border-black rounded-lg shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-lg mt-4 ${
           userCode.trim() && !alreadyCorrect

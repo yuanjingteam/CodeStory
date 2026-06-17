@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { loginService } from '@/services/auth/login';
 import type { LoginRequest } from '@/types/auth';
+import {
+  REFRESH_TOKEN_COOKIE_NAME,
+  getRefreshTokenCookieOptions,
+} from '@/config/auth-cookie';
 class LoginController {
   async login(req: Request, res: Response) {
     try {
@@ -12,11 +16,31 @@ class LoginController {
           message: '登录信息不完整',
         });
       }
-      const { token, user } = await loginService.login(body);
+      const {
+        accessToken,
+        accessExpiresAt,
+        token,
+        refreshToken,
+        refreshExpiresAt,
+        rememberMe,
+        user,
+      } = await loginService.login(body);
+
+      res.cookie(
+        REFRESH_TOKEN_COOKIE_NAME,
+        refreshToken,
+        getRefreshTokenCookieOptions(rememberMe, refreshExpiresAt)
+      );
+
       return res.status(200).json({
         code: 200,
         message: '登录成功',
-        data: { token, user },
+        data: {
+          accessToken,
+          accessExpiresAt,
+          token,
+          user,
+        },
       });
     } catch (error) {
       return res.status(401).json({
