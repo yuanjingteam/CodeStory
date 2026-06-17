@@ -55,7 +55,8 @@ service.interceptors.response.use(
       const errorCode = error.response.data?.code;
 
       if (
-        errorCode === 'ACCESS_TOKEN_EXPIRED' &&
+        (errorCode === 'ACCESS_TOKEN_EXPIRED' ||
+          errorCode === 'ACCESS_TOKEN_MISSING') &&
         originalRequest &&
         !originalRequest._retry
       ) {
