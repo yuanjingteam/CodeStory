@@ -1,5 +1,6 @@
 import prisma from '../../config/prisma';
 import { resolveShortId, uuidToShortId } from '../../utils/idTransform';
+import { generateExerciseHint } from '../ai/exercise-hint.service';
 
 export interface ExerciseDetail {
   id: string;
@@ -22,6 +23,8 @@ export interface UserAnswer {
   score: number;
 }
 
+const DEFAULT_AI_HINT_MAX_LEVEL = 3;
+
 export async function getExerciseDetail(
   exerciseId: string,
   userId: string
@@ -31,6 +34,13 @@ export async function getExerciseDetail(
 
   const exercise = await prisma.exercises.findUnique({
     where: { id: resolvedId, is_delete: 0 },
+    include: {
+      lessons: {
+        select: {
+          content: true,
+        },
+      },
+    },
   });
 
   if (!exercise) return null;
@@ -62,6 +72,13 @@ export async function submitExercise(
 
   const exercise = await prisma.exercises.findUnique({
     where: { id: resolvedId, is_delete: 0 },
+    include: {
+      lessons: {
+        select: {
+          content: true,
+        },
+      },
+    },
   });
 
   if (!exercise) return null;
@@ -329,22 +346,45 @@ export async function getExerciseHint(
 
   const exercise = await prisma.exercises.findUnique({
     where: { id: resolvedId, is_delete: 0 },
+    include: {
+      lessons: {
+        select: {
+          content: true,
+        },
+      },
+    },
   });
 
-  if (!exercise || !exercise.hints) return null;
+  if (!exercise) return null;
 
   const hints = exercise.hints as any;
-  const maxLevel = hints._meta?.max_level || 0;
+  const maxLevel = hints?._meta?.max_level || DEFAULT_AI_HINT_MAX_LEVEL;
 
   if (hintLevel < 1 || hintLevel > maxLevel) {
     return null;
   }
 
-  const hintKey = `level_${hintLevel}` as const;
-  const hintContent = hints[hintKey];
+  const adminHints: string[] = [];
+  for (let i = 1; i <= hintLevel; i++) {
+    const hintContent = hints?.[`level_${i}`];
+    if (typeof hintContent === 'string' && hintContent.trim()) {
+      adminHints.push(hintContent.trim());
+    }
+  }
 
-  if (!hintContent) {
-    return null;
+  let hintContent: string;
+  try {
+    hintContent = await generateExerciseHint({
+      hintLevel,
+      exerciseType: exercise.type,
+      knowledge: exercise.knowledge || '',
+      content: exercise.content,
+      lessonContent: exercise.lessons.content || '',
+      adminHints,
+    });
+  } catch (error) {
+    if (adminHints.length === 0) throw error;
+    hintContent = adminHints[adminHints.length - 1];
   }
 
   const existingAnswer = await prisma.answer.findUnique({
@@ -394,9 +434,16 @@ export async function getAcquiredHints(
 
   const exercise = await prisma.exercises.findUnique({
     where: { id: resolvedId, is_delete: 0 },
+    include: {
+      lessons: {
+        select: {
+          content: true,
+        },
+      },
+    },
   });
 
-  if (!exercise || !exercise.hints) return null;
+  if (!exercise) return null;
 
   const userAnswer = await prisma.answer.findUnique({
     where: {
@@ -410,18 +457,32 @@ export async function getAcquiredHints(
 
   const currentLevel = userAnswer?.hint_level_used || 0;
   const hints = exercise.hints as any;
-  const maxLevel = hints._meta?.max_level || 0;
+  const maxLevel = hints?._meta?.max_level || DEFAULT_AI_HINT_MAX_LEVEL;
 
   const acquiredHints = [];
   
   for (let i = 1; i <= currentLevel && i <= maxLevel; i++) {
     const hintKey = `level_${i}` as const;
-    const hintContent = hints[hintKey];
+    const hintContent = hints?.[hintKey];
     
     if (hintContent) {
       acquiredHints.push({
         level: i,
         content: hintContent,
+      });
+    } else {
+      const generatedHint = await generateExerciseHint({
+        hintLevel: i,
+        exerciseType: exercise.type,
+        knowledge: exercise.knowledge || '',
+        content: exercise.content,
+        lessonContent: exercise.lessons.content || '',
+        adminHints: [],
+      });
+
+      acquiredHints.push({
+        level: i,
+        content: generatedHint,
       });
     }
   }

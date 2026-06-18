@@ -28,6 +28,7 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
     exercise.userAnswer?.answer ||
     (exercise.metadata as CodeMetadata).codeTemplate ||
     '';
+  const maxHintLevel = exercise.hints?._meta.max_level || 3;
   const {
     value: userCode,
     setValue: setUserCode,
@@ -98,21 +99,21 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
           </button>
           <button
             onClick={() => setShowHintModal(true)}
-            disabled={!exercise.hints || alreadyCorrect}
+            disabled={alreadyCorrect}
             className={`
               py-2 px-4 font-bold border-2 border-black rounded-lg
               shadow-[2px_2px_0_0_rgba(0,0,0,1)]
               hover:translate-x-[2px] hover:translate-y-[2px]
               hover:shadow-none transition-all
               flex items-center justify-center
-              ${exercise.hints && !alreadyCorrect
+              ${!alreadyCorrect
                 ? 'bg-yellow-400 text-black cursor-pointer'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }
             `}
           >
             <BsLightbulb className="w-5 h-5 mr-1" />
-            {!exercise.hints ? '提示' : hintLevelUsed >= exercise.hints._meta.max_level ? '查看提示' : `提示 (${exercise.hints._meta.max_level - hintLevelUsed})`}
+            {hintLevelUsed >= maxHintLevel ? '查看提示' : `提示 (${maxHintLevel - hintLevelUsed})`}
           </button>
         </div>
       </div>

@@ -23,10 +23,11 @@ export default function HintModal({
   const [loading, setLoading] = useState(false);
   const [loadingHints, setLoadingHints] = useState(true);
   const [acquiredHints, setAcquiredHints] = useState<Array<{ level: number; content: string }>>([]);
+  const maxLevel = hints?._meta.max_level || 3;
 
   useEffect(() => {
     const fetchAcquiredHints = async () => {
-      if (!exerciseId || !hints) {
+      if (!exerciseId) {
         setLoadingHints(false);
         return;
       }
@@ -44,33 +45,13 @@ export default function HintModal({
     };
 
     fetchAcquiredHints();
-  }, [exerciseId, hints]);
+  }, [exerciseId]);
 
-  if (!hints) {
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] p-6 max-w-md w-full mx-4">
-          <h3 className="text-xl font-bold mb-4">
-            <BsLightbulb className="w-5 h-5 mr-1" /> 提示
-          </h3>
-          <p className="text-gray-600 mb-6">本题暂无提示</p>
-          <button
-            onClick={onClose}
-            className="w-full py-1 bg-yellow-400 border-2 border-black font-bold shadow-[4px_4px_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
-          >
-            确定
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const { max_level } = hints._meta;
   const SCORE_DEDUCTION = [0, 10, 20, 30];
-  const remainingHints = max_level - currentLevel;
+  const remainingHints = maxLevel - currentLevel;
 
   const handleGetHint = async () => {
-    if (currentLevel >= max_level || loading) return;
+    if (currentLevel >= maxLevel || loading) return;
 
     setLoading(true);
     
@@ -135,7 +116,7 @@ export default function HintModal({
 
           <div className="bg-purple-50 p-3 border-2 border-black mb-4">
             <div className="flex justify-between text-sm font-bold">
-              <span>已使用提示：{currentLevel} / {max_level}</span>
+              <span>已使用提示：{currentLevel} / {maxLevel}</span>
               <span className="text-orange-600">
                 将扣除 {totalDeduction} 分
               </span>
@@ -160,7 +141,7 @@ export default function HintModal({
             </button>
           ) : currentLevel > 0 ? (
             <div className="text-center py-3 bg-yellow-50 border-2 border-black font-bold text-gray-700">
-              ✅ 已获取所有提示 ({currentLevel}/{max_level})
+              ✅ 已获取所有提示 ({currentLevel}/{maxLevel})
             </div>
           ) : null}
 
