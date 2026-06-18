@@ -7,6 +7,8 @@ const MAX_LESSON_CONTENT_LENGTH = 20_000;
 const MAX_EXERCISE_CONTENT_LENGTH = 6_000;
 
 export interface LessonAiContext {
+  lessonId: string;
+  exerciseId: string | null;
   courseTitle: string;
   chapterTitle: string;
   lessonTitle: string;
@@ -65,11 +67,13 @@ export async function getLessonAiContext(
   if (!lesson) return null;
 
   let exercise: LessonAiContext['exercise'] = null;
+  let resolvedCurrentExerciseId: string | null = null;
   if (exerciseId) {
     const resolvedExerciseId = await resolveShortId('exercises', exerciseId);
     if (!resolvedExerciseId) {
       throw new Error('当前练习不存在');
     }
+    resolvedCurrentExerciseId = resolvedExerciseId;
 
     const exerciseRecord = await prisma.exercises.findFirst({
       where: {
@@ -96,6 +100,8 @@ export async function getLessonAiContext(
   }
 
   return {
+    lessonId: resolvedLessonId,
+    exerciseId: resolvedCurrentExerciseId,
     courseTitle: lesson.chapters.courses.title,
     chapterTitle: lesson.chapters.title,
     lessonTitle: lesson.title,

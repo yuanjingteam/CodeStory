@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FiMessageCircle, FiRefreshCw, FiSend, FiSquare } from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { streamLessonChat } from '@/app/api/ai/chat';
+import { getLessonChatHistory, streamLessonChat } from '@/app/api/ai/chat';
 
 interface ChatProps {
   lessonId: string;
@@ -38,6 +38,31 @@ export default function Chat({ lessonId, lessonTitle, exerciseId }: ChatProps) {
   const [isStreaming, setIsStreaming] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const welcomeMessage = createWelcomeMessage(lessonTitle);
+
+    getLessonChatHistory({ lessonId, signal: controller.signal })
+      .then((history) => {
+        if (controller.signal.aborted || history.length === 0) return;
+
+        setMessages([
+          welcomeMessage,
+          ...history.map((message) => ({
+            id: message.id,
+            role: message.role,
+            content: message.content,
+          })),
+        ]);
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return;
+        console.warn('获取 AI 对话历史失败:', error);
+      });
+
+    return () => controller.abort();
+  }, [lessonId, lessonTitle]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -213,7 +238,7 @@ export default function Chat({ lessonId, lessonTitle, exerciseId }: ChatProps) {
         </div>
       </div>
 
-      <div className="border-t-4 border-black bg-white p-3">
+      <div className="bg-white p-3">
         <div className="border-2 border-black rounded-2xl bg-white overflow-hidden">
           <textarea
             value={input}
@@ -226,7 +251,7 @@ export default function Chat({ lessonId, lessonTitle, exerciseId }: ChatProps) {
             }}
             placeholder={exerciseId ? '询问当前练习或小节内容...' : '询问当前小节内容...'}
             maxLength={2000}
-            rows={3}
+            rows={1}
             disabled={isStreaming}
             className="w-full resize-none px-4 pt-3 pb-1 text-sm outline-none disabled:bg-gray-50"
           />

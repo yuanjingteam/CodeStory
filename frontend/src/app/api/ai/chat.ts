@@ -13,6 +13,18 @@ interface StreamChatParams {
   onToken: (token: string) => void;
 }
 
+interface LessonChatHistoryParams {
+  lessonId: string;
+  signal?: AbortSignal;
+}
+
+export interface LessonChatHistoryMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  createdAt: string;
+}
+
 interface StreamEvent {
   type: 'start' | 'token' | 'done' | 'error';
   content?: string;
@@ -63,6 +75,75 @@ function requestChatStream(
   );
 }
 
+async function getAccessTokenOrRefresh(): Promise<string> {
+  const token = getToken();
+  if (token) return token;
+
+  try {
+    const refreshed = await refreshAccessToken();
+    return refreshed.accessToken;
+  } catch (error) {
+    if (isRefreshSessionExpired(error)) {
+      handleAuthenticationFailure();
+      throw new Error('登录已过期，请重新登录');
+    }
+    throw new Error('网络异常，暂时无法恢复登录状态');
+  }
+}
+
+function requestChatHistory(token: string, lessonId: string, signal?: AbortSignal) {
+  return fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/ai/chat/history?lessonId=${encodeURIComponent(lessonId)}`,
+    {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      signal,
+    }
+  );
+}
+
+export async function getLessonChatHistory({
+  lessonId,
+  signal,
+}: LessonChatHistoryParams): Promise<LessonChatHistoryMessage[]> {
+  const token = await getAccessTokenOrRefresh();
+
+  let response = await requestChatHistory(token, lessonId, signal);
+
+  if (
+    response.status === 401 &&
+    (await getErrorCode(response)) === 'ACCESS_TOKEN_EXPIRED'
+  ) {
+    try {
+      const refreshed = await refreshAccessToken();
+      response = await requestChatHistory(refreshed.accessToken, lessonId, signal);
+    } catch (error) {
+      if (isRefreshSessionExpired(error)) {
+        handleAuthenticationFailure();
+        throw new Error('登录已过期，请重新登录');
+      }
+      throw new Error('网络异常，暂时无法续期登录状态');
+    }
+  }
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      handleAuthenticationFailure();
+      throw new Error('登录已过期，请重新登录');
+    }
+    throw new Error(await getErrorMessage(response));
+  }
+
+  const payload = (await response.json()) as {
+    data?: { messages?: LessonChatHistoryMessage[] };
+  };
+
+  return payload.data?.messages || [];
+}
+
 export async function streamLessonChat({
   lessonId,
   exerciseId,
@@ -70,8 +151,7 @@ export async function streamLessonChat({
   signal,
   onToken,
 }: StreamChatParams): Promise<void> {
-  const token = getToken();
-  if (!token) throw new Error('登录状态已失效，请重新登录');
+  const token = await getAccessTokenOrRefresh();
 
   let response = await requestChatStream(
     token,

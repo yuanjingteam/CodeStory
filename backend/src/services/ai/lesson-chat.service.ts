@@ -2,6 +2,7 @@ import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { ChatOpenAI } from '@langchain/openai';
 import { getAiConfig } from '../../config/ai';
 import type { LessonAiContext } from './lesson-context.service';
+import type { LessonChatHistoryMessage } from './lesson-session.service';
 
 const lessonTutorPrompt = ChatPromptTemplate.fromMessages([
   [
@@ -24,7 +25,10 @@ const lessonTutorPrompt = ChatPromptTemplate.fromMessages([
 {lessonContent}
 
 当前练习：
-{exerciseContext}`,
+{exerciseContext}
+
+最近对话：
+{chatHistory}`,
   ],
   ['human', '{question}'],
 ]);
@@ -54,6 +58,17 @@ function formatExercise(context: LessonAiContext): string {
   ].join('\n');
 }
 
+function formatChatHistory(history: LessonChatHistoryMessage[]): string {
+  if (history.length === 0) return '暂无历史对话。';
+
+  return history
+    .map((message) => {
+      const roleLabel = message.role === 'assistant' ? 'AI导师' : '学生';
+      return `${roleLabel}：${message.content}`;
+    })
+    .join('\n');
+}
+
 function getChunkText(content: unknown): string {
   if (typeof content === 'string') return content;
   if (!Array.isArray(content)) return '';
@@ -77,7 +92,8 @@ function getChunkText(content: unknown): string {
 export async function* streamLessonChat(
   context: LessonAiContext,
   question: string,
-  signal: AbortSignal
+  signal: AbortSignal,
+  history: LessonChatHistoryMessage[] = []
 ): AsyncGenerator<string> {
   const chain = lessonTutorPrompt.pipe(createModel());
   const stream = await chain.stream(
@@ -87,6 +103,7 @@ export async function* streamLessonChat(
       lessonTitle: context.lessonTitle,
       lessonContent: context.lessonContent,
       exerciseContext: formatExercise(context),
+      chatHistory: formatChatHistory(history),
       question,
     },
     { signal }
