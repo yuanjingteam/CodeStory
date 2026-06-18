@@ -214,44 +214,43 @@ export default function Chat({ lessonId, lessonTitle, exerciseId }: ChatProps) {
       </div>
 
       <div className="border-t-4 border-black bg-white p-3">
-        <textarea
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
-              event.preventDefault();
-              void sendMessage(input);
-            }
-          }}
-          placeholder={exerciseId ? '询问当前练习或小节内容...' : '询问当前小节内容...'}
-          maxLength={2000}
-          rows={3}
-          disabled={isStreaming}
-          className="w-full resize-none rounded-lg border-2 border-black px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-100"
-        />
-
-        <div className="mt-2 flex items-center justify-between gap-3">
-          <span className="text-xs text-gray-500">Enter 发送，Shift + Enter 换行</span>
-          {isStreaming ? (
-            <button
-              type="button"
-              onClick={stopGeneration}
-              className="flex items-center gap-2 border-2 border-black bg-red-500 text-white px-3 py-2 rounded-lg font-bold shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
-            >
-              <FiSquare />
-              停止
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => void sendMessage(input)}
-              disabled={!input.trim()}
-              className="flex items-center gap-2 border-2 border-black bg-green-500 text-white px-3 py-2 rounded-lg font-bold shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0"
-            >
-              <FiSend />
-              发送
-            </button>
-          )}
+        <div className="border-2 border-black rounded-2xl bg-white overflow-hidden">
+          <textarea
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                void sendMessage(input);
+              }
+            }}
+            placeholder={exerciseId ? '询问当前练习或小节内容...' : '询问当前小节内容...'}
+            maxLength={2000}
+            rows={3}
+            disabled={isStreaming}
+            className="w-full resize-none px-4 pt-3 pb-1 text-sm outline-none disabled:bg-gray-50"
+          />
+          <div className="flex items-center justify-between px-3 pb-2">
+            <span className="text-xs text-gray-400">Enter 发送，Shift + Enter 换行</span>
+            {isStreaming ? (
+              <button
+                type="button"
+                onClick={stopGeneration}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
+              >
+                <FiSquare className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => void sendMessage(input)}
+                disabled={!input.trim()}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-300 disabled:text-gray-500"
+              >
+                <FiSend className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
