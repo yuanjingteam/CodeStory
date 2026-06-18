@@ -195,10 +195,10 @@ export default function Chat({ lessonId, lessonTitle, exerciseId }: ChatProps) {
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex min-w-0 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[90%] border-2 border-black rounded-lg px-3 py-2 text-sm shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${
+                className={`max-w-[90%] min-w-0 overflow-hidden border-2 border-black rounded-lg px-3 py-2 text-sm shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${
                   message.role === 'user'
                     ? 'bg-yellow-300 text-black'
                     : message.status === 'error'
@@ -207,13 +207,13 @@ export default function Chat({ lessonId, lessonTitle, exerciseId }: ChatProps) {
                 }`}
               >
                 {message.role === 'assistant' ? (
-                  <div className="prose prose-sm max-w-none prose-pre:overflow-x-auto prose-pre:bg-gray-900 prose-pre:text-white">
+                  <div className="prose prose-sm max-w-none break-words prose-p:break-words prose-li:break-words prose-code:break-words prose-pre:max-w-full prose-pre:overflow-x-auto prose-pre:bg-gray-900 prose-pre:text-white">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {message.content || '正在思考...'}
                     </ReactMarkdown>
                   </div>
                 ) : (
-                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  <p className="whitespace-pre-wrap break-words">{message.content}</p>
                 )}
 
                 {message.status === 'streaming' && (
