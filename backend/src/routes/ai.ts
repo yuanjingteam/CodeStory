@@ -8,6 +8,10 @@ import {
   getOrCreateLessonChatSession,
   getRecentLessonChatMessages,
 } from '../services/ai/lesson-session.service';
+import {
+  getExerciseHint,
+  getExerciseHintProgress,
+} from '../services/courses/exercise-hint.service';
 
 const router = Router();
 const MAX_QUESTION_LENGTH = 2_000;
@@ -21,6 +25,33 @@ interface StreamEvent {
 
 function writeEvent(res: Response, event: StreamEvent): void {
   res.write(`${JSON.stringify(event)}\n`);
+}
+
+function isHintIntent(question: string): boolean {
+  const normalized = question.trim().toLowerCase();
+  return /提示|给点思路|给.*思路|没思路|不会做|卡住|hint|clue/.test(normalized);
+}
+
+function formatHintMessage(content: string, level: number, maxLevel: number): string {
+  return `提示 ${level}/${maxLevel}\n\n${content}`;
+}
+
+async function getNextHintMessage(
+  exerciseId: string,
+  userId: string
+): Promise<{ content: string; level: number; maxLevel: number } | null> {
+  const progress = await getExerciseHintProgress(exerciseId, userId);
+  if (!progress) return null;
+
+  if (progress.currentLevel >= progress.maxLevel) {
+    return {
+      level: progress.currentLevel,
+      maxLevel: progress.maxLevel,
+      content: `这道题的 ${progress.maxLevel} 级提示已经全部使用完了。建议你先根据已有提示尝试作答，或者把你的当前思路发给我，我可以帮你检查哪里卡住了。`,
+    };
+  }
+
+  return getExerciseHint(exerciseId, progress.currentLevel + 1, userId);
 }
 
 router.get('/chat/history', authMiddleware, async (req, res) => {
@@ -105,6 +136,35 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
     res.flushHeaders();
 
     writeEvent(res, { type: 'start', sessionId: session.id });
+
+    if (context.exerciseId && isHintIntent(question)) {
+      const hint = await getNextHintMessage(context.exerciseId, userId);
+      if (!hint) {
+        throw new Error('当前练习不存在');
+      }
+
+      const assistantContent = formatHintMessage(hint.content, hint.level, hint.maxLevel);
+      writeEvent(res, { type: 'token', content: assistantContent });
+
+      await appendLessonChatMessage(
+        session.id,
+        'assistant',
+        assistantContent,
+        {
+          lessonId: context.lessonId,
+          exerciseId: context.exerciseId,
+          hintLevel: hint.level,
+          maxHintLevel: hint.maxLevel,
+          modelSource: 'exercise-hint',
+        },
+        'hint'
+      );
+
+      writeEvent(res, { type: 'done' });
+      res.end();
+      return;
+    }
+
     let assistantContent = '';
     for await (const token of streamLessonChat(context, question, abortController.signal, history)) {
       if (abortController.signal.aborted) break;

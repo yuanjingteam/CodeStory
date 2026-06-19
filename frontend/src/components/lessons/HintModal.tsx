@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { HintConfig } from '@/types/exercise';
 import { BsLightbulb } from 'react-icons/bs';
 import { exerciseApi } from '@/app/api/courses/exercise';
@@ -72,23 +73,24 @@ export default function HintModal({
 
   const totalDeduction = SCORE_DEDUCTION[currentLevel] || 0;
 
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] max-w-lg w-full mx-4 max-h-[80vh] flex flex-col">
-        <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
-          <h3 className="text-xl font-bold flex items-center gap-2">
+  const modal = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
+      <div className="flex max-h-[calc(100vh-2rem)] w-full max-w-lg min-w-0 flex-col overflow-hidden border-2 border-black bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
+        <div className="flex flex-shrink-0 items-center justify-between gap-3 border-b-2 border-black bg-white p-4">
+          <h3 className="flex min-w-0 items-center gap-2 text-xl font-bold">
             <BsLightbulb className="w-5 h-5" />
-              <span>学习助手</span>
+            <span className="truncate">学习助手</span>
           </h3>
           <button 
             onClick={onClose}
-            className="text-2xl font-bold hover:text-red-500"
+            className="flex h-8 w-8 flex-shrink-0 items-center justify-center border-2 border-black text-2xl font-bold leading-none hover:bg-red-50 hover:text-red-500"
+            aria-label="关闭提示"
           >
             ✕
           </button>
         </div>
 
-        <div className="px-6 overflow-y-auto flex-1 min-h-0">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
           {loadingHints ? (
             <div className="mb-4 text-center py-8">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
@@ -99,7 +101,7 @@ export default function HintModal({
               {acquiredHints.map((hint, index) => (
                 <div 
                   key={index}
-                  className={`p-3 border-1 border-black ${
+                  className={`min-w-0 overflow-hidden border border-black p-3 ${
                     index === acquiredHints.length - 1 
                       ? 'bg-yellow-50' 
                       : 'bg-gray-50'
@@ -108,14 +110,16 @@ export default function HintModal({
                   <div className="font-bold text-sm mb-1 flex items-center">
                     提示 {hint.level}
                   </div>
-                  <p className="text-sm text-gray-700">{hint.content}</p>
+                  <p className="whitespace-pre-wrap break-words text-sm leading-6 text-gray-700">
+                    {hint.content}
+                  </p>
                 </div>
               ))}
             </div>
           ) : null}
 
-          <div className="bg-purple-50 p-3 border-2 border-black mb-4">
-            <div className="flex justify-between text-sm font-bold">
+          <div className="mb-4 border-2 border-black bg-purple-50 p-3">
+            <div className="flex flex-wrap justify-between gap-2 text-sm font-bold">
               <span>已使用提示：{currentLevel} / {maxLevel}</span>
               <span className="text-orange-600">
                 将扣除 {totalDeduction} 分
@@ -124,7 +128,7 @@ export default function HintModal({
           </div>
         </div>
 
-        <div className="p-6 pt-4 flex-shrink-0 border-t-2 border-gray-100">
+        <div className="flex-shrink-0 border-t-2 border-black bg-white p-4">
           {remainingHints > 0 ? (
             <button
               onClick={handleGetHint}
@@ -155,4 +159,8 @@ export default function HintModal({
       </div>
     </div>
   );
+
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(modal, document.body);
 }

@@ -1,5 +1,13 @@
 import { Router } from 'express';
-import { getExerciseDetail, submitExercise, formatExerciseResponse, getExerciseHint, getAcquiredHints } from '../services/courses/exercise.service';
+import {
+  getExerciseDetail,
+  submitExercise,
+  formatExerciseResponse,
+} from '../services/courses/exercise.service';
+import {
+  getAcquiredHints,
+  getExerciseHint,
+} from '../services/courses/exercise-hint.service';
 import { badRequest, notFound, serverError } from '../utils/response';
 import { authMiddleware } from '../middleware/auth';
 

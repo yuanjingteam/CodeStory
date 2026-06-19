@@ -3,6 +3,7 @@ import type { Prisma } from '../../generated/prisma';
 import type { LessonAiContext } from './lesson-context.service';
 
 export type LessonChatRole = 'user' | 'assistant';
+export type LessonChatMessageType = 'chat' | 'hint';
 
 export interface LessonChatHistoryMessage {
   role: LessonChatRole;
@@ -89,7 +90,7 @@ export async function getLessonChatMessages(
     where: {
       session_id: sessionId,
       is_delete: 0,
-      message_type: 'chat',
+      message_type: { in: ['chat', 'hint'] },
       role: { in: ['user', 'assistant'] },
     },
     orderBy: { created_at: 'desc' },
@@ -115,7 +116,8 @@ export async function appendLessonChatMessage(
   sessionId: string,
   role: LessonChatRole,
   content: string,
-  metadata?: Prisma.InputJsonValue
+  metadata?: Prisma.InputJsonValue,
+  messageType: LessonChatMessageType = 'chat'
 ) {
   const trimmedContent = content.trim();
   if (!trimmedContent) return null;
@@ -124,7 +126,7 @@ export async function appendLessonChatMessage(
     data: {
       session_id: sessionId,
       role,
-      message_type: 'chat',
+      message_type: messageType,
       content: trimmedContent,
       metadata,
     },
