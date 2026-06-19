@@ -1,6 +1,16 @@
 import prisma from '../../config/prisma';
 import { resolveShortId, uuidToShortId } from '../../utils/idTransform';
+import { reviewCodeWithAI } from '../ai/code-review.service';
+import {
+  applyAiCodeReviewToSubmission,
+  calculateAiReviewedFinalScore,
+  gradeCodeExercise,
+  markCodeReviewFailed,
+  recordCodeSubmission,
+} from './code-grading.service';
 import { updateLessonAndCourseProgress } from './learning-progress.service';
+
+const SCORE_DEDUCTION = [0, 10, 20, 30];
 
 export interface ExerciseDetail {
   id: string;
@@ -91,45 +101,61 @@ export async function submitExercise(
     const answerIndex = answer.trim().toUpperCase().charCodeAt(0) - 65;
     const selectedOption = options[answerIndex];
     correct = selectedOption === exercise.answer;
-    
+
     if (correct) {
-      const SCORE_DEDUCTION = [0, 10, 20, 30];
       score = Math.max(0, 100 - (SCORE_DEDUCTION[hintLevelUsed] || 0));
-      feedback = hintLevelUsed > 0 
-        ? `回答正确！使用了 ${hintLevelUsed} 次提示，得分: ${score} 分` 
+      feedback = hintLevelUsed > 0
+        ? `回答正确。使用了 ${hintLevelUsed} 级提示，得分：${score} 分`
         : '回答正确，知识点掌握良好';
     } else {
-      score = 0;
       feedback = '回答错误，请重新思考';
     }
   } else if (exercise.type === 'code') {
-    const normalizeCode = (code: string): string => {
-      let result = code;
-      result = result.replace(/--.*$/gm, '');
-      result = result.replace(/\/\*[\s\S]*?\*\//g, '');
-      result = result.replace(/'''[\s\S]*?'''/g, '');
-      result = result.replace(/"""[\s\S]*?"""/g, '');
-      result = result.replace(/#.*$/gm, '');
-      result = result.replace(/\/\/.*$/gm, '');
-      result = result.replace(/%.*$/gm, '');
-      result = result.replace(/REM\s+.*$/gim, '');
-      result = result.replace(/;.*$/gm, '');
-      result = result.replace(/\s+/g, ' ');
-      return result.trim();
-    };
-    const normalizedAnswer = normalizeCode(answer);
-    const normalizedCorrect = normalizeCode(exercise.answer);
-    correct = normalizedAnswer === normalizedCorrect;
-    
-    if (correct) {
-      const SCORE_DEDUCTION = [0, 10, 20, 30];
-      score = Math.max(0, 100 - (SCORE_DEDUCTION[hintLevelUsed] || 0));
-      feedback = hintLevelUsed > 0 
-        ? `所有测试用例通过！使用了 ${hintLevelUsed} 次提示，得分: ${score} 分`
-        : '所有测试用例通过';
-    } else {
-      score = 0;
-      feedback = '部分测试用例未通过';
+    const grade = gradeCodeExercise({
+      userCode: answer,
+      correctAnswer: exercise.answer,
+      metadata: exercise.metadata,
+      hintLevelUsed,
+    });
+
+    correct = grade.correct;
+    score = grade.score;
+    feedback = grade.feedback;
+
+    const submission = await recordCodeSubmission({
+      userId,
+      exerciseId: resolvedId,
+      code: answer,
+      grade,
+    });
+
+    try {
+      const aiReview = await reviewCodeWithAI({
+        exerciseContent: exercise.content,
+        knowledge: exercise.knowledge,
+        correctAnswer: exercise.answer,
+        analysis: exercise.analysis,
+        userCode: answer,
+        language: grade.language,
+        hintLevelUsed,
+        staticGrade: grade,
+      });
+
+      await applyAiCodeReviewToSubmission({
+        submissionId: submission.id,
+        review: aiReview,
+        hintDeduction: grade.hintDeduction,
+      });
+
+      correct = aiReview.review.isLikelyCorrect;
+      score = calculateAiReviewedFinalScore(aiReview, grade.hintDeduction);
+      feedback = aiReview.review.feedback;
+    } catch (error) {
+      await markCodeReviewFailed({
+        submissionId: submission.id,
+        error,
+      });
+      feedback = `${grade.feedback}。AI 评阅暂不可用，已保留静态初判结果。`;
     }
   }
 
@@ -143,10 +169,12 @@ export async function submitExercise(
     },
   });
 
-  const isFirstSubmission = !existingAnswer;
-
   if (existingAnswer) {
-    const newScore = correct ? score : existingAnswer.score;
+    const newScore = exercise.type === 'code'
+      ? Math.max(existingAnswer.score, score)
+      : correct
+        ? score
+        : existingAnswer.score;
     await prisma.answer.update({
       where: { id: existingAnswer.id },
       data: {
@@ -202,7 +230,7 @@ export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: Use
     difficulty: exercise.difficulty,
     metadata: exercise.metadata,
     hints: hints ? {
-      _meta: hints._meta
+      _meta: hints._meta,
     } : null,
     userAnswer: userAnswer ? {
       answer: userAnswer.answer || '',

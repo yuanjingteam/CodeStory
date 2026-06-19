@@ -75,6 +75,16 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
         score: response.score,
         feedback: response.feedback,
       })
+      setExerciseData(current => current ? {
+        ...current,
+        userAnswer: {
+          answer,
+          submission_count: (current.userAnswer?.submission_count || 0) + 1,
+          feedback: response.feedback,
+          hint_level_used: Math.max(current.userAnswer?.hint_level_used || 0, currentHintLevelUsed),
+          score: Math.max(current.userAnswer?.score || 0, response.score),
+        },
+      } : current)
       setShowResult(true)
 
       if (!hasSubmitted) {
@@ -135,12 +145,12 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
               <p className="text-gray-700 text-sm">{submitResult.feedback}</p>
             </div>
             <div className="flex gap-3 justify-center mt-6">
-              {!submitResult.correct && (
+              {(exerciseData.type === 'code' || !submitResult.correct) && (
                 <button
                   onClick={() => { setShowResult(false); setSubmitResult(null) }}
                   className="px-6 py-3 bg-yellow-400 text-black font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
                 >
-                  重新作答
+                  {exerciseData.type === 'code' ? '继续修改' : '重新作答'}
                 </button>
               )}
               <button
