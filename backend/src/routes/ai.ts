@@ -47,7 +47,7 @@ async function getNextHintMessage(
     return {
       level: progress.currentLevel,
       maxLevel: progress.maxLevel,
-      content: `这道题的 ${progress.maxLevel} 级提示已经全部使用完了。建议你先根据已有提示尝试作答，或者把你的当前思路发给我，我可以帮你检查哪里卡住了。`,
+      content: `这道题的 ${progress.maxLevel} 级提示已经全部使用完了。你可以先提交一次答案，我会根据你的作答情况帮你分析；也可以把当前思路发给我，我帮你检查卡在哪里。`,
     };
   }
 

@@ -144,8 +144,13 @@ export default function HintModal({
               )}
             </button>
           ) : currentLevel > 0 ? (
-            <div className="text-center py-3 bg-yellow-50 border-2 border-black font-bold text-gray-700">
-              ✅ 已获取所有提示 ({currentLevel}/{maxLevel})
+            <div className="border-2 border-black bg-yellow-50 p-3 text-center">
+              <div className="font-bold text-gray-800">
+                ✅ 已获取所有提示 ({currentLevel}/{maxLevel})
+              </div>
+              <p className="mt-1 text-sm font-bold leading-6 text-gray-600">
+                可以先尝试作答；如果仍然卡住，把你的当前思路发给右侧 AI 助手。
+              </p>
             </div>
           ) : null}
 
