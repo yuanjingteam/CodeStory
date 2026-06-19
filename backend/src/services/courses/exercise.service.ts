@@ -12,6 +12,32 @@ import { updateLessonAndCourseProgress } from './learning-progress.service';
 
 const SCORE_DEDUCTION = [0, 10, 20, 30];
 
+interface ScoreBreakdown {
+  functionalScore: number;
+  qualityScore: number;
+  hintDeduction: number;
+  finalScore: number;
+}
+
+interface SubmitAiReview {
+  isLikelyCorrect: boolean;
+  feedback: string;
+  strengths: string[];
+  issues: string[];
+  suggestions: string[];
+  needsManualReview: boolean;
+  status: 'completed' | 'failed';
+}
+
+interface SubmitExerciseResult {
+  correct: boolean;
+  score: number;
+  feedback: string;
+  analysis: string;
+  scoreBreakdown?: ScoreBreakdown;
+  aiReview?: SubmitAiReview;
+}
+
 export interface ExerciseDetail {
   id: string;
   lesson_id: string;
@@ -74,7 +100,7 @@ export async function submitExercise(
   answer: string,
   userId: string,
   hintLevelUsed: number = 0
-): Promise<{ correct: boolean; score: number; feedback: string; analysis: string } | null> {
+): Promise<SubmitExerciseResult | null> {
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
@@ -94,6 +120,8 @@ export async function submitExercise(
   let correct = false;
   let score = 0;
   let feedback = '';
+  let scoreBreakdown: ScoreBreakdown | undefined;
+  let aiReviewResult: SubmitAiReview | undefined;
 
   if (exercise.type === 'single_choice') {
     const metadata = exercise.metadata as any;
@@ -121,6 +149,12 @@ export async function submitExercise(
     correct = grade.correct;
     score = grade.score;
     feedback = grade.feedback;
+    scoreBreakdown = {
+      functionalScore: grade.functionalScore,
+      qualityScore: 0,
+      hintDeduction: grade.hintDeduction,
+      finalScore: grade.score,
+    };
 
     const submission = await recordCodeSubmission({
       userId,
@@ -150,12 +184,36 @@ export async function submitExercise(
       correct = aiReview.review.isLikelyCorrect;
       score = calculateAiReviewedFinalScore(aiReview, grade.hintDeduction);
       feedback = aiReview.review.feedback;
+      scoreBreakdown = {
+        functionalScore: aiReview.review.functionalScore,
+        qualityScore: aiReview.review.qualityScore,
+        hintDeduction: grade.hintDeduction,
+        finalScore: score,
+      };
+      aiReviewResult = {
+        isLikelyCorrect: aiReview.review.isLikelyCorrect,
+        feedback: aiReview.review.feedback,
+        strengths: aiReview.review.strengths,
+        issues: aiReview.review.issues,
+        suggestions: aiReview.review.suggestions,
+        needsManualReview: aiReview.review.needsManualReview,
+        status: 'completed',
+      };
     } catch (error) {
       await markCodeReviewFailed({
         submissionId: submission.id,
         error,
       });
       feedback = `${grade.feedback}。AI 评阅暂不可用，已保留静态初判结果。`;
+      aiReviewResult = {
+        isLikelyCorrect: grade.correct,
+        feedback,
+        strengths: [],
+        issues: [],
+        suggestions: [],
+        needsManualReview: true,
+        status: 'failed',
+      };
     }
   }
 
@@ -215,6 +273,8 @@ export async function submitExercise(
     score,
     feedback,
     analysis: exercise.analysis || '',
+    scoreBreakdown,
+    aiReview: aiReviewResult,
   };
 }
 

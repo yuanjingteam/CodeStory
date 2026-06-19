@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { FiX } from 'react-icons/fi'
 import { exerciseApi } from '@/app/api/courses/exercise'
-import type { ExerciseDetailData } from '@/types/exercise'
+import type { ExerciseDetailData, ScoreBreakdown, SubmitAiReview } from '@/types/exercise'
 import ChoiceQuestion from './ChoiceQuestion'
 import CodeQuestion from './CodeQuestion'
 import TiptapViewer from '@/components/tiptap/TiptapViewer'
@@ -14,10 +14,32 @@ interface ExerciseModalProps {
   onComplete: (exerciseId: string) => void
 }
 
+function ReviewList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="mb-3 last:mb-0">
+      <div className="font-black text-sm mb-1">{title}</div>
+      <ul className="space-y-1 text-sm text-gray-700">
+        {items.map((item, index) => (
+          <li key={`${title}-${index}`} className="flex gap-2">
+            <span className="font-black">-</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete }: ExerciseModalProps) {
   const [exerciseData, setExerciseData] = useState<ExerciseDetailData | null>(null)
   const [loading, setLoading] = useState(false)
-  const [submitResult, setSubmitResult] = useState<{ correct: boolean; score: number; feedback: string } | null>(null)
+  const [submitResult, setSubmitResult] = useState<{
+    correct: boolean;
+    score: number;
+    feedback: string;
+    scoreBreakdown?: ScoreBreakdown;
+    aiReview?: SubmitAiReview;
+  } | null>(null)
   const [currentHintLevelUsed, setCurrentHintLevelUsed] = useState(0)
   const [showResult, setShowResult] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
@@ -74,6 +96,8 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
         correct: response.correct,
         score: response.score,
         feedback: response.feedback,
+        scoreBreakdown: response.scoreBreakdown,
+        aiReview: response.aiReview,
       })
       setExerciseData(current => current ? {
         ...current,
@@ -144,6 +168,43 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
               </div>
               <p className="text-gray-700 text-sm">{submitResult.feedback}</p>
             </div>
+            {submitResult.scoreBreakdown && (
+              <div className="border-2 border-black bg-white p-4 my-4 text-left">
+                <h4 className="font-black mb-3">评分拆解</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm font-bold">
+                  <div className="bg-gray-100 border border-black p-2">功能分：{submitResult.scoreBreakdown.functionalScore} / 70</div>
+                  <div className="bg-gray-100 border border-black p-2">质量分：{submitResult.scoreBreakdown.qualityScore} / 30</div>
+                  <div className="bg-gray-100 border border-black p-2">提示扣分：-{submitResult.scoreBreakdown.hintDeduction}</div>
+                  <div className="bg-yellow-100 border border-black p-2">最终分：{submitResult.scoreBreakdown.finalScore}</div>
+                </div>
+              </div>
+            )}
+            {submitResult.aiReview && (
+              <div className="border-2 border-black bg-white p-4 my-4 text-left">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <h4 className="font-black">AI 评阅</h4>
+                  <span className={`text-xs font-bold px-2 py-1 border border-black ${
+                    submitResult.aiReview.status === 'completed' ? 'bg-green-100' : 'bg-yellow-100'
+                  }`}>
+                    {submitResult.aiReview.status === 'completed' ? '已完成' : '已降级'}
+                  </span>
+                </div>
+                {submitResult.aiReview.needsManualReview && (
+                  <div className="mb-3 border border-black bg-yellow-100 p-2 text-sm font-bold">
+                    AI 对本次评阅置信度较低，建议对照题目要求再检查一次。
+                  </div>
+                )}
+                {submitResult.aiReview.strengths.length > 0 && (
+                  <ReviewList title="优点" items={submitResult.aiReview.strengths} />
+                )}
+                {submitResult.aiReview.issues.length > 0 && (
+                  <ReviewList title="问题" items={submitResult.aiReview.issues} />
+                )}
+                {submitResult.aiReview.suggestions.length > 0 && (
+                  <ReviewList title="建议" items={submitResult.aiReview.suggestions} />
+                )}
+              </div>
+            )}
             <div className="flex gap-3 justify-center mt-6">
               {(exerciseData.type === 'code' || !submitResult.correct) && (
                 <button
