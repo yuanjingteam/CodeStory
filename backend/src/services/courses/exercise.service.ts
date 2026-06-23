@@ -1,5 +1,6 @@
 import prisma from '../../config/prisma';
 import { resolveShortId, uuidToShortId } from '../../utils/idTransform';
+import { generateChoiceExplanation } from '../ai/choice-explanation.service';
 import { reviewCodeWithAI } from '../ai/code-review.service';
 import {
   applyAiCodeReviewToSubmission,
@@ -57,6 +58,14 @@ export interface UserAnswer {
   feedback: string | null;
   hint_level_used: number;
   score: number;
+}
+
+function stripOptionLabel(option: string): string {
+  return option.replace(/^[A-Z]\.\s*/, '').trim();
+}
+
+function normalizeOptionLabel(answer: string): string {
+  return answer.trim().toUpperCase().charAt(0);
 }
 
 export async function getExerciseDetail(
@@ -276,6 +285,60 @@ export async function submitExercise(
     scoreBreakdown,
     aiReview: aiReviewResult,
   };
+}
+
+export async function explainChoiceExercise(
+  exerciseId: string,
+  selectedAnswer: string,
+  userId: string
+) {
+  const resolvedId = await resolveShortId('exercises', exerciseId);
+  if (!resolvedId) return null;
+
+  const exercise = await prisma.exercises.findUnique({
+    where: { id: resolvedId, is_delete: 0 },
+  });
+
+  if (!exercise || exercise.type !== 'single_choice') return null;
+
+  const metadata = exercise.metadata as any;
+  const options = Array.isArray(metadata?.options) ? metadata.options : [];
+  if (options.length === 0) return null;
+
+  const savedAnswer = await prisma.answer.findUnique({
+    where: {
+      user_id_exercise_id: {
+        user_id: userId,
+        exercise_id: resolvedId,
+      },
+      is_delete: 0,
+    },
+  });
+
+  const selectedLabel = normalizeOptionLabel(selectedAnswer || savedAnswer?.answer || '');
+  const correctIndex = options.findIndex((option: string) => option === exercise.answer);
+  const selectedIndex = selectedLabel.charCodeAt(0) - 65;
+
+  if (correctIndex < 0 || selectedIndex < 0 || selectedIndex >= options.length) {
+    return null;
+  }
+
+  const correctLabel = String.fromCharCode(65 + correctIndex);
+  const explanation = await generateChoiceExplanation({
+    exerciseContent: exercise.content,
+    knowledge: exercise.knowledge,
+    analysis: exercise.analysis,
+    correctOption: correctLabel,
+    selectedOption: selectedLabel,
+    options: options.map((option: string, index: number) => ({
+      label: String.fromCharCode(65 + index),
+      content: stripOptionLabel(option),
+      isCorrect: index === correctIndex,
+      isSelected: index === selectedIndex,
+    })),
+  });
+
+  return explanation;
 }
 
 export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: UserAnswer | null) {

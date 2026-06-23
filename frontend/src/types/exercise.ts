@@ -63,6 +63,28 @@ export interface SubmitAiReview {
   status: 'completed' | 'failed';
 }
 
+export interface ChoiceOptionExplanation {
+  label: string;
+  explanation: string;
+  isCorrect: boolean;
+}
+
+export interface ChoiceExplanationData {
+  summary: string;
+  correctOption: string;
+  selectedOption: string;
+  correctExplanation: string;
+  selectedExplanation: string;
+  optionExplanations: ChoiceOptionExplanation[];
+  studyTip: string;
+}
+
+export interface ChoiceExplanationResponse {
+  code: number;
+  message: string;
+  data: ChoiceExplanationData;
+}
+
 export interface ExerciseSubmitResponse {
   code: number;
   message: string;

@@ -1,7 +1,17 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { FiMessageCircle, FiRefreshCw, FiSend, FiSquare } from 'react-icons/fi';
+import {
+  FiBookOpen,
+  FiHelpCircle,
+  FiList,
+  FiMessageCircle,
+  FiRefreshCw,
+  FiSearch,
+  FiSend,
+  FiSquare,
+  FiTarget,
+} from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getLessonChatHistory, streamLessonChat } from '@/app/api/ai/chat';
@@ -21,6 +31,44 @@ interface ChatMessage {
 }
 
 const WELCOME_MESSAGE_ID = 'welcome';
+
+interface QuickAction {
+  label: string;
+  prompt: string;
+  requiresExercise?: boolean;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const QUICK_ACTIONS: QuickAction[] = [
+  {
+    label: '解释知识点',
+    prompt: '请用通俗的话解释本节的核心知识点，并结合一个小例子。',
+    icon: FiBookOpen,
+  },
+  {
+    label: '给我提示',
+    prompt: '给我一点提示，不要直接给完整答案。',
+    requiresExercise: true,
+    icon: FiHelpCircle,
+  },
+  {
+    label: '分析练习',
+    prompt: '请分析当前练习的解题思路，不要直接给完整答案。',
+    requiresExercise: true,
+    icon: FiSearch,
+  },
+  {
+    label: '解释题目',
+    prompt: '请解释当前练习题目在考什么，以及我应该怎么理解题干。',
+    requiresExercise: true,
+    icon: FiTarget,
+  },
+  {
+    label: '总结本节',
+    prompt: '请总结本节重点，并列出我需要掌握的 3 个要点。',
+    icon: FiList,
+  },
+];
 
 function createWelcomeMessage(lessonTitle: string): ChatMessage {
   return {
@@ -176,6 +224,10 @@ export default function Chat({ lessonId, lessonTitle, exerciseId }: ChatProps) {
     abortControllerRef.current?.abort();
   };
 
+  const visibleQuickActions = QUICK_ACTIONS.filter(
+    (action) => !action.requiresExercise || exerciseId
+  );
+
   return (
     <div className="h-full flex flex-col">
       <div className="bg-purple-600 text-white px-4 py-3 flex items-center justify-between gap-2">
@@ -239,6 +291,23 @@ export default function Chat({ lessonId, lessonTitle, exerciseId }: ChatProps) {
       </div>
 
       <div className="bg-white p-3">
+        <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
+          {visibleQuickActions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={action.label}
+                type="button"
+                onClick={() => void sendMessage(action.prompt)}
+                disabled={isStreaming}
+                className="flex flex-shrink-0 items-center gap-1 rounded-full border-2 border-black bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-800 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:bg-yellow-100 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {action.label}
+              </button>
+            );
+          })}
+        </div>
         <div className="border-2 border-black rounded-2xl bg-white overflow-hidden">
           <textarea
             value={input}

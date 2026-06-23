@@ -33,3 +33,7 @@ prisma/seed.ts
 
 # Docker
 docker-compose.override.yml
+
+# Local database backups
+*.dump
+*.backup
