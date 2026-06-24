@@ -145,7 +145,9 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
 
     const messageType = resolveMessageType(question, currentCode, Boolean(context.exerciseId));
     const session = await getOrCreateLessonChatSession(userId, context);
-    const history = await getRecentLessonChatMessages(session.id);
+    const history = await getRecentLessonChatMessages(session.id, {
+      currentExerciseId: context.exerciseId,
+    });
     await appendLessonChatMessage(session.id, 'user', question, {
       lessonId: context.lessonId,
       exerciseId: context.exerciseId,
