@@ -31,7 +31,7 @@ export default function CourseDetails({
     };
 
     fetchCourseDetail();
-  }, [courseId]);
+  }, [courseId, isLoading, isLoggedIn]);
 
   if (loading) {
     return (

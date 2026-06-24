@@ -7,8 +7,21 @@ import Question from './Question';
 import Chat from './Chat';
 import Content from './Content';
 import { showToast } from '@/utils/toast';
+import { useUserStore } from '@/store/useUserStore';
+import { handleAuthenticationFailure } from '@/utils/auth-session';
+import { useRouter } from 'next/navigation';
 
-export default function LessonPage({ lessonId }: { lessonId: string }) {
+export default function LessonPage({
+  courseId,
+  chapterId,
+  lessonId,
+}: {
+  courseId: string;
+  chapterId: string;
+  lessonId: string;
+}) {
+  const router = useRouter();
+  const { isLoggedIn, isLoading: isAuthLoading } = useUserStore();
   const [data, setData] = useState<LessonDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -43,18 +56,33 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
 
   const handleLessonSwitched = useCallback(async (newLessonId: string, newChapterId: string) => {
     try {
-      const response = await lessonDetailApi.getById(newLessonId);
+      const response = await lessonDetailApi.getById(newLessonId, {
+        courseId,
+        chapterId: newChapterId,
+      });
       setData(response);
+      router.push(`/courses/${response.course.id}/chapters/${newChapterId}/lessons/${response.currentLesson.id}`);
     } catch (error) {
       console.error('❌ 切换小节失败:', error);
     }
-  }, []);
+  }, [courseId, router]);
 
   useEffect(() => {
+    if (isAuthLoading) return;
+
+    if (!isLoggedIn) {
+      setLoading(false);
+      handleAuthenticationFailure();
+      return;
+    }
+
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await lessonDetailApi.getById(lessonId);
+        const response = await lessonDetailApi.getById(lessonId, {
+          courseId,
+          chapterId,
+        });
         setData(response);
       } catch (error) {
         console.error('获取课程详情失败');
@@ -66,7 +94,7 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
     if (lessonId) {
       fetchData();
     }
-  }, [lessonId]);
+  }, [chapterId, courseId, lessonId, isAuthLoading, isLoggedIn]);
 
   if (loading) {
     return (

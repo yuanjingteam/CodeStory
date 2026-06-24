@@ -68,7 +68,10 @@ async function restoreSessionFromRefreshToken(): Promise<void> {
       response.data.data
     );
   } catch {
-    useUserStore.getState().clearUser();
+    const store = useUserStore.getState();
+    if (!store.isLoggedIn) {
+      store.clearUser();
+    }
   }
 }
 
