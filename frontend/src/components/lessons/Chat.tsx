@@ -27,6 +27,7 @@ interface ChatProps {
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
+  messageType?: 'chat' | 'hint' | 'code_analysis' | 'system';
   content: string;
   status?: 'streaming' | 'error' | 'stopped';
   retryQuestion?: string;
@@ -84,8 +85,43 @@ function createWelcomeMessage(lessonTitle: string): ChatMessage {
   return {
     id: WELCOME_MESSAGE_ID,
     role: 'assistant',
+    messageType: 'system',
     content: `我是本节学习助手。你可以问我关于“${lessonTitle}”的知识点或当前练习。`,
   };
+}
+
+function isCodeAnalysisIntent(question: string): boolean {
+  return /代码|程序|报错|错误|bug|运行|不通过|哪里有问题|帮我看|分析我的代码|current code|code/i.test(question);
+}
+
+function resolveOutgoingMessageType(
+  question: string,
+  hasExercise: boolean,
+  hasCurrentCode: boolean
+): ChatMessage['messageType'] {
+  if (hasExercise && /提示|给点思路|给.*思路|没思路|不会做|卡住|hint|clue/i.test(question)) {
+    return 'hint';
+  }
+
+  if (hasExercise && hasCurrentCode && isCodeAnalysisIntent(question)) {
+    return 'code_analysis';
+  }
+
+  return 'chat';
+}
+
+function getMessageTypeLabel(messageType?: ChatMessage['messageType']): string {
+  if (messageType === 'hint') return '提示';
+  if (messageType === 'code_analysis') return '代码分析';
+  if (messageType === 'system') return '系统';
+  return '普通问答';
+}
+
+function getMessageTypeClass(messageType?: ChatMessage['messageType']): string {
+  if (messageType === 'hint') return 'bg-yellow-100 text-yellow-900';
+  if (messageType === 'code_analysis') return 'bg-blue-100 text-blue-900';
+  if (messageType === 'system') return 'bg-gray-100 text-gray-700';
+  return 'bg-purple-100 text-purple-900';
 }
 
 export default function Chat({
@@ -115,6 +151,7 @@ export default function Chat({
           ...history.map((message) => ({
             id: message.id,
             role: message.role,
+            messageType: message.messageType || 'chat',
             content: message.content,
           })),
         ]);
@@ -139,6 +176,13 @@ export default function Chat({
     const trimmedQuestion = question.trim();
     if (!trimmedQuestion || isStreaming) return;
 
+    const outgoingMessageType = resolveOutgoingMessageType(
+      trimmedQuestion,
+      Boolean(exerciseId),
+      Boolean(currentCode?.trim())
+    );
+    const attachedCurrentCode =
+      outgoingMessageType === 'code_analysis' ? currentCode : undefined;
     const assistantMessageId = crypto.randomUUID();
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -149,11 +193,13 @@ export default function Chat({
       {
         id: crypto.randomUUID(),
         role: 'user',
+        messageType: outgoingMessageType,
         content: trimmedQuestion,
       },
       {
         id: assistantMessageId,
         role: 'assistant',
+        messageType: outgoingMessageType,
         content: '',
         status: 'streaming',
         retryQuestion: trimmedQuestion,
@@ -164,7 +210,7 @@ export default function Chat({
       await streamLessonChat({
         lessonId,
         exerciseId,
-        currentCode,
+        currentCode: attachedCurrentCode,
         message: trimmedQuestion,
         signal: controller.signal,
         onToken: (token) => {
@@ -276,6 +322,16 @@ export default function Chat({
                       : 'bg-white text-gray-800'
                 }`}
               >
+                {message.role === 'assistant' && (
+                  <div className="mb-1">
+                    <span
+                      className={`inline-flex items-center rounded-sm px-1.5 py-0.5 text-[10px] font-bold ${getMessageTypeClass(message.messageType)}`}
+                    >
+                      {getMessageTypeLabel(message.messageType)}
+                    </span>
+                  </div>
+                )}
+
                 {message.role === 'assistant' ? (
                   <div className="prose prose-sm max-w-none break-words prose-p:break-words prose-li:break-words prose-code:break-words prose-pre:max-w-full prose-pre:overflow-x-auto prose-pre:bg-gray-900 prose-pre:text-white">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>

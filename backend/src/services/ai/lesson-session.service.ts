@@ -3,11 +3,12 @@ import type { Prisma } from '../../generated/prisma';
 import type { LessonAiContext } from './lesson-context.service';
 
 export type LessonChatRole = 'user' | 'assistant';
-export type LessonChatMessageType = 'chat' | 'hint';
+export type LessonChatMessageType = 'chat' | 'hint' | 'code_analysis' | 'system';
 
 export interface LessonChatHistoryMessage {
   role: LessonChatRole;
   content: string;
+  messageType: LessonChatMessageType;
 }
 
 export interface LessonChatStoredMessage extends LessonChatHistoryMessage {
@@ -18,6 +19,18 @@ export interface LessonChatStoredMessage extends LessonChatHistoryMessage {
 const DEFAULT_HISTORY_LIMIT = 10;
 const DEFAULT_STORED_MESSAGES_LIMIT = 50;
 const MAX_HISTORY_MESSAGE_LENGTH = 1_500;
+const READABLE_MESSAGE_TYPES: LessonChatMessageType[] = [
+  'chat',
+  'hint',
+  'code_analysis',
+  'system',
+];
+
+function normalizeMessageType(value: string): LessonChatMessageType {
+  return READABLE_MESSAGE_TYPES.includes(value as LessonChatMessageType)
+    ? (value as LessonChatMessageType)
+    : 'chat';
+}
 
 function trimHistoryContent(content: string): string {
   const normalized = content.replace(/\s+/g, ' ').trim();
@@ -78,6 +91,7 @@ export async function getRecentLessonChatMessages(
   return messages.map((message) => ({
     role: message.role,
     content: trimHistoryContent(message.content),
+    messageType: message.messageType,
   }));
 }
 
@@ -90,7 +104,7 @@ export async function getLessonChatMessages(
     where: {
       session_id: sessionId,
       is_delete: 0,
-      message_type: { in: ['chat', 'hint'] },
+      message_type: { in: READABLE_MESSAGE_TYPES },
       role: { in: ['user', 'assistant'] },
     },
     orderBy: { created_at: 'desc' },
@@ -98,6 +112,7 @@ export async function getLessonChatMessages(
     select: {
       id: true,
       role: true,
+      message_type: true,
       content: true,
       created_at: true,
     },
@@ -106,6 +121,7 @@ export async function getLessonChatMessages(
   return messages.reverse().map((message) => ({
     id: message.id,
     role: message.role === 'assistant' ? 'assistant' : 'user',
+    messageType: normalizeMessageType(message.message_type),
     content: message.content,
     createdAt: message.created_at.toISOString(),
   }));

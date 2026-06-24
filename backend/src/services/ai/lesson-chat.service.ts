@@ -67,7 +67,15 @@ function formatChatHistory(history: LessonChatHistoryMessage[]): string {
   return history
     .map((message) => {
       const roleLabel = message.role === 'assistant' ? 'AI导师' : '学生';
-      return `${roleLabel}：${message.content}`;
+      const typeLabel =
+        message.messageType === 'hint'
+          ? '提示'
+          : message.messageType === 'code_analysis'
+            ? '代码分析'
+            : message.messageType === 'system'
+              ? '系统'
+              : '普通问答';
+      return `${roleLabel}（${typeLabel}）：${message.content}`;
     })
     .join('\n');
 }

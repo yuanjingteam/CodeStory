@@ -22,6 +22,7 @@ interface LessonChatHistoryParams {
 export interface LessonChatHistoryMessage {
   id: string;
   role: 'user' | 'assistant';
+  messageType?: 'chat' | 'hint' | 'code_analysis' | 'system';
   content: string;
   createdAt: string;
 }

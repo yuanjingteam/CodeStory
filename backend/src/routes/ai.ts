@@ -8,6 +8,7 @@ import {
   getOrCreateLessonChatSession,
   getRecentLessonChatMessages,
 } from '../services/ai/lesson-session.service';
+import type { LessonChatMessageType } from '../services/ai/lesson-session.service';
 import {
   getExerciseHint,
   getExerciseHintProgress,
@@ -35,6 +36,16 @@ function isHintIntent(question: string): boolean {
 
 function formatHintMessage(content: string, level: number, maxLevel: number): string {
   return `提示 ${level}/${maxLevel}\n\n${content}`;
+}
+
+function resolveMessageType(
+  question: string,
+  currentCode: string,
+  hasExercise: boolean
+): LessonChatMessageType {
+  if (hasExercise && isHintIntent(question)) return 'hint';
+  if (hasExercise && currentCode) return 'code_analysis';
+  return 'chat';
 }
 
 async function getNextHintMessage(
@@ -132,6 +143,7 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
       return res.status(404).json({ code: 404, message: '小节不存在' });
     }
 
+    const messageType = resolveMessageType(question, currentCode, Boolean(context.exerciseId));
     const session = await getOrCreateLessonChatSession(userId, context);
     const history = await getRecentLessonChatMessages(session.id);
     await appendLessonChatMessage(session.id, 'user', question, {
@@ -139,7 +151,7 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
       exerciseId: context.exerciseId,
       hasCurrentCode: Boolean(currentCode),
       currentCodeLength: currentCode.length,
-    });
+    }, messageType);
 
     res.status(200);
     res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
@@ -196,7 +208,7 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
         exerciseId: context.exerciseId,
         modelSource: 'lesson-chat',
         usedCurrentCode: Boolean(currentCode),
-      });
+      }, messageType);
       writeEvent(res, { type: 'done' });
       res.end();
     }
