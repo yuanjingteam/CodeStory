@@ -174,11 +174,11 @@ export function gradeCodeExercise(params: GradeCodeExerciseParams): CodeGradeRes
 
   const feedback = correct
     ? params.hintLevelUsed > 0
-      ? `判题通过。使用了 ${params.hintLevelUsed} 级提示，扣 ${hintDeduction} 分，得分：${score} 分`
-      : '判题通过'
+      ? `静态初评通过。使用了 ${params.hintLevelUsed} 级提示，扣 ${hintDeduction} 分，得分：${score} 分`
+      : '静态初评通过'
     : isSqlLanguage(language)
-      ? '答案还不正确。当前已支持 SQL 空格、大小写、末尾分号、部分 AND 条件顺序的差异；如果逻辑一致仍被判错，可以补充测试用例或可接受答案。'
-      : '答案还不正确。当前后端先做静态等价判定，后续可以接入语言执行沙箱后按测试用例判定。';
+      ? '静态初评暂未通过。当前已支持 SQL 空格、大小写、末尾分号、部分 AND 条件顺序的差异；如果逻辑一致仍被判错，可以补充可接受答案。'
+      : '静态初评暂未通过。当前版本先做静态等价判定，并会继续结合 AI 评阅给出学习反馈。';
 
   return {
     correct,
@@ -201,8 +201,8 @@ export function gradeCodeExercise(params: GradeCodeExerciseParams): CodeGradeRes
       })),
       configuredTestCaseCount,
       note: configuredTestCaseCount > 0
-        ? '题目已配置测试用例；当前版本尚未接入代码执行沙箱，因此本次仍使用静态等价判定。'
-        : '当前版本使用静态等价判定，后续可接入代码执行沙箱升级为真实测试用例判题。',
+        ? '题目已配置测试用例；当前 V1 不执行学生代码，因此本次仍使用静态等价判定，并结合 AI 评阅给出反馈。'
+        : '当前 V1 使用静态等价判定，并结合 AI 评阅给出反馈。',
     },
   };
 }

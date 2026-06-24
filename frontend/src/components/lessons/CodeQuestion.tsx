@@ -156,7 +156,7 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          {hasPreviousScore ? '再次运行代码' : '运行代码'}
+          {hasPreviousScore ? '再次提交评阅' : '提交评阅'}
         </button>
 
         {showHintModal && (
