@@ -11,6 +11,7 @@ interface QuestionProps {
   onLessonCompleted?: (lessonId: string) => void
   onLessonSwitched?: (lessonId: string, chapterId: string) => void
   onCurrentExerciseChange?: (exerciseId: string | null) => void
+  onCurrentExerciseCodeChange?: (code: string | null) => void
 }
 
 export default function Question({
@@ -18,6 +19,7 @@ export default function Question({
   onLessonCompleted,
   onLessonSwitched,
   onCurrentExerciseChange,
+  onCurrentExerciseCodeChange,
 }: QuestionProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -129,17 +131,19 @@ export default function Question({
 
   const closeExercise = useCallback(() => {
     setModalOpen(false)
+    onCurrentExerciseCodeChange?.(null)
     updateUrlWithExercise(false, null)
     requestAnimationFrame(() => {
       if (contentScrollRef.current) {
         contentScrollRef.current.scrollTop = savedScrollPositionRef.current
       }
     })
-  }, [updateUrlWithExercise])
+  }, [onCurrentExerciseCodeChange, updateUrlWithExercise])
 
   useEffect(() => {
     onCurrentExerciseChange?.(modalOpen ? currentExerciseId : null)
-  }, [currentExerciseId, modalOpen, onCurrentExerciseChange])
+    if (!modalOpen) onCurrentExerciseCodeChange?.(null)
+  }, [currentExerciseId, modalOpen, onCurrentExerciseChange, onCurrentExerciseCodeChange])
 
   const handleNavigate = async (direction: 'prev' | 'next') => {
     if (!currentLessonId || !courseId || !currentChapterId) return
@@ -265,6 +269,7 @@ useEffect(() => {
             exerciseId={currentExerciseId}
             onClose={closeExercise}
             onComplete={handleExerciseComplete}
+            onCodeChange={onCurrentExerciseCodeChange}
           />
         ) : (
           <div ref={contentScrollRef} className="h-full overflow-y-auto p-6">

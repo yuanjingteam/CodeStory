@@ -27,6 +27,9 @@ const lessonTutorPrompt = ChatPromptTemplate.fromMessages([
 当前练习：
 {exerciseContext}
 
+学生当前编辑器代码：
+{currentCodeContext}
+
 最近对话：
 {chatHistory}`,
   ],
@@ -69,6 +72,19 @@ function formatChatHistory(history: LessonChatHistoryMessage[]): string {
     .join('\n');
 }
 
+function formatCurrentCode(currentCode?: string | null): string {
+  const code = currentCode?.trim();
+  if (!code) return '学生当前没有提供编辑器代码，不要假设代码内容。';
+
+  return [
+    '下面是学生当前编辑器里的代码，只能用于分析问题、指出风险和给修改方向。',
+    '不要直接重写一份完整答案，除非用户明确要求讲解某一小段。',
+    '```',
+    code,
+    '```',
+  ].join('\n');
+}
+
 function getChunkText(content: unknown): string {
   if (typeof content === 'string') return content;
   if (!Array.isArray(content)) return '';
@@ -93,7 +109,8 @@ export async function* streamLessonChat(
   context: LessonAiContext,
   question: string,
   signal: AbortSignal,
-  history: LessonChatHistoryMessage[] = []
+  history: LessonChatHistoryMessage[] = [],
+  currentCode?: string | null
 ): AsyncGenerator<string> {
   const chain = lessonTutorPrompt.pipe(createModel());
   const stream = await chain.stream(
@@ -103,6 +120,7 @@ export async function* streamLessonChat(
       lessonTitle: context.lessonTitle,
       lessonContent: context.lessonContent,
       exerciseContext: formatExercise(context),
+      currentCodeContext: formatCurrentCode(currentCode),
       chatHistory: formatChatHistory(history),
       question,
     },

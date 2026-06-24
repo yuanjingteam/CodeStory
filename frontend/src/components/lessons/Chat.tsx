@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   FiBookOpen,
+  FiCode,
   FiHelpCircle,
   FiList,
   FiMessageCircle,
@@ -20,6 +21,7 @@ interface ChatProps {
   lessonId: string;
   lessonTitle: string;
   exerciseId: string | null;
+  currentCode?: string | null;
 }
 
 interface ChatMessage {
@@ -36,6 +38,7 @@ interface QuickAction {
   label: string;
   prompt: string;
   requiresExercise?: boolean;
+  requiresCode?: boolean;
   icon: React.ComponentType<{ className?: string }>;
 }
 
@@ -50,6 +53,13 @@ const QUICK_ACTIONS: QuickAction[] = [
     prompt: '给我一点提示，不要直接给完整答案。',
     requiresExercise: true,
     icon: FiHelpCircle,
+  },
+  {
+    label: '分析我的代码',
+    prompt: '请分析我当前编辑器里的代码，指出可能的问题和修改方向，不要直接给完整答案。',
+    requiresExercise: true,
+    requiresCode: true,
+    icon: FiCode,
   },
   {
     label: '分析练习',
@@ -78,7 +88,12 @@ function createWelcomeMessage(lessonTitle: string): ChatMessage {
   };
 }
 
-export default function Chat({ lessonId, lessonTitle, exerciseId }: ChatProps) {
+export default function Chat({
+  lessonId,
+  lessonTitle,
+  exerciseId,
+  currentCode,
+}: ChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     createWelcomeMessage(lessonTitle),
   ]);
@@ -149,6 +164,7 @@ export default function Chat({ lessonId, lessonTitle, exerciseId }: ChatProps) {
       await streamLessonChat({
         lessonId,
         exerciseId,
+        currentCode,
         message: trimmedQuestion,
         signal: controller.signal,
         onToken: (token) => {
@@ -225,7 +241,9 @@ export default function Chat({ lessonId, lessonTitle, exerciseId }: ChatProps) {
   };
 
   const visibleQuickActions = QUICK_ACTIONS.filter(
-    (action) => !action.requiresExercise || exerciseId
+    (action) =>
+      (!action.requiresExercise || exerciseId) &&
+      (!action.requiresCode || currentCode?.trim())
   );
 
   return (

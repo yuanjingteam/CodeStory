@@ -17,10 +17,11 @@ interface CodeQuestionProps {
   exercise: ExerciseDetailData;
   onSubmit: (answer: string) => Promise<boolean>;
   onHintUsed?: (level: number) => void;
+  onCodeChange?: (code: string) => void;
 }
 
 const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
-  ({ exercise, onSubmit, onHintUsed }, ref) => {
+  ({ exercise, onSubmit, onHintUsed, onCodeChange }, ref) => {
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [showHintModal, setShowHintModal] = useState(false);
     const [hintLevelUsed, setHintLevelUsed] = useState(0);
@@ -50,6 +51,10 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
     useImperativeHandle(ref, () => ({
       getCode: () => userCode,
     }), [userCode]);
+
+    useEffect(() => {
+      onCodeChange?.(userCode);
+    }, [onCodeChange, userCode]);
 
     const handleSubmit = async () => {
       await onSubmit(userCode);

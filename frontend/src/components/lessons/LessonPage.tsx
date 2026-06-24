@@ -14,6 +14,7 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [chatCollapsed, setChatCollapsed] = useState(false);
   const [currentExerciseId, setCurrentExerciseId] = useState<string | null>(null);
+  const [currentExerciseCode, setCurrentExerciseCode] = useState<string | null>(null);
 
   const handleLessonCompleted = useCallback((lessonId: string) => {
     showToast.success('已记录学习进度');
@@ -115,6 +116,7 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
               onLessonCompleted={handleLessonCompleted}
               onLessonSwitched={handleLessonSwitched}
               onCurrentExerciseChange={setCurrentExerciseId}
+              onCurrentExerciseCodeChange={setCurrentExerciseCode}
             />
           </div>
         </Panel>
@@ -135,6 +137,7 @@ export default function LessonPage({ lessonId }: { lessonId: string }) {
                 lessonId={data.currentLesson.id}
                 lessonTitle={data.currentLesson.title}
                 exerciseId={currentExerciseId}
+                currentCode={currentExerciseCode}
               />
             )}
             {chatCollapsed && (

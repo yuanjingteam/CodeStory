@@ -17,6 +17,7 @@ interface ExerciseModalProps {
   exerciseId: string | null
   onClose: () => void
   onComplete: (exerciseId: string) => void
+  onCodeChange?: (code: string | null) => void
 }
 
 function ReviewList({ title, items }: { title: string; items: string[] }) {
@@ -82,7 +83,13 @@ function ChoiceExplanationPanel({ explanation }: { explanation: ChoiceExplanatio
   )
 }
 
-export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete }: ExerciseModalProps) {
+export default function ExerciseModal({
+  isOpen,
+  exerciseId,
+  onClose,
+  onComplete,
+  onCodeChange,
+}: ExerciseModalProps) {
   const [exerciseData, setExerciseData] = useState<ExerciseDetailData | null>(null)
   const [loading, setLoading] = useState(false)
   const [submitResult, setSubmitResult] = useState<{
@@ -113,6 +120,7 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
         setChoiceExplanationError('')
         setShowResult(false)
         setHasSubmitted(false)
+        onCodeChange?.(null)
         return
       }
 
@@ -123,6 +131,7 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
       setShowResult(false)
       setCurrentHintLevelUsed(0)
       setHasSubmitted(false)
+      onCodeChange?.(null)
       exerciseApi.getDetail(exerciseId)
         .then(response => {
           if (cancelled) return
@@ -145,7 +154,7 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
     return () => {
       cancelled = true
     }
-  }, [isOpen, exerciseId])
+  }, [isOpen, exerciseId, onCodeChange])
 
   const handleSubmit = async (answer: string) => {
     if (!exerciseData?.id) return false
@@ -345,6 +354,7 @@ export default function ExerciseModal({ isOpen, exerciseId, onClose, onComplete 
                 exercise={exerciseData}
                 onSubmit={handleSubmit}
                 onHintUsed={setCurrentHintLevelUsed}
+                onCodeChange={onCodeChange}
               />
             ) : (
               <div className="text-center font-bold text-gray-500">暂不支持的题型</div>

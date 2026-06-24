@@ -8,6 +8,7 @@ import {
 interface StreamChatParams {
   lessonId: string;
   exerciseId?: string | null;
+  currentCode?: string | null;
   message: string;
   signal: AbortSignal;
   onToken: (token: string) => void;
@@ -53,6 +54,7 @@ function requestChatStream(
   token: string,
   lessonId: string,
   exerciseId: string | null | undefined,
+  currentCode: string | null | undefined,
   message: string,
   signal: AbortSignal
 ) {
@@ -68,6 +70,7 @@ function requestChatStream(
       body: JSON.stringify({
         lessonId,
         exerciseId: exerciseId || undefined,
+        currentCode: currentCode?.trim() || undefined,
         message,
       }),
       signal,
@@ -147,6 +150,7 @@ export async function getLessonChatHistory({
 export async function streamLessonChat({
   lessonId,
   exerciseId,
+  currentCode,
   message,
   signal,
   onToken,
@@ -157,6 +161,7 @@ export async function streamLessonChat({
     token,
     lessonId,
     exerciseId,
+    currentCode,
     message,
     signal
   );
@@ -171,6 +176,7 @@ export async function streamLessonChat({
         refreshed.accessToken,
         lessonId,
         exerciseId,
+        currentCode,
         message,
         signal
       );

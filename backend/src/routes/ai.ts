@@ -15,6 +15,7 @@ import {
 
 const router = Router();
 const MAX_QUESTION_LENGTH = 2_000;
+const MAX_CURRENT_CODE_LENGTH = 12_000;
 
 interface StreamEvent {
   type: 'start' | 'token' | 'done' | 'error';
@@ -95,6 +96,8 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
   const exerciseId =
     typeof req.body.exerciseId === 'string' ? req.body.exerciseId.trim() : undefined;
   const question = typeof req.body.message === 'string' ? req.body.message.trim() : '';
+  const currentCode =
+    typeof req.body.currentCode === 'string' ? req.body.currentCode.trim() : '';
 
   if (!userId) {
     return res.status(401).json({ code: 401, message: '未登录' });
@@ -108,6 +111,13 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
     return res.status(400).json({
       code: 400,
       message: `问题不能超过 ${MAX_QUESTION_LENGTH} 个字符`,
+    });
+  }
+
+  if (currentCode.length > MAX_CURRENT_CODE_LENGTH) {
+    return res.status(400).json({
+      code: 400,
+      message: `当前代码不能超过 ${MAX_CURRENT_CODE_LENGTH} 个字符`,
     });
   }
 
@@ -127,6 +137,8 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
     await appendLessonChatMessage(session.id, 'user', question, {
       lessonId: context.lessonId,
       exerciseId: context.exerciseId,
+      hasCurrentCode: Boolean(currentCode),
+      currentCodeLength: currentCode.length,
     });
 
     res.status(200);
@@ -166,7 +178,13 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
     }
 
     let assistantContent = '';
-    for await (const token of streamLessonChat(context, question, abortController.signal, history)) {
+    for await (const token of streamLessonChat(
+      context,
+      question,
+      abortController.signal,
+      history,
+      currentCode
+    )) {
       if (abortController.signal.aborted) break;
       assistantContent += token;
       writeEvent(res, { type: 'token', content: token });
@@ -177,6 +195,7 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
         lessonId: context.lessonId,
         exerciseId: context.exerciseId,
         modelSource: 'lesson-chat',
+        usedCurrentCode: Boolean(currentCode),
       });
       writeEvent(res, { type: 'done' });
       res.end();
