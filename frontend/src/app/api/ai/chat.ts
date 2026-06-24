@@ -4,6 +4,11 @@ import {
   isRefreshSessionExpired,
   refreshAccessToken,
 } from '@/utils/auth-session';
+import {
+  AiChatStreamError,
+  parseAiChatErrorPayload,
+  type AiChatErrorCode,
+} from './chat-error';
 
 interface StreamChatParams {
   lessonId: string;
@@ -29,17 +34,9 @@ export interface LessonChatHistoryMessage {
 
 interface StreamEvent {
   type: 'start' | 'token' | 'done' | 'error';
+  code?: AiChatErrorCode;
   content?: string;
   message?: string;
-}
-
-async function getErrorMessage(response: Response): Promise<string> {
-  try {
-    const data = (await response.json()) as { message?: string };
-    return data.message || 'AI 服务调用失败';
-  } catch {
-    return 'AI 服务调用失败';
-  }
 }
 
 async function getErrorCode(response: Response): Promise<string | undefined> {
@@ -138,7 +135,8 @@ export async function getLessonChatHistory({
       handleAuthenticationFailure();
       throw new Error('登录已过期，请重新登录');
     }
-    throw new Error(await getErrorMessage(response));
+    const payload = await parseAiChatErrorPayload(response);
+    throw new AiChatStreamError(payload.message, payload.code);
   }
 
   const payload = (await response.json()) as {
@@ -195,7 +193,8 @@ export async function streamLessonChat({
       handleAuthenticationFailure();
       throw new Error('登录已过期，请重新登录');
     }
-    throw new Error(await getErrorMessage(response));
+    const payload = await parseAiChatErrorPayload(response);
+    throw new AiChatStreamError(payload.message, payload.code);
   }
 
   if (!response.body) {
@@ -213,7 +212,10 @@ export async function streamLessonChat({
     if (event.type === 'token' && event.content) {
       onToken(event.content);
     } else if (event.type === 'error') {
-      throw new Error(event.message || 'AI 服务调用失败');
+      throw new AiChatStreamError(
+        event.message || 'AI 服务调用失败',
+        event.code
+      );
     }
   };
 

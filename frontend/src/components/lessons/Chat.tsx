@@ -16,6 +16,10 @@ import {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getLessonChatHistory, streamLessonChat } from '@/app/api/ai/chat';
+import {
+  AiChatStreamError,
+  type AiChatErrorCode,
+} from '@/app/api/ai/chat-error';
 
 interface ChatProps {
   lessonId: string;
@@ -24,13 +28,18 @@ interface ChatProps {
   currentCode?: string | null;
 }
 
+type ChatMessageType = 'chat' | 'hint' | 'code_analysis' | 'system';
+
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
-  messageType?: 'chat' | 'hint' | 'code_analysis' | 'system';
+  messageType?: ChatMessageType;
   content: string;
+  errorCode?: AiChatErrorCode;
   status?: 'streaming' | 'error' | 'stopped';
   retryQuestion?: string;
+  retryMessageType?: ChatMessageType;
+  retryCurrentCode?: string | null;
 }
 
 const WELCOME_MESSAGE_ID = 'welcome';
@@ -98,7 +107,7 @@ function resolveOutgoingMessageType(
   question: string,
   hasExercise: boolean,
   hasCurrentCode: boolean
-): ChatMessage['messageType'] {
+): ChatMessageType {
   if (hasExercise && /提示|给点思路|给.*思路|没思路|不会做|卡住|hint|clue/i.test(question)) {
     return 'hint';
   }
@@ -110,18 +119,48 @@ function resolveOutgoingMessageType(
   return 'chat';
 }
 
-function getMessageTypeLabel(messageType?: ChatMessage['messageType']): string {
+function getMessageTypeLabel(messageType?: ChatMessageType): string {
   if (messageType === 'hint') return '提示';
   if (messageType === 'code_analysis') return '代码分析';
   if (messageType === 'system') return '系统';
   return '普通问答';
 }
 
-function getMessageTypeClass(messageType?: ChatMessage['messageType']): string {
+function getMessageTypeClass(messageType?: ChatMessageType): string {
   if (messageType === 'hint') return 'bg-yellow-100 text-yellow-900';
   if (messageType === 'code_analysis') return 'bg-blue-100 text-blue-900';
   if (messageType === 'system') return 'bg-gray-100 text-gray-700';
   return 'bg-purple-100 text-purple-900';
+}
+
+function getAiErrorMessage(error: unknown): {
+  code?: AiChatErrorCode;
+  message: string;
+} {
+  if (error instanceof AiChatStreamError) {
+    if (error.code === 'AI_CONFIG_MISSING') {
+      return { code: error.code, message: 'AI 服务未配置，请检查后端配置。' };
+    }
+    if (error.code === 'AI_TIMEOUT') {
+      return { code: error.code, message: 'AI 响应超时，可以点重新发送再试一次。' };
+    }
+    if (error.code === 'AI_RATE_LIMITED') {
+      return { code: error.code, message: 'AI 请求过于频繁，请稍后再试。' };
+    }
+    if (error.code === 'AI_CONTEXT_INVALID') {
+      return { code: error.code, message: error.message || '当前小节或练习上下文异常。' };
+    }
+    if (error.code === 'AI_REQUEST_INVALID') {
+      return { code: error.code, message: error.message || '请求内容不符合要求。' };
+    }
+    return { code: error.code, message: error.message || 'AI 服务暂时不可用，请稍后重试。' };
+  }
+
+  if (error instanceof Error) {
+    return { message: error.message || '网络异常，请稍后重试。' };
+  }
+
+  return { message: 'AI 服务调用失败，请稍后重试。' };
 }
 
 export default function Chat({
@@ -172,17 +211,31 @@ export default function Chat({
     return () => abortControllerRef.current?.abort();
   }, []);
 
-  const sendMessage = async (question: string) => {
+  const sendMessage = async (
+    question: string,
+    retryContext?: {
+      messageType?: ChatMessageType;
+      currentCode?: string | null;
+    }
+  ) => {
     const trimmedQuestion = question.trim();
     if (!trimmedQuestion || isStreaming) return;
 
-    const outgoingMessageType = resolveOutgoingMessageType(
-      trimmedQuestion,
-      Boolean(exerciseId),
-      Boolean(currentCode?.trim())
-    );
+    const outgoingMessageType =
+      retryContext?.messageType ||
+      resolveOutgoingMessageType(
+        trimmedQuestion,
+        Boolean(exerciseId),
+        Boolean(currentCode?.trim())
+      );
     const attachedCurrentCode =
-      outgoingMessageType === 'code_analysis' ? currentCode : undefined;
+      outgoingMessageType === 'code_analysis'
+        ? retryContext?.currentCode ?? currentCode
+        : undefined;
+    const retryCurrentCode =
+      outgoingMessageType === 'code_analysis'
+        ? attachedCurrentCode ?? null
+        : null;
     const assistantMessageId = crypto.randomUUID();
     const controller = new AbortController();
     abortControllerRef.current = controller;
@@ -203,6 +256,8 @@ export default function Chat({
         content: '',
         status: 'streaming',
         retryQuestion: trimmedQuestion,
+        retryMessageType: outgoingMessageType,
+        retryCurrentCode,
       },
     ]);
 
@@ -239,19 +294,21 @@ export default function Chat({
               ? {
                   ...message,
                   content: message.content || '已停止生成。',
+                  errorCode: undefined,
                   status: 'stopped',
                 }
               : message
           )
         );
       } else {
-        const errorMessage = error instanceof Error ? error.message : 'AI 服务调用失败';
+        const errorPayload = getAiErrorMessage(error);
         setMessages((previous) =>
           previous.map((message) =>
             message.id === assistantMessageId
               ? {
                   ...message,
-                  content: message.content || errorMessage,
+                  content: message.content || errorPayload.message,
+                  errorCode: errorPayload.code,
                   status: 'error',
                 }
               : message
@@ -279,7 +336,10 @@ export default function Chat({
         return !isFailedResponse && !isOriginalQuestion;
       });
     });
-    void sendMessage(message.retryQuestion);
+    void sendMessage(message.retryQuestion, {
+      messageType: message.retryMessageType,
+      currentCode: message.retryCurrentCode,
+    });
   };
 
   const stopGeneration = () => {
@@ -347,15 +407,22 @@ export default function Chat({
                 )}
 
                 {message.status === 'error' && (
-                  <button
-                    type="button"
-                    onClick={() => retryMessage(message)}
-                    disabled={isStreaming}
-                    className="mt-2 flex items-center gap-1 font-bold text-purple-700 disabled:opacity-50"
-                  >
-                    <FiRefreshCw />
-                    重新发送
-                  </button>
+                  <div className="mt-2 space-y-1">
+                    {message.errorCode && (
+                      <div className="text-xs font-bold text-red-600">
+                        错误码：{message.errorCode}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => retryMessage(message)}
+                      disabled={isStreaming}
+                      className="flex items-center gap-1 font-bold text-purple-700 disabled:opacity-50"
+                    >
+                      <FiRefreshCw />
+                      重新发送
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

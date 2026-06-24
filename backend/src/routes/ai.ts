@@ -3,6 +3,11 @@ import { authMiddleware } from '../middleware/auth';
 import { getLessonAiContext } from '../services/ai/lesson-context.service';
 import { streamLessonChat } from '../services/ai/lesson-chat.service';
 import {
+  createAiChatErrorPayload,
+  sendAiChatError,
+  type AiChatErrorCode,
+} from '../services/ai/ai-chat-error.service';
+import {
   appendLessonChatMessage,
   getLessonChatMessages,
   getOrCreateLessonChatSession,
@@ -23,6 +28,7 @@ interface StreamEvent {
   content?: string;
   message?: string;
   sessionId?: string;
+  code?: AiChatErrorCode;
 }
 
 function writeEvent(res: Response, event: StreamEvent): void {
@@ -115,21 +121,25 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
   }
 
   if (!lessonId || !question) {
-    return res.status(400).json({ code: 400, message: '小节和问题不能为空' });
+    return sendAiChatError(res, 400, 'AI_REQUEST_INVALID', '小节和问题不能为空');
   }
 
   if (question.length > MAX_QUESTION_LENGTH) {
-    return res.status(400).json({
-      code: 400,
-      message: `问题不能超过 ${MAX_QUESTION_LENGTH} 个字符`,
-    });
+    return sendAiChatError(
+      res,
+      400,
+      'AI_REQUEST_INVALID',
+      `问题不能超过 ${MAX_QUESTION_LENGTH} 个字符`
+    );
   }
 
   if (currentCode.length > MAX_CURRENT_CODE_LENGTH) {
-    return res.status(400).json({
-      code: 400,
-      message: `当前代码不能超过 ${MAX_CURRENT_CODE_LENGTH} 个字符`,
-    });
+    return sendAiChatError(
+      res,
+      400,
+      'AI_REQUEST_INVALID',
+      `当前代码不能超过 ${MAX_CURRENT_CODE_LENGTH} 个字符`
+    );
   }
 
   const abortController = new AbortController();
@@ -140,7 +150,7 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
   try {
     const context = await getLessonAiContext(lessonId, exerciseId);
     if (!context) {
-      return res.status(404).json({ code: 404, message: '小节不存在' });
+      return sendAiChatError(res, 404, 'AI_CONTEXT_INVALID', '小节不存在');
     }
 
     const messageType = resolveMessageType(question, currentCode, Boolean(context.exerciseId));
@@ -217,20 +227,17 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
   } catch (error) {
     if (abortController.signal.aborted) return;
 
-    const message = error instanceof Error ? error.message : 'AI 服务调用失败';
     console.error('AI 对话失败:', error);
+    const payload = createAiChatErrorPayload(error);
 
     if (!res.headersSent) {
-      const isContextError = message.startsWith('当前练习');
-      return res.status(isContextError ? 400 : 500).json({
-        code: isContextError ? 400 : 500,
-        message: isContextError ? message : 'AI 服务调用失败',
-      });
+      return sendAiChatError(res, payload.status, payload.code, payload.message);
     }
 
     writeEvent(res, {
       type: 'error',
-      message: message.includes('QWEN_API_KEY') ? message : 'AI 暂时无法回答，请稍后重试',
+      code: payload.code,
+      message: payload.message,
     });
     res.end();
   }
