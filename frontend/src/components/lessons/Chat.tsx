@@ -2,24 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
-  FiBookOpen,
-  FiCode,
-  FiHelpCircle,
-  FiList,
   FiMessageCircle,
-  FiRefreshCw,
-  FiSearch,
   FiSend,
   FiSquare,
-  FiTarget,
 } from 'react-icons/fi';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { getLessonChatHistory, streamLessonChat } from '@/app/api/ai/chat';
-import {
-  AiChatStreamError,
-  type AiChatErrorCode,
-} from '@/app/api/ai/chat-error';
+import ChatMessageBubble from './chat/ChatMessageBubble';
+import { QUICK_ACTIONS, resolveOutgoingMessageType } from './chat/chatActions';
+import { getAiErrorMessage } from './chat/chatErrors';
+import type { ChatMessage, ChatMessageType } from './chat/chatTypes';
 
 interface ChatProps {
   lessonId: string;
@@ -28,67 +19,7 @@ interface ChatProps {
   currentCode?: string | null;
 }
 
-type ChatMessageType = 'chat' | 'hint' | 'code_analysis' | 'system';
-
-interface ChatMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  messageType?: ChatMessageType;
-  content: string;
-  errorCode?: AiChatErrorCode;
-  status?: 'streaming' | 'error' | 'stopped';
-  retryQuestion?: string;
-  retryMessageType?: ChatMessageType;
-  retryCurrentCode?: string | null;
-}
-
 const WELCOME_MESSAGE_ID = 'welcome';
-
-interface QuickAction {
-  label: string;
-  prompt: string;
-  requiresExercise?: boolean;
-  requiresCode?: boolean;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-const QUICK_ACTIONS: QuickAction[] = [
-  {
-    label: '解释知识点',
-    prompt: '请用通俗的话解释本节的核心知识点，并结合一个小例子。',
-    icon: FiBookOpen,
-  },
-  {
-    label: '给我提示',
-    prompt: '给我一点提示，不要直接给完整答案。',
-    requiresExercise: true,
-    icon: FiHelpCircle,
-  },
-  {
-    label: '分析我的代码',
-    prompt: '请分析我当前编辑器里的代码，指出可能的问题和修改方向，不要直接给完整答案。',
-    requiresExercise: true,
-    requiresCode: true,
-    icon: FiCode,
-  },
-  {
-    label: '分析练习',
-    prompt: '请分析当前练习的解题思路，不要直接给完整答案。',
-    requiresExercise: true,
-    icon: FiSearch,
-  },
-  {
-    label: '解释题目',
-    prompt: '请解释当前练习题目在考什么，以及我应该怎么理解题干。',
-    requiresExercise: true,
-    icon: FiTarget,
-  },
-  {
-    label: '总结本节',
-    prompt: '请总结本节重点，并列出我需要掌握的 3 个要点。',
-    icon: FiList,
-  },
-];
 
 function createWelcomeMessage(lessonTitle: string): ChatMessage {
   return {
@@ -97,70 +28,6 @@ function createWelcomeMessage(lessonTitle: string): ChatMessage {
     messageType: 'system',
     content: `我是本节学习助手。你可以问我关于“${lessonTitle}”的知识点或当前练习。`,
   };
-}
-
-function isCodeAnalysisIntent(question: string): boolean {
-  return /代码|程序|报错|错误|bug|运行|不通过|哪里有问题|帮我看|分析我的代码|current code|code/i.test(question);
-}
-
-function resolveOutgoingMessageType(
-  question: string,
-  hasExercise: boolean,
-  hasCurrentCode: boolean
-): ChatMessageType {
-  if (hasExercise && /提示|给点思路|给.*思路|没思路|不会做|卡住|hint|clue/i.test(question)) {
-    return 'hint';
-  }
-
-  if (hasExercise && hasCurrentCode && isCodeAnalysisIntent(question)) {
-    return 'code_analysis';
-  }
-
-  return 'chat';
-}
-
-function getMessageTypeLabel(messageType?: ChatMessageType): string {
-  if (messageType === 'hint') return '提示';
-  if (messageType === 'code_analysis') return '代码分析';
-  if (messageType === 'system') return '系统';
-  return '普通问答';
-}
-
-function getMessageTypeClass(messageType?: ChatMessageType): string {
-  if (messageType === 'hint') return 'bg-yellow-100 text-yellow-900';
-  if (messageType === 'code_analysis') return 'bg-blue-100 text-blue-900';
-  if (messageType === 'system') return 'bg-gray-100 text-gray-700';
-  return 'bg-purple-100 text-purple-900';
-}
-
-function getAiErrorMessage(error: unknown): {
-  code?: AiChatErrorCode;
-  message: string;
-} {
-  if (error instanceof AiChatStreamError) {
-    if (error.code === 'AI_CONFIG_MISSING') {
-      return { code: error.code, message: 'AI 服务未配置，请检查后端配置。' };
-    }
-    if (error.code === 'AI_TIMEOUT') {
-      return { code: error.code, message: 'AI 响应超时，可以点重新发送再试一次。' };
-    }
-    if (error.code === 'AI_RATE_LIMITED') {
-      return { code: error.code, message: 'AI 请求过于频繁，请稍后再试。' };
-    }
-    if (error.code === 'AI_CONTEXT_INVALID') {
-      return { code: error.code, message: error.message || '当前小节或练习上下文异常。' };
-    }
-    if (error.code === 'AI_REQUEST_INVALID') {
-      return { code: error.code, message: error.message || '请求内容不符合要求。' };
-    }
-    return { code: error.code, message: error.message || 'AI 服务暂时不可用，请稍后重试。' };
-  }
-
-  if (error instanceof Error) {
-    return { message: error.message || '网络异常，请稍后重试。' };
-  }
-
-  return { message: 'AI 服务调用失败，请稍后重试。' };
 }
 
 export default function Chat({
@@ -369,63 +236,12 @@ export default function Chat({
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
         <div className="space-y-4">
           {messages.map((message) => (
-            <div
+            <ChatMessageBubble
               key={message.id}
-              className={`flex min-w-0 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[90%] min-w-0 overflow-hidden border-2 border-black rounded-lg px-3 py-2 text-sm shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${
-                  message.role === 'user'
-                    ? 'bg-yellow-300 text-black'
-                    : message.status === 'error'
-                      ? 'bg-red-50 text-red-700'
-                      : 'bg-white text-gray-800'
-                }`}
-              >
-                {message.role === 'assistant' && (
-                  <div className="mb-1">
-                    <span
-                      className={`inline-flex items-center rounded-sm px-1.5 py-0.5 text-[10px] font-bold ${getMessageTypeClass(message.messageType)}`}
-                    >
-                      {getMessageTypeLabel(message.messageType)}
-                    </span>
-                  </div>
-                )}
-
-                {message.role === 'assistant' ? (
-                  <div className="prose prose-sm max-w-none break-words prose-p:break-words prose-li:break-words prose-code:break-words prose-pre:max-w-full prose-pre:overflow-x-auto prose-pre:bg-gray-900 prose-pre:text-white">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {message.content || '正在思考...'}
-                    </ReactMarkdown>
-                  </div>
-                ) : (
-                  <p className="whitespace-pre-wrap break-words">{message.content}</p>
-                )}
-
-                {message.status === 'streaming' && (
-                  <span className="inline-block w-2 h-4 ml-1 bg-purple-600 animate-pulse align-middle" />
-                )}
-
-                {message.status === 'error' && (
-                  <div className="mt-2 space-y-1">
-                    {message.errorCode && (
-                      <div className="text-xs font-bold text-red-600">
-                        错误码：{message.errorCode}
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => retryMessage(message)}
-                      disabled={isStreaming}
-                      className="flex items-center gap-1 font-bold text-purple-700 disabled:opacity-50"
-                    >
-                      <FiRefreshCw />
-                      重新发送
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+              message={message}
+              isStreaming={isStreaming}
+              onRetry={retryMessage}
+            />
           ))}
           <div ref={messagesEndRef} />
         </div>
