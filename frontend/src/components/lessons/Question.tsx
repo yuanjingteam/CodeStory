@@ -10,9 +10,17 @@ interface QuestionProps {
   data: LessonDetailData
   onLessonCompleted?: (lessonId: string) => void
   onLessonSwitched?: (lessonId: string, chapterId: string) => void
+  onCurrentExerciseChange?: (exerciseId: string | null) => void
+  onCurrentExerciseCodeChange?: (code: string | null) => void
 }
 
-export default function Question({ data, onLessonCompleted, onLessonSwitched }: QuestionProps) {
+export default function Question({
+  data,
+  onLessonCompleted,
+  onLessonSwitched,
+  onCurrentExerciseChange,
+  onCurrentExerciseCodeChange,
+}: QuestionProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [currentLessonId, setCurrentLessonId] = useState<string | undefined>(data?.currentLesson?.id)
@@ -123,13 +131,19 @@ export default function Question({ data, onLessonCompleted, onLessonSwitched }: 
 
   const closeExercise = useCallback(() => {
     setModalOpen(false)
+    onCurrentExerciseCodeChange?.(null)
     updateUrlWithExercise(false, null)
     requestAnimationFrame(() => {
       if (contentScrollRef.current) {
         contentScrollRef.current.scrollTop = savedScrollPositionRef.current
       }
     })
-  }, [updateUrlWithExercise])
+  }, [onCurrentExerciseCodeChange, updateUrlWithExercise])
+
+  useEffect(() => {
+    onCurrentExerciseChange?.(modalOpen ? currentExerciseId : null)
+    if (!modalOpen) onCurrentExerciseCodeChange?.(null)
+  }, [currentExerciseId, modalOpen, onCurrentExerciseChange, onCurrentExerciseCodeChange])
 
   const handleNavigate = async (direction: 'prev' | 'next') => {
     if (!currentLessonId || !courseId || !currentChapterId) return
@@ -233,7 +247,7 @@ useEffect(() => {
           <span>{currentLessonTitle}</span>
         </div>
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push(`/courses/${courseId}`)}
           className="border-2 border-black px-3 py-1 bg-green-500 text-white font-bold rounded-lg shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
         >
           <span>‹</span>
@@ -255,6 +269,7 @@ useEffect(() => {
             exerciseId={currentExerciseId}
             onClose={closeExercise}
             onComplete={handleExerciseComplete}
+            onCodeChange={onCurrentExerciseCodeChange}
           />
         ) : (
           <div ref={contentScrollRef} className="h-full overflow-y-auto p-6">

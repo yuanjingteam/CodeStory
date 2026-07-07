@@ -3,6 +3,7 @@ import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import type { ChoiceMetadata, ExerciseDetailData } from '@/types/exercise';
 import HintModal from './HintModal';
 import { BsLightbulb } from 'react-icons/bs';
+import { useExerciseDraft } from '@/hooks/useExerciseDraft';
 
 export interface ChoiceQuestionHandle {
   getSelectedAnswer: () => string | null;
@@ -10,15 +11,27 @@ export interface ChoiceQuestionHandle {
 
 interface ChoiceQuestionProps {
   exercise: ExerciseDetailData;
-  onSubmit: (answer: string) => void;
+  onSubmit: (answer: string) => Promise<boolean>;
   onHintUsed?: (level: number) => void;
 }
 
 const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
   ({ exercise, onSubmit, onHintUsed }, ref) => {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showHintModal, setShowHintModal] = useState(false);
   const [hintLevelUsed, setHintLevelUsed] = useState(0);
+  const alreadyCorrect = (exercise.userAnswer?.score ?? 0) > 0;
+  const {
+    value: selectedOptionValue,
+    setValue: setSelectedOption,
+    clearDraft,
+    status: draftStatus,
+  } = useExerciseDraft({
+    exerciseId: exercise.id,
+    exerciseType: exercise.type,
+    initialValue: exercise.userAnswer?.answer || '',
+    disabled: alreadyCorrect,
+  });
+  const selectedOption = selectedOptionValue || null;
 
   useEffect(() => {
     if (exercise.userAnswer?.hint_level_used !== undefined) {
@@ -31,15 +44,17 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
   }), [selectedOption]);
 
   const options = (exercise.metadata as ChoiceMetadata).options || [];
-  const alreadyCorrect = (exercise.userAnswer?.score ?? 0) > 0;
-
+  const maxHintLevel = exercise.hints?._meta.max_level || 3;
   const handleSelect = (option: string) => {
     setSelectedOption(option);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (selectedOption) {
-      onSubmit(selectedOption);
+      const correct = await onSubmit(selectedOption);
+      if (correct) {
+        clearDraft();
+      }
     }
   };
 
@@ -52,24 +67,39 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
     <div className="space-y-2">
       <div className="flex items-center justify-between mb-4">
         <div className="font-bold text-lg">请选择正确答案：</div>
-        <button
-          onClick={() => setShowHintModal(true)}
-          disabled={!exercise.hints || alreadyCorrect}
-          className={`
-            py-2 px-4 font-bold border-2 border-black rounded-md
-            shadow-[2px_2px_0_0_rgba(0,0,0,1)]
-            hover:translate-x-[2px] hover:translate-y-[2px]
-            hover:shadow-none transition-all
-            flex items-center justify-center
-            ${exercise.hints && !alreadyCorrect
-              ? 'bg-yellow-400 text-black cursor-pointer'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }
-          `}
-        >
-          <BsLightbulb className="w-5 h-5 mr-1" />
-          {!exercise.hints ? '提示' : hintLevelUsed >= exercise.hints._meta.max_level ? '查看提示' : `提示 (${exercise.hints._meta.max_level - hintLevelUsed})`}
-        </button>
+        <div className="flex items-center gap-2">
+          {!alreadyCorrect && (
+            <span
+              className={`text-xs font-bold ${
+                draftStatus === 'error' ? 'text-red-600' : 'text-gray-500'
+              }`}
+            >
+              {draftStatus === 'error'
+                ? '草稿保存失败'
+                : draftStatus === 'saved'
+                  ? '草稿已保存到本机'
+                  : ''}
+            </span>
+          )}
+          <button
+            onClick={() => setShowHintModal(true)}
+            disabled={alreadyCorrect}
+            className={`
+              py-2 px-4 font-bold border-2 border-black rounded-md
+              shadow-[2px_2px_0_0_rgba(0,0,0,1)]
+              hover:translate-x-[2px] hover:translate-y-[2px]
+              hover:shadow-none transition-all
+              flex items-center justify-center
+              ${!alreadyCorrect
+                ? 'bg-yellow-400 text-black cursor-pointer'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }
+            `}
+          >
+            <BsLightbulb className="w-5 h-5 mr-1" />
+            {hintLevelUsed >= maxHintLevel ? '查看提示' : `提示 (${maxHintLevel - hintLevelUsed})`}
+          </button>
+        </div>
       </div>
 
       {options.map((option: string, index: number) => {
@@ -93,7 +123,7 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
       })}
 
       <button
-        onClick={handleSubmit}
+        onClick={() => void handleSubmit()}
         disabled={!selectedOption || alreadyCorrect}
         className={`w-full py-3 font-bold border-4 border-black rounded-lg shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-lg mt-4 ${
           selectedOption && !alreadyCorrect

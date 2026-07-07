@@ -13,8 +13,16 @@ export type LoginRequest = {
 };
 
 export type LoginResponse = {
-  token: string;
+  accessToken: string;
+  accessExpiresAt: string;
+  // 迁移期兼容字段，后续统一使用 accessToken。
+  token?: string;
   user: LoginUserInfo;
+};
+
+export type RefreshResponse = {
+  accessToken: string;
+  accessExpiresAt: string;
 };
 
 export type LoginUserInfo = {

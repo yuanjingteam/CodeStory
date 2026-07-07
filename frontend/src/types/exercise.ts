@@ -46,6 +46,45 @@ export interface UserAnswer {
   score: number;
 }
 
+export interface ScoreBreakdown {
+  functionalScore: number;
+  qualityScore: number;
+  hintDeduction: number;
+  finalScore: number;
+}
+
+export interface SubmitAiReview {
+  isLikelyCorrect: boolean;
+  feedback: string;
+  strengths: string[];
+  issues: string[];
+  suggestions: string[];
+  needsManualReview: boolean;
+  status: 'completed' | 'failed';
+}
+
+export interface ChoiceOptionExplanation {
+  label: string;
+  explanation: string;
+  isCorrect: boolean;
+}
+
+export interface ChoiceExplanationData {
+  summary: string;
+  correctOption: string;
+  selectedOption: string;
+  correctExplanation: string;
+  selectedExplanation: string;
+  optionExplanations: ChoiceOptionExplanation[];
+  studyTip: string;
+}
+
+export interface ChoiceExplanationResponse {
+  code: number;
+  message: string;
+  data: ChoiceExplanationData;
+}
+
 export interface ExerciseSubmitResponse {
   code: number;
   message: string;
@@ -54,5 +93,7 @@ export interface ExerciseSubmitResponse {
     score: number;
     feedback: string;
     analysis: string;
+    scoreBreakdown?: ScoreBreakdown;
+    aiReview?: SubmitAiReview;
   };
 }

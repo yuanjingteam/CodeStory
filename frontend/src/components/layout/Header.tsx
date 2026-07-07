@@ -1,21 +1,24 @@
 'use client';
 import Link from 'next/link';
 import React from 'react';
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { useUserStore } from '@/store/useUserStore';
 import { useRouter } from 'next/navigation';
 import { FiLogIn, FiLogOut } from 'react-icons/fi';
 import Img from 'next/image';
+import { logout } from '@/api/auth/auth';
 
 const Header: React.FC = () => {
   const router = useRouter();
-  const { user, clearUser, isLoading, isLoggedIn, getRoleByToken } =
-    useUserStore();
-  const isAdmin = useMemo(() => getRoleByToken() === 1, [getRoleByToken]);
-  const canManage = useMemo(() => isAdmin && isLoggedIn, [isAdmin, isLoggedIn]);
+  const { user, clearUser, isLoading, isLoggedIn } = useUserStore();
+  const canManage = isLoggedIn && user?.role === 1;
   const handleLogout = async () => {
-    clearUser();
-    router.push('/');
+    try {
+      await logout();
+    } finally {
+      clearUser();
+      router.push('/');
+    }
   };
   const dropdownRef = useRef<HTMLDivElement>(null);
   return (

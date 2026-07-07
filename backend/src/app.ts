@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import { corsOptions } from './config/cors';
 import errorHandler from './middleware/errorHandler';
 import { authMiddleware, requireAdmin } from './middleware/auth';
 import {
@@ -15,6 +16,7 @@ import {
   courseManageRouter,
   chapterManageRouter,
   lessonManageRouter,
+  aiRouter,
 } from './routes/index';
 
 dotenv.config();
@@ -28,7 +30,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
@@ -40,6 +42,7 @@ app.use('/api/v1/home', homeRouter);
 app.use('/api/v1/profile', authMiddleware, profileRouter);
 app.use('/api/v1/chapter/lesson',authMiddleware, lessonsRouter);
 app.use('/api/v1/exercises', authMiddleware, exercisesRouter);
+app.use('/api/v1/ai', aiRouter);
 app.use(
   '/api/v1/admin/user-manage',
   [authMiddleware, requireAdmin],

@@ -1,5 +1,14 @@
 import { Router } from 'express';
-import { getExerciseDetail, submitExercise, formatExerciseResponse, getExerciseHint, getAcquiredHints } from '../services/courses/exercise.service';
+import {
+  explainChoiceExercise,
+  getExerciseDetail,
+  submitExercise,
+  formatExerciseResponse,
+} from '../services/courses/exercise.service';
+import {
+  getAcquiredHints,
+  getExerciseHint,
+} from '../services/courses/exercise-hint.service';
 import { badRequest, notFound, serverError } from '../utils/response';
 import { authMiddleware } from '../middleware/auth';
 
@@ -41,6 +50,30 @@ router.post('/submit', authMiddleware, async (req, res) => {
     const result = await submitExercise(exercise_id, answer, userId, hint_level_used || 0);
     if (!result) {
       return notFound(res, '题目不存在');
+    }
+
+    return res.json({
+      code: 200,
+      message: 'success',
+      data: result,
+    });
+  } catch (error) {
+    return serverError(res, error);
+  }
+});
+
+router.post('/choice-explanation', authMiddleware, async (req, res) => {
+  try {
+    const { exercise_id, answer } = req.body;
+    const userId = req.user!.id;
+
+    if (!exercise_id || !answer) {
+      return badRequest(res, '缺少 exercise_id 或 answer 参数');
+    }
+
+    const result = await explainChoiceExercise(exercise_id, answer, userId);
+    if (!result) {
+      return notFound(res, '选择题不存在或选项无效');
     }
 
     return res.json({

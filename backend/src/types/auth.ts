@@ -13,6 +13,9 @@ export type LoginRequest = {
 };
 
 export type LoginResponse = {
+  accessToken: string;
+  accessExpiresAt: string;
+  // 迁移期兼容旧前端，完成刷新流程后删除。
   token: string;
   user: LoginUserInfo;
 };

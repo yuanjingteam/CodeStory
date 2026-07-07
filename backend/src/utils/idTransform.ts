@@ -25,7 +25,14 @@ export async function resolveShortId(
   const prefix = shortId.slice(0, 2).toLowerCase();
   const suffix = shortId.slice(-3).toLowerCase();
 
-  const sql = `SELECT id FROM ${table} WHERE REPLACE(id, '-', '') LIKE $1 || '%' || $2`;
+  const sql = `
+    SELECT id
+    FROM ${table}
+    WHERE is_delete = 0
+      AND REPLACE(id, '-', '') LIKE $1 || '%' || $2
+    ORDER BY created_at ASC
+    LIMIT 1
+  `;
 
   const results = await prisma.$queryRawUnsafe(sql, prefix, suffix);
 

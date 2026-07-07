@@ -2,22 +2,36 @@ import axios, {
   type AxiosInstance,
   type AxiosResponse,
   type AxiosRequestConfig,
-  InternalAxiosRequestConfig,
+  type InternalAxiosRequestConfig,
   type AxiosError,
 } from 'axios';
-import { getToken, isTokenValid } from './jwt';
-import { useUserStore } from '@/store/useUserStore';
+import { getToken } from './jwt';
 import { showToast } from './toast';
+import {
+  handleAuthenticationFailure,
+  isRefreshSessionExpired,
+  refreshAccessToken,
+} from './auth-session';
+
+type AuthErrorResponse = {
+  code?: string | number;
+  message?: string;
+};
+
+type RetryableRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean;
+};
 
 const service: AxiosInstance = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1`,
   timeout: 5000,
+  withCredentials: true,
 });
 
 service.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = getToken();
-    if (token && isTokenValid(token)) {
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -33,16 +47,35 @@ service.interceptors.response.use(
     }
     return Promise.reject(new Error(response.statusText || 'Error'));
   },
-  (error: AxiosError) => {
+  async (error: AxiosError<AuthErrorResponse>) => {
     if (error.response?.status === 401) {
-      const { clearUser, isLoggedIn } = useUserStore.getState();
-      if (isLoggedIn) {
-        showToast.warning('登录已过期，请重新登录');
-        clearUser();
-        if (typeof window !== 'undefined') {
-          window.location.href = '/auth/login';
+      const originalRequest = error.config as
+        | RetryableRequestConfig
+        | undefined;
+      const errorCode = error.response.data?.code;
+
+      if (
+        (errorCode === 'ACCESS_TOKEN_EXPIRED' ||
+          errorCode === 'ACCESS_TOKEN_MISSING') &&
+        originalRequest &&
+        !originalRequest._retry
+      ) {
+        originalRequest._retry = true;
+
+        try {
+          const refreshed = await refreshAccessToken();
+          originalRequest.headers.Authorization =
+            `Bearer ${refreshed.accessToken}`;
+          return service(originalRequest);
+        } catch (refreshError) {
+          if (isRefreshSessionExpired(refreshError)) {
+            handleAuthenticationFailure();
+          }
+          return Promise.reject(refreshError);
         }
       }
+
+      handleAuthenticationFailure();
     } else if (error.response?.status === 403) {
       showToast.error('没有权限访问');
     } else if (error.response?.status === 404) {

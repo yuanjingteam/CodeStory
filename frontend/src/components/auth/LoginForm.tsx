@@ -15,6 +15,7 @@ import {
 import FormInput from './FormInput';
 import { useUserStore } from '@/store/useUserStore';
 import { toast } from 'sonner';
+import { getSafeRedirectPath } from '@/utils/auth-session';
 
 const STORAGE_KEY = 'loginfrom';
 
@@ -129,7 +130,10 @@ export default function LoginForm() {
         toast.success('登录成功');
         await setUserLogin(res.data);
         setTimeout(() => {
-          router.push('/');
+          const redirect = getSafeRedirectPath(
+            new URLSearchParams(window.location.search).get('redirect')
+          );
+          router.push(redirect);
         }, 500);
         return;
       } else {
