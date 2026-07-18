@@ -19,6 +19,10 @@ Install dependencies separately with `cd frontend && pnpm install` and `cd backe
 
 Use TypeScript, two-space indentation, semicolons, and the import style already present in the edited module. React components and their files use PascalCase (`AuthGate.tsx`); hooks use `useXxx`; utilities and variables use camelCase. Keep route folders lowercase and follow RESTful API conventions. Do not edit generated Prisma output. Run the frontend `pnpm check` before submitting UI changes.
 
+## Frontend Design Guidelines
+
+For any visible frontend change, follow [`docs/CodeStory_前端设计规范.md`](docs/CodeStory_前端设计规范.md). It is the implementation source of truth for CodeStory's Neo-Brutalism visual language, responsive behavior, interaction states, accessibility, and UI review checklist. Reuse existing components and patterns before adding new ones, and do not introduce a competing visual style unless the user explicitly requests a project-wide redesign.
+
 ## Testing Guidelines
 
 There is no general unit-test framework or coverage threshold yet. Backend authentication checks are executable scripts named `backend/scripts/check-auth-*.ts`; they require valid database, Redis, JWT, and API environment settings. Add focused tests alongside new behavior when introducing a test framework, and document the command in the relevant `package.json`. At minimum, build both apps and manually exercise affected routes.
