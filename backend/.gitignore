@@ -3,3 +3,6 @@ node_modules
 .env
 
 /src/generated/prisma
+
+# Runtime uploads are persisted outside version control
+/uploads/
