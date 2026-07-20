@@ -1,5 +1,6 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { showToast } from '@/utils/toast';
 import {
@@ -27,19 +28,24 @@ const levelColorMap: Record<number, string> = {
   2: 'bg-red-300',
 };
 
+interface CourseManageQuery {
+  keyword?: string;
+  level?: number;
+  page: number;
+  size: number;
+}
+
 export default function CourseManage() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [size, setSize] = useState(10);
+  const [query, setQuery] = useState<CourseManageQuery>({ page: 1, size: 10 });
   const [searchTerm, setSearchTerm] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<
     (CourseFormData & { id: string; cover_url?: string }) | undefined
   >();
   const [deleteTarget, setDeleteTarget] = useState<Course | null>(null);
-  const hasMounted = useRef(false);
   const [filters, setFilters] = useState<FilterField[]>([
     {
       id: 'level',
@@ -55,19 +61,10 @@ export default function CourseManage() {
     },
   ]);
 
-  const fetchCourses = async () => {
+  const refreshCourses = async () => {
     setLoading(true);
     try {
-      const levelValue = filters.find((f) => f.id === 'level')?.value;
-      const res = await courseApi.getList({
-        keyword: searchTerm || undefined,
-        level:
-          levelValue !== '' && levelValue !== undefined
-            ? Number(levelValue)
-            : undefined,
-        page,
-        size,
-      });
+      const res = await courseApi.getList(query);
       setCourses(res.records || []);
       setTotal(res.total);
     } catch (error) {
@@ -78,11 +75,30 @@ export default function CourseManage() {
   };
 
   useEffect(() => {
-    if (!hasMounted.current) {
-      hasMounted.current = true;
-      fetchCourses();
-    }
-  }, [page, size]);
+    let cancelled = false;
+
+    courseApi
+      .getList(query)
+      .then((res) => {
+        if (cancelled) return;
+        setCourses(res.records || []);
+        setTotal(res.total);
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error('获取课程列表失败:', error);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [query]);
 
   const handleSubmit = async (data: CourseFormData & { id?: string }) => {
     if (data.id) {
@@ -92,7 +108,7 @@ export default function CourseManage() {
       await courseManageApi.create(data);
       showToast.success('课程创建成功');
     }
-    fetchCourses();
+    await refreshCourses();
   };
 
   const handleOpenCreate = () => {
@@ -119,7 +135,7 @@ export default function CourseManage() {
     if (deleteTarget) {
       await courseManageApi.delete(deleteTarget.id);
       showToast.success(`课程「${deleteTarget.title}」已删除`);
-      fetchCourses();
+      await refreshCourses();
     }
     setDeleteTarget(null);
   };
@@ -165,9 +181,11 @@ export default function CourseManage() {
       align: 'center',
       render: (value) =>
         value ? (
-          <img
+          <Image
             src={String(value)}
-            alt=""
+            alt="课程封面"
+            width={36}
+            height={36}
             className="w-9 h-9 object-cover border-2 border-black"
           />
         ) : (
@@ -211,8 +229,19 @@ export default function CourseManage() {
         filters={filters}
         onFilterChange={setFilters}
         onApplyFilters={() => {
-          setPage(1);
-          fetchCourses();
+          const levelValue = filters.find(
+            (filter) => filter.id === 'level'
+          )?.value;
+          setLoading(true);
+          setQuery((current) => ({
+            keyword: searchTerm || undefined,
+            level:
+              levelValue !== '' && levelValue !== undefined
+                ? Number(levelValue)
+                : undefined,
+            page: 1,
+            size: current.size,
+          }));
         }}
         actionSlot={
           <button
@@ -228,14 +257,17 @@ export default function CourseManage() {
       </div>
 
       <Pagination
-        currentPage={page}
-        totalPages={Math.ceil(total / size) || 1}
+        currentPage={query.page}
+        totalPages={Math.ceil(total / query.size) || 1}
         totalItems={total}
-        pageSize={size}
-        onPageChange={setPage}
+        pageSize={query.size}
+        onPageChange={(newPage) => {
+          setLoading(true);
+          setQuery((current) => ({ ...current, page: newPage }));
+        }}
         onPageSizeChange={(newSize) => {
-          setSize(newSize);
-          setPage(1);
+          setLoading(true);
+          setQuery((current) => ({ ...current, page: 1, size: newSize }));
         }}
       />
 

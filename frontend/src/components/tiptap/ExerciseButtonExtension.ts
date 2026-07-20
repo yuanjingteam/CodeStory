@@ -130,7 +130,7 @@ export const ExerciseButton = Node.create<ExerciseButtonOptions>({
 
       return {
         dom,
-        stopEvent(event: Event): boolean {
+        stopEvent(): boolean {
           return true
         },
       }

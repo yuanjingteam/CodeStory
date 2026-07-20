@@ -29,7 +29,7 @@ export default function HomeMyCourses() {
       }
     };
     fetchCourses();
-  }, []);
+  }, [isLoading, isLoggedIn]);
 
   const router = useRouter();
   const inProgressCourses = courses.filter((course) => course.status === 1);

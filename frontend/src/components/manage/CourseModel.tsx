@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef } from 'react';
 import { FiX, FiUpload } from 'react-icons/fi';
+import Image from 'next/image';
 import type { CourseFormData } from '@/types/course-manage';
 
 interface CourseModelProps {
@@ -130,7 +131,14 @@ export default function CourseModel({ open, onClose, onSubmit, initialData }: Co
               className="border-2 border-dashed border-black p-4 cursor-pointer hover:bg-gray-50 transition-colors"
             >
               {previewUrl ? (
-                <img src={previewUrl} alt="" className="max-h-40 mx-auto object-contain" />
+                <Image
+                  src={previewUrl}
+                  alt="课程封面预览"
+                  width={320}
+                  height={160}
+                  unoptimized
+                  className="max-h-40 w-auto mx-auto object-contain"
+                />
               ) : (
                 <div className="flex flex-col items-center gap-2 text-gray-400">
                   <FiUpload className="w-10 h-10" />

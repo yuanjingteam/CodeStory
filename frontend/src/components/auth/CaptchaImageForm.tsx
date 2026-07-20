@@ -1,5 +1,11 @@
 'use client';
-import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import {
+  useEffect,
+  useEffectEvent,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
 import { getImageCaptcha } from '@/api/auth/auth';
 import type { ImageCaptchaData } from '@/types/auth';
 import { toast } from 'sonner';
@@ -16,6 +22,7 @@ export default forwardRef<{ refresh: () => void }, CaptchaImageProps>(
     const [captchaData, setCaptchaData] = useState<ImageCaptchaData | null>(
       null
     );
+    const notifyCaptchaChange = useEffectEvent(onChange);
 
     const fetchCaptcha = async () => {
       try {
@@ -43,10 +50,36 @@ export default forwardRef<{ refresh: () => void }, CaptchaImageProps>(
     }));
 
     useEffect(() => {
-      const initImageCaptcha = async () => {
-        await fetchCaptcha();
+      let cancelled = false;
+
+      getImageCaptcha()
+        .then((res) => {
+          if (cancelled) return;
+          if (res.code === 200 && res.data?.captchaId && res.data?.image) {
+            setCaptchaData(res.data);
+            notifyCaptchaChange({
+              captchaCode: '',
+              captchaId: res.data.captchaId,
+            });
+          } else {
+            toast.error(res.message || '获取验证码失败');
+          }
+        })
+        .catch((error) => {
+          if (!cancelled) {
+            console.error(error);
+            toast.error('获取验证码失败');
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setLoading(false);
+          }
+        });
+
+      return () => {
+        cancelled = true;
       };
-      initImageCaptcha();
     }, []);
 
     const handleRefresh = async () => {

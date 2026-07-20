@@ -193,44 +193,13 @@ export default function Question({
         onLessonSwitched?.(targetLessonId, targetChapterId)
 
         setTimeout(() => setIsTransitioning(false), 50)
-      } catch (error) {
+      } catch {
         setIsTransitioning(false)
       }
     } catch (error) {
       console.error('切换小节失败:', error)
     }
   }
-
-useEffect(() => {
-  if (data?.currentLesson?.id && data.currentLesson.id !== currentLessonId) {
-    const updateLessonInfo = async () => {
-      try {
-        setCurrentLessonId(data.currentLesson.id)
-        setCurrentLessonTitle(data.currentLesson.title)
-        setCurrentContent(data.currentLesson.content || '')
-        setExercises(data.exercises || [])
-        setModalOpen(false)
-        
-        const completedIds = new Set(
-          (data.exercises || [])
-            .filter(ex => ex.isCompleted)
-            .map(ex => ex.id)
-        )
-        setCompletedExercises(completedIds)
-
-        const serverAllDone = (data.exercises || []).length > 0 && completedIds.size === (data.exercises || []).length
-        if (serverAllDone) {
-          serverCompletedLessonsRef.current.add(data.currentLesson.id)
-        } else {
-          serverCompletedLessonsRef.current.delete(data.currentLesson.id)
-        }
-      } catch (err) {
-        console.error('更新课时信息异常：', err)
-      }
-    }
-    updateLessonInfo()
-  }
-}, [data?.currentLesson?.id, currentLessonId])
 
   const currentChapterTitle = currentChapter?.title || ''
 

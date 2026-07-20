@@ -1,13 +1,9 @@
-import React, { useMemo } from 'react';
-import { useUserStore } from '@/store/useUserStore';
-import ErrorDataCard from '@/components/common/ErrorDataCard';
+import React from 'react';
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-
-
   return <> {children}</>;
 }

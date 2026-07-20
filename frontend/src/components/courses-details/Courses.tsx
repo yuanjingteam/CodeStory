@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import courseApi from '@/app/api/courses/courses';
 import type { Course, CourseListRequest } from '@/types/course';
@@ -31,6 +32,40 @@ const studentCountRangeMap: Record<string, { min?: number; max?: number }> = {
   '1000+ 人': { min: 1001 },
 };
 
+interface CourseQuery {
+  keyword: string;
+  level: string;
+  status: string;
+  studentRange: string;
+}
+
+const defaultCourseQuery: CourseQuery = {
+  keyword: '',
+  level: '全部难度',
+  status: '全部状态',
+  studentRange: '全部人数',
+};
+
+const buildCourseListRequest = (query: CourseQuery): CourseListRequest => {
+  const params: CourseListRequest = {
+    keyword: query.keyword || undefined,
+    level: levelMap[query.level as keyof typeof levelMap],
+    learnStatus: learnStatusMap[query.status as keyof typeof learnStatusMap],
+    page: 1,
+    size: 999,
+  };
+  const range = studentCountRangeMap[query.studentRange];
+
+  if (range.min !== undefined) {
+    params.minStudentCount = range.min;
+  }
+  if (range.max !== undefined) {
+    params.maxStudentCount = range.max;
+  }
+
+  return params;
+};
+
 const getLevelNumber = (level: string | number): number => {
   if (typeof level === 'number') return level;
   const num = parseInt(level);
@@ -52,11 +87,9 @@ const getLearnStatus = (
 export default function CoursesSection() {
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLevel, setSelectedLevel] = useState('全部难度');
-  const [selectedStatus, setSelectedStatus] = useState('全部状态');
-  const [selectedStudentRange, setSelectedStudentRange] = useState('全部人数');
+  const [query, setQuery] = useState<CourseQuery>(defaultCourseQuery);
   const { isLoggedIn } = useUserStore();
   const handleCourseClick = (courseId: string | number) => {
     if (!isLoggedIn) {
@@ -67,50 +100,38 @@ export default function CoursesSection() {
   };
 
   const handleReset = () => {
-    setSearchTerm('');
-    setSelectedLevel('全部难度');
-    setSelectedStatus('全部状态');
-    setSelectedStudentRange('全部人数');
-  };
-
-  const fetchCourses = async () => {
     setLoading(true);
-    try {
-      const params: CourseListRequest = {
-        keyword: searchTerm.trim() || undefined,
-        level: levelMap[selectedLevel as keyof typeof levelMap],
-        learnStatus:
-          learnStatusMap[selectedStatus as keyof typeof learnStatusMap],
-        page: 1,
-        size: 999,
-      };
-
-      const range = studentCountRangeMap[selectedStudentRange];
-      if (range.min !== undefined) {
-        params.minStudentCount = range.min;
-      }
-      if (range.max !== undefined) {
-        params.maxStudentCount = range.max;
-      }
-
-      console.log('📤 发送请求参数:', params);
-
-      const res = await courseApi.getList(params);
-      console.log('📥 收到响应数据:', res);
-      setCourses(res.records || []);
-    } catch (err) {
-      console.error('获取课程失败', err);
-    } finally {
-      setLoading(false);
-    }
+    setSearchTerm('');
+    setQuery({ ...defaultCourseQuery });
   };
 
   useEffect(() => {
-    const run = async () => {
-     await fetchCourses()
-    }
-    run()
-  }, [selectedLevel, selectedStatus, selectedStudentRange]);
+    let cancelled = false;
+    const params = buildCourseListRequest(query);
+
+    console.log('📤 发送请求参数:', params);
+    courseApi
+      .getList(params)
+      .then((res) => {
+        if (cancelled) return;
+        console.log('📥 收到响应数据:', res);
+        setCourses(res.records || []);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error('获取课程失败', err);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [query]);
 
   return (
     <section className="bg-white p-8 mx-8 relative z-10">
@@ -121,8 +142,11 @@ export default function CoursesSection() {
 
       <div className="flex flex-wrap gap-4 mb-8 items-center">
         <select
-          value={selectedLevel}
-          onChange={(e) => setSelectedLevel(e.target.value)}
+          value={query.level}
+          onChange={(e) => {
+            setLoading(true);
+            setQuery((current) => ({ ...current, level: e.target.value }));
+          }}
           className="w-50 rounded-lg border-2 border-black px-4 py-2 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
         >
           <option value="全部难度">全部难度</option>
@@ -132,8 +156,11 @@ export default function CoursesSection() {
         </select>
 
         <select
-          value={selectedStatus}
-          onChange={(e) => setSelectedStatus(e.target.value)}
+          value={query.status}
+          onChange={(e) => {
+            setLoading(true);
+            setQuery((current) => ({ ...current, status: e.target.value }));
+          }}
           className="w-50 rounded-lg border-2 border-black px-4 py-2 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
         >
           <option value="全部状态">全部状态</option>
@@ -143,8 +170,14 @@ export default function CoursesSection() {
         </select>
 
         <select
-          value={selectedStudentRange}
-          onChange={(e) => setSelectedStudentRange(e.target.value)}
+          value={query.studentRange}
+          onChange={(e) => {
+            setLoading(true);
+            setQuery((current) => ({
+              ...current,
+              studentRange: e.target.value,
+            }));
+          }}
           className="w-50 rounded-lg border-2 border-black px-4 py-2 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
         >
           <option value="全部人数">全部人数</option>
@@ -164,7 +197,13 @@ export default function CoursesSection() {
             className="rounded-l-lg border-2 border-black px-4 py-2 font-bold bg-white focus:outline-none shadow-[2px_2px_0_0_rgba(0,0,0,1)] w-64"
           />
           <button
-            onClick={fetchCourses}
+            onClick={() => {
+              setLoading(true);
+              setQuery((current) => ({
+                ...current,
+                keyword: searchTerm.trim(),
+              }));
+            }}
             className="rounded-r-lg bg-purple-600 text-white px-4 py-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-purple-700 transition-colors flex items-center justify-center"
           >
             <BsSearch className="w-5 h-5" />
@@ -216,12 +255,14 @@ export default function CoursesSection() {
                 className="flex flex-col rounded-xl border-1 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0_0_rgba(0,0,0,1)] transition-all h-[320px] cursor-pointer overflow-hidden"
               >
                 {/* 顶部图片横幅 */}
-                <div className="h-40 w-full border-b-2 border-black overflow-hidden shrink-0 rounded-t-xl">
+                <div className="relative h-40 w-full border-b-2 border-black overflow-hidden shrink-0 rounded-t-xl">
                   {course.cover_url ? (
-                    <img
+                    <Image
                       src={course.cover_url}
                       alt={course.title}
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover"
                     />
                   ) : (
                     <div className="h-full w-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">

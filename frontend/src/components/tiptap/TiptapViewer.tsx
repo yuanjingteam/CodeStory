@@ -56,7 +56,7 @@ export default function TiptapViewer({ content, onExerciseClick, onButtonOrderMa
       attributes: {
         class: 'tiptap-content prose prose-sm max-w-none',
       },
-      handleClickOn(view, pos, node, nodePos, event, direct) {
+      handleClickOn(view, pos, node, nodePos, event) {
         if (node.type.name === 'exerciseButton') {
           const exerciseId = node.attrs.exerciseId as string
 

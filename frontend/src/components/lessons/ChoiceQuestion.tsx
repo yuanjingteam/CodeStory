@@ -58,7 +58,7 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
     }
   };
 
-  const handleUseHint = (newLevel: number, hintContent: string) => {
+  const handleUseHint = (newLevel: number) => {
     setHintLevelUsed(newLevel);
     onHintUsed?.(newLevel);
   };

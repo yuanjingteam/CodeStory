@@ -71,7 +71,6 @@ export default function LessonPage({
     if (isAuthLoading) return;
 
     if (!isLoggedIn) {
-      setLoading(false);
       handleAuthenticationFailure();
       return;
     }
@@ -84,7 +83,7 @@ export default function LessonPage({
           chapterId,
         });
         setData(response);
-      } catch (error) {
+      } catch {
         console.error('获取课程详情失败');
       } finally {
         setLoading(false);
@@ -140,6 +139,7 @@ export default function LessonPage({
         <Panel defaultSize="50%" minSize="30%">
           <div className="h-full border-4 border-black rounded-lg shadow-[1px_1px_0_0_rgba(0,0,0,1)] bg-white relative flex flex-col overflow-hidden">
             <Question
+              key={data.currentLesson.id}
               data={data}
               onLessonCompleted={handleLessonCompleted}
               onLessonSwitched={handleLessonSwitched}

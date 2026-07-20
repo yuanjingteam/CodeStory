@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { FiEdit, FiTrash2, FiUser, FiMail, FiRefreshCw } from 'react-icons/fi';
 import type { UserDetail, UpdateUserDetailRequest } from '@/types/user-manage';
 import {
@@ -10,7 +10,6 @@ import {
   type FilterField,
   type Column,
 } from '@/components/common';
-import type { PaginationResponse } from '@/types/user-manage';
 import { userRoleMap, userSexMap } from '@/utils/constants';
 import {
   getUserList,
@@ -24,13 +23,26 @@ import UserModel from '@/components/manage/UserModel';
 
 import Img from 'next/image';
 
+interface UserQuery {
+  page: number;
+  pageSize: number;
+  search: string;
+  role: string;
+  status: string;
+}
+
 export default function UserManage() {
   const [userList, setUserList] = useState<UserDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [pagination, setPagination] = useState<PaginationResponse>({
+  const [query, setQuery] = useState<UserQuery>({
+    page: 1,
     pageSize: 10,
-    currentPage: 1,
+    search: '',
+    role: '',
+    status: '',
+  });
+  const [pagination, setPagination] = useState({
     total: 0,
     totalPages: 0,
   });
@@ -38,7 +50,6 @@ export default function UserManage() {
   // 弹窗状态
   const [showUserModal, setShowUserModal] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const hasMounted = useRef(false);
 
   // 确认对话框状态
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -82,30 +93,16 @@ export default function UserManage() {
   ]);
 
   // 获取用户列表
-  const fetchUsers = async () => {
+  const refreshUsers = async () => {
     setLoading(true);
     try {
-      const roleValue = filters.find((f) => f.id === 'role')?.value;
-      const statusValue = filters.find((f) => f.id === 'status')?.value;
-
-      const res = await getUserList({
-        page: pagination.currentPage,
-        pageSize: pagination.pageSize,
-        search: searchTerm || '',
-        role:
-          roleValue !== '' && roleValue !== undefined ? String(roleValue) : '',
-        status:
-          statusValue !== '' && statusValue !== undefined
-            ? String(statusValue)
-            : '',
-      });
+      const res = await getUserList(query);
       if (res.code === 200) {
         setUserList(res.data.list);
-        setPagination((prev) => ({
-          ...prev,
+        setPagination({
           total: res.data.pagination.total,
           totalPages: res.data.pagination.totalPages,
-        }));
+        });
       }
     } catch (error) {
       console.error('获取用户列表失败:', error);
@@ -115,17 +112,32 @@ export default function UserManage() {
   };
 
   useEffect(() => {
-    if (!hasMounted.current) {
-      hasMounted.current = true;
-      fetchUsers();
-    }
-  }, []);
+    let cancelled = false;
 
-  useEffect(() => {
-    if (hasMounted.current) {
-      fetchUsers();
-    }
-  }, [pagination.currentPage, pagination.pageSize]);
+    getUserList(query)
+      .then((res) => {
+        if (cancelled || res.code !== 200) return;
+        setUserList(res.data.list);
+        setPagination({
+          total: res.data.pagination.total,
+          totalPages: res.data.pagination.totalPages,
+        });
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error('获取用户列表失败:', error);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [query]);
 
   // 删除用户
   const handleDelete = async (userId: string) => {
@@ -139,7 +151,7 @@ export default function UserManage() {
           const res = await deleteUserApi(userId);
           if (res.code === 200) {
             toast.success('删除成功');
-            fetchUsers();
+            await refreshUsers();
           }
         } catch (error) {
           console.error('删除用户失败:', error);
@@ -162,7 +174,7 @@ export default function UserManage() {
           const res = await restoreUserApi(userId);
           if (res.code === 200) {
             toast.success('恢复成功');
-            fetchUsers();
+            await refreshUsers();
           }
         } catch (error) {
           console.error('恢复用户失败:', error);
@@ -379,8 +391,26 @@ export default function UserManage() {
         filters={filters}
         onFilterChange={handleFilterChange}
         onApplyFilters={() => {
-          setPagination((prev) => ({ ...prev, currentPage: 1 }));
-          fetchUsers();
+          const roleValue = filters.find(
+            (filter) => filter.id === 'role'
+          )?.value;
+          const statusValue = filters.find(
+            (filter) => filter.id === 'status'
+          )?.value;
+          setLoading(true);
+          setQuery((current) => ({
+            page: 1,
+            pageSize: current.pageSize,
+            search: searchTerm || '',
+            role:
+              roleValue !== '' && roleValue !== undefined
+                ? String(roleValue)
+                : '',
+            status:
+              statusValue !== '' && statusValue !== undefined
+                ? String(statusValue)
+                : '',
+          }));
         }}
       />
       <div className="flex-1 min-h-0  flex flex-col">
@@ -399,16 +429,18 @@ export default function UserManage() {
 
       {/* 分页 */}
       <Pagination
-        currentPage={pagination.currentPage}
+        currentPage={query.page}
         totalPages={pagination.totalPages}
         totalItems={pagination.total}
-        pageSize={pagination.pageSize}
-        onPageChange={(page) =>
-          setPagination({ ...pagination, currentPage: page })
-        }
-        onPageSizeChange={(pageSize) =>
-          setPagination({ ...pagination, pageSize: pageSize })
-        }
+        pageSize={query.pageSize}
+        onPageChange={(page) => {
+          setLoading(true);
+          setQuery((current) => ({ ...current, page }));
+        }}
+        onPageSizeChange={(pageSize) => {
+          setLoading(true);
+          setQuery((current) => ({ ...current, page: 1, pageSize }));
+        }}
         pageSizeOptions={[10, 20, 50, 100]}
       />
 
