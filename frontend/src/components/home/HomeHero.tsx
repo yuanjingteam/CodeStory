@@ -85,7 +85,7 @@ export default function HomeHero() {
             </h1>
 
             <p className="text-lg text-gray-600 mb-8">
-              与 AI Agent 一起学习编程，边学边练，快速掌握核心技能
+              与 AI 学习助手一起学习编程，边学边练，快速掌握核心技能
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">

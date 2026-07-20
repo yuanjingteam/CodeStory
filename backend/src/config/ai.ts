@@ -19,7 +19,7 @@ export function getAiConfig(): AiConfig {
   const defaultQwenBaseUrl = 'https://dashscope.aliyuncs.com/compatible-mode/v1';
 
   if (!apiKey || !model) {
-    throw new Error('QWEN_API_KEY 未配置');
+    throw new Error('AI_API_KEY 或 AI_MODEL 未配置');
   }
 
   return {

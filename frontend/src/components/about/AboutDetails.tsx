@@ -32,7 +32,7 @@ export default function AboutHero() {
               </h1>
               <p className="indent-8">
                 CodeStory 是 一个以 AI
-                Agent交互为核心的编程学习平台，致力于重塑传统单向、枯燥且缺乏沉浸感的编程学习方式。
+                学习助手为核心的编程学习平台，致力于重塑传统单向、枯燥且缺乏沉浸感的编程学习方式。
                 我们的目标是通过
                 CodeStory，帮助用户更高效地学习编程，同时提供一个 fun
                 和互动的学习环境。
@@ -48,7 +48,7 @@ export default function AboutHero() {
                 </div>
                 <h3 className="font-bold text-lg">AI 引导学习</h3>
               </div>
-              <p className="text-gray-700">智能 AI Agent 陪伴学习</p>
+              <p className="text-gray-700">智能 AI 助手陪伴学习</p>
             </div>
             <div className="border-2 rounded-xl border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-none hover:translate-[2px] transition-all duration-150 p-5 bg-white">
               <div className="flex items-center gap-3 m-2">

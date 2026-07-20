@@ -1,6 +1,8 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { ChatOpenAI } from '@langchain/openai';
-import { getAiConfig } from '../../config/ai';
+import {
+  createChatModel,
+  getMessageText,
+} from './_shared/model';
 import type { LessonAiContext } from './lesson-context.service';
 import type { LessonChatHistoryMessage } from './lesson-session.service';
 
@@ -35,21 +37,6 @@ const lessonTutorPrompt = ChatPromptTemplate.fromMessages([
   ],
   ['human', '{question}'],
 ]);
-
-function createModel(): ChatOpenAI {
-  const config = getAiConfig();
-
-  return new ChatOpenAI({
-    apiKey: config.apiKey,
-    model: config.model,
-    temperature: 0.3,
-    timeout: config.timeoutMs,
-    maxTokens: config.maxTokens,
-    streaming: true,
-    streamUsage: false,
-    configuration: config.baseUrl ? { baseURL: config.baseUrl } : undefined,
-  });
-}
 
 function formatExercise(context: LessonAiContext): string {
   if (!context.exercise) return '当前未打开练习，仅围绕小节正文回答。';
@@ -93,26 +80,6 @@ function formatCurrentCode(currentCode?: string | null): string {
   ].join('\n');
 }
 
-function getChunkText(content: unknown): string {
-  if (typeof content === 'string') return content;
-  if (!Array.isArray(content)) return '';
-
-  return content
-    .map((block) => {
-      if (typeof block === 'string') return block;
-      if (
-        block &&
-        typeof block === 'object' &&
-        'text' in block &&
-        typeof block.text === 'string'
-      ) {
-        return block.text;
-      }
-      return '';
-    })
-    .join('');
-}
-
 export async function* streamLessonChat(
   context: LessonAiContext,
   question: string,
@@ -120,7 +87,9 @@ export async function* streamLessonChat(
   history: LessonChatHistoryMessage[] = [],
   currentCode?: string | null
 ): AsyncGenerator<string> {
-  const chain = lessonTutorPrompt.pipe(createModel());
+  const chain = lessonTutorPrompt.pipe(
+    createChatModel({ streaming: true, streamUsage: false })
+  );
   const stream = await chain.stream(
     {
       courseTitle: context.courseTitle,
@@ -136,7 +105,7 @@ export async function* streamLessonChat(
   );
 
   for await (const chunk of stream) {
-    const text = getChunkText(chunk.content);
+    const text = getMessageText(chunk.content);
     if (text) yield text;
   }
 }

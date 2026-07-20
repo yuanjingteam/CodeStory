@@ -1,6 +1,8 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { ChatOpenAI } from '@langchain/openai';
-import { getAiConfig } from '../../config/ai';
+import {
+  createChatModel,
+  getMessageText,
+} from './_shared/model';
 
 export interface ExerciseHintInput {
   hintLevel: number;
@@ -40,41 +42,10 @@ const exerciseHintPrompt = ChatPromptTemplate.fromMessages([
   ['human', '请生成当前等级的学习提示。'],
 ]);
 
-function createModel(): ChatOpenAI {
-  const config = getAiConfig();
-
-  return new ChatOpenAI({
-    apiKey: config.apiKey,
-    model: config.model,
-    temperature: 0.2,
-    timeout: config.timeoutMs,
-    maxTokens: Math.min(config.maxTokens, 300),
-    configuration: config.baseUrl ? { baseURL: config.baseUrl } : undefined,
-  });
-}
-
-function getMessageText(content: unknown): string {
-  if (typeof content === 'string') return content;
-  if (!Array.isArray(content)) return '';
-
-  return content
-    .map((block) => {
-      if (typeof block === 'string') return block;
-      if (
-        block &&
-        typeof block === 'object' &&
-        'text' in block &&
-        typeof block.text === 'string'
-      ) {
-        return block.text;
-      }
-      return '';
-    })
-    .join('');
-}
-
 export async function generateExerciseHint(input: ExerciseHintInput): Promise<string> {
-  const chain = exerciseHintPrompt.pipe(createModel());
+  const chain = exerciseHintPrompt.pipe(
+    createChatModel({ temperature: 0.2, maxTokens: 300 })
+  );
   const response = await chain.invoke({
     hintLevel: input.hintLevel,
     exerciseType: input.exerciseType,

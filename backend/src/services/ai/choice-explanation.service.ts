@@ -1,6 +1,9 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { ChatOpenAI } from '@langchain/openai';
-import { getAiConfig } from '../../config/ai';
+import {
+  createChatModel,
+  extractJsonObject,
+  getMessageText,
+} from './_shared/model';
 
 export interface ChoiceOptionExplanation {
   label: string;
@@ -77,54 +80,6 @@ const choiceExplanationPrompt = ChatPromptTemplate.fromMessages([
   ],
 ]);
 
-function createModel(): ChatOpenAI {
-  const config = getAiConfig();
-
-  return new ChatOpenAI({
-    apiKey: config.apiKey,
-    model: config.model,
-    temperature: 0.2,
-    timeout: config.timeoutMs,
-    maxTokens: Math.min(config.maxTokens, 800),
-    configuration: config.baseUrl ? { baseURL: config.baseUrl } : undefined,
-  });
-}
-
-function getMessageText(content: unknown): string {
-  if (typeof content === 'string') return content;
-  if (!Array.isArray(content)) return '';
-
-  return content
-    .map((block) => {
-      if (typeof block === 'string') return block;
-      if (
-        block &&
-        typeof block === 'object' &&
-        'text' in block &&
-        typeof block.text === 'string'
-      ) {
-        return block.text;
-      }
-      return '';
-    })
-    .join('');
-}
-
-function extractJsonObject(text: string): unknown {
-  const trimmed = text.trim();
-  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  const jsonText = fenced ? fenced[1].trim() : trimmed;
-
-  try {
-    return JSON.parse(jsonText);
-  } catch {
-    const start = jsonText.indexOf('{');
-    const end = jsonText.lastIndexOf('}');
-    if (start < 0 || end <= start) throw new Error('CHOICE_EXPLANATION_JSON_NOT_FOUND');
-    return JSON.parse(jsonText.slice(start, end + 1));
-  }
-}
-
 function toText(value: unknown, fallback: string): string {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
@@ -172,7 +127,9 @@ function formatOptions(input: ChoiceExplanationInput): string {
 export async function generateChoiceExplanation(
   input: ChoiceExplanationInput
 ): Promise<ChoiceExplanation> {
-  const chain = choiceExplanationPrompt.pipe(createModel());
+  const chain = choiceExplanationPrompt.pipe(
+    createChatModel({ temperature: 0.2, maxTokens: 800 })
+  );
   const response = await chain.invoke({
     exerciseContent: input.exerciseContent,
     knowledge: input.knowledge || '未标注',
@@ -183,5 +140,7 @@ export async function generateChoiceExplanation(
   });
 
   const rawContent = getMessageText(response.content).trim();
-  return validateExplanation(extractJsonObject(rawContent));
+  return validateExplanation(
+    extractJsonObject(rawContent, 'CHOICE_EXPLANATION_JSON_NOT_FOUND')
+  );
 }

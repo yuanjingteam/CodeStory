@@ -407,12 +407,14 @@ pnpm run typecheck
 
 1. 搜索前端页面和接口反馈中的相关文案。
 2. 重点检查编程题按钮、结果弹窗、AI 反馈标题。
+3. 检查前端营销文案是否宣传了 V1 未实现的 Agent 能力。
 
 预期结果：
 
-- 不出现误导性的“运行代码”“真实测试通过”“严格判题通过”。
-- 可以出现“静态初评”“提交评阅”“AI 智能评阅”“无沙箱 AI 评阅”。
+- 不出现误导性的"运行代码""真实测试通过""严格判题通过"。
+- 可以出现"静态初评""提交评阅""AI 智能评阅""无沙箱 AI 评阅"。
 - 文档中提到沙箱时，必须明确是 V1 暂不引入。
+- 前端文案不得宣传"AI Agent""Agent 交互""Agent 陪伴"等 V1 未实现的 Agent 能力；应使用"AI 学习助手""AI 助手"等与 V1 实际功能匹配的表述。
 
 推荐搜索：
 
@@ -421,11 +423,17 @@ Get-ChildItem frontend\src,backend\src,docs -Recurse -File |
   Select-String -Pattern "运行代码|真实测试|严格判题|沙箱"
 ```
 
+```powershell
+# 检查 Agent 过度宣传（V1 未实现 Agent，文档中明确的不做项除外）
+Get-ChildItem frontend\src -Recurse -File -Include *.ts,*.tsx |
+  Select-String -Pattern "AI Agent|Agent 交互|Agent 陪伴|Agent交互"
+```
+
 验收结果：
 
 ```text
-状态：未验收 / 通过 / 不通过
-问题记录：
+状态：通过
+问题记录：已修正 AboutDetails.tsx、HomeHero.tsx 中 3 处"AI Agent"过度宣传文案，改为"AI 学习助手"。
 ```
 
 ## 9. V1 通过标准

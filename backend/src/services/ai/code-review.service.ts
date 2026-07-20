@@ -1,6 +1,10 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { ChatOpenAI } from '@langchain/openai';
 import { getAiConfig } from '../../config/ai';
+import {
+  createChatModel,
+  extractJsonObject,
+  getMessageText,
+} from './_shared/model';
 import type { CodeGradeResult } from '../courses/code-grading.service';
 
 export const AI_CODE_REVIEW_RUBRIC_VERSION = 'ai-review-v1';
@@ -91,56 +95,8 @@ const codeReviewPrompt = ChatPromptTemplate.fromMessages([
   ],
 ]);
 
-function createModel(): ChatOpenAI {
-  const config = getAiConfig();
-
-  return new ChatOpenAI({
-    apiKey: config.apiKey,
-    model: config.model,
-    temperature: 0.1,
-    timeout: config.timeoutMs,
-    maxTokens: Math.min(config.maxTokens, 800),
-    configuration: config.baseUrl ? { baseURL: config.baseUrl } : undefined,
-  });
-}
-
 function getModelName(): string {
   return getAiConfig().model;
-}
-
-function getMessageText(content: unknown): string {
-  if (typeof content === 'string') return content;
-  if (!Array.isArray(content)) return '';
-
-  return content
-    .map((block) => {
-      if (typeof block === 'string') return block;
-      if (
-        block &&
-        typeof block === 'object' &&
-        'text' in block &&
-        typeof block.text === 'string'
-      ) {
-        return block.text;
-      }
-      return '';
-    })
-    .join('');
-}
-
-function extractJsonObject(text: string): unknown {
-  const trimmed = text.trim();
-  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  const jsonText = fenced ? fenced[1].trim() : trimmed;
-
-  try {
-    return JSON.parse(jsonText);
-  } catch {
-    const start = jsonText.indexOf('{');
-    const end = jsonText.lastIndexOf('}');
-    if (start < 0 || end <= start) throw new Error('AI_CODE_REVIEW_JSON_NOT_FOUND');
-    return JSON.parse(jsonText.slice(start, end + 1));
-  }
 }
 
 function clampInteger(value: unknown, min: number, max: number): number {
@@ -195,7 +151,9 @@ function formatStaticGrade(grade: CodeGradeResult): string {
 }
 
 export async function reviewCodeWithAI(input: CodeReviewInput): Promise<AiCodeReviewResult> {
-  const chain = codeReviewPrompt.pipe(createModel());
+  const chain = codeReviewPrompt.pipe(
+    createChatModel({ temperature: 0.1, maxTokens: 800 })
+  );
   const response = await chain.invoke({
     exerciseContent: input.exerciseContent,
     knowledge: input.knowledge || '未标注',
@@ -208,7 +166,9 @@ export async function reviewCodeWithAI(input: CodeReviewInput): Promise<AiCodeRe
   });
 
   const rawContent = getMessageText(response.content).trim();
-  const review = validateReview(extractJsonObject(rawContent));
+  const review = validateReview(
+    extractJsonObject(rawContent, 'AI_CODE_REVIEW_JSON_NOT_FOUND')
+  );
 
   return {
     review,
