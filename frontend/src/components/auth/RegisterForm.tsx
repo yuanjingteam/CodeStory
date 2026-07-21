@@ -33,6 +33,14 @@ type FieldStatus = 'success' | 'error' | null;
 
 export default function RegisterForm() {
   const getInitialRegisterInput = (): RegisterRequest => {
+    if (typeof window === 'undefined') {
+      return {
+        nickname: '',
+        email: '',
+        password: '',
+        emailCode: '',
+      };
+    }
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
