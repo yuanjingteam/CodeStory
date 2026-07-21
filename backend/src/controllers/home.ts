@@ -5,7 +5,7 @@ class HomeController {
   async getHomeCourses(req: Request, res: Response) {
     const userId = req.user?.id;
     try {
-      const data = await homeService.getHomeCourses(userId);
+      const data = await homeService.getHomeCourses();
       return res.status(200).json({
         code: 200,
         message: '成功获取热门课程',

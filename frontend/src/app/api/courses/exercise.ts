@@ -1,5 +1,9 @@
 import request from '@/utils/request';
-import type { ExerciseDetailResponse, ExerciseSubmitResponse } from '@/types/exercise';
+import type {
+  ChoiceExplanationResponse,
+  ExerciseDetailResponse,
+  ExerciseSubmitResponse,
+} from '@/types/exercise';
 
 interface HintData {
   content: string;
@@ -52,6 +56,13 @@ export const exerciseApi = {
       exercise_id: exerciseId,
       answer,
       hint_level_used: hintLevelUsed
+    }).then(res => res.data);
+  },
+
+  explainChoice: (exerciseId: string | number, answer: string) => {
+    return request.post<ChoiceExplanationResponse>('exercises/choice-explanation', {
+      exercise_id: exerciseId,
+      answer
     }).then(res => res.data);
   },
 

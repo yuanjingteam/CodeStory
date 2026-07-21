@@ -1,0 +1,193 @@
+/* 代码块容器 */
+.tiptap-content pre {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: #fbfcfe;
+  border: 1px solid #dfe3e8;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 16px 0;
+  color: #334155;
+  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+/* 代码块顶部栏 */
+.tiptap-content pre .code-block-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 44px;
+  min-height: 44px;
+  padding: 0 12px 0 16px;
+  background: #f3f4f6;
+  border-bottom: 1px solid #dfe3e8;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  user-select: none;
+}
+
+.tiptap-content pre code {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 18px 22px;
+  background: none;
+  color: inherit;
+  overflow-x: auto;
+  overflow-y: auto;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  border-radius: 0;
+  white-space: pre;
+  tab-size: 2;
+}
+
+/* 代码块折叠状态 */
+.tiptap-content pre.code-block-collapsed code {
+  display: none;
+}
+
+.tiptap-content pre.code-block-collapsed .code-block-toolbar {
+  border-bottom: 0;
+}
+
+/* macOS 窗口按钮 */
+.tiptap-content pre .code-window-controls,
+.tiptap-content pre .code-toolbar-actions {
+  display: flex;
+  align-items: center;
+}
+
+.tiptap-content pre .code-window-controls {
+  gap: 9px;
+}
+
+.tiptap-content pre .code-toolbar-actions {
+  gap: 8px;
+}
+
+.tiptap-content pre .code-window-dot {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.tiptap-content pre .code-window-dot:hover {
+  filter: brightness(0.94);
+  transform: scale(1.08);
+}
+
+.tiptap-content pre .code-window-dot-collapse {
+  background: #ffbd2e;
+}
+
+.tiptap-content pre .code-window-dot-fullscreen {
+  background: #28c840;
+}
+
+.tiptap-content pre.code-block-collapsed .code-window-dot-collapse {
+  box-shadow: inset 0 0 0 2px rgba(120, 75, 0, 0.28);
+}
+
+.tiptap-content pre .code-language-label,
+.tiptap-content pre .code-language-select {
+  font-size: 12px;
+  line-height: 28px;
+  color: #64748b;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.tiptap-content pre .code-language-select {
+  height: 30px;
+  max-width: 132px;
+  padding: 0 28px 0 10px;
+  border: 1px solid #dfe3e8;
+  border-radius: 6px;
+  outline: none;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.tiptap-content pre .code-language-select:focus {
+  border-color: #94a3b8;
+  box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.18);
+}
+
+.tiptap-content pre .code-copy-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.tiptap-content pre .code-copy-button:hover {
+  background: #e5e7eb;
+  color: #0f172a;
+}
+
+.tiptap-content pre .code-copy-button.is-copied {
+  color: #15803d;
+}
+
+.tiptap-content pre .code-copy-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 代码块全屏状态 */
+body.code-block-fullscreen-open {
+  overflow: hidden;
+}
+
+.tiptap-content pre.code-block-fullscreen {
+  position: fixed;
+  inset: 20px;
+  z-index: 9999;
+  margin: 0;
+  max-width: none;
+  max-height: none;
+  background: #fbfcfe;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.28);
+}
+
+.tiptap-content pre.code-block-fullscreen code {
+  height: calc(100vh - 86px);
+}
+
+@media (max-width: 640px) {
+  .tiptap-content pre .code-block-toolbar {
+    padding-right: 8px;
+    padding-left: 12px;
+  }
+
+  .tiptap-content pre .code-language-select {
+    max-width: 104px;
+  }
+
+  .tiptap-content pre.code-block-fullscreen {
+    inset: 8px;
+  }
+}

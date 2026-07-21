@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "check": "pnpm run typecheck && pnpm run lint"
   },
   "dependencies": {
     "@codemirror/lang-python": "^6.2.1",
@@ -14,17 +16,17 @@
     "@codemirror/state": "^6.6.0",
     "@codemirror/view": "^6.42.1",
     "@tailwindcss/typography": "^0.5.19",
-    "@tiptap/core": "^3.23.6",
-    "@tiptap/extension-code-block": "^3.23.6",
-    "@tiptap/extension-image": "^3.23.6",
-    "@tiptap/extension-link": "^3.23.6",
-    "@tiptap/extension-placeholder": "^3.23.6",
-    "@tiptap/extension-table": "^3.23.6",
-    "@tiptap/extension-text-align": "^3.23.6",
-    "@tiptap/extension-underline": "^3.23.6",
-    "@tiptap/pm": "^3.23.6",
-    "@tiptap/react": "^3.23.6",
-    "@tiptap/starter-kit": "^3.23.6",
+    "@tiptap/core": "3.23.6",
+    "@tiptap/extension-code-block": "3.23.6",
+    "@tiptap/extension-image": "3.23.6",
+    "@tiptap/extension-link": "3.23.6",
+    "@tiptap/extension-placeholder": "3.23.6",
+    "@tiptap/extension-table": "3.23.6",
+    "@tiptap/extension-text-align": "3.23.6",
+    "@tiptap/extension-underline": "3.23.6",
+    "@tiptap/pm": "3.23.6",
+    "@tiptap/react": "3.23.6",
+    "@tiptap/starter-kit": "3.23.6",
     "@uiw/react-codemirror": "^4.25.9",
     "axios": "^1.16.0",
     "next": "16.2.4",
@@ -47,5 +49,11 @@
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.33.2",
+  "pnpm": {
+    "overrides": {
+      "@tiptap/extensions": "3.23.6"
+    }
   }
 }

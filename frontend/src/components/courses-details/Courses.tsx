@@ -1,44 +1,69 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import courseApi from '@/app/api/courses/courses';
-import type { Course } from '@/types/course';
-import { useAuth } from '@/hooks/useAuth';
-import { BsPersonFill, BsSearch } from "react-icons/bs";
-
-const levelConfig: Record<number, { text: string; color: string }> = {
-  0: { text: '初级', color: 'bg-green-400 rounded-lg' },
-  1: { text: '中级', color: 'bg-yellow-400 rounded-lg' },
-  2: { text: '高级', color: 'bg-red-400 rounded-lg' },
-};
-
-const learnStatusConfig: Record<number, { text: string; color: string }> = {
-  0: { text: '未开始', color: 'bg-gray-300 rounded-lg' },
-  1: { text: '进行中', color: 'bg-yellow-300 rounded-lg' },
-  2: { text: '已完成', color: 'bg-green-300 rounded-lg' },
-};
+import type { Course, CourseListRequest } from '@/types/course';
+import { BsPersonFill, BsSearch } from 'react-icons/bs';
+import { useUserStore } from '@/store/useUserStore';
+import { courseLevelMap, courseStatusMap } from '@/utils/constants';
+import { toast } from 'sonner';
 
 const levelMap = {
-  '全部难度': undefined,
-  '初级': 0,
-  '中级': 1,
-  '高级': 2,
+  全部难度: undefined,
+  初级: 0,
+  中级: 1,
+  高级: 2,
 };
 
 const learnStatusMap = {
-  '全部状态': undefined,
-  '未开始': 0,
-  '进行中': 1,
-  '已完成': 2,
+  全部状态: undefined,
+  未开始: 0,
+  进行中: 1,
+  已完成: 2,
 };
 
 const studentCountRangeMap: Record<string, { min?: number; max?: number }> = {
-  '全部人数': {},
+  全部人数: {},
   '1-50 人': { min: 1, max: 50 },
   '51-200 人': { min: 51, max: 200 },
   '201-500 人': { min: 201, max: 500 },
   '501-1000 人': { min: 501, max: 1000 },
   '1000+ 人': { min: 1001 },
+};
+
+interface CourseQuery {
+  keyword: string;
+  level: string;
+  status: string;
+  studentRange: string;
+}
+
+const defaultCourseQuery: CourseQuery = {
+  keyword: '',
+  level: '全部难度',
+  status: '全部状态',
+  studentRange: '全部人数',
+};
+
+const buildCourseListRequest = (query: CourseQuery): CourseListRequest => {
+  const params: CourseListRequest = {
+    keyword: query.keyword || undefined,
+    level: levelMap[query.level as keyof typeof levelMap],
+    learnStatus: learnStatusMap[query.status as keyof typeof learnStatusMap],
+    page: 1,
+    size: 999,
+  };
+  const range = studentCountRangeMap[query.studentRange];
+
+  if (range.min !== undefined) {
+    params.minStudentCount = range.min;
+  }
+  if (range.max !== undefined) {
+    params.maxStudentCount = range.max;
+  }
+
+  return params;
 };
 
 const getLevelNumber = (level: string | number): number => {
@@ -47,7 +72,10 @@ const getLevelNumber = (level: string | number): number => {
   return isNaN(num) ? 0 : num;
 };
 
-const getLearnStatus = (status: number | undefined, progress: number | undefined): number => {
+const getLearnStatus = (
+  status: number | undefined,
+  progress: number | undefined
+): number => {
   if (progress !== undefined && progress >= 100) {
     return 2; // 进度100%强制为"已完成"
   }
@@ -57,62 +85,54 @@ const getLearnStatus = (status: number | undefined, progress: number | undefined
 };
 
 export default function CoursesSection() {
-  useAuth();
-  
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLevel, setSelectedLevel] = useState('全部难度');
-  const [selectedStatus, setSelectedStatus] = useState('全部状态');
-  const [selectedStudentRange, setSelectedStudentRange] = useState('全部人数');
-
+  const [query, setQuery] = useState<CourseQuery>(defaultCourseQuery);
+  const { isLoggedIn } = useUserStore();
   const handleCourseClick = (courseId: string | number) => {
+    if (!isLoggedIn) {
+      toast.error('请先登录');
+      return;
+    };
     router.push(`/courses/${courseId}`);
   };
 
   const handleReset = () => {
-    setSearchTerm('');
-    setSelectedLevel('全部难度');
-    setSelectedStatus('全部状态');
-    setSelectedStudentRange('全部人数');
-  };
-
-  const fetchCourses = async () => {
     setLoading(true);
-    try {
-      const params: Record<string, any> = {
-        keyword: searchTerm.trim() || undefined,
-        level: levelMap[selectedLevel as keyof typeof levelMap],
-        learnStatus: learnStatusMap[selectedStatus as keyof typeof learnStatusMap],
-        page: 1,
-        size: 999,
-      };
-
-      const range = studentCountRangeMap[selectedStudentRange];
-      if (range.min !== undefined) {
-        params.minStudentCount = range.min;
-      }
-      if (range.max !== undefined) {
-        params.maxStudentCount = range.max;
-      }
-
-      console.log('📤 发送请求参数:', params);
-
-      const res = await courseApi.getList(params);
-      console.log('📥 收到响应数据:', res);
-      setCourses(res.records || []);
-    } catch (err) {
-      console.error('获取课程失败', err);
-    } finally {
-      setLoading(false);
-    }
+    setSearchTerm('');
+    setQuery({ ...defaultCourseQuery });
   };
 
   useEffect(() => {
-    fetchCourses();
-  }, [selectedLevel, selectedStatus, selectedStudentRange]);
-  
+    let cancelled = false;
+    const params = buildCourseListRequest(query);
+
+    console.log('📤 发送请求参数:', params);
+    courseApi
+      .getList(params)
+      .then((res) => {
+        if (cancelled) return;
+        console.log('📥 收到响应数据:', res);
+        setCourses(res.records || []);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error('获取课程失败', err);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [query]);
+
   return (
     <section className="bg-white p-8 mx-8 relative z-10">
       <div className="mb-8">
@@ -122,8 +142,11 @@ export default function CoursesSection() {
 
       <div className="flex flex-wrap gap-4 mb-8 items-center">
         <select
-          value={selectedLevel}
-          onChange={(e) => setSelectedLevel(e.target.value)}
+          value={query.level}
+          onChange={(e) => {
+            setLoading(true);
+            setQuery((current) => ({ ...current, level: e.target.value }));
+          }}
           className="w-50 rounded-lg border-2 border-black px-4 py-2 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
         >
           <option value="全部难度">全部难度</option>
@@ -133,8 +156,11 @@ export default function CoursesSection() {
         </select>
 
         <select
-          value={selectedStatus}
-          onChange={(e) => setSelectedStatus(e.target.value)}
+          value={query.status}
+          onChange={(e) => {
+            setLoading(true);
+            setQuery((current) => ({ ...current, status: e.target.value }));
+          }}
           className="w-50 rounded-lg border-2 border-black px-4 py-2 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
         >
           <option value="全部状态">全部状态</option>
@@ -144,8 +170,14 @@ export default function CoursesSection() {
         </select>
 
         <select
-          value={selectedStudentRange}
-          onChange={(e) => setSelectedStudentRange(e.target.value)}
+          value={query.studentRange}
+          onChange={(e) => {
+            setLoading(true);
+            setQuery((current) => ({
+              ...current,
+              studentRange: e.target.value,
+            }));
+          }}
           className="w-50 rounded-lg border-2 border-black px-4 py-2 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
         >
           <option value="全部人数">全部人数</option>
@@ -165,7 +197,13 @@ export default function CoursesSection() {
             className="rounded-l-lg border-2 border-black px-4 py-2 font-bold bg-white focus:outline-none shadow-[2px_2px_0_0_rgba(0,0,0,1)] w-64"
           />
           <button
-            onClick={fetchCourses}
+            onClick={() => {
+              setLoading(true);
+              setQuery((current) => ({
+                ...current,
+                keyword: searchTerm.trim(),
+              }));
+            }}
             className="rounded-r-lg bg-purple-600 text-white px-4 py-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-purple-700 transition-colors flex items-center justify-center"
           >
             <BsSearch className="w-5 h-5" />
@@ -175,8 +213,18 @@ export default function CoursesSection() {
             className="rounded-lg bg-white text-gray-700 px-4 py-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-gray-50 transition-all duration-200 font-medium flex items-center gap-2"
             title="重置所有筛选条件"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
             </svg>
             重置
           </button>
@@ -189,9 +237,16 @@ export default function CoursesSection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {courses.map((course) => {
             const level = getLevelNumber(course.level);
-            const levelConfigItem = levelConfig[level] || { text: '未知', color: 'bg-gray-300' };
-            const learnStatus = getLearnStatus(course.learnStatus, course.progress);
-            const statusConfig = learnStatusConfig[learnStatus] || learnStatusConfig[0];
+            const levelConfigItem = courseLevelMap[level] || {
+              text: '未知',
+              color: 'bg-gray-300',
+            };
+            const learnStatus = getLearnStatus(
+              course.learnStatus,
+              course.progress
+            );
+            const statusConfig =
+              courseStatusMap[learnStatus] || courseStatusMap[0];
 
             return (
               <div
@@ -200,12 +255,14 @@ export default function CoursesSection() {
                 className="flex flex-col rounded-xl border-1 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0_0_rgba(0,0,0,1)] transition-all h-[320px] cursor-pointer overflow-hidden"
               >
                 {/* 顶部图片横幅 */}
-                <div className="h-40 w-full border-b-2 border-black overflow-hidden shrink-0 rounded-t-xl">
+                <div className="relative h-40 w-full border-b-2 border-black overflow-hidden shrink-0 rounded-t-xl">
                   {course.cover_url ? (
-                    <img 
-                      src={course.cover_url} 
-                      alt={course.title} 
-                      className="h-full w-full object-cover"
+                    <Image
+                      src={course.cover_url}
+                      alt={course.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover"
                     />
                   ) : (
                     <div className="h-full w-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
@@ -216,12 +273,18 @@ export default function CoursesSection() {
 
                 {/* 内容区域 */}
                 <div className="p-4 flex flex-col flex-1">
-                  <h3 className="text-xl font-black mb-1 truncate" title={course.title}>
+                  <h3
+                    className="text-xl font-black mb-1 truncate"
+                    title={course.title}
+                  >
                     {course.title}
                   </h3>
-                <p className="text-gray-600 text-sm mb-3 whitespace-nowrap overflow-hidden text-ellipsis" title={course.description}>
-                  {course.description}
-                </p>
+                  <p
+                    className="text-gray-600 text-sm mb-3 whitespace-nowrap overflow-hidden text-ellipsis"
+                    title={course.description}
+                  >
+                    {course.description}
+                  </p>
 
                   {course.progress !== undefined ? (
                     <div className="mb-2">
@@ -231,23 +294,35 @@ export default function CoursesSection() {
                             className={`h-full rounded-full transition-all ${
                               learnStatus === 2 ? 'bg-green-500' : 'bg-blue-500'
                             }`}
-                            style={{ width: `${Math.min(course.progress, 100)}%` }}
+                            style={{
+                              width: `${Math.min(course.progress, 100)}%`,
+                            }}
                           />
                         </div>
-                        <span className="text-xs font-bold text-gray-600 whitespace-nowrap">{course.progress}%</span>
-                        <span className={`${statusConfig.color} border-2 border-black px-2 py-1 text-xs font-bold shrink-0`}>
+                        <span className="text-xs font-bold text-gray-600 whitespace-nowrap">
+                          {course.progress}%
+                        </span>
+                        <span
+                          className={`${statusConfig.color} border-2 border-black px-2 py-1 text-xs font-bold shrink-0 rounded-md`}
+                        >
                           {statusConfig.text}
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <span className={`${levelConfigItem.color} border-2 border-black px-2 py-0.5 text-xs font-bold`}>
+                        <span
+                          className={`${levelConfigItem.color} border-2 border-black px-2 py-0.5 text-xs font-bold rounded-md`}
+                        >
                           {levelConfigItem.text}
                         </span>
                         {course.studentCount !== undefined && (
                           <span className="text-xs text-gray-600 flex items-center gap-1">
-                            <span><BsPersonFill /></span>
-                            <span className="font-bold">学习人数：{course.studentCount.toLocaleString()}</span>
+                            <span>
+                              <BsPersonFill />
+                            </span>
+                            <span className="font-bold">
+                              学习人数：{course.studentCount.toLocaleString()}
+                            </span>
                           </span>
                         )}
                       </div>
@@ -255,10 +330,14 @@ export default function CoursesSection() {
                   ) : (
                     <div className="mb-2">
                       <div className="flex items-center justify-between mb-2">
-                        <span className={`${levelConfigItem.color} border-2 border-black px-3 py-1 text-xs font-bold`}>
+                        <span
+                          className={`${levelConfigItem.color} border-2 border-black px-3 py-1 text-xs font-bold`}
+                        >
                           {levelConfigItem.text}
                         </span>
-                        <span className={`${statusConfig.color} border-2 border-black px-2 py-1 text-xs font-bold shrink-0`}>
+                        <span
+                          className={`${statusConfig.color} border-2 border-black px-2 py-1 text-xs font-bold shrink-0`}
+                        >
                           {statusConfig.text}
                         </span>
                       </div>
@@ -266,7 +345,9 @@ export default function CoursesSection() {
                         <div className="text-right">
                           <span className="text-xs text-gray-600 flex items-center gap-1 justify-end">
                             <span>👥</span>
-                            <span className="font-bold">{course.studentCount.toLocaleString()}</span>
+                            <span className="font-bold">
+                              {course.studentCount.toLocaleString()}
+                            </span>
                           </span>
                         </div>
                       )}

@@ -7,7 +7,14 @@ const router = Router();
 
 router.get('/:lessonId', authMiddleware, async (req, res) => {
   try {
-    const result = await getLessonDetail(req.params.lessonId as string, req.user!.id);
+    const result = await getLessonDetail(
+      req.params.lessonId as string,
+      req.user!.id,
+      {
+        courseId: typeof req.query.courseId === 'string' ? req.query.courseId : undefined,
+        chapterId: typeof req.query.chapterId === 'string' ? req.query.chapterId : undefined,
+      }
+    );
     if (!result) return notFound(res, '小节不存在');
     return success(res, result);
   } catch (error) {

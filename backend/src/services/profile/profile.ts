@@ -3,11 +3,12 @@ import type { UpdateUserInfopRequest, UserCourse } from '@/types/profile';
 import fs from 'fs';
 import path from 'path';
 import { uploadToOSS, deleteFromOSS, extractOSSKey } from '@/middleware/upload';
+import { badRequest } from '../../utils/response';
 
 class ProfileService {
   async getProfile(userId?: string) {
     if (!userId) {
-      throw new Error('用户ID不能为空');
+      return badRequest('用户ID不能为空');
     }
 
     const user = await prisma.users.findFirst({
@@ -29,7 +30,7 @@ class ProfileService {
     });
 
     if (!user) {
-      throw new Error('用户不存在');
+      return badRequest('用户不存在');
     }
 
     const level = Math.floor(user.score / 1500);
@@ -46,7 +47,7 @@ class ProfileService {
 
   async getProfileCourses(userId: string): Promise<UserCourse[]> {
     if (!userId) {
-      throw new Error('用户ID不能为空');
+      return badRequest('用户ID不能为空');
     }
 
     const progressList = await prisma.courses_progress.findMany({
@@ -94,19 +95,19 @@ class ProfileService {
 
   async updateProfile(userId: string, data: UpdateUserInfopRequest) {
     if (!userId) {
-      throw new Error('用户ID不能为空');
+      return badRequest('用户ID不能为空');
     }
 
     if (!data.nickname || data.nickname.trim() === '') {
-      throw new Error('昵称不能为空');
+      return badRequest('昵称不能为空');
     }
 
     if (data.nickname.length > 50) {
-      throw new Error('昵称长度不能超过50个字符');
+      return badRequest('昵称长度不能超过50个字符');
     }
 
     if (data.occupation && data.occupation.length > 100) {
-      throw new Error('职业长度不能超过100个字符');
+      return badRequest('职业长度不能超过100个字符');
     }
 
     const updatedUser = await prisma.users.update({
@@ -130,7 +131,7 @@ class ProfileService {
     });
 
     if (!updatedUser) {
-      throw new Error('更新用户信息失败');
+      return badRequest('更新用户信息失败');
     }
 
     return updatedUser;
@@ -138,11 +139,11 @@ class ProfileService {
 
   async uploadAvatar(userId: string, file: Express.Multer.File) {
     if (!userId) {
-      throw new Error('用户ID不能为空');
+      return badRequest('用户ID不能为空');
     }
 
     if (!file) {
-      throw new Error('文件不能为空');
+      return badRequest('文件不能为空');
     }
 
     const avatarUrl = await uploadToOSS(file, 'avatars');
@@ -162,7 +163,7 @@ class ProfileService {
     });
 
     if (!updatedUser) {
-      throw new Error('上传头像失败');
+      return badRequest('上传头像失败');
     }
 
     return { avatar: updatedUser.avatar };
@@ -192,6 +193,7 @@ class ProfileService {
         }
       } catch (error) {
         console.error('删除旧头像失败:', error);
+        return badRequest('删除旧头像失败');
       }
     }
   }

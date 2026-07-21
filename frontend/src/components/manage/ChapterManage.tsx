@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { showToast } from '@/utils/toast';
 import {
@@ -11,16 +11,26 @@ import {
 import type { FilterField, Column } from '@/components/common';
 import chapterManageApi from '@/app/api/manage/chapter-manage';
 import courseApi from '@/app/api/courses/courses';
-import type { ChapterItem } from '@/types/chapter-manage';
+import type {
+  ChapterItem,
+  CreateChapterRequest,
+  UpdateChapterRequest,
+} from '@/types/chapter-manage';
 import type { Course } from '@/types/course';
 import ChapterModel from './ChapterModel';
 
+interface ChapterQuery {
+  courseId?: string;
+  keyword?: string;
+  page: number;
+  size: number;
+}
+
 export default function ChapterManage() {
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [size, setSize] = useState(10);
+  const [query, setQuery] = useState<ChapterQuery>({ page: 1, size: 10 });
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterField[]>([
     {
@@ -36,51 +46,48 @@ export default function ChapterManage() {
   const [editingChapter, setEditingChapter] = useState<
     ChapterItem | undefined
   >();
-  const hasMounted = useRef(false);
 
   useEffect(() => {
-    fetchCourses();
+    let cancelled = false;
+
+    courseApi
+      .getList({ page: 1, size: 100 })
+      .then((res) => {
+        if (cancelled) return;
+        const courseOptions = (res.records || []).map((course: Course) => ({
+          label: course.title,
+          value: String(course.id),
+        }));
+
+        setFilters((prev) =>
+          prev.map((filter) =>
+            filter.id === 'course'
+              ? {
+                  ...filter,
+                  options: [
+                    { label: '全部课程', value: '' },
+                    ...courseOptions,
+                  ],
+                }
+              : filter
+          )
+        );
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error('获取课程列表失败:', error);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const fetchCourses = async () => {
-    try {
-      const res = await courseApi.getList({
-        page: 1,
-        size: 100,
-      });
-      const courseOptions = (res.records || []).map((course: Course) => ({
-        label: course.title,
-        value: String(course.id),
-      }));
-
-      setFilters((prev) =>
-        prev.map((filter) =>
-          filter.id === 'course'
-            ? {
-                ...filter,
-                options: [{ label: '全部课程', value: '' }, ...courseOptions],
-              }
-            : filter
-        )
-      );
-    } catch (error) {
-      console.error('获取课程列表失败:', error);
-    }
-  };
-
-  const fetchChapters = async () => {
+  const refreshChapters = async () => {
     setLoading(true);
     try {
-      const courseIdValue = filters.find((f) => f.id === 'course')?.value;
-      const res = await chapterManageApi.getList({
-        courseId:
-          courseIdValue !== '' && courseIdValue !== undefined
-            ? String(courseIdValue)
-            : undefined,
-        keyword: searchTerm || undefined,
-        page,
-        size,
-      });
+      const res = await chapterManageApi.getList(query);
       setChapters(res.data);
       setTotal(res.total);
     } catch (error) {
@@ -91,17 +98,30 @@ export default function ChapterManage() {
   };
 
   useEffect(() => {
-    if (!hasMounted.current) {
-      hasMounted.current = true;
-      fetchChapters();
-    }
-  }, []);
+    let cancelled = false;
 
-  useEffect(() => {
-    if (hasMounted.current) {
-      fetchChapters();
-    }
-  }, [page, size]);
+    chapterManageApi
+      .getList(query)
+      .then((res) => {
+        if (cancelled) return;
+        setChapters(res.data);
+        setTotal(res.total);
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error('获取章节列表失败:', error);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [query]);
 
   const handleOpenCreate = () => {
     setEditingChapter(undefined);
@@ -113,15 +133,17 @@ export default function ChapterManage() {
     setModalOpen(true);
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (
+    data: (CreateChapterRequest | UpdateChapterRequest) & { id?: string }
+  ) => {
     if (data.id) {
-      await chapterManageApi.update(data.id, data);
+      await chapterManageApi.update(data.id, data as UpdateChapterRequest);
       showToast.success('章节更新成功');
     } else {
-      await chapterManageApi.create(data);
+      await chapterManageApi.create(data as CreateChapterRequest);
       showToast.success('章节创建成功');
     }
-    fetchChapters();
+    await refreshChapters();
   };
 
   const handleOpenDelete = (item: ChapterItem) => {
@@ -133,7 +155,7 @@ export default function ChapterManage() {
       try {
         await chapterManageApi.delete(deleteTarget.id);
         showToast.success(`章节「${deleteTarget.chapterName}」已删除`);
-        fetchChapters();
+        await refreshChapters();
       } catch (error) {
         console.error('删除章节失败:', error);
       }
@@ -227,8 +249,19 @@ export default function ChapterManage() {
         filters={filters}
         onFilterChange={setFilters}
         onApplyFilters={() => {
-          setPage(1);
-          fetchChapters();
+          const courseIdValue = filters.find(
+            (filter) => filter.id === 'course'
+          )?.value;
+          setLoading(true);
+          setQuery((current) => ({
+            courseId:
+              courseIdValue !== '' && courseIdValue !== undefined
+                ? String(courseIdValue)
+                : undefined,
+            keyword: searchTerm || undefined,
+            page: 1,
+            size: current.size,
+          }));
         }}
         actionSlot={
           <button
@@ -247,14 +280,17 @@ export default function ChapterManage() {
         />
       </div>
       <Pagination
-        currentPage={page}
-        totalPages={Math.ceil(total / size) || 1}
+        currentPage={query.page}
+        totalPages={Math.ceil(total / query.size) || 1}
         totalItems={total}
-        pageSize={size}
-        onPageChange={setPage}
+        pageSize={query.size}
+        onPageChange={(newPage) => {
+          setLoading(true);
+          setQuery((current) => ({ ...current, page: newPage }));
+        }}
         onPageSizeChange={(newSize) => {
-          setSize(newSize);
-          setPage(1);
+          setLoading(true);
+          setQuery((current) => ({ ...current, page: 1, size: newSize }));
         }}
       />
 
@@ -269,12 +305,15 @@ export default function ChapterManage() {
         onCancel={() => setDeleteTarget(null)}
       />
 
-      <ChapterModel
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleSubmit}
-        initialData={editingChapter}
-      />
+      {modalOpen && (
+        <ChapterModel
+          key={editingChapter?.id ?? 'create'}
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleSubmit}
+          initialData={editingChapter}
+        />
+      )}
     </div>
   );
 }

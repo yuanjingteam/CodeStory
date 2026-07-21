@@ -1,15 +1,15 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
-import { FiEdit, FiTrash2, FiUser, FiMail } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { FiEdit, FiTrash2, FiUser, FiMail, FiRefreshCw } from 'react-icons/fi';
 import type { UserDetail, UpdateUserDetailRequest } from '@/types/user-manage';
 import {
   SearchFilter,
   DataTable,
   Pagination,
+  ConfirmDialog,
   type FilterField,
   type Column,
 } from '@/components/common';
-import type { PaginationResponse } from '@/types/user-manage';
 import { userRoleMap, userSexMap } from '@/utils/constants';
 import {
   getUserList,
@@ -23,13 +23,26 @@ import UserModel from '@/components/manage/UserModel';
 
 import Img from 'next/image';
 
+interface UserQuery {
+  page: number;
+  pageSize: number;
+  search: string;
+  role: string;
+  status: string;
+}
+
 export default function UserManage() {
   const [userList, setUserList] = useState<UserDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [pagination, setPagination] = useState<PaginationResponse>({
-    pageSize: 5,
-    currentPage: 1,
+  const [query, setQuery] = useState<UserQuery>({
+    page: 1,
+    pageSize: 10,
+    search: '',
+    role: '',
+    status: '',
+  });
+  const [pagination, setPagination] = useState({
     total: 0,
     totalPages: 0,
   });
@@ -37,7 +50,21 @@ export default function UserManage() {
   // 弹窗状态
   const [showUserModal, setShowUserModal] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const hasMounted = useRef(false);
+
+  // 确认对话框状态
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    variant: 'danger' | 'warning' | 'info';
+  }>({
+    open: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    variant: 'danger',
+  });
 
   // 筛选字段配置
   const [filters, setFilters] = useState<FilterField[]>([
@@ -66,30 +93,16 @@ export default function UserManage() {
   ]);
 
   // 获取用户列表
-  const fetchUsers = async () => {
+  const refreshUsers = async () => {
     setLoading(true);
     try {
-      const roleValue = filters.find((f) => f.id === 'role')?.value;
-      const statusValue = filters.find((f) => f.id === 'status')?.value;
-
-      const res = await getUserList({
-        page: pagination.currentPage,
-        pageSize: pagination.pageSize,
-        search: searchTerm || '',
-        role:
-          roleValue !== '' && roleValue !== undefined ? String(roleValue) : '',
-        status:
-          statusValue !== '' && statusValue !== undefined
-            ? String(statusValue)
-            : '',
-      });
+      const res = await getUserList(query);
       if (res.code === 200) {
         setUserList(res.data.list);
-        setPagination((prev) => ({
-          ...prev,
+        setPagination({
           total: res.data.pagination.total,
           totalPages: res.data.pagination.totalPages,
-        }));
+        });
       }
     } catch (error) {
       console.error('获取用户列表失败:', error);
@@ -99,57 +112,78 @@ export default function UserManage() {
   };
 
   useEffect(() => {
-    if (!hasMounted.current) {
-      hasMounted.current = true;
-      fetchUsers();
-    }
-  }, []);
+    let cancelled = false;
 
-  useEffect(() => {
-    if (hasMounted.current) {
-      fetchUsers();
-    }
-  }, [pagination.currentPage, pagination.pageSize]);
+    getUserList(query)
+      .then((res) => {
+        if (cancelled || res.code !== 200) return;
+        setUserList(res.data.list);
+        setPagination({
+          total: res.data.pagination.total,
+          totalPages: res.data.pagination.totalPages,
+        });
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error('获取用户列表失败:', error);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [query]);
 
   // 删除用户
   const handleDelete = async (userId: string) => {
-    if (!confirm('确定要删除该用户吗？')) return;
-
-    try {
-      const res = await deleteUserApi(userId);
-      if (res.code === 200) {
-        setUserList((prev) =>
-          prev.map((user) =>
-            user.id === userId ? { ...user, is_delete: 1 } : user
-          )
-        );
-        toast.success('删除成功');
-      }
-    } catch (error) {
-      console.error('删除用户失败:', error);
-      toast.error('删除失败');
-    }
+    setConfirmDialog({
+      open: true,
+      title: '确认删除',
+      message: '确定要删除该用户吗？此操作可以恢复。',
+      onConfirm: async () => {
+        setConfirmDialog((prev) => ({ ...prev, open: false }));
+        try {
+          const res = await deleteUserApi(userId);
+          if (res.code === 200) {
+            toast.success('删除成功');
+            await refreshUsers();
+          }
+        } catch (error) {
+          console.error('删除用户失败:', error);
+          toast.error('删除失败');
+        }
+      },
+      variant: 'danger',
+    });
   };
 
   // 恢复用户
   const handleRestore = async (userId: string) => {
-    try {
-      const res = await restoreUserApi(userId);
-      if (res.code === 200) {
-        setUserList((prev) =>
-          prev.map((user) =>
-            user.id === userId ? { ...user, is_delete: 0 } : user
-          )
-        );
-        toast.success('恢复成功');
-      }
-    } catch (error) {
-      console.error('恢复用户失败:', error);
-      toast.error('恢复失败');
-    }
+    setConfirmDialog({
+      open: true,
+      title: '确认恢复',
+      message: '确定要恢复该用户吗？',
+      onConfirm: async () => {
+        setConfirmDialog((prev) => ({ ...prev, open: false }));
+        try {
+          const res = await restoreUserApi(userId);
+          if (res.code === 200) {
+            toast.success('恢复成功');
+            await refreshUsers();
+          }
+        } catch (error) {
+          console.error('恢复用户失败:', error);
+          toast.error('恢复失败');
+        }
+      },
+      variant: 'warning',
+    });
   };
-
-
 
   // 打开编辑用户弹窗
   const handleEditUser = (user: UserDetail) => {
@@ -179,7 +213,7 @@ export default function UserManage() {
           );
           toast.success('更新成功');
         }
-      } 
+      }
     } catch (error) {
       console.error('保存用户失败:', error);
     }
@@ -321,7 +355,7 @@ export default function UserManage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleEditUser(item)}
-            className="px-3 py-1 bg-blue-400 text-white  text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+            className="px-3 py-1 bg-blue-400 text-white  text-xs font-bold border-2 rounded-md border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
           >
             <FiEdit className="w-3 h-3" />
             编辑
@@ -329,14 +363,15 @@ export default function UserManage() {
           {item.is_delete === 1 ? (
             <button
               onClick={() => handleRestore(item.id)}
-              className="px-3 py-1 bg-green-400 text-white  text-xs font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+              className="px-3 py-1 bg-green-400 text-white text-xs  font-bold border-2 rounded-md border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
             >
+              <FiRefreshCw className="w-3 h-3" />
               恢复
             </button>
           ) : (
             <button
               onClick={() => handleDelete(item.id)}
-              className="px-3 py-1 bg-red-400 text-white text-xs  font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+              className="px-3 py-1 bg-red-400 text-white text-xs  font-bold border-2 rounded-md border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
             >
               <FiTrash2 className="w-3 h-3" />
               删除
@@ -356,8 +391,26 @@ export default function UserManage() {
         filters={filters}
         onFilterChange={handleFilterChange}
         onApplyFilters={() => {
-          setPagination((prev) => ({ ...prev, currentPage: 1 }));
-          fetchUsers();
+          const roleValue = filters.find(
+            (filter) => filter.id === 'role'
+          )?.value;
+          const statusValue = filters.find(
+            (filter) => filter.id === 'status'
+          )?.value;
+          setLoading(true);
+          setQuery((current) => ({
+            page: 1,
+            pageSize: current.pageSize,
+            search: searchTerm || '',
+            role:
+              roleValue !== '' && roleValue !== undefined
+                ? String(roleValue)
+                : '',
+            status:
+              statusValue !== '' && statusValue !== undefined
+                ? String(statusValue)
+                : '',
+          }));
         }}
       />
       <div className="flex-1 min-h-0  flex flex-col">
@@ -369,23 +422,25 @@ export default function UserManage() {
           emptyText="暂无用户数据"
           emptyIcon={<FiUser className="w-16 h-16 text-gray-300" />}
           getRowClassName={(user) =>
-            user.is_delete === 1 ? 'bg-gray-100 opacity-60' : ''
+            user.is_delete === 1 ? 'bg-gray-300 opacity-60' : ''
           }
         />
       </div>
 
       {/* 分页 */}
       <Pagination
-        currentPage={pagination.currentPage}
+        currentPage={query.page}
         totalPages={pagination.totalPages}
         totalItems={pagination.total}
-        pageSize={pagination.pageSize}
-        onPageChange={(page) =>
-          setPagination({ ...pagination, currentPage: page })
-        }
-        onPageSizeChange={(pageSize) =>
-          setPagination({ ...pagination, pageSize: pageSize })
-        }
+        pageSize={query.pageSize}
+        onPageChange={(page) => {
+          setLoading(true);
+          setQuery((current) => ({ ...current, page }));
+        }}
+        onPageSizeChange={(pageSize) => {
+          setLoading(true);
+          setQuery((current) => ({ ...current, page: 1, pageSize }));
+        }}
         pageSizeOptions={[10, 20, 50, 100]}
       />
 
@@ -396,6 +451,18 @@ export default function UserManage() {
         onSubmit={handleSubmitUser}
         userId={editingUserId}
         loading={loading}
+      />
+
+      {/* 确认对话框 */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText="确认"
+        cancelText="取消"
+        variant={confirmDialog.variant}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog((prev) => ({ ...prev, open: false }))}
       />
     </div>
   );

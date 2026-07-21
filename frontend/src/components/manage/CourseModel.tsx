@@ -1,6 +1,7 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { FiX, FiUpload } from 'react-icons/fi';
+import Image from 'next/image';
 import type { CourseFormData } from '@/types/course-manage';
 
 interface CourseModelProps {
@@ -16,39 +17,20 @@ const levelOptions = [
   { label: '高级', value: 2 },
 ];
 
+const getInitialFormData = (initialData?: CourseModelProps['initialData']): CourseFormData => ({
+  title: initialData?.title || '',
+  description: initialData?.description || '',
+  level: initialData?.level ?? 0,
+  coverImage: undefined,
+});
+
 export default function CourseModel({ open, onClose, onSubmit, initialData }: CourseModelProps) {
   const isEdit = !!initialData?.id;
 
-  const [formData, setFormData] = useState<CourseFormData>({
-    title: '',
-    description: '',
-    level: 0,
-    coverImage: undefined,
-  });
-  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [formData, setFormData] = useState<CourseFormData>(() => getInitialFormData(initialData));
+  const [previewUrl, setPreviewUrl] = useState<string>(() => initialData?.cover_url || '');
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (open && initialData) {
-      setFormData({
-        title: initialData.title || '',
-        description: initialData.description || '',
-        level: initialData.level ?? 0,
-        coverImage: undefined,
-      });
-      setPreviewUrl(initialData.cover_url || '');
-    }
-    if (!open) {
-      setFormData({
-        title: '',
-        description: '',
-        level: 0,
-        coverImage: undefined,
-      });
-      setPreviewUrl('');
-    }
-  }, [open, initialData]);
 
   if (!open) return null;
 
@@ -149,7 +131,14 @@ export default function CourseModel({ open, onClose, onSubmit, initialData }: Co
               className="border-2 border-dashed border-black p-4 cursor-pointer hover:bg-gray-50 transition-colors"
             >
               {previewUrl ? (
-                <img src={previewUrl} alt="" className="max-h-40 mx-auto object-contain" />
+                <Image
+                  src={previewUrl}
+                  alt="课程封面预览"
+                  width={320}
+                  height={160}
+                  unoptimized
+                  className="max-h-40 w-auto mx-auto object-contain"
+                />
               ) : (
                 <div className="flex flex-col items-center gap-2 text-gray-400">
                   <FiUpload className="w-10 h-10" />

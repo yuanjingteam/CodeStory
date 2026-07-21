@@ -9,37 +9,38 @@ import {
   validateNickname,
   validateCode,
 } from '@/utils/validate';
+import { badRequest } from '../../utils/response';
 
 class RegisterService {
   async register(req: RegisterRequest) {
     const { email, password, nickname, emailCode } = req;
     const emailResult = validateEmail(email);
     if (!emailResult.isValid) {
-      throw new Error(emailResult.message);
+      return badRequest(emailResult.message);
     }
 
     const passwordResult = validatePassword(password);
     if (!passwordResult.isValid) {
-      throw new Error(passwordResult.message);
+      return badRequest(passwordResult.message);
     }
 
     const nicknameResult = validateNickname(nickname);
     if (!nicknameResult.isValid) {
-      throw new Error(nicknameResult.message);
+      return badRequest(nicknameResult.message);
     }
 
     const codeResult = validateCode(emailCode);
     if (!codeResult.isValid) {
-      throw new Error(codeResult.message);
+      return badRequest(codeResult.message);
     }
     if (!(await captchaService.verifyEmailCode(email, emailCode))) {
-      throw new Error('邮件验证码错误');
+      return badRequest('邮件验证码错误');
     }
     const existingUser = await prisma.users.findUnique({
       where: { email },
     });
     if (existingUser) {
-      throw new Error('邮箱已被注册');
+      return badRequest('邮箱已被注册');
     }
     await deleteCache(`emailCode:${email}`);
     const hashedPassword = await hashPassword(password);

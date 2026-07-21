@@ -1,5 +1,5 @@
-'use client';
-import { useState, useEffect, useRef } from 'react';
+﻿'use client';
+import { useState, useEffect } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
 import { showToast } from '@/utils/toast';
 import { SearchFilter, DataTable, Pagination, ConfirmDialog } from '@/components/common';
@@ -7,17 +7,29 @@ import type { FilterField, Column } from '@/components/common';
 import lessonManageApi from '@/app/api/manage/lesson-manage';
 import courseApi from '@/app/api/courses/courses';
 import chapterManageApi from '@/app/api/manage/chapter-manage';
-import type { LessonItem } from '@/types/lesson-manage';
+import type {
+  CreateLessonRequest,
+  LessonItem,
+  UpdateLessonRequest,
+} from '@/types/lesson-manage';
 import type { Course } from '@/types/course';
 import type { ChapterItem } from '@/types/chapter-manage';
 import LessonModel from '@/components/manage/LessonModel';
 
+interface LessonQuery {
+  courseId?: string;
+  chapterId?: string;
+  keyword?: string;
+  difficulty?: number;
+  page: number;
+  size: number;
+}
+
 export default function LessonManage() {
   const [lessons, setLessons] = useState<LessonItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [size, setSize] = useState(10);
+  const [query, setQuery] = useState<LessonQuery>({ page: 1, size: 10 });
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterField[]>([
     {
@@ -54,91 +66,102 @@ export default function LessonManage() {
   const [deleteTarget, setDeleteTarget] = useState<LessonItem | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingLesson, setEditingLesson] = useState<LessonItem | undefined>();
-  const hasMounted = useRef(false);
 
-  useEffect(() => {
-    fetchCourses();
-    fetchChapters();
-  }, []);
-
-  useEffect(() => {
-    if (!hasMounted.current) {
-      hasMounted.current = true;
-      fetchLessons();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (hasMounted.current) {
-      fetchLessons();
-    }
-  }, [page, size]);
-
-  const fetchCourses = async () => {
-    try {
-      const res = await courseApi.getList({
-        page: 1,
-        size: 100,
-      });
-      const courseOptions = (res.records || []).map((course: Course) => ({
-        label: course.title,
-        value: String(course.id),
-      }));
-      
-      setFilters(prev => prev.map(filter => 
-        filter.id === 'course' 
-          ? { ...filter, options: [{ label: '全部课程', value: '' }, ...courseOptions] }
-          : filter
-      ));
-    } catch (error) {
-      console.error('获取课程列表失败:', error);
-    }
-  };
-
-  const fetchChapters = async () => {
-    try {
-      const res = await chapterManageApi.getList({
-        page: 1,
-        size: 100,
-      });
-      const chapterOptions = (res.data || []).map((chapter: ChapterItem) => ({
-        label: chapter.chapterName,
-        value: String(chapter.id),
-      }));
-      
-      setFilters(prev => prev.map(filter => 
-        filter.id === 'chapter' 
-          ? { ...filter, options: [{ label: '全部章节', value: '' }, ...chapterOptions] }
-          : filter
-      ));
-    } catch (error) {
-      console.error('获取章节列表失败:', error);
-    }
-  };
-
-  const fetchLessons = async () => {
+  const refreshLessons = async () => {
     setLoading(true);
     try {
-      const courseIdValue = filters.find(f => f.id === 'course')?.value;
-      const chapterIdValue = filters.find(f => f.id === 'chapter')?.value;
-      const difficultyValue = filters.find(f => f.id === 'difficulty')?.value;
-      
-      const res = await lessonManageApi.getList({
-        courseId: courseIdValue !== '' && courseIdValue !== undefined ? String(courseIdValue) : undefined,
-        chapterId: chapterIdValue !== '' && chapterIdValue !== undefined ? String(chapterIdValue) : undefined,
-        keyword: searchTerm || undefined,
-        difficulty: difficultyValue !== '' && difficultyValue !== undefined ? Number(difficultyValue) : undefined,
-        page,
-        size,
-      });
+      const res = await lessonManageApi.getList(query);
       setLessons(res.data);
       setTotal(res.total);
     } catch (error) {
-      console.error('获取小节列表失败:', error);
+      console.error('获取课程列表失败:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.all([
+      courseApi.getList({ page: 1, size: 100 }),
+      chapterManageApi.getList({ page: 1, size: 100 }),
+    ])
+      .then(([courseResponse, chapterResponse]) => {
+        if (cancelled) return;
+        const courseOptions = (courseResponse.records || []).map(
+          (course: Course) => ({
+            label: course.title,
+            value: String(course.id),
+          })
+        );
+        const chapterOptions = (chapterResponse.data || []).map(
+          (chapter: ChapterItem) => ({
+            label: chapter.chapterName,
+            value: String(chapter.id),
+          })
+        );
+
+        setFilters((current) =>
+          current.map((filter) => {
+            if (filter.id === 'course') {
+              return {
+                ...filter,
+                options: [
+                  { label: '全部课程', value: '' },
+                  ...courseOptions,
+                ],
+              };
+            }
+            if (filter.id === 'chapter') {
+              return {
+                ...filter,
+                options: [
+                  { label: '全部章节', value: '' },
+                  ...chapterOptions,
+                ],
+              };
+            }
+            return filter;
+          })
+        );
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error('获取课程或章节列表失败:', error);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    lessonManageApi
+      .getList(query)
+      .then((res) => {
+        if (cancelled) return;
+        setLessons(res.data);
+        setTotal(res.total);
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          console.error('获取小节列表失败:', error);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [query]);
 
   const handleOpenCreate = () => {
     setEditingLesson(undefined);
@@ -150,19 +173,23 @@ export default function LessonManage() {
     setModalOpen(true);
   };
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (
+    data: (CreateLessonRequest | UpdateLessonRequest) & { id?: string }
+  ) => {
     try {
       if (data.id) {
-        await lessonManageApi.update(data.id, data);
+        await lessonManageApi.update(data.id, data as UpdateLessonRequest);
         showToast.success('小节更新成功');
       } else {
-        await lessonManageApi.create(data);
+        await lessonManageApi.create(data as CreateLessonRequest);
         showToast.success('小节创建成功');
       }
-      fetchLessons();
-    } catch (error: any) {
+      await refreshLessons();
+    } catch (error: unknown) {
       console.error('保存小节失败:', error);
-      showToast.error(error?.message || '保存失败，请重试');
+      const message = error instanceof Error ? error.message : '保存小节失败，请重试';
+      showToast.error(message);
+      throw error;
     }
   };
 
@@ -175,7 +202,7 @@ export default function LessonManage() {
       try {
         await lessonManageApi.delete(deleteTarget.id);
         showToast.success(`小节「${deleteTarget.lessonName}」已删除`);
-        fetchLessons();
+        await refreshLessons();
       } catch (error) {
         console.error('删除小节失败:', error);
       }
@@ -294,8 +321,33 @@ export default function LessonManage() {
         filters={filters}
         onFilterChange={setFilters}
         onApplyFilters={() => {
-          setPage(1);
-          fetchLessons();
+          const courseIdValue = filters.find(
+            (filter) => filter.id === 'course'
+          )?.value;
+          const chapterIdValue = filters.find(
+            (filter) => filter.id === 'chapter'
+          )?.value;
+          const difficultyValue = filters.find(
+            (filter) => filter.id === 'difficulty'
+          )?.value;
+          setLoading(true);
+          setQuery((current) => ({
+            courseId:
+              courseIdValue !== '' && courseIdValue !== undefined
+                ? String(courseIdValue)
+                : undefined,
+            chapterId:
+              chapterIdValue !== '' && chapterIdValue !== undefined
+                ? String(chapterIdValue)
+                : undefined,
+            keyword: searchTerm || undefined,
+            difficulty:
+              difficultyValue !== '' && difficultyValue !== undefined
+                ? Number(difficultyValue)
+                : undefined,
+            page: 1,
+            size: current.size,
+          }));
         }}
         actionSlot={
           <button
@@ -314,14 +366,17 @@ export default function LessonManage() {
       />
 
       <Pagination
-        currentPage={page}
-        totalPages={Math.ceil(total / size) || 1}
+        currentPage={query.page}
+        totalPages={Math.ceil(total / query.size) || 1}
         totalItems={total}
-        pageSize={size}
-        onPageChange={setPage}
+        pageSize={query.size}
+        onPageChange={(newPage) => {
+          setLoading(true);
+          setQuery((current) => ({ ...current, page: newPage }));
+        }}
         onPageSizeChange={(newSize) => {
-          setSize(newSize);
-          setPage(1);
+          setLoading(true);
+          setQuery((current) => ({ ...current, page: 1, size: newSize }));
         }}
       />
 
@@ -336,12 +391,15 @@ export default function LessonManage() {
         onCancel={() => setDeleteTarget(null)}
       />
 
-      <LessonModel
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleSubmit}
-        initialData={editingLesson}
-      />
+      {modalOpen && (
+        <LessonModel
+          key={editingLesson?.id ?? 'create'}
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleSubmit}
+          initialData={editingLesson}
+        />
+      )}
     </div>
   );
 }

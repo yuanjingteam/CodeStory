@@ -15,15 +15,25 @@ services:
     container_name: codestory-backend
     expose:
       - '4001'
+    dns:
+      - 223.5.5.5
+      - 8.8.8.8
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: 4001
+      CORS_ORIGINS: ${CORS_ORIGINS}
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
       EMAIL_USER: ${EMAIL_USER}
       EMAIL_PASS: ${EMAIL_PASS}
+      QWEN_API_KEY: ${QWEN_API_KEY}
+      AI_MODEL: ${AI_MODEL}
+      AI_BASE_URL: ${AI_BASE_URL}
+      AI_TIMEOUT_MS: ${AI_TIMEOUT_MS}
+      AI_MAX_TOKENS: ${AI_MAX_TOKENS}
       JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       OSS_REGION: ${OSS_REGION}
       OSS_ACCESS_KEY_ID: ${OSS_ACCESS_KEY_ID}
       OSS_ACCESS_KEY_SECRET: ${OSS_ACCESS_KEY_SECRET}
@@ -47,6 +57,9 @@ services:
     container_name: codestory-frontend
     expose:
       - '3001'
+    dns:
+      - 223.5.5.5
+      - 8.8.8.8
     environment:
       NODE_ENV: ${NODE_ENV}
       PORT: 3001
@@ -62,7 +75,7 @@ services:
     image: nginx:1.27-alpine
     container_name: codestory-nginx
     ports:
-      - '80:80'
+      - '18080:80'
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./backend/uploads:/app/uploads:ro

@@ -2,24 +2,22 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { courseDetailApi } from '@/app/api/courses/course-detail';
-import type { CourseDetailData, Chapter, Lesson } from '@/types/course-detail';
-
-const difficultyMap: Record<number, { text: string; color: string }> = {
-  0: { text: '简单', color: 'bg-green-300' },
-  1: { text: '中等', color: 'bg-yellow-300' },
-  2: { text: '困难', color: 'bg-red-300' },
-};
+import type { CourseDetailData, Chapter } from '@/types/course-detail';
+import { courseLevelMap } from '@/utils/constants';
+import { useUserStore } from '@/store/useUserStore';
 
 export default function CourseDetails({
   courseId,
 }: {
   courseId: string;
-}) {
+  }) {
+  const { isLoggedIn, isLoading } = useUserStore();
   const router = useRouter();
   const [course, setCourse] = useState<CourseDetailData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!isLoggedIn || isLoading) return;
     const fetchCourseDetail = async () => {
       try {
         setLoading(true);
@@ -33,7 +31,7 @@ export default function CourseDetails({
     };
 
     fetchCourseDetail();
-  }, [courseId]);
+  }, [courseId, isLoading, isLoggedIn]);
 
   if (loading) {
     return (
@@ -60,7 +58,7 @@ export default function CourseDetails({
         </div>
 
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push('/courses')}
           className="border-2 border-black px-4 py-2 bg-purple-500 text-white font-bold shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all rounded-md"
         >
           ← 返回
@@ -132,7 +130,7 @@ function ChapterItem({ chapter, courseId }: { chapter: Chapter; courseId: string
       {isExpanded && (
         <div className="divide-y-2 divide-black">
           {chapter.lessons.map((lesson) => {
-            const difficulty = difficultyMap[lesson.difficulty] || { text: '未知', color: 'bg-gray-300' };
+            const difficulty = courseLevelMap[lesson.difficulty] || { text: '未知', color: 'bg-gray-300' };
             return (
               <div
                 key={lesson.id}

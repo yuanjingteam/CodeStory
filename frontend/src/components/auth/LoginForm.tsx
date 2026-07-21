@@ -15,6 +15,7 @@ import {
 import FormInput from './FormInput';
 import { useUserStore } from '@/store/useUserStore';
 import { toast } from 'sonner';
+import { getSafeRedirectPath } from '@/utils/auth-session';
 
 const STORAGE_KEY = 'loginfrom';
 
@@ -31,6 +32,7 @@ export default function LoginForm() {
 
   const getInitialLoginInput = (): LoginRequest => {
     try {
+      if (typeof window === 'undefined') return defaultLoginInput;
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed: LoginStorage = JSON.parse(stored);
@@ -45,13 +47,15 @@ export default function LoginForm() {
     } catch (e) {
       console.error('Failed to parse login storage:', e);
     }
-    return {
-      email: '',
-      password: '',
-      captchaCode: '',
-      captchaId: '',
-      rememberMe: false,
-    };
+    return defaultLoginInput;
+  };
+
+  const defaultLoginInput: LoginRequest = {
+    email: '',
+    password: '',
+    captchaCode: '',
+    captchaId: '',
+    rememberMe: false,
   };
 
   const [loginInput, setLoginInput] =
@@ -126,12 +130,16 @@ export default function LoginForm() {
         toast.success('登录成功');
         await setUserLogin(res.data);
         setTimeout(() => {
-          router.push('/');
+          const redirect = getSafeRedirectPath(
+            new URLSearchParams(window.location.search).get('redirect')
+          );
+          router.push(redirect);
         }, 500);
         return;
       } else {
-        toast.error(res.message);
-        captchaRef.current?.refresh();
+        setTimeout(() => {
+          captchaRef.current?.refresh();
+        }, 1000);
       }
     } catch (error) {
       console.error(error);
@@ -145,12 +153,7 @@ export default function LoginForm() {
 
   return (
     <section>
-      <form
-        onSubmit={handleSubmit}
-        className={`
-          space-y-4
-        `}
-      >
+      <form onSubmit={handleSubmit} className={'space-y-4'}>
         {/* 邮箱 */}
         <FormInput
           label="邮箱"
@@ -243,17 +246,19 @@ export default function LoginForm() {
             w-full py-3
             font-black text-white
             bg-purple-500
-            border-2 border-black
-            shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-            hover:translate-x-[4px]
-            hover:translate-y-[4px]
+            border-2 
+            rounded-sm
+            border-black
+            shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
+            hover:translate-x-[2px]
+            hover:translate-y-[2px]
             hover:shadow-none
             transition-all duration-200
             disabled:opacity-50
             disabled:cursor-not-allowed
             disabled:hover:translate-x-0
             disabled:hover:translate-y-0
-            disabled:hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+            disabled:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
           "
         >
           {loading ? '登录中...' : '登录'}
@@ -271,8 +276,10 @@ export default function LoginForm() {
           className="
             flex-1 py-3
             bg-white
-            border-2 border-black
-            shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
+            border-2 
+            rounded-sm
+            border-black
+            shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
             hover:translate-x-[2px]
             hover:translate-y-[2px]
             hover:shadow-none

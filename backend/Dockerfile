@@ -3,9 +3,9 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10.23.0
 
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
 RUN pnpm install
 
@@ -16,6 +16,8 @@ RUN npx prisma generate
 COPY . .
 
 RUN pnpm build
+
+RUN mkdir -p dist/generated && cp -R src/generated/prisma dist/generated/prisma
 
 EXPOSE 4001
 

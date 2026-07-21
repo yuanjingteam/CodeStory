@@ -15,8 +15,8 @@ class RegisterController {
         });
       }
       await registerService.register(body);
-      return res.status(201).json({
-        code: 201,
+      return res.status(200).json({
+        code: 200,
         message: '注册成功',
       });
     } catch (error) {

@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import FormInput from './FormInput';
 import { getEmailCaptcha, forgetPassword } from '@/api/auth/auth';
@@ -113,13 +112,15 @@ export default function ForgotPasswordForm() {
         throw new Error(emailResult.message);
       }
       try {
-        await getEmailCaptcha({
+        const res = await getEmailCaptcha({
           email: formData.email,
         });
-        toast.success('验证码发送成功');
+        if (res.code === 200) {
+          toast.success('验证码发送成功');
+        } 
       } catch (error) {
+        toast.error('获取验证码失败');
         console.error(error);
-        toast.error('验证码发送失败，请稍后重试');
       }
     },
   });
@@ -169,12 +170,10 @@ export default function ForgotPasswordForm() {
         setTimeout(() => {
           router.push('/auth/login');
         }, 500);
-      } else {
-        toast.error(res.message || '密码重置失败');
       }
     } catch (error) {
+      toast.error('密码重置失败');
       console.error(error);
-      toast.error('密码重置失败，请稍后重试');
     } finally {
       setLoading(false);
     }
@@ -207,7 +206,7 @@ export default function ForgotPasswordForm() {
 
       {/* 邮箱验证码 */}
       <div>
-        <div className="flex gap-3 items-end">
+        <div className="flex  gap-3 items-end">
           <div className="flex-1">
             <FormInput
               label="邮箱验证码"
@@ -240,10 +239,13 @@ export default function ForgotPasswordForm() {
               h-[51px]
               px-4
               whitespace-nowrap
-              font-black text-sm
+              font-black 
+              text-sm
               bg-yellow-400
-              border-2 border-black
-              shadow-[4px_4px_0_0_rgba(0,0,0,1)]
+              border-2 
+              rounded-sm
+              border-black
+              shadow-[2px_2px_0_0_rgba(0,0,0,1)]
               hover:translate-x-[2px]
               hover:translate-y-[2px]
               hover:shadow-none

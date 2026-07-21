@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { setCache, getCache, deleteCache } from '@/utils/cache';
 import { createCaptcha } from '@/utils/captcha';
 import { sendEmail } from '@/utils/email';
+import { badRequest } from '../../utils/response';
 
 class CaptchaService {
   // 生成图片验证码
@@ -19,10 +20,10 @@ class CaptchaService {
   async verifyImageCaptcha(captchaId: string, code: string) {
     const redisCode = await getCache(`captcha:${captchaId}`);
     if (!redisCode) {
-      throw new Error('验证码已过期');
+      return badRequest('验证码已过期');
     }
     if (redisCode !== code.toLowerCase()) {
-      throw new Error('验证码错误');
+      return badRequest('验证码错误');
     }
     await deleteCache(`captcha:${captchaId}`);
     return true;
@@ -48,7 +49,7 @@ class CaptchaService {
       `,
     });
     if (!sent) {
-      throw new Error('邮件发送失败!!!');
+      return badRequest('邮件发送失败!!!');
     }
   }
 
@@ -56,10 +57,10 @@ class CaptchaService {
   async verifyEmailCode(email: string, emailCode: string): Promise<boolean> {
     const storedCode = await getCache(`email-code:${email}`);
     if (!storedCode) {
-      throw new Error('验证码已过期');
+      return badRequest('验证码已过期');
     }
     if (storedCode !== emailCode) {
-      throw new Error('验证码错误');
+      return badRequest('验证码错误');
     }
     await deleteCache(`email-code:${email}`);
     return true;

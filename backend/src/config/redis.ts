@@ -1,4 +1,7 @@
+import 'dotenv/config';
 import { createClient } from 'redis';
+
+//1.创建Redis连接客户端，从环境变量中去读地址
 const redisClient = createClient({
   url: process.env.REDIS_URL,
 });

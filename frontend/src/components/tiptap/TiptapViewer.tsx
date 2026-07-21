@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { TableKit } from '@tiptap/extension-table/kit'
 import { ExerciseButton } from './ExerciseButtonExtension'
+import { CodeBlockWindow } from './CodeBlockWindow'
 import './tiptap-editor.css'
 
 interface TiptapViewerProps {
@@ -18,7 +19,9 @@ export default function TiptapViewer({ content, onExerciseClick, onButtonOrderMa
   const onExerciseClickRef = useRef(onExerciseClick)
   const onButtonOrderMappedRef = useRef(onButtonOrderMapped)
   const mutationObserverRef = useRef<MutationObserver | null>(null)
+  // eslint-disable-next-line react-hooks/refs
   onExerciseClickRef.current = onExerciseClick
+  // eslint-disable-next-line react-hooks/refs
   onButtonOrderMappedRef.current = onButtonOrderMapped
 
   const handleExerciseClick = useCallback((exerciseId: string) => {
@@ -35,12 +38,15 @@ export default function TiptapViewer({ content, onExerciseClick, onButtonOrderMa
         heading: {
           levels: [1, 2, 3, 4],
         },
+        codeBlock: false,
       }),
+      CodeBlockWindow,
       TableKit.configure({
         table: {
           resizable: false,
         },
       }),
+      // eslint-disable-next-line react-hooks/refs
       ExerciseButton.configure({
         onClick: handleExerciseClick,
       }),
@@ -50,7 +56,7 @@ export default function TiptapViewer({ content, onExerciseClick, onButtonOrderMa
       attributes: {
         class: 'tiptap-content prose prose-sm max-w-none',
       },
-      handleClickOn(view, pos, node, nodePos, event, direct) {
+      handleClickOn(view, pos, node, nodePos, event) {
         if (node.type.name === 'exerciseButton') {
           const exerciseId = node.attrs.exerciseId as string
 

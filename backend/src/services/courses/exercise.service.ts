@@ -1,5 +1,43 @@
 import prisma from '../../config/prisma';
 import { resolveShortId, uuidToShortId } from '../../utils/idTransform';
+import { generateChoiceExplanation } from '../ai/choice-explanation.service';
+import { reviewCodeWithAI } from '../ai/code-review.service';
+import {
+  applyAiCodeReviewToSubmission,
+  calculateAiReviewedFinalScore,
+  gradeCodeExercise,
+  markCodeReviewFailed,
+  recordCodeSubmission,
+} from './code-grading.service';
+import { updateLessonAndCourseProgress } from './learning-progress.service';
+
+const SCORE_DEDUCTION = [0, 10, 20, 30];
+
+interface ScoreBreakdown {
+  functionalScore: number;
+  qualityScore: number;
+  hintDeduction: number;
+  finalScore: number;
+}
+
+interface SubmitAiReview {
+  isLikelyCorrect: boolean;
+  feedback: string;
+  strengths: string[];
+  issues: string[];
+  suggestions: string[];
+  needsManualReview: boolean;
+  status: 'completed' | 'failed';
+}
+
+interface SubmitExerciseResult {
+  correct: boolean;
+  score: number;
+  feedback: string;
+  analysis: string;
+  scoreBreakdown?: ScoreBreakdown;
+  aiReview?: SubmitAiReview;
+}
 
 export interface ExerciseDetail {
   id: string;
@@ -22,6 +60,14 @@ export interface UserAnswer {
   score: number;
 }
 
+function stripOptionLabel(option: string): string {
+  return option.replace(/^[A-Z]\.\s*/, '').trim();
+}
+
+function normalizeOptionLabel(answer: string): string {
+  return answer.trim().toUpperCase().charAt(0);
+}
+
 export async function getExerciseDetail(
   exerciseId: string,
   userId: string
@@ -31,6 +77,13 @@ export async function getExerciseDetail(
 
   const exercise = await prisma.exercises.findUnique({
     where: { id: resolvedId, is_delete: 0 },
+    include: {
+      lessons: {
+        select: {
+          content: true,
+        },
+      },
+    },
   });
 
   if (!exercise) return null;
@@ -56,12 +109,19 @@ export async function submitExercise(
   answer: string,
   userId: string,
   hintLevelUsed: number = 0
-): Promise<{ correct: boolean; score: number; feedback: string; analysis: string } | null> {
+): Promise<SubmitExerciseResult | null> {
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
   const exercise = await prisma.exercises.findUnique({
     where: { id: resolvedId, is_delete: 0 },
+    include: {
+      lessons: {
+        select: {
+          content: true,
+        },
+      },
+    },
   });
 
   if (!exercise) return null;
@@ -69,6 +129,8 @@ export async function submitExercise(
   let correct = false;
   let score = 0;
   let feedback = '';
+  let scoreBreakdown: ScoreBreakdown | undefined;
+  let aiReviewResult: SubmitAiReview | undefined;
 
   if (exercise.type === 'single_choice') {
     const metadata = exercise.metadata as any;
@@ -76,45 +138,91 @@ export async function submitExercise(
     const answerIndex = answer.trim().toUpperCase().charCodeAt(0) - 65;
     const selectedOption = options[answerIndex];
     correct = selectedOption === exercise.answer;
-    
+
     if (correct) {
-      const SCORE_DEDUCTION = [0, 10, 20, 30];
       score = Math.max(0, 100 - (SCORE_DEDUCTION[hintLevelUsed] || 0));
-      feedback = hintLevelUsed > 0 
-        ? `回答正确！使用了 ${hintLevelUsed} 次提示，得分: ${score} 分` 
+      feedback = hintLevelUsed > 0
+        ? `回答正确。使用了 ${hintLevelUsed} 级提示，得分：${score} 分`
         : '回答正确，知识点掌握良好';
     } else {
-      score = 0;
       feedback = '回答错误，请重新思考';
     }
   } else if (exercise.type === 'code') {
-    const normalizeCode = (code: string): string => {
-      let result = code;
-      result = result.replace(/--.*$/gm, '');
-      result = result.replace(/\/\*[\s\S]*?\*\//g, '');
-      result = result.replace(/'''[\s\S]*?'''/g, '');
-      result = result.replace(/"""[\s\S]*?"""/g, '');
-      result = result.replace(/#.*$/gm, '');
-      result = result.replace(/\/\/.*$/gm, '');
-      result = result.replace(/%.*$/gm, '');
-      result = result.replace(/REM\s+.*$/gim, '');
-      result = result.replace(/;.*$/gm, '');
-      result = result.replace(/\s+/g, ' ');
-      return result.trim();
+    const grade = gradeCodeExercise({
+      userCode: answer,
+      correctAnswer: exercise.answer,
+      metadata: exercise.metadata,
+      hintLevelUsed,
+    });
+
+    correct = grade.correct;
+    score = grade.score;
+    feedback = grade.feedback;
+    scoreBreakdown = {
+      functionalScore: grade.functionalScore,
+      qualityScore: 0,
+      hintDeduction: grade.hintDeduction,
+      finalScore: grade.score,
     };
-    const normalizedAnswer = normalizeCode(answer);
-    const normalizedCorrect = normalizeCode(exercise.answer);
-    correct = normalizedAnswer === normalizedCorrect;
-    
-    if (correct) {
-      const SCORE_DEDUCTION = [0, 10, 20, 30];
-      score = Math.max(0, 100 - (SCORE_DEDUCTION[hintLevelUsed] || 0));
-      feedback = hintLevelUsed > 0 
-        ? `所有测试用例通过！使用了 ${hintLevelUsed} 次提示，得分: ${score} 分`
-        : '所有测试用例通过';
-    } else {
-      score = 0;
-      feedback = '部分测试用例未通过';
+
+    const submission = await recordCodeSubmission({
+      userId,
+      exerciseId: resolvedId,
+      code: answer,
+      grade,
+    });
+
+    try {
+      const aiReview = await reviewCodeWithAI({
+        exerciseContent: exercise.content,
+        knowledge: exercise.knowledge,
+        correctAnswer: exercise.answer,
+        analysis: exercise.analysis,
+        userCode: answer,
+        language: grade.language,
+        hintLevelUsed,
+        staticGrade: grade,
+      });
+
+      await applyAiCodeReviewToSubmission({
+        submissionId: submission.id,
+        review: aiReview,
+        hintDeduction: grade.hintDeduction,
+      });
+
+      correct = aiReview.review.isLikelyCorrect;
+      score = calculateAiReviewedFinalScore(aiReview, grade.hintDeduction);
+      feedback = aiReview.review.feedback;
+      scoreBreakdown = {
+        functionalScore: aiReview.review.functionalScore,
+        qualityScore: aiReview.review.qualityScore,
+        hintDeduction: grade.hintDeduction,
+        finalScore: score,
+      };
+      aiReviewResult = {
+        isLikelyCorrect: aiReview.review.isLikelyCorrect,
+        feedback: aiReview.review.feedback,
+        strengths: aiReview.review.strengths,
+        issues: aiReview.review.issues,
+        suggestions: aiReview.review.suggestions,
+        needsManualReview: aiReview.review.needsManualReview,
+        status: 'completed',
+      };
+    } catch (error) {
+      await markCodeReviewFailed({
+        submissionId: submission.id,
+        error,
+      });
+      feedback = `${grade.feedback}。AI 评阅暂不可用，已保留静态初判结果。`;
+      aiReviewResult = {
+        isLikelyCorrect: grade.correct,
+        feedback,
+        strengths: [],
+        issues: [],
+        suggestions: [],
+        needsManualReview: true,
+        status: 'failed',
+      };
     }
   }
 
@@ -128,10 +236,12 @@ export async function submitExercise(
     },
   });
 
-  const isFirstSubmission = !existingAnswer;
-
   if (existingAnswer) {
-    const newScore = correct ? score : existingAnswer.score;
+    const newScore = exercise.type === 'code'
+      ? Math.max(existingAnswer.score, score)
+      : correct
+        ? score
+        : existingAnswer.score;
     await prisma.answer.update({
       where: { id: existingAnswer.id },
       data: {
@@ -172,124 +282,63 @@ export async function submitExercise(
     score,
     feedback,
     analysis: exercise.analysis || '',
+    scoreBreakdown,
+    aiReview: aiReviewResult,
   };
 }
 
-async function updateLessonAndCourseProgress(lessonId: string, userId: string): Promise<void> {
-  const now = new Date();
+export async function explainChoiceExercise(
+  exerciseId: string,
+  selectedAnswer: string,
+  userId: string
+) {
+  const resolvedId = await resolveShortId('exercises', exerciseId);
+  if (!resolvedId) return null;
 
-  const lesson = await prisma.lessons.findUnique({
-    where: { id: lessonId, is_delete: 0 },
-    include: { chapters: { include: { courses: true } } },
+  const exercise = await prisma.exercises.findUnique({
+    where: { id: resolvedId, is_delete: 0 },
   });
 
-  if (!lesson) return;
+  if (!exercise || exercise.type !== 'single_choice') return null;
 
-  const courseId = lesson.chapters.courses.id;
+  const metadata = exercise.metadata as any;
+  const options = Array.isArray(metadata?.options) ? metadata.options : [];
+  if (options.length === 0) return null;
 
-  const totalExercises = await prisma.exercises.count({
-    where: { lesson_id: lessonId, is_delete: 0 },
-  });
-
-  const completedExercises = await prisma.answer.count({
+  const savedAnswer = await prisma.answer.findUnique({
     where: {
-      user_id: userId,
+      user_id_exercise_id: {
+        user_id: userId,
+        exercise_id: resolvedId,
+      },
       is_delete: 0,
-      submission_count: { gte: 1 },
-      exercises: {
-        lesson_id: lessonId,
-        is_delete: 0,
-      },
     },
   });
 
-  const allExercisesCompleted = totalExercises > 0 && completedExercises >= totalExercises;
-  const newLessonStatus = allExercisesCompleted ? 2 : 1;
+  const selectedLabel = normalizeOptionLabel(selectedAnswer || savedAnswer?.answer || '');
+  const correctIndex = options.findIndex((option: string) => option === exercise.answer);
+  const selectedIndex = selectedLabel.charCodeAt(0) - 65;
 
-  const existingLessonProgress = await prisma.lessons_progress.findUnique({
-    where: {
-      user_id_lesson_id: {
-        user_id: userId,
-        lesson_id: lessonId,
-      },
-    },
-  });
-
-  if (existingLessonProgress) {
-    const shouldUpdateStatus = newLessonStatus > existingLessonProgress.status;
-    await prisma.lessons_progress.update({
-      where: { id: existingLessonProgress.id },
-      data: {
-        status: shouldUpdateStatus ? newLessonStatus : existingLessonProgress.status,
-        last_learned_at: now,
-      },
-    });
-  } else {
-    await prisma.lessons_progress.create({
-      data: {
-        user_id: userId,
-        lesson_id: lessonId,
-        status: newLessonStatus,
-        mastery_level: 0,
-        last_learned_at: now,
-      },
-    });
+  if (correctIndex < 0 || selectedIndex < 0 || selectedIndex >= options.length) {
+    return null;
   }
 
-  const chapterIds = (await prisma.chapters.findMany({
-    where: { course_id: courseId, is_delete: 0 },
-    select: { id: true },
-  })).map(ch => ch.id);
-
-  const totalLessons = await prisma.lessons.count({
-    where: {
-      chapter_id: { in: chapterIds },
-      is_delete: 0,
-    },
+  const correctLabel = String.fromCharCode(65 + correctIndex);
+  const explanation = await generateChoiceExplanation({
+    exerciseContent: exercise.content,
+    knowledge: exercise.knowledge,
+    analysis: exercise.analysis,
+    correctOption: correctLabel,
+    selectedOption: selectedLabel,
+    options: options.map((option: string, index: number) => ({
+      label: String.fromCharCode(65 + index),
+      content: stripOptionLabel(option),
+      isCorrect: index === correctIndex,
+      isSelected: index === selectedIndex,
+    })),
   });
 
-  const completedLessons = await prisma.lessons_progress.count({
-    where: {
-      user_id: userId,
-      status: 2,
-      is_delete: 0,
-      lessons: {
-        chapter_id: { in: chapterIds },
-      },
-    },
-  });
-
-  const existingCourseProgress = await prisma.courses_progress.findUnique({
-    where: {
-      user_id_course_id: {
-        user_id: userId,
-        course_id: courseId,
-      },
-    },
-  });
-
-  if (existingCourseProgress) {
-    await prisma.courses_progress.update({
-      where: { id: existingCourseProgress.id },
-      data: {
-        completed_lessons: completedLessons,
-        total_lessons: totalLessons,
-        status: 1,
-        last_learned_at: now,
-      },
-    });
-  } else {
-    await prisma.courses_progress.create({
-      data: {
-        user_id: userId,
-        course_id: courseId,
-        completed_lessons: completedLessons,
-        total_lessons: totalLessons,
-        status: 1,
-        last_learned_at: now,
-      },
-    });
-  }
+  return explanation;
 }
 
 export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: UserAnswer | null) {
@@ -304,7 +353,7 @@ export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: Use
     difficulty: exercise.difficulty,
     metadata: exercise.metadata,
     hints: hints ? {
-      _meta: hints._meta
+      _meta: hints._meta,
     } : null,
     userAnswer: userAnswer ? {
       answer: userAnswer.answer || '',
@@ -313,119 +362,5 @@ export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: Use
       hint_level_used: userAnswer.hint_level_used,
       score: userAnswer.score,
     } : null,
-  };
-}
-
-export async function getExerciseHint(
-  exerciseId: string,
-  hintLevel: number,
-  userId: string
-): Promise<{ content: string; level: number; maxLevel: number } | null> {
-  const resolvedId = await resolveShortId('exercises', exerciseId);
-  if (!resolvedId) return null;
-
-  const exercise = await prisma.exercises.findUnique({
-    where: { id: resolvedId, is_delete: 0 },
-  });
-
-  if (!exercise || !exercise.hints) return null;
-
-  const hints = exercise.hints as any;
-  const maxLevel = hints._meta?.max_level || 0;
-
-  if (hintLevel < 1 || hintLevel > maxLevel) {
-    return null;
-  }
-
-  const hintKey = `level_${hintLevel}` as const;
-  const hintContent = hints[hintKey];
-
-  if (!hintContent) {
-    return null;
-  }
-
-  const existingAnswer = await prisma.answer.findUnique({
-    where: {
-      user_id_exercise_id: {
-        user_id: userId,
-        exercise_id: resolvedId,
-      },
-      is_delete: 0,
-    },
-  });
-
-  if (existingAnswer) {
-    await prisma.answer.update({
-      where: { id: existingAnswer.id },
-      data: {
-        hint_level_used: Math.max(existingAnswer.hint_level_used, hintLevel),
-      },
-    });
-  } else {
-    await prisma.answer.create({
-      data: {
-        user_id: userId,
-        exercise_id: resolvedId,
-        answer: '',
-        submission_count: 0,
-        feedback: '',
-        score: 0,
-        hint_level_used: hintLevel,
-      },
-    });
-  }
-
-  return {
-    content: hintContent,
-    level: hintLevel,
-    maxLevel: maxLevel,
-  };
-}
-
-export async function getAcquiredHints(
-  exerciseId: string,
-  userId: string
-): Promise<{ hints: Array<{ level: number; content: string }>; currentLevel: number; maxLevel: number } | null> {
-  const resolvedId = await resolveShortId('exercises', exerciseId);
-  if (!resolvedId) return null;
-
-  const exercise = await prisma.exercises.findUnique({
-    where: { id: resolvedId, is_delete: 0 },
-  });
-
-  if (!exercise || !exercise.hints) return null;
-
-  const userAnswer = await prisma.answer.findUnique({
-    where: {
-      user_id_exercise_id: {
-        user_id: userId,
-        exercise_id: resolvedId,
-      },
-      is_delete: 0,
-    },
-  });
-
-  const currentLevel = userAnswer?.hint_level_used || 0;
-  const hints = exercise.hints as any;
-  const maxLevel = hints._meta?.max_level || 0;
-
-  const acquiredHints = [];
-  
-  for (let i = 1; i <= currentLevel && i <= maxLevel; i++) {
-    const hintKey = `level_${i}` as const;
-    const hintContent = hints[hintKey];
-    
-    if (hintContent) {
-      acquiredHints.push({
-        level: i,
-        content: hintContent,
-      });
-    }
-  }
-
-  return {
-    hints: acquiredHints,
-    currentLevel,
-    maxLevel,
   };
 }

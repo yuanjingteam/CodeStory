@@ -66,14 +66,7 @@ export default function HomeHero() {
     }
   };
   return (
-    <section
-      className="  
-        bg-white 
-        py-8
-        transition-all duration-150 
-        relative z-10
-      "
-    >
+    <section className="bg-white pt-8 mb-4 transition-all duration-150 relative z-10">
       <div className="absolute z-[-1] top-10 left-10 w-32 h-32 bg-purple-200 rounded-full opacity-50" />
       <div className="absolute z-[-1] bottom-20 right-20 w-48 h-48 bg-green-200 rounded-full opacity-30" />
       <div className="absolute z-[-1] top-1/2 left-1/4 w-20 h-20 bg-yellow-200 rounded-full opacity-40" />
@@ -92,7 +85,7 @@ export default function HomeHero() {
             </h1>
 
             <p className="text-lg text-gray-600 mb-8">
-              与 AI Agent 一起学习编程，边学边练，快速掌握核心技能
+              与 AI 学习助手一起学习编程，边学边练，快速掌握核心技能
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
@@ -119,12 +112,12 @@ export default function HomeHero() {
       </div>
 
       {/* Stats Section */}
-      <div className="px-8 py-8 ">
+      <div className="px-6 py-8 ">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {statsList.map((stat, index) => (
             <div
               key={index}
-              className={`${stat.color} text-white p-4 border-2 border-black rounded-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)] text-center hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200`}
+              className={`${stat.color} text-white p-4 border-2 border-black rounded-xl shadow-[2px_2px_0_0_rgba(0,0,0,1)] text-center hover:translate-x-[8px] hover:translate-y-[8px] hover:shadow-none transition-all duration-200`}
             >
               <div className="text-3xl font-black">{stat.value}</div>
               <div className="text-sm font-bold">{stat.label}</div>

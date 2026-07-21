@@ -10,31 +10,6 @@ interface ContentProps {
 
 const EXPANDED_CHAPTERS_STORAGE_KEY = 'expandedChapters';
 
-function areEqual(prevProps: ContentProps, nextProps: ContentProps) {
-  return (
-    prevProps.data.course.id === nextProps.data.course.id &&
-    prevProps.data.course.progress === nextProps.data.course.progress &&
-    prevProps.data.currentLesson.id === nextProps.data.currentLesson.id &&
-    prevProps.data.catalog.length === nextProps.data.catalog.length &&
-    prevProps.data.catalog.every((chapter, index) => {
-      const nextChapter = nextProps.data.catalog[index];
-      return (
-        chapter.id === nextChapter.id &&
-        chapter.title === nextChapter.title &&
-        chapter.lessons.length === nextChapter.lessons.length &&
-        chapter.lessons.every((lesson, lessonIndex) => {
-          const nextLesson = nextChapter.lessons[lessonIndex];
-          return (
-            lesson.id === nextLesson.id &&
-            lesson.title === nextLesson.title &&
-            lesson.status === nextLesson.status
-          );
-        })
-      );
-    })
-  );
-}
-
 export default memo(function Content({ data, onLessonClick }: ContentProps) {
   const router = useRouter();
   
@@ -46,23 +21,19 @@ export default memo(function Content({ data, onLessonClick }: ContentProps) {
     return new Set<string>(chapters);
   };
 
-  const [expandedChapters, setExpandedChapters] = useState<Set<string>>(getStoredExpandedChapters);
-
-  useEffect(() => {
+  const getInitialExpandedChapters = () => {
     const stored = getStoredExpandedChapters();
-    if (stored.size === 0) {
-      const currentChapter = data.catalog.find((ch) =>
-        ch.lessons.some((l) => l.status === 1)
-      );
-      if (currentChapter) {
-        const initial = new Set([currentChapter.id]);
-        setExpandedChapters(initial);
-        localStorage.setItem(EXPANDED_CHAPTERS_STORAGE_KEY, JSON.stringify([...initial]));
-      }
-    } else {
-      setExpandedChapters(stored);
-    }
-  }, []);
+    if (stored.size > 0) return stored;
+
+    const currentChapter = data.catalog.find((chapter) =>
+      chapter.lessons.some((lesson) => lesson.status === 1)
+    );
+    return currentChapter ? new Set([currentChapter.id]) : stored;
+  };
+
+  const [expandedChapters, setExpandedChapters] = useState<Set<string>>(
+    getInitialExpandedChapters
+  );
 
   useEffect(() => {
     localStorage.setItem(EXPANDED_CHAPTERS_STORAGE_KEY, JSON.stringify([...expandedChapters]));
@@ -126,8 +97,6 @@ export default memo(function Content({ data, onLessonClick }: ContentProps) {
                     const isActive = lesson.id === data.currentLesson.id;
                     const isCompleted = lesson.status === 2;
                     const isInProgress = lesson.status === 1;
-                    const isNotStarted = lesson.status === 0;
-
                     return (
                       <div
                         key={lesson.id}

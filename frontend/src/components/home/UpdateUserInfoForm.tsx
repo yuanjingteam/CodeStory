@@ -37,7 +37,6 @@ export default function UpdateUserInfoForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       let avatarUrl = formData.avatar;
       if (avatarFile) {

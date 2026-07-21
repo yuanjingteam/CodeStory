@@ -55,15 +55,14 @@ export default function FormInput({
           className={`
             w-full px-4 py-3
             ${showPasswordToggle ? 'pr-24' : 'pr-16'}
-            border-2 border-black
+            border-2 
+            rounded-sm
+            border-gray-500
             bg-white
             font-bold
             outline-none
-            transition-all duration-200
-            shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
-            focus:translate-x-[2px]
-            focus:translate-y-[2px]
-            focus:shadow-none
+            transition-all 
+            duration-200
             ${error ? 'border-red-500' : ''}
             ${success ? 'border-green-500' : ''}
           `}

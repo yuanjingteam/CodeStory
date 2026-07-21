@@ -7,9 +7,25 @@ import type {
   LessonExercise,
 } from '../../types/lesson';
 
-export async function getLessonDetail(lessonId: string, userId: string): Promise<LessonDetailData | null> {
+interface LessonDetailContext {
+  courseId?: string;
+  chapterId?: string;
+}
+
+export async function getLessonDetail(
+  lessonId: string,
+  userId: string,
+  context: LessonDetailContext = {}
+): Promise<LessonDetailData | null> {
   const resolvedLessonId = await resolveShortId('lessons', lessonId);
   if (!resolvedLessonId) return null;
+
+  const resolvedChapterId = context.chapterId
+    ? await resolveShortId('chapters', context.chapterId)
+    : null;
+  const resolvedCourseId = context.courseId
+    ? await resolveShortId('courses', context.courseId)
+    : null;
 
   const lesson = await prisma.lessons.findUnique({
     where: { id: resolvedLessonId, is_delete: 0 },
@@ -26,6 +42,9 @@ export async function getLessonDetail(lessonId: string, userId: string): Promise
 
   const chapter = lesson.chapters;
   const course = chapter.courses;
+
+  if (resolvedChapterId && chapter.id !== resolvedChapterId) return null;
+  if (resolvedCourseId && course.id !== resolvedCourseId) return null;
 
   const courseProgress = await prisma.courses_progress.findUnique({
     where: {
