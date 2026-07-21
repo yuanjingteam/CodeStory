@@ -234,12 +234,14 @@ docker compose down
 
 ## 相关文档
 
-- [开发文档 V1.1](./docs/codeStory%20开发文档V1.1.md)
-- [双 Token 认证契约](./docs/CodeStory_双Token认证契约_V1.md)
-- [双 Token 与草稿验收清单](./docs/CodeStory_双Token与草稿验收清单.md)
-- [AI 助手模块需求](./docs/CodeStory_AI助手模块需求文档_V1.0.md)
-- [AI 助手开发路线](./docs/CodeStory_AI助手_V1开发路线.md)
-- [AI 助手验收清单](./docs/CodeStory_AI助手_V1验收清单.md)
+- [开发文档 V1.1](./docs/CodeStory_开发文档_V1.1.md)
+- [前端设计规范](./docs/CodeStory_前端设计规范.md)
+- [Docker 部署入门](./docs/DEPLOY_DOCKER.md)
+- [双 Token 认证契约（已过时）](./docs/CodeStory_双Token认证契约_V1.md)
+- [双 Token 与草稿验收清单（已过时）](./docs/CodeStory_双Token与草稿验收清单.md)
+- [AI 助手模块需求（已过时）](./docs/CodeStory_AI助手模块需求文档_V1.0.md)
+- [AI 助手开发路线（已过时）](./docs/CodeStory_AI助手_V1开发路线.md)
+- [AI 助手验收清单（已过时）](./docs/CodeStory_AI助手_V1验收清单.md)
 
 ## 贡献约定
 

@@ -1,6 +1,14 @@
 # CodeStory 双 Token 认证契约 V1
 
-> 状态：实施中，登录签发链路已完成，刷新与退出链路尚未实现  
+> **⚠️ 状态：已过时**  
+> **归档日期：2026-07-21**  
+> **归档原因：双 Token 认证链路已全部实现，包括前端自动刷新、页面初始化恢复和静默刷新。**  
+> **保留目的：历史参考，记录认证契约设计决策。**  
+> **当前依据：以代码实现为准（`backend/src/config/auth-*.ts`、`frontend/src/utils/auth-session.ts`、`frontend/src/components/auth/AuthBootstrap.tsx`）。**
+
+---
+
+> 原始状态：实施中，登录签发链路已完成，刷新与退出链路尚未实现  
 > 适用范围：CodeStory Web 前端、Express 后端、Redis  
 > 目标：兼顾登录安全、活跃用户体验和后续可维护性
 
