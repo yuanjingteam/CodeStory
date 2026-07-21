@@ -7,7 +7,7 @@ import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 import AuthBackground from '@/components/auth/AuthBackground';
 
 export default function AuthPage() {
-  const params = useParams();
+  const params = useParams();  // 读出当前 URL 的动态段
   const router = useRouter();
   const mode = params.mode as
     | 'login'
@@ -96,6 +96,18 @@ export default function AuthPage() {
               className="font-bold text-purple-600 hover:underline ml-1"
             >
               返回登录
+            </Link>
+          </p>
+        );
+      default:
+        return (
+          <p className="mt-4 text-center text-sm">
+            还没有账号？
+            <Link
+              href="/auth/register"
+              className="font-bold text-green-600 hover:underline ml-1"
+            >
+              立即注册
             </Link>
           </p>
         );
