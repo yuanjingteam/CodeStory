@@ -2,19 +2,37 @@
 
 > **✅ 状态：当前有效**
 >
-> **文档版本：** V2.0-plan.1
+> **文档版本：** V2.0-plan.4
 >
 > **创建日期：** 2026-07-21
 >
-> **最后核对：** 2026-07-21
+> **最后核对：** 2026-07-23
 >
-> **适用范围：** `backend/src/services/ai/**`、`backend/src/services/courses/**`、`backend/src/services/rag/**`（新增）、`backend/prisma/**`、`frontend/src/app/(admin)/exercises-manage/**`、`frontend/src/components/lessons/**`
+> **适用范围：** `backend/src/services/ai/**`、`backend/src/services/courses/**`、`backend/src/services/course-manage/**`、`backend/src/services/rag/**`（新增）、`backend/src/middleware/**`、`backend/prisma/**`、`frontend/src/app/(admin)/exercises-manage/**`、`frontend/src/components/lessons/**`、`docker-compose.dev.yml`、`docs/DEPLOY_DOCKER.md`
 >
 > **文档用途：** V2.0（AI 助手增强）阶段的开发、验收依据。
 >
 > **上游依据：** 需求与数据模型以 [`CodeStory_开发文档_V1.1.md`](./CodeStory_开发文档_V1.1.md) 为准；V1 AI 助手已实现范围见（已归档）`CodeStory_AI助手_V1开发路线.md`。
 >
-> **范围策略：** 务实渐进。本阶段聚焦 **AI 能力增强**：补齐 P0 的 AI 出题、引入 LangGraph 编排新增复杂流程、引入 RAG（pgvector 复用现有 PostgreSQL）。真沙箱判题与 V2.1 业务模块（通知、社群、测试、多端）**不在本计划内**，仅在第 8 节列为后续方向。
+> **范围策略：** 务实渐进。本阶段聚焦 **AI 能力增强**：先清掉三项阻塞前置，再补齐 P0 的 AI 出题、引入 RAG（pgvector），最后用 LangGraph 落地跨请求学习状态机。真沙箱判题与 V2.1 业务模块（通知、社群、测试、多端）**不在本计划内**，仅在第 8 节列为后续方向。
+>
+> **本版（plan.4）相对 plan.3 的实质变更：**
+>
+> 1. **撤销"新增 `requireAdmin`"前置项**：该中间件早在 2026-05-21（`cc80d44`）就已实现并挂载，plan.3 把一处本来正确的描述"修正"成了错误，并据此虚构出一项阻塞前置。阻塞前置由四项收敛为**三项（A/C/D）**。详见 1.1、3.6。
+> 2. **消解出题审核与状态机的互斥**：状态机 `QUESTION` 节点只从 `review_status='approved'` 的题库取题，不在用户请求中即时生成。详见 3.1.2、阶段 4。
+> 3. **收紧 2.4 的成绩约束措辞**：原"AI 不得直接覆盖用户成绩"把 V1 已上线的代码题 AI 评分也一并禁掉了，改为"不得在无人工复核的情况下下调成绩或判定为未掌握"。详见 2.4。
+> 4. **补齐幂等与一致性的落库形式**：`knowledge_chunks` / `knowledge_index_state` 补唯一约束；`ai_grading_reviews` 改存提交快照；索引状态先写 `pending` 再调 embedding。详见第 4 节、3.6。
+> 5. **`thread_id` 改绑一次"学习运行"**：`ai_chat_sessions` 新增 `current_run_id`，避免重学/多标签页落回旧 checkpoint。详见 3.1.2。
+> 6. **阶段 0 拆为 0A/0B/0C**，阶段 3 收缩为"评分复核闭环与掌握度落地"，限流从阶段 6 前移至阶段 2。详见第 5 节。
+> 7. **删除过时的 Prisma `postgresqlExtensions` 写法**（该预览特性已不在官方 preview 列表中）。详见 4.1。
+>
+> **plan.3 相对 plan.2 的实质变更（保留备查）：**
+>
+> 1. **LangGraph 用途反转**：不再用于出题子图与判分子图（二者都是单请求内跑完的线性流程，用不到 checkpointer / interrupt / cycle），改为驱动开发文档 V1.1 §3.2.1 的**跨请求学习状态机**。详见 3.1。
+> 2. **修正多处与代码不符的事实描述**（题目落库处、`exercises-manage` 页面状态、`knowledge` 等字段可用性、题型支持范围）。详见第 1 节。⚠️ 其中"角色中间件缺失"一条本身是错的，已由 plan.4 撤销。
+> 3. **生产数据库迁移至自有远程实例**，解除 pgvector 扩展权限不可控的风险。
+> 4. **阶段重排为 0～6**，并引入 vitest 覆盖纯函数，使部分验收门槛可自动回归。
+> 5. **新增 3.7 / 3.8 技术栈决策**：维持 Express 不迁移 NestJS（附量化依据与重评估触发条件）；确定"优先用成熟库、不自造轮子"的依赖清单（zod / textsplitters / AsyncLocalStorage / pino 等）。
 
 ---
 
@@ -22,34 +40,51 @@
 
 ### 1.1 结合代码的现状盘点
 
-V1.0 基础平台与 V1.1 AI 助手核心闭环**均已完成**：
+V1.0 基础平台与 V1.1 AI 助手核心闭环**已完成主干**，但后台内容管理与权限存在若干未完成项，V2.0 依赖它们：
 
 | 模块 | 状态 | 代码依据 |
 | --- | --- | --- |
 | 认证（注册/登录/验证码/找回/双 Token/Redis 会话） | ✅ 完成 | `services/auth/*`、`config/auth-*.ts` |
-| 课程/章节/小节/题目 后台 CRUD + 前台展示 | ✅ 完成 | `services/course-manage/*`、`app/(admin)/*`、`app/(main)/courses/**` |
-| 学习进度（课程/小节） | ✅ 完成 | `courses_progress`、`lessons_progress` |
+| 课程/章节/小节 后台 CRUD + 前台展示 | ✅ 完成 | `services/course-manage/*`、`app/(admin)/*`、`app/(main)/courses/**` |
+| 题目后台 CRUD | ⚠️ 部分完成 | 见下方「1.1.1 题目管理的三个缺口」 |
+| 权限控制（角色/RBAC） | ✅ 完成 | `middleware/auth.ts:123` 的 `requireAdmin`（未登录 401、`role !== 1` 返回 403）；四组管理路由已在 `app.ts:46-65` 统一挂 `[authMiddleware, requireAdmin]`。提交 `cc80d44`（2026-05-21） |
+| 学习进度（课程/小节） | ✅ 完成 | `courses_progress`、`lessons_progress`（但 `mastery_level` 见 1.2） |
 | 小节 AI 流式对话 + 会话/消息持久化 + 上下文裁剪 | ✅ 完成 | `services/ai/lesson-chat.service.ts`、`lesson-session.service.ts`、`routes/ai.ts` |
 | 三级提示 + 选择题 AI 解释 | ✅ 完成 | `services/courses/exercise-hint.service.ts`、`services/ai/choice-explanation.service.ts` |
 | 无沙箱代码 AI 评阅 + 结构化评分整合 | ✅ 基础完成 | `services/ai/code-review.service.ts`、`services/courses/code-grading.service.ts`、`code_submissions` 表 |
+
+#### 1.1.1 题目管理的三个缺口
+
+题目并没有独立的管理链路，它被当作小节的子表单处理，由此带来三个问题，均为 V2.0 的阻塞前置：
+
+1. **无独立管理页**：`frontend/src/app/(admin)/exercises-manage/page.tsx` 是占位页（"题目管理页面开发中…"），题目实际在 lessons-manage 的小节表单内编辑。
+2. **题目 ID 不稳定**：`services/course-manage/lesson-manage.ts` 的 `updateLesson` 先把该小节所有题目 `updateMany({ is_delete: 1 })`，再逐条 `create` 新 UUID。**每保存一次小节，题目 ID 全部变更**，会连带作废向量索引的 `source_id`、抹掉 `review_status` / `gen_metadata`，并孤儿化已有的 `answer` 与 `code_submissions`。
+3. **三个字段无写入链路**：`exercises.knowledge`、`analysis`、`source` 在 schema 中存在，但 `lesson-manage.ts` 的 create/update 都不写，前端表单也不采集，线上数据恒为 `null`。因此「按知识点出题」「题目向量索引含 knowledge」目前都没有输入。
 
 ### 1.2 技术底座现状
 
 - 后端已引入 `@langchain/openai` + `@langchain/core`，通过 OpenAI 兼容接口对接 **Qwen / 阿里云百炼**（`config/ai.ts`、`services/ai/_shared/model.ts`）。
 - **尚未引入 LangGraph**：当前所有 AI 流程为直接 `service` 链式调用。
-- `ai_chat_sessions.state`（INIT/EXPLAIN/QUESTION…）与 `hint_level` 字段在表中存在，**但代码未真正驱动状态机**——目前是"自由流式对话 + 关键词识别提示意图"（`routes/ai.ts` 的 `isHintIntent` / `resolveMessageType`）。
+- `ai_chat_sessions.state`（INIT/EXPLAIN/QUESTION…）与 `hint_level` 字段在表中存在，**但代码未真正驱动状态机**——目前是"自由流式对话 + 关键词识别提示意图"（`routes/ai.ts` 的 `isHintIntent` / `resolveMessageType`）。`getOrCreateLessonChatSession` 会把这两个字段读出来，但没有任何调用方消费或写入。
 - **尚未引入 RAG / 向量库**：小节正文整段塞入 Prompt（`lesson-chat.service.ts` 的 `lessonContent`）。
+- **角色中间件已存在且已挂载**：`middleware/auth.ts` 导出 `requireAdmin`，`app.ts` 的 `user-manage` / `courses` / `chapter` / `lessons` 四组管理路由均以 `[authMiddleware, requireAdmin]` 挂载。V2.0 新增的管理接口沿用它即可，**无需新写中间件**（plan.3 此处描述有误，已撤销对应前置项）。
+- **`lessons_progress.mastery_level` 是死字段**：仅在 `learning-progress.service.ts:62` 创建记录时写入 `0`，全项目无更新点。
+- **题型实际只支持两种**：`submitExercise` 只处理 `single_choice` 与 `code`；`fill` 在前端 `EXERCISE_TYPE_MAP` 有定义但被 `getExerciseTypeOptions()` 排除，`judge` 全项目不存在。提交一道 `fill`/`judge` 题会静默走完流程并得 0 分。
+- **生产数据库原为外部实例**（`docs/DEPLOY_DOCKER.md` 与 `.env.production.example` 的 `TEACHER_DB_HOST`），pgvector 扩展权限不可控。**V2.0 起迁移至自有远程 PostgreSQL**（阶段 0C）。该迁移**阻塞发布但不阻塞开发**——本地开发用 `pgvector/pgvector:pg16` 容器即可。
+  - 📌 **迁移进度（2026-07-22）**：已从内网实例导出全量数据与上传文件，连同该环境的 `.env` 一并复制到本机项目目录：`codestory_backup/codestory_db_20260722.dump`（pg_dump 自定义格式）、`codestory_backup/codestory_uploads_20260722.tar.gz`（`backend/uploads/` 归档）。**尚未导入自有远程实例**，连接串仍指向原外部库。剩余动作见阶段 0C。
+  - ⚠️ 该目录含生产数据与凭据，**不得入库**：`.dump` / `.backup` / `backups/` 已在 `.gitignore` 中，`codestory_backup/` 已于本次一并补入。
 
 ### 1.3 与文档/目标对齐后的缺口
 
-1. **AI 出题生成**：`CodeStory_开发文档_V1.1.md` 第 2.2.1 节标记为 **P0**（"AI 生成小节题目供管理员审核"），代码中**完全缺失**，无生成服务与路由；`exercises.source` 有 `ai/static` 取值但无生成链路与审核态。
-2. **LangGraph 编排**：未做（V1 主动延后至 V2）。
+1. **AI 出题生成**：`CodeStory_开发文档_V1.1.md` 第 2.2.1 节标记为 **P0**（"AI 生成小节题目供管理员审核"），代码中**完全缺失**，无生成服务与路由；`exercises.source` 字段存在但无任何写入方，现存题目该字段均为 `null`（既不是 `ai` 也不是 `static`）。
+2. **跨请求学习状态机**：未做。V1.1 §3.2.1 定义的 `INIT→EXPLAIN→QUESTION→WAIT_ANSWER→EVALUATE→HINT→REVIEW` 流程，代码中只有零散的单点能力，没有流程驱动。
 3. **RAG / 向量库 / 长期记忆**：未做（V1 主动延后至 V2）。
-4. 其余延后项：真沙箱判题、可观测性、限流、提交历史面板、自适应难度。
+4. **三项工程前置**：题目稳定 ID、`knowledge`/`analysis`/`source` 写入链路、`mastery_level` 写入规则（见 5.0）。
+5. 其余延后项：真沙箱判题、可观测性、限流、提交历史面板、自适应难度。
 
 ### 1.4 结论
 
-项目正处于 **"V1 AI 助手闭环完成 → V2 增强"的交界点**。本计划即 **V2.0：补齐 P0 出题缺口 + LangGraph 编排 + RAG**。
+项目正处于 **"V1 AI 助手闭环完成 → V2 增强"的交界点**，但后台内容管理与权限的地基有缺口，必须先补。本计划即 **V2.0：阻塞前置 → RAG → 补齐 P0 出题 → 评分增强 → LangGraph 学习状态机**。
 
 ---
 
@@ -57,26 +92,42 @@ V1.0 基础平台与 V1.1 AI 助手核心闭环**均已完成**：
 
 ### 2.1 目标
 
-在不破坏现有稳定闭环的前提下，让 AI 助手从"单轮对话 + 分散 service 调用"演进为 **"检索增强 + 可编排的多步 Agent 流程"**，并补齐管理员 AI 出题能力。
+在不破坏现有稳定闭环的前提下，让 AI 助手从"单轮对话 + 分散 service 调用"演进为 **"检索增强的答疑 + 可持久化恢复的引导式学习流程"**，并补齐管理员 AI 出题能力。
 
 ### 2.2 本计划范围内（In Scope）
 
+- 三项阻塞前置：题目稳定 ID 增量更新、`knowledge`/`analysis`/`source` 写入链路、`mastery_level` 写入规则（见 5.0）。
+- 生产数据库迁移至自有远程 PostgreSQL 实例，并启用 pgvector。
 - RAG 检索基础设施（pgvector + embedding + 统一检索层）。
 - 对话答疑 grounding、AI 出题 grounding、跨小节知识检索/推荐、错题与个性化复习 —— 四个 RAG 场景共用同一检索层，分优先级落地。
-- LangGraph 出题子图（P0 出题）与判分-提示-复盘子图。
-- 最小可观测性（`ai_call_logs`）与索引重建脚本、基础限流。
+- AI 出题（P0）与 `exercises-manage` 独立题目管理页（含审核流）。
+- 低置信度评分的人工复核闭环与申诉入口；代码题评分链重构为可复用形式（非代码题多维评分不在本期，见阶段 3）。
+- **LangGraph 学习状态机**：以新增的"引导式学习"模式落地，与现有自由对话并存。
+- 任务级可观测性（调用链路、成本、成功率、降级原因）与离线/在线效果评估。
+- 任务状态、短期对话记忆、用户学习记忆、课程知识库的分层治理。
+- 索引重建脚本、基础限流、vitest 纯函数测试。
 
 ### 2.3 明确不做（Out of Scope）
 
 - 真沙箱运行判题（保持无沙箱 AI 评阅）。
 - V2.1 业务模块：通知提醒、学习社群、测试系统、多端适配。
 - 消息队列（BullMQ）、复杂可观测性平台、系统化 Prompt Injection 测试集。
+- `fill` / `judge` 题型（平台当前判不了分，需先补判分与渲染，见第 8 节）。
+- 集成测试与端到端测试（vitest 只覆盖纯函数，见 5.2）。
 
 ### 2.4 全局约束（继承既有规则）
 
-- **现有 `streamLessonChat` 流式对话主逻辑保持不动**，RAG 只作为"上下文增强"接入。
+- **现有自由对话链路（`POST /ai/chat/stream` → `streamLessonChat`）保持不动**。RAG 只在上下文装配层（`lesson-context.service.ts`）接入；学习状态机是**新增的并行模式**，不改写这条链路。
 - 所有新增 AI 流程必须有**失败降级**，不得阻塞用户主流程（与 V1 一致）。
-- LangGraph 子图必须可回退到旧 service 路径（灰度开关）。
+- 引导式学习模式由功能开关 `AI_GRAPH_ENABLED` 控制，默认关闭；关闭时前端不出现入口，后端不注册相关路由。
+- AI 输出不得直接覆盖课程正文与标准答案；AI 生成的内容一律先落 `draft`，经管理员采用后才对学习端可见。
+- **AI 参与评分的边界**（plan.4 改写，原"不得直接覆盖用户成绩"措辞过宽，把 V1 已上线的行为也一并禁掉了）：
+  - **选择题**：对错由规则判定（`exercise.service.ts:135-149` 比对选项字符串），**AI 不参与正确性判定**，只生成解释；
+  - **代码题**：沿用 V1 现状，AI 评阅结果参与最终分计算（`calculateAiReviewedFinalScore`）；
+  - **红线**：AI 不得在无人工复核的情况下**下调已有成绩**或把用户**判定为未掌握**。规则结果与 AI 冲突、置信度低于阈值时进入 `pending_review`，复核结论回写后才更新 `mastery_level`。
+- PostgreSQL 中的课程、题目与学习记录是事实源；向量索引和模型生成内容均为可重建的派生数据。
+- 默认不把验证码、Token、联系方式等敏感信息写入 Prompt、向量库或 AI 调用日志。
+- 单请求内跑完的线性 AI 流程一律用 LCEL 组装，不为其引入图编排（见 3.1）。
 
 ---
 
@@ -84,26 +135,192 @@ V1.0 基础平台与 V1.1 AI 助手核心闭环**均已完成**：
 
 ### 3.1 LangGraph 落地边界
 
-**原则：只用于新增/需要重编排的多步复杂流程，不接管自由对话。**
+**原则：只用于跨请求、需要持久化恢复的学习状态机；单请求内跑完的线性流程一律用 LCEL。**
 
-- **出题子图（全新）**：`加载知识点上下文 → 检索(RAG) → 生成候选题 → 自检与去重 → 结构化产出 → 存为草稿待审`。
-- **判分-提示-复盘子图（重编排现有分散逻辑）**：`base 判定（规则/静态初判） → AI 结构化多维评分 → merge → 通过则 NEXT / 未通过则 hint_level+1 → 达到 3 级进入 REVIEW（给完整解析 + 标记未掌握）`。
-  - 该子图**不是从零重写评分**，而是把现有 `code-review.service` / `code-grading.service` / `exercise-hint.service` / `mastery_level` 用显式图收敛，并补齐"未通过→提示升级→REVIEW"的闭环。
-- 依赖包：`@langchain/langgraph`（新增）。子图状态用 LangGraph `StateGraph`；持久化对接现有 `ai_chat_sessions.state` / `hint_level` / `context` 字段，避免新增会话表。
-- **灰度开关**：环境变量 `AI_GRAPH_ENABLED`（默认关闭时走旧 service），保证可回退。
+#### 3.1.1 为什么反转用途（相对 plan.2 的决策变更）
+
+plan.2 计划把 LangGraph 用在"出题子图"和"判分-提示-复盘子图"上。复核后判定这两处**不适合**用图编排：
+
+| | 出题流程 | 判分-提示-复盘流程 |
+| --- | --- | --- |
+| 触发方式 | 管理员点一次按钮 | `POST /exercises/submit` 一次提交 |
+| 生命周期 | **一次 HTTP 请求内跑完** | **一次 HTTP 请求内跑完** |
+| 结构 | 检索→生成→自检→去重→产出，线性 | 判定→评分→merge→两个 if 分支 |
+| 是否有环 | 否（最多一次修复重试） | 否 |
+| 是否需跨请求恢复状态 | 否 | 否（提示等级从数据库读回） |
+
+LangGraph 的核心价值是 **checkpointer（跨请求持久化恢复）、interrupt（人在环中断）、cycle（自循环）**，上表两处一个都用不上。plan.2 自己也写了"持久化对接现有 `ai_chat_sessions` 字段，避免新增会话表"，等于主动绕开 checkpointer，剩下的只是一层 API 包装。而 `AI_GRAPH_ENABLED` 双路径灰度意味着同一份逻辑要维护新旧两条实现，在当前工程条件下是净负债。
+
+**真正需要 LangGraph 的，是 V1.1 §3.2.1 定义的学习状态机**：它跨多次 HTTP 请求，用户中途离开需要恢复到原状态，且带 `HINT → WAIT_ANSWER` 的回边。这正是 checkpointer 的用武之地。因此 V2.0 把 LangGraph 用在这里。
+
+#### 3.1.2 学习状态机（引导式学习模式）
+
+以**新增模式**的形式落地，与现有自由对话并存，用户可在小节 AI 面板切换。自由对话链路零改动。
+
+节点按 V1.1 §3.2.1 定义：
+
+```text
+INIT → EXPLAIN → QUESTION → WAIT_ANSWER → EVALUATE_BASE → AI_EVALUATE → MERGE_RESULT
+                                  ↑                                          │
+                                  │                            ┌─────────────┴─────────────┐
+                                  │                            ↓                           ↓
+                                  │                       通过 → NEXT                  未通过 → HINT
+                                  │                                                         │
+                                  └──── hint_level < 3 ─────────────────────────────────────┤
+                                                                                            │
+                                                                       hint_level = 3 → REVIEW
+                                                                    （完整解析 + 标记未掌握）
+```
+
+- 依赖包：`@langchain/langgraph` + `@langchain/langgraph-checkpoint-postgres`（均新增）。
+- **状态持久化用官方 `PostgresSaver`**，它自建 checkpoint 系列表，是图状态的**事实源**。
+- **推翻 plan.2 的「避免新增会话表」写法**：`ai_chat_sessions.state` / `hint_level` / `current_exercise_id` 降级为**业务投影**，仅供列表查询、进度展示与断点续学入口使用，每次节点转移后同步写入。手写 checkpointer 以省下几张表属于不必要的复杂度，不做。
+- 节点内部的模型调用复用阶段 3 的评分链，**不重复实现**。
+- **`QUESTION` 节点只从已审核题库取题**（plan.4 新增）：从当前小节 `review_status='approved'` 且未被该用户做过的题中选择，**不在用户请求中即时调用出题链**。原因是出题链的产物按 2.4 必须先落 `draft` 等管理员采用，若状态机直接消费就会绕过审核；若老实存 `draft` 则学习端查不到、状态机走不下去，两条路都不成立。题库不足时状态机进入"暂无可用题目"分支，转入 `REVIEW` 或结束，并在管理端提示该小节缺题。
+- **`thread_id` 绑定一次"学习运行"而非"用户 + 小节"**（plan.4 修正）：`ai_chat_sessions` 新增 `current_run_id`（UUID），`thread_id = current_run_id`。用户重新开始学习该小节时换发新 UUID，旧 checkpoint 自然沉淀为历史。若沿用"用户 + 小节"作为 `thread_id`，重学、重练与多标签页并发都会落回同一条旧线程状态。
+  - 推进接口带幂等键（或 state 版本号），重复提交只生效一次，避免双击让状态跳转两级。
+- **checkpoint 表不在 Prisma 迁移体系内**，备份/迁移/回滚脚本必须单独覆盖它们（见 4 节末与阶段 0C），否则回滚业务库时图状态会与业务数据错位。
+
+#### 3.1.3 出题链与评分链用 LCEL
+
+`@langchain/core` 已在依赖中，用 `RunnableSequence` / `RunnableBranch` / `.withFallbacks()` / `.withRetry()` 组装，与现有 `prompt.pipe(model)` 写法一致，不引入新依赖。
+
+| 链 | 调用方 A | 调用方 B |
+| --- | --- | --- |
+| 出题链 | 管理员出题接口（阶段 2） | **无**——状态机只从已审题库取题，不复用出题链（见 3.1.2） |
+| 评分链 | `POST /exercises/submit` 普通做题路径（阶段 3） | 状态机 `AI_EVALUATE` / `MERGE_RESULT` 节点（阶段 4） |
+
+#### 3.1.4 开关与流式协议
+
+- `AI_GRAPH_ENABLED`：**引导式学习模式的功能开关**（默认关闭，达到 5.1 门槛后开启），不再是同一逻辑的双路径灰度。关闭时前端不渲染模式入口，后端不注册状态机路由，自由对话与普通做题完全不受影响。
+- 流式协议向后兼容：`routes/ai.ts` 的 NDJSON 事件保留 `start` / `token` / `done` / `error` 语义不变，新增 `{ type: 'state', state, hintLevel }` 用于驱动前端状态条。前端 `frontend/src/app/api/ai/chat.ts` 的 `StreamEvent` 与 `components/lessons/chat/chatTypes.ts` 按新增字段扩展，旧事件解析逻辑不动。
 
 ### 3.2 RAG 架构
 
-- **存储：pgvector 复用现有 PostgreSQL**（不引入独立向量库）。
+- **存储：pgvector，跑在迁移后的自有远程 PostgreSQL 上**（不引入独立向量库）。
 - **Embedding：** 百炼 / DashScope embedding（OpenAI 兼容，与现有 Qwen 同源），用 `@langchain/openai` 的 `OpenAIEmbeddings`。新增配置 `AI_EMBEDDING_MODEL`、向量维度随模型确定（如 `text-embedding-v3` 为 1024）。
+  - ⚠️ **实现要点**：DashScope 的 OpenAI 兼容 embeddings 接口对单次请求的输入条数有限制（远小于 OpenAI），而 `OpenAIEmbeddings` 默认 `batchSize` 为 512，直接使用会报错。**阶段 0B 必须实测该上限并在配置中显式下调 `batchSize`**，测得的值写入本节。
 - **检索层：** 统一封装 `backend/src/services/rag/*`，对上层暴露 `indexSource()` / `retrieve(query, filter)` 接口，被"对话/出题/推荐/复习"四场景共用。
-- **索引对象：** 小节正文（按标题/段落切片）、题目（content + knowledge）、（可选）外部参考文档。
-- **索引同步：** 小节/题目在后台增删改（`services/course-manage/lesson-manage.ts`、`services/courses/exercise.service.ts` 等落库处）时**同步 upsert 向量**；另提供**全量重建脚本**兜底。**不引入消息队列**。
+- **索引对象：** 小节正文（按标题/段落切片）、题目（`content` + `knowledge`）、（可选）外部参考文档。
+  - 题目索引中的 `knowledge` 依赖**前置项 C**（字段写入链路）先完成，否则该维度无输入。
+- **索引同步：** 小节与题目的增删改**全部发生在 `services/course-manage/lesson-manage.ts`**（`createLesson` / `updateLesson` / `deleteLesson`）与阶段 2 新增的题目管理服务中，在这些落库处**同步 upsert 向量**；另提供**全量重建脚本**兜底。**不引入消息队列**。
+  - 📌 修正 plan.2：`services/courses/exercise.service.ts` **不含任何题目写入逻辑**（它是学习端的详情/提交/解释服务，只写 `answer` 与 `code_submissions`），此前把它列为索引挂载点是错的。
+  - 题目索引的 `source_id` 稳定性依赖**前置项 A**（题目稳定 ID）先完成，否则每次编辑小节都会使该小节全部题目索引失效。
+
+#### 3.2.1 基础设施前置
+
+- **生产库迁移至自有远程 PostgreSQL 实例**，并确认具备 `CREATE EXTENSION vector` 所需权限。迁移完成后同步更新 `.env.production.example` 的 `TEACHER_DB_HOST` 占位符与 `docs/DEPLOY_DOCKER.md` 中"数据库在远程数据库服务器上"的相关表述。
+- **开发环境**：`docker-compose.dev.yml` 的 `postgres:16-alpine` 换成 `pgvector/pgvector:pg16`（原镜像不含该扩展）。
 
 ### 3.3 索引与检索的降级策略
 
 - Embedding 或向量检索失败时，**回退到现有"整段小节正文"上下文**，保证对话不中断。
 - 检索为空/相关度低于阈值时，同样回退到原有上下文组装。
+
+### 3.4 上下文分层与生命周期
+
+V2.0 不再用单一 `context` 字段承载所有信息。不同上下文按用途、可信来源和生命周期分层，上层流程只读取完成当前任务所需的最小集合。
+
+| 层级 | 内容与事实源 | 存储位置 | 生命周期与写入规则 |
+| --- | --- | --- | --- |
+| **任务状态** | 当前图节点、`hint_level`、重试次数、工具结果摘要、待审核原因 | **事实源：** LangGraph `PostgresSaver` checkpoint，按 `thread_id = current_run_id` 定位；**投影：** `ai_chat_sessions.state / hint_level / current_exercise_id`（`current_run_id` 不是投影，它是指向 checkpoint 的线程键） | 随一次学习任务创建；任务完成后保留结构化摘要，不保存冗长中间 Prompt。只有图节点可以更新事实源，节点转移后同步写投影。投影只用于列表查询与断点续学入口，任何流程不得反向从投影恢复图状态。 |
+| **短期对话记忆** | 当前会话最近消息、历史摘要、用户本轮问题 | `ai_chat_messages` + 会话摘要 | 会话级；按 token 预算裁剪。模型回复不能作为课程事实，只能作为对话历史。 |
+| **用户学习记忆** | 错题、得分、提示使用情况、`mastery_level`、复习完成记录 | `answer`、`code_submissions`、`lessons_progress` 等业务表 | 跨会话保留；仅由可验证的学习行为更新，不把模型对用户的自由推断写成长期画像。支持按用户删除。 |
+| **课程知识库** | 已发布课程、小节、题目及受信任参考资料 | 业务表 + `knowledge_chunks` | 跟随源数据版本更新；向量块记录来源与版本，源内容删除后同步失效，可全量重建。 |
+
+上下文组装顺序固定为“权限与任务约束 → 用户问题 → 检索证据 → 必要的学习状态 → 短期历史”。检索内容使用明确边界包裹并标注来源，任何片段中出现的“忽略系统要求”等指令均视为资料正文，不作为可执行指令。日志默认只记录 token、哈希、来源 ID 和截断后的脱敏摘要，不完整落盘用户 Prompt。
+
+#### 3.4.1 `hint_level` 的双真值源消解
+
+当前提示等级的事实源是 `answer.hint_level_used`（由 `services/courses/exercise-hint.service.ts` 读写），而 `ai_chat_sessions.hint_level` 从未被写入。引入状态机后两者会同时存在，规则如下：
+
+| 路径 | 事实源 | 同步规则 |
+| --- | --- | --- |
+| 普通做题（`/exercises/hint`、`/exercises/submit`、自由对话中的提示意图） | `answer.hint_level_used` | 维持现状不变 |
+| 引导式学习模式 | 图 state 中的 `hint_level` | 每次 `HINT` 节点转移后，以 `Math.max` 语义写回 `answer.hint_level_used`，并同步 `ai_chat_sessions.hint_level` 投影 |
+
+两条路径都只允许提升等级、不允许回退，避免用户在两种模式间切换时提示进度被覆盖或重置。
+
+### 3.5 任务追踪与质量评估
+
+- 每次外部请求生成 `trace_id`，每次 LangGraph 执行生成 `graph_run_id`。模型调用、检索、节点重试、降级、人工审核和用户反馈都必须关联到同一条任务链路。
+- 评估分为两层：离线评测用于版本发布前回归，在线指标用于判断真实业务效果。Prompt、模型、检索参数和评测集均有版本号，报告必须能复现具体配置。
+- 离线评测集放在 `backend/evals/`，只保存脱敏或构造数据；统一脚本 `scripts/eval-ai-v2.ts` 输出 JSON 结果，并生成 `docs/CodeStory_V2.0_评估报告.md`。
+- 质量评估不使用“看起来不错”作为结论。答疑关注召回与证据支持，出题关注答案正确性、重复率和管理员采用率，判分关注与人工评分的一致性，工程侧关注任务成功率、P95 延迟、成本与降级率。
+
+### 3.6 权限、并发与人工复核
+
+- **权限：** AI 出题、审核、索引重建和评估报告接口仅管理员可调用；学习端只能访问自己的会话、提交和复习结果。
+  - 📌 **撤销 plan.3 的"需新建角色中间件"**：`middleware/auth.ts:123` 的 `requireAdmin` 早已存在（提交 `cc80d44`，2026-05-21），`app.ts:46-65` 也已给四组 `*-manage` 路由挂上 `[authMiddleware, requireAdmin]`。plan.3 的这条"修正"本身是错的，plan.2 原表述反而正确。
+  - **本计划新增的管理路由（出题、审核、索引重建、评估）一律以 `[authMiddleware, requireAdmin]` 挂载**，这是编码约定而非工程前置。资源归属校验仍在 controller 前完成。
+  - 保留一条权限回归用例（未登录 401 / 普通用户 403 / 管理员 200），随阶段 2 的新接口一起验收，见 5.2。
+- **幂等：**（plan.4 落到具体形式，不再是没有存储支撑的口号）
+  - **索引写入**靠唯一约束天然幂等：`knowledge_chunks` 唯一 `(source_type, source_id, source_version, chunk_index)`、`knowledge_index_state` 唯一 `(source_type, source_id)`，全部走 upsert（见第 4 节）。
+  - **批量出题不引入 `idempotency_key` 与请求表**：出题是单个管理员手点的按钮，重复生成的后果只是多几条 `draft` 草稿——不发布、不计分、可批量删除。用"提交中禁用按钮 + 草稿可批量删除"覆盖即可。为此新建 `ai_generation_requests` 表与当前规模不相称，如果后续出题改为异步批量任务再补。
+  - **审核状态流转用条件更新**（`WHERE review_status = 'draft'`），避免并发采用/拒绝相互覆盖；复核记录按提交快照去重，不重复建单。
+- **事务：** 模型输出先完成 Schema 校验、自检和去重，再用单个数据库事务写入候选题；事务失败不得保留半截草稿。
+  - **索引与业务数据的崩溃窗口**（plan.4 补充）：在业务事务**内**先把 `knowledge_index_state` 置为 `pending`，事务提交后再调用 embedding，成功后置 `ready`、失败置 `failed`。这样即使进程在调用 embedding 期间退出，也会留下 `pending` 记录被校验脚本捡回。**不得在数据库事务内等待模型接口**。
+- **超时与重试：** 仅对 embedding、检索和生成等幂等外部调用做有限重试，默认最多 2 次指数退避；总超时后进入既有降级路径。结构化解析失败允许一次修复重试，不无限循环。**实现上直接用 LangChain 的 `.withRetry()` / `.withFallbacks()`（已在依赖中），不自写重试与降级封装**（见 3.8）。
+- **人工复核：** 规则判定与 AI 评分冲突、结构化结果修复后仍不完整、命中 Prompt Injection 风险或评分置信度低于阈值时，提交进入 `pending_review`。复核完成前不给出惩罚性掌握度更新，并允许用户发起申诉。
+
+### 3.7 技术栈决策：维持 Express，不迁移 NestJS
+
+V2.0 期间**不更换后端框架**。该决策与开发文档 V1.1 §5.2 的原始选型一致（"Express 简单灵活，适合 MVP 快速开发；NestJS 更规范但较重"），此处补充复核后的量化依据。
+
+**代码规模分布**（后端 6981 行，不含 generated Prisma）：
+
+| 目录 | 行数 | 与框架的关系 |
+| --- | ---: | --- |
+| `services/` | 4170（60%） | 框架无关，纯业务逻辑 |
+| `utils/` + `types/` + `config/` | 1145 | 框架无关 |
+| `routes/` + `middleware/` | 894（13%） | Express 特有 |
+
+**为什么不换：**
+
+1. **浅迁移无收益、深迁移代价大。** 只把 `routes/` 改成 Controller 而 service 仍是导出函数，等于装了 NestJS 却不用 DI、Testing Module、Provider 作用域；要拿到收益就得把 4170 行 service 从 `export async function` 重构成 `@Injectable()` 类并改写全部调用点。
+2. **分层债务会放大改动面。** `services/course-manage/*` 四个文件实际是 Express controller（`(req, res)` 签名）而非 service，迁移前必须先拆——而它们正是**前置项 A** 要改的同一批文件，两件事叠加会让回归面积翻倍。
+3. **时机最差。** 阶段 0A/0B/0C 已经分别承载三项阻塞前置、AI 基础设施与数据库迁移，是全计划风险最集中的一段；且项目当前零测试覆盖，框架迁移引入的回归只能靠手工发现。
+4. **NestJS 的收益在本项目可低成本替代**：Guards → **已有的** `requireAdmin` 中间件；Interceptors → 包一层 `createChatModel` 统一埋点（阶段 6 已如此规划）；Pipes + class-validator → zod；DI + Testing Module → 阶段 0B 只测纯函数，不需要 DI。
+
+**重新评估的触发条件**（满足任一再议）：后端超过约 2 万行；3 人以上并行开发需要强制模块边界；需要引入多租户、审计、复杂事务传播等大量横切关注点。
+
+### 3.8 依赖选型：优先用成熟库，不自造轮子
+
+复核现有代码后确定的引入清单。原则是**只引入能直接消除现有手写实现或支撑 V2.0 验收门槛的库**，不为"看起来更规范"而增加依赖。
+
+#### P0 — 直接影响 V2.0 交付质量
+
+| 依赖 | 替代/支撑 | 理由 |
+| --- | --- | --- |
+| **zod** | 后端 `utils/validate.ts`（100 行）、`_shared/model.ts` 的 `extractJsonObject` | 一箭双雕：既做 API 入参校验，又做 LLM 结构化输出校验。当前 `extractJsonObject` 用正则抠 ` ```json ` 块、失败再取首个 `{` 到末个 `}`，**撑不起阶段 2「Schema 通过率 100%」的门槛**。改用 LangChain 的 `withStructuredOutput(zodSchema)`，把"解析 + 校验 + 修复重试"收敛为一处，阶段 3 评分链同样受益。 |
+| **`@langchain/textsplitters`** | 阶段 1 的"chunk 切片工具" | `RecursiveCharacterTextSplitter` / `MarkdownTextSplitter` 已覆盖计划中"按标题/段落切片"的需求，且带 overlap 与长度函数配置。**不要自己实现切片器**。 |
+| **`node:async_hooks` 的 `AsyncLocalStorage`**（Node 内置，零依赖） | `trace_id` 跨函数传递 | 3.5 要求"模型调用、检索、节点重试、降级、人工审核都关联到同一条任务链路"。若不用 ALS，就得给几乎每个 service 函数签名塞一个 `traceId` 参数，侵入性极大。用 ALS 在请求入口存一次，任意深度直接读取。 |
+| **pino + pino-http** | 后端 43 处 `console.log/error` | 开发文档 V1.1 §5.2 写了用 Winston 但**从未安装**。阶段 6 要靠 `trace_id` 还原完整链路，没有结构化日志会非常困难。选 pino 而非 Winston：更轻、更快、TS 支持更好，且 `pino-http` 与 ALS 配合天然。 |
+
+#### P1 — 明确省事
+
+| 依赖 | 替代/支撑 | 理由 |
+| --- | --- | --- |
+| **express-rate-limit + rate-limit-redis** | 阶段 6 的基础限流 | 项目已有 Redis，直接复用，无需自己实现令牌桶。 |
+| **html-to-text** | `lesson-context.service.ts` 的 `htmlToPlainText`（正则剥 HTML） | 小节正文由 tiptap 富文本编辑器产出，含表格、列表、代码块。正则剥标签会把结构信息糊掉，**直接影响 RAG 的切片质量与检索召回**。 |
+| **LangChain 内置 `.withRetry()` / `.withFallbacks()`** | 3.6 的"最多 2 次指数退避"与降级 | 已在依赖中，不需要自己写重试与降级封装。 |
+
+#### P2 — 顺手可换，不阻塞
+
+| 依赖 | 替代 | 备注 |
+| --- | --- | --- |
+| **jwt-decode** | `frontend/src/utils/jwt.ts` 手写的 base64url + `atob` + `decodeURIComponent` 解码 | 手写版本对非 ASCII payload 处理脆弱 |
+| **date-fns** | `frontend/src/utils/format.ts`（130 行）的 `.replace()` 链式格式化 | 现有实现依赖 `MM` 早于 `mm` 被替换的顺序巧合，且 `.replace()` 只替换首次出现 |
+| **react-hook-form + `@hookform/resolvers`** | `hooks/useExerciseDraft.ts`（142 行）+ `utils/exerciseValidation.ts`（52 行） | 阶段 2 要新建 `exercises-manage` 管理页，正好在新页面上使用，不必回改存量表单 |
+
+#### 明确不引入
+
+- **lodash**：现代 JS/TS 标准库已够用。
+- **class-validator / class-transformer**：属 NestJS 生态，Express 下 zod 更合适。
+- **moment**：已停止维护。
+- 独立向量库、BullMQ：见 2.3。
+
+> **关于前后端共享 schema**：`backend/` 与 `frontend/` 是两个独立的 pnpm 项目，仓库根目录没有 `package.json` 或 `pnpm-workspace.yaml`。因此两端各自安装 zod、各自定义 schema；**共享校验规则需要先搭 workspace，不在 V2.0 范围内**。
 
 ---
 
@@ -111,127 +328,310 @@ V1.0 基础平台与 V1.1 AI 助手核心闭环**均已完成**：
 
 | 变更 | 对象 | 说明 |
 | --- | --- | --- |
-| **新增表** `knowledge_chunks` | 向量索引 | `id, source_type(lesson/exercise/doc), source_id, chunk_index, content, embedding vector(N), metadata json, updated_at, is_delete`；建向量索引（HNSW 优先，或 IVFFlat）。 |
+| **新增表** `knowledge_chunks` | 向量索引 | `id, source_type(lesson/exercise/doc), source_id, source_version, chunk_index, content, content_hash, embedding vector(N), metadata json, updated_at, is_delete`；建向量索引（HNSW 优先，或 IVFFlat）。**唯一约束 `(source_type, source_id, source_version, chunk_index)`**——upsert 幂等的依据，重复索引不会产生重复块。 |
+| **新增表** `knowledge_index_state` | 索引一致性 | `source_type, source_id, source_updated_at, indexed_at, status(pending/ready/failed), error_code`；**唯一约束 `(source_type, source_id)`**，与源数据一一对应，支持发现陈旧、`pending` 悬挂或失败的索引。 |
 | **新增字段** `exercises.review_status` | 出题审核 | `varchar(20)`，取值 `draft/approved/rejected`；存量数据默认 `approved` 兼容前台展示，AI 生成默认 `draft`。前台只展示 `approved`。 |
-| **新增字段** `exercises.gen_metadata` | 出题溯源（可选） | `json`，记录生成模型、提示词版本、检索片段引用，供审核参考。 |
-| **新增表** `ai_call_logs`（P1） | 可观测性 | `id, scene, model, prompt_tokens, completion_tokens, latency_ms, status, error_code, created_at`。 |
+| **新增字段** `exercises.gen_metadata` | 出题溯源 | `json`，AI 生成题必填；记录 `trace_id`、模型、Prompt 版本、检索片段来源、生成参数与自检结果，供审核和复现。 |
+| **新增字段** `ai_chat_sessions.current_run_id` | 状态机线程 | `char(36)`，可空；当前学习运行的 UUID，即 LangGraph 的 `thread_id`。重新开始学习该小节时换发新值，旧 checkpoint 沉淀为历史（见 3.1.2）。 |
+| **新增表** `ai_grading_reviews` | 评分复核 | `id, trace_id, user_id, exercise_id, submission_type, code_submission_id(可空), submitted_answer, hint_level_used, exercise_snapshot json, trigger_reason, ai_score, rule_score, status(pending/reviewed), reviewer_id, reviewed_result, appeal_reason, created_at, reviewed_at`；统一承载代码题与非代码题的低置信度复核和申诉记录。 |
+| **新增表** `ai_call_logs`（P0） | 任务追踪 | `id, trace_id, graph_run_id, parent_call_id, scene, node, model, prompt_version, prompt_tokens, completion_tokens, estimated_cost, latency_ms, retry_count, fallback_type, status, error_code, metadata, created_at`；不默认保存原始 Prompt。 |
+| **新增表** `ai_feedback_events`（P1） | 在线效果 | `id, trace_id, user_id, scene, event_type(accepted/rejected/edited/clicked/helpful/appealed/reviewed), target_type, target_id, metadata, created_at`；用于计算采用率、点击率、申诉率等业务指标。 |
+| **新增表（由库自建）** LangGraph checkpoint 系列表 | 图状态持久化 | 由 `@langchain/langgraph-checkpoint-postgres` 的 `PostgresSaver.setup()` 创建与管理，**不纳入 Prisma schema**，不手工建模。保留窗口与清理策略见阶段 6。 |
+
+> `exercises.review_status` 的默认值需与**前置项 A**（稳定 ID 增量更新）配套：在全删重建的旧实现下，任何默认值都会出错——默认 `draft` 会让已审通过的题在管理员编辑小节后从前台消失，默认 `approved` 会让 AI 草稿被静默发布。必须先完成前置项 A，`review_status` 才有意义。
+
+> **为什么 `ai_grading_reviews` 存快照而不是外键**（plan.4 修正）：`answer` 表是 `@@unique([user_id, exercise_id])`（`schema.prisma:178`），每次提交都会覆盖 `answer` / `feedback` / `score`（`exercise.service.ts:245-254`），**非代码题不存在可引用的历史提交记录**；只有 `code_submissions` 是按次不可变的（带 `submission_no`）。因此复核单必须在创建时就把 `submitted_answer` / `hint_level_used` / 规则分 / AI 分 / 题目快照存下来，代码题另外用 `code_submission_id` 关联到不可变记录。
+>
+> 备选方案是新建不可变的 `exercise_submissions` 尝试记录表，但那要改动提交主路径与 `users.score` 聚合口径，代价明显超出复核功能本身的需要；如果将来要做提交历史面板（见第 8 节）再一并立项。
+
+> **LangGraph checkpoint 表的运维口径**（plan.4 补充）：这几张表由库自建、不在 `prisma/migrations/` 里，因此**备份、迁移、回滚脚本必须单独覆盖**。阶段 0C 的迁移演练需把它们纳入导出范围；回滚业务库时若不同步回滚 checkpoint，进行中的学习会话会指向已不存在的题目/进度。
 
 ### 4.1 pgvector 与 Prisma 接入要点
 
-- 数据库启用扩展：`CREATE EXTENSION IF NOT EXISTS vector;`（迁移中执行）。
-- Prisma：generator 开启 `postgresqlExtensions` 预览特性，datasource 声明 `extensions = [vector]`；`embedding` 列用 `Unsupported("vector(N)")`。
+- 数据库启用扩展：在**自定义 migration** 中执行 `CREATE EXTENSION IF NOT EXISTS vector;`（需自有实例的相应权限，见 3.2.1）。
+- Prisma：`embedding` 列用 `Unsupported("vector(N)")`，向量索引（HNSW/IVFFlat）同样写在自定义 migration 的原始 SQL 里。
+  - 📌 **不要开 `postgresqlExtensions` 预览特性、也不要写 `datasource extensions = [vector]`**（plan.3 此处写法已过时）：该预览特性已不在 Prisma 官方 preview features 列表中，现行文档给出的路径就是上面这条"自定义 migration + `Unsupported`"。项目使用 `prisma@6.19.3`。
 - 相似度查询用 **原始 SQL**（`prisma.$queryRaw`，`embedding <=> $1` 余弦/内积），Prisma 类型层不直接支持向量算子。
-- 迁移放在 `backend/prisma/migrations/` 下，延续现有命名（时间戳_描述）。
+  - ⚠️ 参数不能直接传 JS 数组：需拼成 `'[0.1,0.2,...]'` 字符串并**显式转型**（`$1::vector`），否则 Postgres 无法推断类型。
+- 迁移放在 `backend/prisma/migrations/` 下，延续现有命名（时间戳_描述）。当前仅有 3 个迁移，最新为 `20260611120000_add_ai_chat_messages_and_code_submissions`。
 
 ---
 
 ## 5. 阶段划分与执行计划
 
 > 里程碑制，每阶段含 **目标 / 范围 / 关键改动 / 完成标准 / 风险**。完成标准均为可验证项。
+>
+> 阶段编号相对 plan.2 已重排为 **0～6**：原「阶段 3 判分-提示-复盘子图」拆为**阶段 3（评分能力增强，无 LangGraph）**与**阶段 4（学习状态机）**；原阶段 4、5 顺延为阶段 5、6。
 
-### 阶段 0 — 技术底座与准备
+### 5.0 阶段 0A 的三项阻塞前置
 
-- **目标：** 打通 LangGraph 与 pgvector 的最小可运行环境。
+这三项不是 AI 功能，而是 V2.0 的地基。它们全部位于阶段 0A，**未完成前不得开始阶段 1 及之后的工作**。
+
+> 编号保留 A / C / D，与全文引用一致。plan.3 的**前置项 B（新增 `requireAdmin`）已撤销**——该中间件早已存在并挂载（见 1.1、3.6），只留一条权限回归用例在 5.2。
+
+| # | 前置项 | 落点 | 阻塞对象 |
+| --- | --- | --- | --- |
+| **A** | **题目改为稳定 ID 增量更新**：`updateLesson` 接收的题目按 ID diff 做 create / update / soft-delete，不再"全删重建"。请求体中已有 ID 的题目走 `update`，无 ID 的走 `create`，本次未出现的走软删。**同时把小节更新与题目写入包进单个 `prisma.$transaction`，并停止吞掉单题异常**——现实现（`lesson-manage.ts:278-320`）先 update 小节、再 `updateMany` 软删全部题目、然后逐条 `create` 且用 `try/catch` 只打日志（`:317-319`），任一题失败都会留下缺题的小节。 | `services/course-manage/lesson-manage.ts` 的 `updateLesson`；前端小节表单需回传题目 ID | 阶段 1 向量索引 `source_id`、阶段 2 审核态与 `gen_metadata`、阶段 5 错题历史 |
+| **C** | **补 `knowledge` / `analysis` / `source` 写入链路**：后端落库补这三个字段（手工录入 `source='static'`），前端小节表单与阶段 2 的题目管理页补对应输入项 | `lesson-manage.ts` 的 create/update、lessons-manage 页面题目编辑区 | 阶段 1 题目向量索引、阶段 2 按知识点出题 |
+| **D** | **明确并落地 `mastery_level` 的计算与更新时机**：定义取值区间、由哪些学习行为触发更新、与 `answer.score` / `hint_level_used` 的换算关系，并在进度更新处实际写入 | `services/courses/learning-progress.service.ts` | 阶段 3 未掌握标记、阶段 4 `REVIEW` 节点、阶段 5 薄弱点检索 |
+
+**前置项完成标准：**
+
+- A：连续两次保存同一小节，题目 ID 不变；`answer` / `code_submissions` 关联不断；删除某题后其余题目 ID 不受影响；**构造一道非法题目让写入失败，整次保存回滚，小节与其余题目均保持原状**（验证事务化）。
+- C：新建与编辑题目后，三个字段在数据库中为预期值而非 `null`。
+- D：完成一次答题后 `mastery_level` 按定义规则变化，且规则写入本文档 3.4 表格。
+
+### 阶段 0 — 技术底座与阻塞前置
+
+> plan.3 的阶段 0 同时压了生产库迁移、四项前置、pgvector、LangGraph、zod、日志、vitest 与 150 条评测样本，范围过重且风险类型混杂。plan.4 拆成 **0A / 0B / 0C** 三段，各自独立验收：**0A 与 0B 可并行**；**0C 不阻塞开发，只阻塞发布**（本地开发用 `pgvector/pgvector:pg16` 容器即可推进 0B 与阶段 1）。
+
+#### 阶段 0A — 数据完整性与权限核对
+
+- **目标：** 清掉三项阻塞前置，确认权限现状，不引入任何新依赖。
 - **范围：**
-  - 后端新增依赖 `@langchain/langgraph`；确认 `OpenAIEmbeddings` 可用。
-  - 数据库启用 `vector` 扩展；新增 `knowledge_chunks` 表与向量索引迁移。
-  - `config/ai.ts` 扩展 embedding 配置（`AI_EMBEDDING_MODEL` 等）；`.env.production.example` 同步补充。
-  - 新建 `services/rag/` 骨架（embedding client、chunk 切片工具、检索接口签名，先空实现 + 单元验证）。
-- **关键改动：** `backend/package.json`、`backend/prisma/schema.prisma`、新迁移、`config/ai.ts`、`services/rag/*`。
+  - **完成 5.0 的三项前置 A / C / D**（含 A 的事务化改造）。
+  - **权限回归核对**（不是开发任务）：以未登录 / 普通用户 / 管理员三种身份分别调用四组 `*-manage` 接口，确认 401 / 403 / 200，把结果记入验收清单。
+- **关键改动：** `services/course-manage/lesson-manage.ts`、`services/courses/learning-progress.service.ts`、前端 lessons-manage 小节表单（回传题目 ID + 三个字段输入项）。
+- **完成标准：** 5.0 三项前置的完成标准全部通过；权限三态回归通过。
+- **风险：** 前置项 A 改动触及现有小节编辑主流程 → 配套具名手工回归清单，先于任何索引工作落地。
+
+#### 阶段 0B — AI 基础设施与本地验证
+
+- **目标：** 在本地打通 pgvector 与 LangGraph checkpointer 的最小可运行环境，并落地 P0 依赖。
+- **范围：**
+  - `docker-compose.dev.yml` 的 postgres 镜像换为 `pgvector/pgvector:pg16`（原镜像不含该扩展）。
+  - 数据库启用 `vector` 扩展；新增 `knowledge_chunks`、`knowledge_index_state` 表、唯一约束与向量索引迁移；`ai_chat_sessions` 加 `current_run_id`。
+  - 后端新增依赖 `@langchain/langgraph`、`@langchain/langgraph-checkpoint-postgres`；确认 `OpenAIEmbeddings` 可用并**实测 DashScope 的 batchSize 上限**。
+  - `config/ai.ts` 扩展 embedding 配置（`AI_EMBEDDING_MODEL`、`AI_EMBEDDING_BATCH_SIZE` 等）。
+  - 新建 `services/rag/` 骨架（embedding client、基于 `RecursiveCharacterTextSplitter` 的切片封装、检索接口签名，先空实现 + 单元测试）。
+  - **按 3.8 引入 P0 依赖**：zod、`@langchain/textsplitters`、pino + pino-http、`AsyncLocalStorage` 请求上下文（`middleware/request-context.ts`）。
+  - **用 zod 重写 `extractJsonObject` 的调用点**：`code-review` / `choice-explanation` 改为 `withStructuredOutput(zodSchema)`，为阶段 2、3 的 Schema 门槛打底。
+  - **引入 vitest**（见 5.2），并把 `test` 脚本并入现有 `pnpm run check` 链路。
+  - 建立 `backend/evals/` 的**数据格式与统一执行脚本**，每个场景先备 **20 条**冒烟样本跑通链路并记录 V1 基线。**完整评测集不在本阶段堆齐**——答疑、出题、判分的样本量按 5.1 的门槛，各自在对应阶段验收前补到位（阶段 1 / 2 / 3）。
+- **关键改动：** `backend/package.json`、`backend/prisma/schema.prisma`、新迁移、`config/ai.ts`、`services/rag/*`、`middleware/request-context.ts`、`docker-compose.dev.yml`、`backend/evals/**`。
 - **完成标准：**
-  - `pnpm run build` 通过；一段测试文本能成功写入 `knowledge_chunks` 并用原始 SQL 查回 top-k。
-  - LangGraph 一个"hello world" 子图能在本地跑通并返回结果。
+  - `pnpm run build` 与 `pnpm run test` 通过；一段测试文本能成功写入 `knowledge_chunks` 并用原始 SQL 查回 top-k（含 `$1::vector` 显式转型）。
+  - 现有两处 AI 结构化输出（代码评阅、选择题解释）改用 zod schema 后行为不变，且非法输出能被 schema 拦下而非静默通过。
+  - 任一请求的 `trace_id` 能在不修改函数签名的前提下，被 service 深层的日志读到（`AsyncLocalStorage` 验证）。
+  - LangGraph 一个"hello world" 图能在本地跑通，**并验证 `PostgresSaver` 可跨进程恢复状态**（起进程 A 执行到中途、退出，进程 B 用同一 `thread_id` 续跑）。
+  - 实测并记录 DashScope embeddings 的单次输入条数上限，配置中已显式设置。
+  - 评测脚本能固定模型、Prompt、数据集版本运行，输出逐条结果与聚合指标；此阶段只建立基线，不为追求目标值修改样本。
 - **风险：** 向量维度与所选 embedding 模型不一致 → 在配置层固定维度并在迁移注释标明。
+
+#### 阶段 0C — 生产库迁移与回滚演练
+
+- **目标：** 把生产数据从内网实例迁到自有远程 PostgreSQL，并具备可执行的回滚路径。
+- **当前进度（2026-07-22）：** 全量导出**已完成**并复制到本机——`codestory_backup/codestory_db_20260722.dump`、`codestory_backup/codestory_uploads_20260722.tar.gz`，该环境的 `.env` 也已一并取回。**导入与切换尚未进行**，生产连接串仍指向原外部库。
+- **范围：**
+  - 在自有实例上 `pg_restore` 导入，核对行数与关键表（`users` / `courses` / `chapters` / `lessons` / `exercises` / `answer` / `code_submissions` / `ai_chat_*`）。
+  - 恢复 `backend/uploads/` 归档（或确认已改走 OSS，二选一并写入部署文档）。
+  - 确认实例具备 `CREATE EXTENSION vector` 权限，执行扩展与迁移。
+  - 切换连接串；更新 `.env.production.example` 的 `TEACHER_DB_HOST` 占位符与 `docs/DEPLOY_DOCKER.md` 中"数据库在远程数据库服务器上"的相关表述。
+  - **备份脚本纳入 LangGraph checkpoint 表**（它们不在 Prisma 迁移体系内，见第 4 节末）。
+  - 演练一次回滚：从备份恢复到演练库并跑通登录 + 做题主流程。
+- **关键改动：** `.env.production.example`、`docs/DEPLOY_DOCKER.md`、备份/恢复脚本。
+- **完成标准：**
+  - 生产连接串已指向自有实例，业务功能手工回归通过，旧库保留只读一段时间作为回滚点。
+  - 迁移前后行数校验一致；上传文件可正常访问。
+  - 回滚演练有记录（步骤、耗时、结果），checkpoint 表在备份范围内。
+- **风险：** 迁移期间数据不一致 → 迁移前后做行数与关键表校验；选低峰窗口执行，旧库不立即销毁。
+- ⚠️ **`codestory_backup/` 含生产数据与凭据，已加入 `.gitignore`，任何情况下不得提交或外发。**
 
 ### 阶段 1 — RAG 检索层 + 对话答疑 grounding
 
 - **目标：** 建成可复用检索层，并把它接入现有小节对话的上下文组装。
 - **范围：**
-  - 实现小节/题目的切片与 `indexSource()`；在小节/题目落库处挂同步 upsert。
+  - 实现小节/题目的切片与 `indexSource()`；在小节/题目落库处挂同步 upsert。切片直接用 `RecursiveCharacterTextSplitter`（配置分隔符与 overlap），**不自造切片器**；小节正文先用 `html-to-text` 转纯文本，替代现有的正则 `htmlToPlainText`。
   - 实现 `retrieve(query, {courseId/lessonId})`，返回带来源与相关度的片段。
   - 在 `lesson-context.service.ts` / `lesson-chat.service.ts` 的上下文组装处，用检索片段**替换/补充**"整段正文"注入（保留降级回退）。
   - 全量重建脚本 `scripts/reindex-knowledge.ts`。
-- **关键改动：** `services/rag/*`、`services/ai/lesson-context.service.ts`、`services/ai/lesson-chat.service.ts`、`services/course-manage/lesson-manage.ts`、`services/courses/exercise.service.ts`、新脚本。
+- **关键改动：** `services/rag/*`、`services/ai/lesson-context.service.ts`（上下文装配层）、`services/course-manage/lesson-manage.ts`（索引挂载点）、新脚本。
+  - 📌 `lesson-chat.service.ts` **只在 prompt 模板中新增一个证据槽位**，`streamLessonChat` 的流程逻辑不动 —— 与 2.4「自由对话链路保持不动」一致。plan.2 把它列为改动文件与该约束冲突，已修正。
+  - 📌 plan.2 列的 `services/courses/exercise.service.ts` 已移除，它不是题目落库处（见 3.2）。
 - **完成标准：**
   - 对同一问题，检索命中片段被注入 Prompt（日志可见来源片段）。
   - 关闭 embedding（模拟失败）时对话仍正常回复（降级验证）。
   - 跨小节提问能召回其它小节相关片段。
-- **风险：** 切片粒度影响召回质量 → 先用"标题+段落"策略，阶段 5 再依据验收调参。
+  - 编辑并保存小节后，该小节的向量索引被增量更新，且**题目索引的 `source_id` 保持不变**（依赖前置项 A）。
+  - 初始答疑集上 `Recall@5 ≥ 0.85`、回答证据支持准确率 `≥ 0.90`；未达标时不得把 RAG 接入答疑主路径。
+- **风险：** 切片粒度影响召回质量 → 先用"标题+段落"策略，阶段 6 再依据验收调参。
 
-### 阶段 2 — AI 出题生成（LangGraph 出题子图 + 管理员审核）⭐补齐 P0
+### 阶段 2 — AI 出题生成 + 题目管理页 ⭐补齐 P0
 
-- **目标：** 管理员可一键让 AI 基于知识点生成题目草稿，审核后入库。
+- **目标：** 管理员可基于知识点让 AI 生成题目草稿，在独立的题目管理页中审核后入库。
 - **范围：**
-  - LangGraph 出题子图：`检索(RAG) → 生成候选（choice/judge/fill/code） → 自检（格式/答案存在性/难度）与去重（对已有题目向量比对） → 结构化产出`。
+  - **出题链（LCEL，非图）**：`检索(RAG) → 生成候选 → 自检（格式/答案存在性/难度）与去重（对已有题目向量比对） → 结构化产出`。用 `RunnableSequence` 组装；结构化产出用 **`withStructuredOutput(zodSchema)`**（见 3.8），schema 即验收门槛的执行形式，解析失败允许一次修复重试。
+  - **题型收敛为 `single_choice` 与 `code`** —— 平台目前只有这两类能判分（`submitExercise`）。plan.2 写的 `choice/judge/fill/code` 中，`fill` 与 `judge` 生成出来平台判不了分，移入第 8 节后续方向。
   - 出题结果落 `exercises`，`source='ai'`、`review_status='draft'`，写 `gen_metadata`。
-  - 新增后端路由（如 `POST /manage/exercises/ai-generate`、审核态流转接口）。
-  - 前台查询过滤 `review_status='approved'`（改 `exercise.service` 查询条件）。
-  - 后台 `exercises-manage` 增加"AI 生成 → 预览 → 采用/编辑/拒绝"交互。
-- **关键改动：** `services/ai/exercise-gen/*`（新）、`routes/exercises.ts` 或新增管理路由、`services/courses/exercise.service.ts`、`frontend/src/app/(admin)/exercises-manage/**`。
+  - 新增题目管理后端路由（出题、列表、审核态流转）。现有 `routes/exercises.ts` 是学习端接口，**不复用**；新增管理路由按 3.6 挂 `[authMiddleware, requireAdmin]`（中间件已存在，直接用）。
+  - **基础限流前移到本阶段**（plan.3 原放在阶段 6）：出题接口是本计划第一个"一次点击 = 多次模型调用"的高成本入口，必须在开放前就有限流，不能等到收尾。用 `express-rate-limit` + `rate-limit-redis` 复用现有 Redis（见 3.8），阶段 6 只做扩面与告警。
+  - 前台查询过滤 `review_status='approved'`（改 `services/courses/lesson.service.ts` 与 `exercise.service.ts` 的查询条件）。
+  - **建成 `exercises-manage` 独立管理页**（详见 5.3）。
+- **关键改动：** `services/ai/exercise-gen/*`（新）、`services/course-manage/exercise-manage.ts`（新）、`routes/exercise-manage.ts`（新）、`services/courses/exercise.service.ts` 与 `lesson.service.ts` 的查询条件、`frontend/src/app/(admin)/exercises-manage/**`。
 - **完成标准：**
   - 管理员选定小节/知识点 → 返回 ≥1 道结构化候选题（含题干/选项/答案/解析）。
   - 生成题默认不在前台展示；审核"采用"后才对学习端可见。
   - AI 失败时给出明确错误且不产生脏数据（无半截草稿）。
-- **风险：** 生成题答案不可靠 → 强制"人工审核后才 approved"，AI 仅作参考（与文档定义一致）。
+  - 采用一道题后再编辑其所属小节，该题的 `review_status` 与 `gen_metadata` 不丢失（依赖前置项 A）。
+  - 以普通用户 Token 调用出题与审核接口返回 403，未登录返回 401，管理员正常。
+  - 出题接口限流生效：超过阈值返回可读错误而非继续消耗额度。
+  - 在不少于 100 道候选题（不足时全量）上统计：Schema 通过率 `100%`、人工复核答案正确率 `≥ 95%`、与现有题目重复率 `≤ 5%`；管理员采用率作为在线指标持续记录。
+- **风险：** 生成题答案不可靠 → 强制"人工审核后才 `approved`"，AI 仅作参考（与开发文档定义一致）。
 
-### 阶段 3 — LangGraph 判分-提示-复盘子图
+#### 5.3 `exercises-manage` 独立题目管理页
 
-- **目标：** 把分散的评估/提示/复盘逻辑收敛为显式可编排图，补齐 REVIEW 闭环。
+按项目既有约定（对齐 `courses-manage` / `chapters-manage` / `lessons-manage` / `users-manage` 的页面模式），把当前的占位页建成正式的题目管理页：
+
+- **题目列表**：按课程 / 章节 / 小节 / 题型 / 难度 / `source` / `review_status` 筛选，分页。
+- **AI 生成**：选定小节与知识点 → 调用出题接口 → 候选题预览。
+- **审核流**：采用 / 编辑后采用 / 拒绝，状态落 `exercises.review_status`；溯源面板展示 `gen_metadata`（模型、Prompt 版本、检索来源片段、自检结果）。
+- **待审队列视图**：跨小节汇总 `review_status='draft'` 的题目与等待时长（与 3.6「人工复核积压」呼应）。
+- **手工录入题目的增删改**：补齐 `knowledge` / `analysis` / `source` 输入项（与前置项 C 同源）。
+- 沿用现有 Neo-Brutalism 组件与后台页面布局，不新造视觉语言。
+
+lessons-manage 小节表单内的题目编辑区**保留现状**，仅按前置项 A、C 调整落库方式与字段。
+
+### 阶段 3 — 评分复核闭环与掌握度落地（无 LangGraph）
+
+- **目标：** 建立低置信度评分的人工复核闭环，并让 `mastery_level` 真正被写入。本阶段是纯 service 层工作，同时服务普通做题路径与阶段 4 的状态机。
 - **范围：**
-  - 判分-提示-复盘子图对接现有 `code-review` / `code-grading` / `exercise-hint`。
-  - 补齐"未通过 → `hint_level+1` → 达到 3 级 → REVIEW（完整解析 + `lessons_progress.mastery_level` 标记未掌握）"。
-  - 非代码题的结构化多维评分对齐文档 `AI_EVALUATE`（score/dimensions/feedback/suggestions）。
-  - 图状态持久化复用 `ai_chat_sessions.state / hint_level / context`。
-  - `AI_GRAPH_ENABLED` 灰度开关，默认可回退旧路径。
-- **关键改动：** `services/ai/eval-graph/*`（新）、`routes/exercises.ts`、`routes/ai.ts`、`services/courses/exercise.service.ts`、`services/courses/code-grading.service.ts`。
+  - **低置信度检测、`ai_grading_reviews` 复核队列（含提交快照）、管理员复核接口与用户申诉入口**；人工结论回写后再更新掌握度。这是本阶段的主体。
+  - 按前置项 D 定义的规则，在评分完成后实际更新 `lessons_progress.mastery_level`。
+  - 代码题评阅链改用 LCEL + zod schema 组装为可复用的**评分链**，供普通做题路径与阶段 4 状态机共用（见 3.1.3、3.8）。这是重构而非新能力。
+  - 📌 **删除 plan.3 的"非代码题结构化多维评分"**：平台只有两种题型——`code` 已经有多维评分（`functionalScore` / `qualityScore` / `hintDeduction`），`single_choice` 的对错是规则判定、解释已由 `choice-explanation.service` 提供。给一道选择题打"多个维度分"没有可解释的含义，验收也验不出东西。等 `fill` / `judge` 题型落地（见第 8 节）再谈非代码题多维评分。
+- **关键改动：** `services/ai/evaluate/*`（新）、`services/courses/exercise.service.ts`、`services/courses/code-grading.service.ts`、`services/courses/learning-progress.service.ts`、`routes/exercises.ts`、新增复核路由。
 - **完成标准：**
-  - 一道题从"提交→未通过→逐级提示→3 级 REVIEW→标记未掌握"全链路可复现。
-  - 开关关闭时行为与现网一致（回归无差异）。
-- **风险：** 重编排引入回归 → 灰度开关 + 保留旧 service + 对照验收用例。
+  - 代码题提交后返回结构化多维评分，字段齐全；选择题按规则判定返回结果与解释，行为与 V1 一致。
+  - 在不少于 **30** 条人工标注的**代码题**提交上，AI 与人工"通过/不通过"结论一致率 `≥ 90%`，百分制平均绝对误差 `≤ 10`；规则与 AI 冲突的样本全部进入人工复核，不自动更新为未掌握。
+  - 可完整复现"低置信度触发→进入待审→管理员维持/改判→掌握度更新"以及"用户申诉→复核"的状态流转，重复审核请求不会覆盖已生效结论。
+  - 评分合并逻辑有 vitest 覆盖（纯函数）。
+  - 现有做题主流程手工回归清单逐条通过（清单见验收文档）。
+- **风险：** 改动触及现网做题主路径 → 评分链失败时降级到现有静态初判 + AI 评阅路径，与 V1 行为一致。
 
-### 阶段 4 — 跨小节知识检索/推荐 + 错题个性化复习
+### 阶段 4 — LangGraph 学习状态机（引导式学习模式）
+
+- **目标：** 以新增模式落地 V1.1 §3.2.1 的跨请求学习状态机，用户中途离开可恢复到原状态。
+- **范围：**
+  - 用 `StateGraph` 实现 3.1.2 的节点与边；`PostgresSaver` 做 checkpoint，**`thread_id = ai_chat_sessions.current_run_id`**（一次学习运行一个 UUID，重新开始学习换新值，见 3.1.2）。
+  - `QUESTION` 节点**从当前小节 `review_status='approved'` 的题库选题**（不调出题链，见 3.1.2）；`AI_EVALUATE` / `MERGE_RESULT` 节点复用阶段 3 评分链；`HINT` 节点复用 `exercise-hint.service`；`REVIEW` 节点按前置项 D 规则标记未掌握。
+  - 推进接口带幂等键或 state 版本号，重复提交只生效一次。
+  - 节点转移后同步 `ai_chat_sessions.state / hint_level / current_exercise_id` 投影；`hint_level` 按 3.4.1 规则写回 `answer.hint_level_used`。
+  - 新增状态机路由（启动 / 推进 / 恢复），流式协议按 3.1.4 扩展 `state` 事件。
+  - 前端：小节 AI 面板增加模式切换与状态条（当前处于讲解 / 出题 / 等待作答 / 提示 / 复盘），按 `AI_GRAPH_ENABLED` 控制入口显隐。
+  - `AI_GRAPH_ENABLED` 默认关闭。
+- **关键改动：** `services/ai/learning-graph/*`（新）、`routes/ai.ts`、`services/ai/lesson-session.service.ts`、`frontend/src/app/api/ai/chat.ts`、`frontend/src/components/lessons/chat/**`、`frontend/src/components/lessons/Chat.tsx`。
+- **完成标准：**
+  - 完整走通 `INIT→EXPLAIN→QUESTION→WAIT_ANSWER→EVALUATE→未通过→HINT×3→REVIEW→标记未掌握`。
+  - **中断恢复可验证**：在 `WAIT_ANSWER` 状态关闭页面 / 重启后端进程，重新进入小节后能恢复到同一节点与同一 `hint_level`，不从头开始。
+  - **重学不串档可验证**：完成一次学习后重新开始该小节，`current_run_id` 换新、状态从 `INIT` 起步，不落回上一轮 checkpoint；两个标签页同时推进，状态只前进一步。
+  - 小节题库中 `approved` 题目不足时，`QUESTION` 节点走"暂无可用题目"分支而非报错或即时生成。
+  - `AI_GRAPH_ENABLED=false` 时，前端无模式入口，自由对话与普通做题行为与现网一致（手工回归清单逐条通过）。
+  - 前端旧版本客户端收到新增的 `state` 事件不报错（向后兼容验证）。
+  - 引导式学习模式的首 Token P95 单独计量并记录基线。
+- **风险：**
+  - 新链路与前后端协议同时变更 → 开关默认关闭；自由对话链路零改动；NDJSON 新事件向后兼容。
+  - checkpoint 与业务投影不一致 → 投影只写不读，任何恢复都从 checkpoint 走。
+
+### 阶段 5 — 跨小节知识检索/推荐 + 错题个性化复习
 
 - **目标：** 落地两个 RAG 高级场景。
 - **范围：**
   - 跨小节推荐：基于向量相似度，为当前小节/薄弱知识点推荐相关小节或知识片段。
-  - 错题个性化复习：结合 `answer`（错误记录/得分）+ `lessons_progress.mastery_level`，检索薄弱点相关内容，生成复习清单/重练建议。
+  - 错题个性化复习：结合 `answer`（错误记录/得分）+ `lessons_progress.mastery_level`（依赖前置项 D 已有实际写入），检索薄弱点相关内容，生成复习清单/重练建议。
   - 前端在小节页/个人中心呈现推荐与复习入口（沿用现有 Neo-Brutalism 组件，不新造视觉语言）。
 - **关键改动：** `services/rag/*`、`services/courses/learning-progress.service.ts`、新增推荐/复习路由、`frontend/src/components/lessons/**`、个人中心页面。
 - **完成标准：**
   - 对一个已产生错题的用户，能给出可点击的相关小节/复习项。
   - 推荐结果可解释（附相关度或来源）。
+  - 错题历史在管理员编辑过所属小节后依然可追溯（依赖前置项 A）。
+  - 离线标注集上推荐 `Precision@5 ≥ 0.70`；线上记录曝光、点击和复习完成事件，样本量达到 100 次曝光后再报告点击率与完成率，不用小样本百分比作为成效结论。
 - **风险：** 冷启动（无学习数据）→ 回退到难度/顺序的基础推荐。
 
-### 阶段 5 — 工程治理与收尾
+### 阶段 6 — 工程治理、评估与收尾
 
-- **目标：** 为 AI 增强能力补上最小可观测性与运维项，产出验收清单。
+- **目标：** 为 AI 增强能力补上可观测性、效果评估与运维项，产出可复现的验收结论。
 - **范围：**
-  - `ai_call_logs` 落地：各 AI 场景记录 token/耗时/成功失败。
-  - 索引重建/校验脚本完善；基础限流（对 AI 出题、chat 等高成本接口）。
+  - `ai_call_logs` 落地：各 AI 场景记录 trace、节点、token、估算成本、耗时、重试、降级与成功失败。
+  - `ai_feedback_events` 落地：记录管理员采用/编辑/拒绝、推荐点击、用户反馈与申诉结果。
+  - 索引重建/校验脚本完善（含 `pending` 悬挂索引的补偿）；**限流扩面**——阶段 2 已给出题接口落地 `express-rate-limit` + `rate-limit-redis`，本阶段扩到 chat 等其余高成本接口并接上告警。
+  - 埋点复用阶段 0B 建立的 `AsyncLocalStorage` 请求上下文与 pino 结构化日志，`ai_call_logs` 只负责落库，不再单独传递 `trace_id`。
+  - **LangGraph checkpoint 保留窗口与清理脚本**：定义保留时长（如已完成会话保留 30 天），提供可重复运行的清理脚本，避免 checkpoint 表无限增长。
+  - 建立最小指标看板或可重复运行的 SQL/脚本报告，覆盖质量、可靠性、性能、成本和人工接管情况；设置成功率、异常延迟和预算告警。
+  - 运行完整离线回归，冻结本次发布使用的数据集、Prompt、模型与检索参数版本，产出评估报告。
   - Prompt 文案与"无沙箱评阅≠严格判题"表述复核（延续 V1 验收要点）。
-  - 产出 `docs/CodeStory_V2.0_验收清单.md`。
-- **关键改动：** `services/**` 埋点、`middleware/` 限流、`scripts/*`、新增验收文档。
+  - 产出 `docs/CodeStory_V2.0_验收清单.md`，其中包含各阶段引用的**手工回归清单**（见 5.2）。
+- **关键改动：** `services/**` 埋点、`middleware/` 限流、`scripts/*`、`backend/evals/**`、新增验收与评估文档。
 - **完成标准：**
-  - 关键 AI 场景均有调用日志；限流命中返回可读错误。
+  - 任一请求可由 `trace_id` 还原“入口→检索/工具→模型→重试/降级→业务结果→用户反馈”链路；日志中不出现 Token、验证码和完整敏感 Prompt。
+  - 关键 AI 场景均有调用日志；限流命中返回可读错误。5 分钟窗口任务成功率低于 `95%`、P95 延迟超过该场景基线两倍或当日成本达到预算 `80%` 时触发告警。
+  - Chat 首 Token P95 `≤ 3s`，非流式 AI 任务 P95 `≤ 30s`；引导式学习模式的 P95 **单独计量**，不与自由对话首 Token 混算。若部署网络和模型能力无法满足，必须在验收清单中给出实测基线、原因与经确认的新预算，不得直接删除性能门槛。
+  - checkpoint 清理脚本可重复运行，清理后进行中的会话不受影响。
+  - `docs/CodeStory_V2.0_评估报告.md` 记录样本规模、指标定义、结果、失败案例与版本信息；第 5.1 节硬门槛全部满足后才允许默认打开 `AI_GRAPH_ENABLED`。
   - 验收清单可逐条手工跑通。
 - **风险：** 埋点侵入业务 → 用薄封装（包裹 `createChatModel` 调用处统一记录）。
+
+### 5.1 V2.0 质量门槛与指标口径
+
+以下数值是 V2.0 的初始上线门槛，不等同于已经取得的项目效果。阶段 0B 先用小样本记录 V1 基线，后续报告同时展示“基线、目标、实测值和样本量”，避免只展示最好的一次结果。涉及人工标注的样本由至少一名管理员复核；争议样本保留原始意见，不为提高分数删除。
+
+| 维度 | 指标定义 | V2.0 初始门槛 |
+| --- | --- | --- |
+| **答疑/RAG** | `Recall@5`；回答中的事实是否能被检索来源支持 | `Recall@5 ≥ 0.85`；证据支持准确率 `≥ 0.90` |
+| **AI 出题** | Schema 通过率；答案正确率；与现有题目的重复率；管理员采用率 | `100%`；`≥ 95%`；`≤ 5%`；采用率样本满 100 后目标 `≥ 60%` |
+| **AI 判分** | 与人工通过结论一致率；百分制平均绝对误差；进入人工复核后的漏自动处理数 | `≥ 90%`；`≤ 10`；`0` |
+| **推荐/复习** | 离线 `Precision@5`；线上点击率、复习完成率 | `Precision@5 ≥ 0.70`；线上指标报告样本量与置信区间，不设脱离基线的虚假硬目标 |
+| **任务可靠性** | AI 任务完成并返回可用结果的比例；未捕获失败率；降级率 | 成功率 `≥ 95%`；未捕获失败率 `≤ 1%`；降级率持续监控并按错误类型拆分 |
+| **状态机可恢复性** | 中断后能恢复到正确节点与 `hint_level` 的比例；checkpoint 与业务投影不一致数 | 恢复正确率 `100%`；不一致数 `0` |
+| **性能与成本** | Chat 首 Token P95；引导式学习首 Token P95（单独计量）；非流式任务 P95；每场景单任务平均成本与当日总成本 | `≤ 3s`；阶段 4 实测后设定基线；`≤ 30s`；阶段 0B 设定人民币预算，达到日预算 `80%` 告警、`100%` 限制非必要高成本任务 |
+| **人机协同** | AI 题目未审发布数；低置信度评分绕过复核数；申诉处理情况 | 前两项均为 `0`；申诉记录可追溯并统计维持/改判结果 |
+
+发布报告除聚合指标外，至少列出 10 个失败案例，按“检索失败、模型幻觉、结构化解析、规则冲突、权限/并发、外部服务”分类。修复后重新运行完整评测集，不只重跑失败样本。
+
+### 5.2 验证手段：vitest 与手工回归清单
+
+项目当前**没有任何测试框架**（前后端 `package.json` 均无 jest/vitest，backend 只有 4 个 `check:auth-*` 脚本）。因此本计划中所有"回归无差异"类门槛按下面两条落实，不留无法验证的空口标准：
+
+**1. 引入 vitest，只覆盖纯函数（阶段 0B）**
+
+范围严格限定为不依赖数据库与网络的纯函数：
+
+- 评分合并逻辑（`code-grading.service.ts` 的分数计算、`calculateAiReviewedFinalScore`）
+- 文本切片（`services/rag/*` 的 chunk 策略）
+- 结构化输出 Schema 校验与 `extractJsonObject`（`services/ai/_shared/model.ts`）
+- 去重相似度计算
+- 上下文裁剪（`lesson-session.service.ts` 的 `getRecentLessonChatMessages` 选择逻辑，需先提取为纯函数）
+
+新增 `test` 脚本并并入现有 `pnpm run check` 链路。**不做集成测试与端到端测试**（需搭测试数据库与夹具，阶段 0B 会明显变重，不在本计划范围）。
+
+**2. 涉及数据库与外部模型的部分，写具名手工回归清单**
+
+不再使用"行为与现网一致"这类不可执行的表述，改为逐条列出「接口 + 输入 + 预期输出」，随各阶段累积到 `docs/CodeStory_V2.0_验收清单.md`。至少覆盖：
+
+- 前置项 A：小节保存前后的题目 ID 与关联数据
+- 权限三态：未登录 / 普通用户 / 管理员分别调用各管理接口的状态码（401 / 403 / 200），覆盖现有四组 `*-manage` 与阶段 2 新增的出题、审核接口
+- 阶段 1：embedding 失败时的对话降级
+- 阶段 3：现有做题主流程（选择题 / 代码题，含提示扣分）
+- 阶段 4：`AI_GRAPH_ENABLED=false` 时自由对话与普通做题的完整路径
 
 ---
 
 ## 6. 依赖关系与并行建议
 
 ```text
-阶段0 ──┬── 阶段1 ── 阶段2(P0出题) ──┐
-        │                            ├── 阶段4 ── 阶段5
-        └── 阶段3(判分-提示-复盘) ────┘
+阶段0A(前置A/C/D+权限核对) ──┐
+阶段0B(AI 基础设施·可并行)  ──┴─┬── 阶段1(RAG检索层) ── 阶段2(P0出题) ──┬── 阶段4(学习状态机) ──┐
+                                │                                        │                       ├── 阶段6
+阶段0C(生产库迁移·只阻塞发布)   └── 阶段3(复核闭环+掌握度) ──────────────┴── 阶段5(推荐/复习) ───┘
 ```
 
-- **阶段 0** 是所有工作的前置。
+- **阶段 0A + 0B** 是所有开发工作的前置，**不可跳过**；两者互不依赖，**可并行**。
+- **阶段 0C**（生产库迁移）不阻塞开发——本地用 `pgvector/pgvector:pg16` 容器即可推进 0B 与阶段 1——但**必须在任何阶段上线前完成**。
 - **阶段 1 → 阶段 2**：出题 grounding 依赖阶段 1 的检索层。
-- **阶段 3** 只依赖阶段 0，**可与阶段 1/2 并行**。
-- **阶段 4** 依赖阶段 1（检索）与阶段 3（掌握度闭环）。
-- **阶段 5** 收尾，依赖前序全部。
-- 若人力有限，建议优先级顺序：**阶段 0 → 1 → 2（补 P0）→ 3 → 4 → 5**。
+- **阶段 3** 只依赖阶段 0A/0B，**可与阶段 1/2 并行**（纯 service 层，不碰检索）。
+- **阶段 4** 依赖阶段 2（`review_status` 字段与审核流——状态机只取已审题目）与阶段 3（评分链）。
+- **阶段 5** 依赖阶段 1（检索）与阶段 3（掌握度闭环），**可与阶段 4 并行**。
+- **阶段 6** 收尾，依赖前序全部。
+- 若人力有限，建议优先级顺序：**阶段 0A/0B → 1 → 2（补 P0）→ 3 → 0C（上线前）→ 5 → 4 → 6**。阶段 4 的学习状态机是本计划中价值最高但也最重的一块，若时间不足可整体延后而不影响其余阶段交付 —— 它是新增模式，不改动任何现有链路。
 
 ---
 
@@ -239,12 +639,23 @@ V1.0 基础平台与 V1.1 AI 助手核心闭环**均已完成**：
 
 | 风险类型 | 描述 | 应对 |
 | --- | --- | --- |
-| 回归风险 | LangGraph 重编排影响现网稳定闭环 | `AI_GRAPH_ENABLED` 灰度开关 + 保留旧 service + 对照验收用例 |
+| **数据库迁移** | 老师的外部库 → 自有远程实例，迁移期间数据不一致或停机 | 阶段 0C 内完成并验证（导出已于 2026-07-22 完成，见 1.2）；全量导出/导入后做行数与关键表校验；旧库保留只读一段时间作为回滚点 |
+| **前置项 A 改动** | 题目 ID 稳定化触及现有小节编辑主流程 | 先于任何索引/审核工作落地；配套具名手工回归清单；前端需同步回传题目 ID |
+| **状态机新链路** | 前后端协议同时变更，影响现网 | `AI_GRAPH_ENABLED` 默认关闭；自由对话与普通做题链路零改动；NDJSON 新事件向后兼容 |
+| **checkpoint 增长** | checkpoint 表随会话累积无限增长 | 定义保留窗口 + 可重复运行的清理脚本（阶段 6） |
+| **状态不一致** | checkpoint 与 `ai_chat_sessions` 投影不一致 | 投影只写不读；任何恢复一律从 checkpoint 走 |
 | 质量风险 | AI 出题答案不可靠 | 强制人工审核后才 `approved`，AI 仅作参考 |
 | 成本风险 | embedding + 生成 + 检索抬高调用成本 | 索引增量 upsert、检索 top-k 限制、`ai_call_logs` 监控 |
 | 数据一致性 | 小节/题目更新后向量陈旧 | 落库处同步 upsert + 全量重建脚本兜底 |
-| 依赖风险 | 向量维度与 embedding 模型不匹配 | 配置层固定维度，迁移注释标明，切换模型需重建索引 |
-| 降级缺失 | RAG/图失败阻塞主流程 | 每个新增环节强制回退到 V1 既有路径 |
+| 依赖风险 | 向量维度与 embedding 模型不匹配；DashScope batchSize 限制 | 配置层固定维度与 batchSize，迁移注释标明，切换模型需重建索引 |
+| 降级缺失 | RAG / 状态机失败阻塞主流程 | 每个新增环节强制回退到 V1 既有路径 |
+| 评测失真 | 小样本、挑选成功案例或修改样本迎合当前 Prompt | 固定版本化评测集，报告样本量和失败案例；修复后全量回归 |
+| 权限与并发 | 越权访问会话/审核接口，重复请求产生多份草稿或重复扣费 | 新增管理路由一律挂**已有的** `requireAdmin` + 资源归属校验 + 出题接口限流（阶段 2）+ 提交中禁用按钮 + 审核状态条件更新 |
+| 索引一致性崩溃窗口 | 业务事务提交后、embedding 返回前进程退出，索引状态丢失 | 事务内先写 `knowledge_index_state=pending`，事务外调 embedding；`pending` 悬挂由校验脚本捡回（见 3.6） |
+| 复核证据丢失 | 用户再次提交覆盖 `answer`，管理员看不到触发复核时的原始答案 | `ai_grading_reviews` 创建时即存提交快照，代码题另关联不可变的 `code_submissions`（见第 4 节） |
+| 注入与数据泄露 | 检索文档携带恶意指令，日志或向量库写入敏感数据 | 检索内容按不可信数据隔离；敏感字段禁止入模，日志默认脱敏且不保存完整 Prompt |
+| 人工复核积压 | 低置信度提交长期停留在 `pending_review` | 管理端展示待审数量与等待时长；超时只影响自动掌握度更新，不自动按错误处理 |
+| 验证能力不足 | 无测试框架导致"回归无差异"类门槛无法验证 | 阶段 0B 引入 vitest 覆盖纯函数 + 具名手工回归清单（见 5.2） |
 
 ---
 
@@ -253,9 +664,28 @@ V1.0 基础平台与 V1.1 AI 助手核心闭环**均已完成**：
 以下为 V2.0 之后的候选方向，仅登记不展开，避免范围膨胀：
 
 - **真沙箱运行判题**（容器隔离 + 测试用例执行），替代/补充无沙箱 AI 评阅。
+- **`fill` / `judge` 题型支持**：需先补齐 `submitExercise` 的判分分支、前端渲染组件与后台录入表单，之后 AI 出题才能扩展到这两类。开发文档 V1.1 需求表提到"判断题"、出题 Prompt 提到"填空"，但平台从未实现。
 - **V2.1 业务模块**：通知提醒、学习社群、测试系统、多端适配（见开发文档 V1.1 第 3.3 节）。
-- **消息队列（BullMQ）** 化的异步索引与批量出题。
+- **不可变的提交尝试记录表（`exercise_submissions`）与提交历史面板**：当前 `answer` 是"用户 + 题目"唯一记录，每次提交覆盖答案与反馈（`schema.prisma:178`、`exercise.service.ts:245-254`），只有代码题有按次不可变的 `code_submissions`。V2.0 用 `ai_grading_reviews` 存快照绕开了这个限制（见第 4 节）；要做完整提交历史需新建尝试表并改动 `users.score` 聚合口径，单独立项。
+- **消息队列（BullMQ）** 化的异步索引与批量出题（届时批量出题再补 `idempotency_key` 与请求记录表，见 3.6）。
 - 系统化 Prompt Injection 测试集与更完整的可观测性/成本治理。
+- 集成测试与端到端测试体系（本计划的 vitest 只覆盖纯函数）。
+
+- **迁移 NestJS**：本计划内明确不做（见 3.7），触发重评估的条件已在该节列出。
+- **前后端共享 zod schema**：需先把仓库改造成 pnpm workspace（当前根目录无 `package.json` / `pnpm-workspace.yaml`），之后两端校验规则可收敛到一处。
+- **短 ID 方案重构**：见 8.2。
+
+### 8.1 已登记的文档口径不一致（不在本计划内处理）
+
+- 开发文档 V1.1 §5.1 前端技术栈写"编辑器 = Monaco Editor"，实际实现用的是 `@uiw/react-codemirror` + `@codemirror/*`。属 V1.1 文档的历史遗留，登记备查，修订时机另定。
+- 开发文档 V1.1 §5.2 后端技术栈写"日志 = Winston"，实际未安装、全部使用 `console.*`。V2.0 阶段 0B 改为引入 pino（见 3.8），届时同步修订 V1.1 该行。
+
+### 8.2 已登记的既有缺陷（不在本计划内处理）
+
+以下为复核 V2.0 计划时发现的既有问题，**不属于 V2.0 范围**，登记以免遗忘：
+
+- **短 ID 存在碰撞风险且碰撞时静默返回错误记录。** `utils/idTransform.ts` 的 `uuidToShortId` 取 UUID 的前 2 位 + 后 3 位共 5 个十六进制字符（约 20 bit 空间），按生日问题估算单表约 1200 条记录时碰撞概率就接近 50%。而 `resolveShortId` 的 SQL 是 `... LIKE $1 || '%' || $2 ORDER BY created_at ASC LIMIT 1`，**碰撞时会静默返回创建最早的那条记录**，而非报错。此外 `REPLACE(id, '-', '')` 使该查询无法命中索引，为全表扫描。
+- 替代方案是 `nanoid` / `sqids` 等成熟短 ID 方案，但更换会影响所有对外 URL 与前端路由，改动面远超 V2.0 范围，需单独立项。V2.0 期间题目量增长会推高碰撞概率，建议在阶段 6 的监控中**增加一条短 ID 碰撞检测查询**作为观测手段。
 
 ---
 
