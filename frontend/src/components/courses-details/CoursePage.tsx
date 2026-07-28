@@ -17,7 +17,11 @@ export default function CourseDetails({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isLoggedIn || isLoading) return;
+    if (isLoading) return;
+    if (!isLoggedIn) {
+      router.replace('/auth/login');
+      return;
+    }
     const fetchCourseDetail = async () => {
       try {
         setLoading(true);
@@ -31,7 +35,7 @@ export default function CourseDetails({
     };
 
     fetchCourseDetail();
-  }, [courseId, isLoading, isLoggedIn]);
+  }, [courseId, isLoading, isLoggedIn, router]);
 
   if (loading) {
     return (
