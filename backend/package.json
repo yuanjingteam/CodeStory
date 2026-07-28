@@ -11,6 +11,8 @@
     "check:auth-token": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/check-auth-token.ts",
     "check:auth-rotation": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/check-auth-rotation.ts",
     "check:auth-logout": "ts-node -r dotenv/config -r tsconfig-paths/register scripts/check-auth-logout.ts",
+    "migrate:oss": "ts-node --files -r tsconfig-paths/register scripts/migrate-oss-assets.ts",
+    "backup:oss": "ts-node --files -r tsconfig-paths/register scripts/sync-oss-backup.ts uploads",
     "check:auth": "pnpm run check:auth-token && pnpm run check:auth-session && pnpm run check:auth-rotation && pnpm run check:auth-logout",
     "check": "pnpm run build && pnpm run check:auth"
   },

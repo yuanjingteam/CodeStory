@@ -1,7 +1,7 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { getOSSClient, OSS_BUCKET } from '../config/oss';
+import { getOSSClient, isOSSConfigured } from '../config/oss';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -39,14 +39,14 @@ export async function uploadToOSS(
   const filename = `${prefix}${timestamp}${ext}`;
   const objectKey = `uploads/${folder}/${filename}`;
 
-  if (OSS_BUCKET) {
+  if (isOSSConfigured()) {
     const client = getOSSClient();
-    const result = await client.put(objectKey, file.buffer, {
+    await client.put(objectKey, file.buffer, {
       headers: {
         'Content-Type': file.mimetype,
       },
     });
-    return result.url;
+    return `/${objectKey}`;
   }
 
   return saveToLocal(file, folder, filename);
@@ -66,7 +66,7 @@ function saveToLocal(
 }
 
 export async function deleteFromOSS(objectKey: string): Promise<void> {
-  if (OSS_BUCKET && objectKey.startsWith('uploads/')) {
+  if (isOSSConfigured() && objectKey.startsWith('uploads/')) {
     try {
       const client = getOSSClient();
       await client.delete(objectKey);

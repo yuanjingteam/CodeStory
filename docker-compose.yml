@@ -1,12 +1,40 @@
 services:
+  postgres:
+    image: pgvector/pgvector:0.8.2-pg16-bookworm
+    container_name: codestory-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_APP_USER: ${POSTGRES_APP_USER}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+      - ./docker/postgres/init-app-user.sh:/docker-entrypoint-initdb.d/10-init-app-user.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - codestory-data-network
+
   redis:
     image: redis:7-alpine
     container_name: codestory-redis
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
     restart: unless-stopped
     networks:
-      - codestory-network
+      - codestory-data-network
 
   backend:
     build:
@@ -38,14 +66,17 @@ services:
       OSS_ACCESS_KEY_ID: ${OSS_ACCESS_KEY_ID}
       OSS_ACCESS_KEY_SECRET: ${OSS_ACCESS_KEY_SECRET}
       OSS_BUCKET: ${OSS_BUCKET}
-      OSS_DOMAIN: ${OSS_DOMAIN}
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./backend/uploads:/app/uploads
     restart: unless-stopped
     networks:
-      - codestory-network
+      - codestory-edge-network
+      - codestory-data-network
 
   frontend:
     build:
@@ -69,26 +100,31 @@ services:
       - backend
     restart: unless-stopped
     networks:
-      - codestory-network
+      - codestory-edge-network
 
   nginx:
     image: nginx:1.27-alpine
     container_name: codestory-nginx
     ports:
-      - '18080:80'
+      - '${HTTP_BIND_ADDRESS:-0.0.0.0}:${HTTP_PORT:-80}:80'
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./backend/uploads:/app/uploads:ro
     depends_on:
       - frontend
       - backend
     restart: unless-stopped
     networks:
-      - codestory-network
+      - codestory-edge-network
 
 volumes:
+  postgres_data:
+    external: true
+    name: codestory_postgres_data
   redis_data:
 
 networks:
-  codestory-network:
+  codestory-edge-network:
     driver: bridge
+  codestory-data-network:
+    driver: bridge
+    internal: true

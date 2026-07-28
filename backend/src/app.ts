@@ -1,10 +1,11 @@
+import './config/env';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import path from 'path';
 import { corsOptions } from './config/cors';
 import errorHandler from './middleware/errorHandler';
 import { authMiddleware, requireAdmin } from './middleware/auth';
+import { serveUploadFromOSS } from './middleware/serve-upload';
 import {
   authRouters,
   coursesRouter,
@@ -19,13 +20,6 @@ import {
   aiRouter,
 } from './routes/index';
 
-dotenv.config();
-
-// Load environment variables in development
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config({ path: './.env' });
-}
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -36,7 +30,11 @@ app.use(express.json());
 
 // API routes
 app.use('/api/v1/auth', authRouters);
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use(
+  '/uploads',
+  serveUploadFromOSS,
+  express.static(path.join(process.cwd(), 'uploads'))
+);
 app.use('/api/v1/courses', coursesRouter);
 app.use('/api/v1/home', homeRouter);
 app.use('/api/v1/profile', authMiddleware, profileRouter);

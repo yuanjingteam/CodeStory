@@ -9,7 +9,7 @@ ENV NEXT_PUBLIC_UPLOAD_PROXY_URL=$NEXT_PUBLIC_UPLOAD_PROXY_URL
 
 WORKDIR /app
 
-RUN npm install -g pnpm@10.23.0
+RUN corepack enable
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 

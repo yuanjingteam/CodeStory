@@ -19,11 +19,6 @@ const nextConfig: NextConfig = {
         port: uploadUrlObj.port,
         pathname: '/uploads/**',
       },
-      {
-        protocol: 'https',
-        hostname: 'codestory.oss-cn-beijing.aliyuncs.com',
-        pathname: '/uploads/**',
-      },
     ],
   },
   async rewrites() {
