@@ -166,7 +166,7 @@ export default function ForgotPasswordForm() {
 
       if (res.code === 200) {
         localStorage.removeItem(STORAGE_KEY);
-        toast.success('密码重置成功');
+        toast.success('如果该邮箱已注册，密码已重置');
         setTimeout(() => {
           router.push('/auth/login');
         }, 500);
