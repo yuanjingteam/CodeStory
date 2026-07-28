@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { FiUser } from 'react-icons/fi';
+import * as Tooltip from '@radix-ui/react-tooltip';
 
 export interface Column<T> {
   id: string;
@@ -61,35 +62,70 @@ export default function DataTable<T>({
 
   const renderEllipsisText = (text: unknown) => {
     const displayText = String(text ?? '');
+
+    if (displayText.length <= 20) {
+      return <span className="block truncate">{displayText}</span>;
+    }
+
     return (
-      <div className="relative group overflow-hidden">
-        <span className="block truncate" title={displayText}>
-          {displayText}
-        </span>
-
-        {displayText.length > 20 && (
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-black text-white text-sm font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] whitespace-nowrap z-50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild>
+          <span
+            tabIndex={0}
+            className="block truncate focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
+          >
             {displayText}
-
-            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-black"></div>
-          </div>
-        )}
-      </div>
+          </span>
+        </Tooltip.Trigger>
+        <Tooltip.Portal>
+          <Tooltip.Content
+            sideOffset={6}
+            className="z-[70] max-w-xs border-2 border-zinc-950 bg-zinc-950 px-3 py-2 text-sm font-bold text-white shadow-[3px_3px_0_0_#facc15]"
+          >
+            {displayText}
+            <Tooltip.Arrow className="fill-zinc-950" />
+          </Tooltip.Content>
+        </Tooltip.Portal>
+      </Tooltip.Root>
     );
   };
 
   if (loading) {
     return (
-      <div className="bg-white border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] flex items-center justify-center ">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent"></div>
-          <p className="mt-4 text-gray-600 font-bold">加载中...</p>
+      <div
+        className="flex min-h-0 flex-1 flex-col overflow-hidden border-2 border-zinc-500 bg-white"
+        role="status"
+        aria-label="正在加载表格数据"
+      >
+        <div
+          className="grid border-b-4 border-zinc-950 bg-zinc-200 px-4 py-3"
+          style={getGridTemplateStyle()}
+        >
+          {columns.map((column) => (
+            <div key={column.id} className="px-2 py-1">
+              <div className="h-4 w-16 animate-pulse bg-zinc-300" />
+            </div>
+          ))}
         </div>
+        {[0, 1, 2, 3, 4].map((row) => (
+          <div
+            key={row}
+            className="grid border-b-2 border-zinc-200 px-4 py-3"
+            style={getGridTemplateStyle()}
+          >
+            {columns.map((column) => (
+              <div key={column.id} className="px-2 py-1">
+                <div className="h-4 w-3/4 animate-pulse bg-zinc-100" />
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     );
   }
 
   return (
+    <Tooltip.Provider delayDuration={300}>
     <div className=" bg-white border-2 rounded-sm border-gray-500  overflow-hidden flex flex-col flex-1 min-h-0">
       <div className="overflow-y-auto flex-1">
         {/* 表头 */}
@@ -147,5 +183,6 @@ export default function DataTable<T>({
         )}
       </div>
     </div>
+    </Tooltip.Provider>
   );
 }

@@ -1,6 +1,9 @@
 'use client';
 import React from 'react';
 import { FiSearch, FiFilter } from 'react-icons/fi';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import NativeSelect from '@/components/ui/NativeSelect';
 
 export interface FilterOption {
   label: string;
@@ -47,38 +50,47 @@ export default function SearchFilter({
 
   const renderFilter = (filter: FilterField) => (
     <div key={filter.id} className="flex items-center gap-2">
-      <label className="font-bold text-gray-700 whitespace-nowrap">
+      <label
+        htmlFor={`filter-${filter.id}`}
+        className="whitespace-nowrap font-bold text-zinc-700"
+      >
         {filter.label}
       </label>
       {filter.type === 'select' && filter.options && (
-        <select
+        <NativeSelect
+          id={`filter-${filter.id}`}
           value={String(filter.value ?? '')}
           onChange={(e) => handleFilterChange(filter.id, e.target.value)}
-          className="border-2 rounded-md border-gray-300 px-3 py-1 font-bold bg-white "
+          className="w-auto min-w-28 py-1.5"
         >
-          {filter.options.map((option, optIndex) => (
-            <option key={optIndex} value={option.value}>
+          {filter.options.map((option) => (
+            <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       )}
       {filter.type === 'input' && (
-        <input
+        <Input
+          id={`filter-${filter.id}`}
           type="text"
           placeholder={filter.placeholder}
           value={String(filter.value ?? '')}
           onChange={(e) => handleFilterChange(filter.id, e.target.value)}
-          className="border-2 border-black px-3 py-1 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
+          className="w-auto min-w-36 py-1.5"
         />
       )}
       {filter.type === 'checkbox' && (
-        <label className="flex items-center gap-2 cursor-pointer">
+        <label
+          htmlFor={`filter-${filter.id}`}
+          className="flex cursor-pointer items-center gap-2"
+        >
           <input
+            id={`filter-${filter.id}`}
             type="checkbox"
             checked={Boolean(filter.value)}
             onChange={(e) => handleFilterChange(filter.id, e.target.checked)}
-            className="w-4 h-4 border-2 border-black accent-purple-600"
+            className="size-5 accent-yellow-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"
           />
           <span className="text-sm">是</span>
         </label>
@@ -87,29 +99,31 @@ export default function SearchFilter({
   );
 
   return (
-    <div className="bg-white border-2 rounded-sm border-gray-300  p-3">
+    <div className="border-2 border-zinc-300 bg-white p-3">
       <div className="flex flex-wrap gap-4 items-center">
         {filters.map(renderFilter)}
 
         <div className="relative flex-1 max-w-md">
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
+          <Input
             type="text"
+            aria-label="搜索"
             placeholder={searchPlaceholder}
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border-2 rounded-md border-gray-500 font-bold bg-gray-100 focus:outline-none focus:bg-white transition-colors"
+            className="bg-zinc-50 pl-10 focus-visible:bg-white"
           />
         </div>
 
         {onApplyFilters && filters.length > 0 && (
-          <button
+          <Button
             onClick={onApplyFilters}
-            className="flex items-center gap-1 px-4 py-2 rounded-sm bg-purple-500 text-white font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all shrink-0"
+            variant="primary"
+            leftIcon={<FiFilter className="size-4" aria-hidden="true" />}
+            className="shrink-0"
           >
-            <FiFilter className="w-4 h-4" />
             筛选
-          </button>
+          </Button>
         )}
 
         {actionSlot && <div className="ml-auto shrink-0">{actionSlot}</div>}

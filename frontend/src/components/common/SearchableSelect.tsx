@@ -1,6 +1,16 @@
 'use client';
-import { useState, useRef, useEffect, useMemo } from 'react';
-import { FiChevronDown, FiSearch } from 'react-icons/fi';
+
+import {
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from 'react';
+import * as Popover from '@radix-ui/react-popover';
+import { FiCheck, FiChevronDown, FiSearch } from 'react-icons/fi';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 
 export interface SearchableSelectOption {
   label: string;
@@ -16,6 +26,7 @@ interface SearchableSelectProps {
   disabled?: boolean;
   loading?: boolean;
   emptyText?: string;
+  ariaLabel?: string;
 }
 
 export default function SearchableSelect({
@@ -27,106 +38,166 @@ export default function SearchableSelect({
   disabled = false,
   loading = false,
   emptyText = '无匹配结果',
+  ariaLabel = '选择选项',
 }: SearchableSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listboxId = useId();
 
-  const selectedLabel = useMemo(() => {
-    const found = options.find(o => o.value === value);
-    return found ? found.label : '';
-  }, [options, value]);
+  const selectedLabel =
+    options.find((option) => option.value === value)?.label ?? '';
 
   const filteredOptions = useMemo(() => {
-    if (!search.trim()) return options;
-    const keyword = search.trim().toLowerCase();
-    return options.filter(o => o.label.toLowerCase().includes(keyword));
+    const keyword = search.trim().toLocaleLowerCase();
+    if (!keyword) return options;
+    return options.filter((option) =>
+      option.label.toLocaleLowerCase().includes(keyword)
+    );
   }, [options, search]);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-        setSearch('');
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    if (open && inputRef.current) {
-      inputRef.current.focus();
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      setSearch('');
+      setActiveIndex(0);
     }
-  }, [open]);
+  };
 
-  const handleSelect = (val: string) => {
-    onChange(val);
-    setOpen(false);
-    setSearch('');
+  const handleSelect = (nextValue: string) => {
+    onChange(nextValue);
+    handleOpenChange(false);
+  };
+
+  const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (filteredOptions.length === 0) return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      setActiveIndex((current) =>
+        Math.min(current + 1, filteredOptions.length - 1)
+      );
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setActiveIndex((current) => Math.max(current - 1, 0));
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      handleSelect(filteredOptions[activeIndex].value);
+    }
   };
 
   return (
-    <div ref={containerRef} className="relative w-full">
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => {
-          if (!disabled) {
-            setOpen(prev => !prev);
-            setSearch('');
+    <Popover.Root open={open} onOpenChange={handleOpenChange}>
+      <Popover.Trigger asChild>
+        <Button
+          variant="secondary"
+          fullWidth
+          disabled={disabled || loading}
+          aria-label={ariaLabel}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-controls={listboxId}
+          className="justify-between px-3 font-medium"
+          rightIcon={
+            <FiChevronDown
+              className={`size-4 transition-transform ${
+                open ? 'rotate-180' : ''
+              }`}
+              aria-hidden="true"
+            />
           }
-        }}
-        className={`w-full flex items-center justify-between px-3 py-2 border-2 border-black text-left ${
-          disabled
-            ? 'bg-gray-100 cursor-not-allowed'
-            : 'bg-white cursor-pointer'
-        }`}
-      >
-        <span className={selectedLabel ? 'text-black' : 'text-gray-400'}>
-          {loading ? '加载中...' : selectedLabel || placeholder}
-        </span>
-        <FiChevronDown
-          className={`w-4 h-4 text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`}
-        />
-      </button>
+        >
+          <span
+            className={
+              selectedLabel ? 'truncate text-zinc-950' : 'truncate text-zinc-500'
+            }
+          >
+            {loading ? '加载中...' : selectedLabel || placeholder}
+          </span>
+        </Button>
+      </Popover.Trigger>
 
-      {open && (
-        <div className="absolute z-50 w-full mt-1 bg-white border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200">
-            <FiSearch className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <input
+      <Popover.Portal>
+        <Popover.Content
+          sideOffset={6}
+          align="start"
+          onOpenAutoFocus={(event) => {
+            event.preventDefault();
+            inputRef.current?.focus();
+          }}
+          className="z-[60] w-[var(--radix-popover-trigger-width)] min-w-56 border-2 border-zinc-950 bg-white shadow-[4px_4px_0_0_#18181b]"
+        >
+          <div className="relative border-b-2 border-zinc-950 p-2">
+            <FiSearch
+              className="pointer-events-none absolute left-5 top-1/2 size-4 -translate-y-1/2 text-zinc-500"
+              aria-hidden="true"
+            />
+            <Input
               ref={inputRef}
-              type="text"
+              type="search"
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setActiveIndex(0);
+              }}
+              onKeyDown={handleSearchKeyDown}
               placeholder={searchPlaceholder}
-              className="w-full text-sm focus:outline-none bg-transparent"
+              aria-label={searchPlaceholder}
+              aria-controls={listboxId}
+              aria-activedescendant={
+                filteredOptions[activeIndex]
+                  ? `${listboxId}-${activeIndex}`
+                  : undefined
+              }
+              className="pl-9"
             />
           </div>
 
-          <ul className="max-h-48 overflow-y-auto">
+          <div
+            id={listboxId}
+            role="listbox"
+            aria-label={ariaLabel}
+            className="max-h-52 overflow-y-auto p-1"
+          >
             {filteredOptions.length === 0 ? (
-              <li className="px-3 py-2 text-sm text-gray-400">{emptyText}</li>
+              <p className="px-3 py-4 text-center text-sm text-zinc-500">
+                {emptyText}
+              </p>
             ) : (
-              filteredOptions.map(option => (
-                <li
-                  key={option.value}
-                  onClick={() => handleSelect(option.value)}
-                  className={`px-3 py-2 text-sm cursor-pointer hover:bg-purple-50 ${
-                    option.value === value
-                      ? 'bg-purple-100 font-bold'
-                      : ''
-                  }`}
-                >
-                  {option.label}
-                </li>
-              ))
+              filteredOptions.map((option, index) => {
+                const selected = option.value === value;
+                const active = index === activeIndex;
+
+                return (
+                  <button
+                    id={`${listboxId}-${index}`}
+                    key={option.value}
+                    type="button"
+                    role="option"
+                    aria-selected={selected}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    onClick={() => handleSelect(option.value)}
+                    className={[
+                      'flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm font-medium outline-none',
+                      'hover:bg-yellow-100 focus-visible:bg-yellow-100',
+                      active ? 'bg-yellow-50' : '',
+                      selected ? 'font-black' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                  >
+                    <span className="truncate">{option.label}</span>
+                    {selected ? (
+                      <FiCheck className="size-4 shrink-0" aria-hidden="true" />
+                    ) : null}
+                  </button>
+                );
+              })
             )}
-          </ul>
-        </div>
-      )}
-    </div>
+          </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }

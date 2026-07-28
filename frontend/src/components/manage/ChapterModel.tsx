@@ -1,9 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { FiX } from 'react-icons/fi';
 import type { CreateChapterRequest, UpdateChapterRequest } from '@/types/chapter-manage';
 import courseApi from '@/app/api/courses/courses';
 import type { Course } from '@/types/course';
+import Button from '@/components/ui/Button';
+import Dialog from '@/components/ui/Dialog';
+import Field from '@/components/ui/Field';
+import Input from '@/components/ui/Input';
+import NativeSelect from '@/components/ui/NativeSelect';
 
 interface ChapterModelProps {
   open: boolean;
@@ -85,29 +89,38 @@ export default function ChapterModel({ open, onClose, onSubmit, initialData }: C
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
-      <div
-        className="bg-white border-3 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] w-full max-w-lg mx-4"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between p-4 border-b-2 border-black">
-          <h2 className="text-xl font-bold">{isEdit ? '编辑章节' : '新建章节'}</h2>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center border-2 border-black hover:bg-gray-100 font-bold"
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen && !submitting) {
+          onClose();
+        }
+      }}
+      title={isEdit ? '编辑章节' : '新建章节'}
+      closeDisabled={submitting}
+      bodyClassName="space-y-4"
+      footer={
+        <>
+          <Button onClick={onClose} disabled={submitting}>
+            取消
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            loading={submitting}
+            loadingText="提交中..."
           >
-            <FiX className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-          <div>
-            <label className="block text-sm font-bold mb-1">所属课程 *</label>
-            <select
+            {isEdit ? '保存修改' : '确认创建'}
+          </Button>
+        </>
+      }
+    >
+          <Field label="所属课程" htmlFor="chapter-course" required>
+            <NativeSelect
+              id="chapter-course"
               value={formData.courseId}
               onChange={e => setFormData(prev => ({ ...prev, courseId: e.target.value }))}
               disabled={isEdit}
-              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               <option value="">{loadingCourses ? '加载中...' : '请选择课程'}</option>
               {courses.map(course => (
@@ -115,48 +128,18 @@ export default function ChapterModel({ open, onClose, onSubmit, initialData }: C
                   {course.title}
                 </option>
               ))}
-            </select>
-          </div>
+            </NativeSelect>
+          </Field>
 
-          <div>
-            <label className="block text-sm font-bold mb-1">章节名称 *</label>
-            <input
+          <Field label="章节名称" htmlFor="chapter-name" required>
+            <Input
+              id="chapter-name"
               type="text"
               value={formData.chapterName}
               onChange={e => setFormData(prev => ({ ...prev, chapterName: e.target.value }))}
               placeholder="请输入章节名称，例如：第一章：变量与数据类型"
-              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
-          </div>
-
-        </div>
-
-        <div className="flex gap-3 p-4 border-t-2 border-black justify-end">
-          <button
-            onClick={onClose}
-            disabled={submitting}
-            className="px-5 py-2 border-2 border-black font-bold hover:bg-gray-100 transition-colors disabled:opacity-50"
-          >
-            取消
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="px-5 py-2 bg-purple-500 text-white font-bold border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all disabled:opacity-50 flex items-center gap-2"
-          >
-            {submitting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                提交中...
-              </>
-            ) : isEdit ? (
-              '保存修改'
-            ) : (
-              '确认创建'
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Field>
+    </Dialog>
   );
 }

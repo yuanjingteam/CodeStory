@@ -1,6 +1,7 @@
 'use client';
-import React from 'react';
 import { IoArrowBack, IoArrowForward } from 'react-icons/io5';
+import Button from '@/components/ui/Button';
+import NativeSelect from '@/components/ui/NativeSelect';
 
 interface PaginationProps {
   currentPage: number;
@@ -54,17 +55,18 @@ export default function Pagination({
       {/* 左侧：每页条数选择 */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-600 font-bold">每页显示：</span>
-        <select
+        <NativeSelect
+          aria-label="每页显示条数"
           value={pageSize}
           onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          className="border-2 border-gray-300 py-1 font-bold bg-white rounded-md transition-all"
+          className="w-auto py-1.5"
         >
           {pageSizeOptions.map((size) => (
             <option key={size} value={size}>
               {size} 条
             </option>
           ))}
-        </select>
+        </NativeSelect>
         <span className="text-sm text-gray-600 font-bold">
           共 {totalItems} 条记录
         </span>
@@ -77,46 +79,39 @@ export default function Pagination({
         </span>
 
         {/* 上一页 */}
-        <button
+        <Button
           onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className={`w-8 h-8 py-1 border-2 flex items-center justify-center rounded-md border-gray-300 font-bold transition-all ${
-            currentPage === 1
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-white  hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
-          }`}
+          disabled={currentPage <= 1}
+          size="icon"
+          aria-label="上一页"
         >
-          <IoArrowBack className="w-4 h-4" />
-        </button>
+          <IoArrowBack className="size-4" aria-hidden="true" />
+        </Button>
 
         {/* 页码 */}
         {showPageNumbers &&
           getPageNumbers().map((page) => (
-            <button
+            <Button
               key={page}
               onClick={() => onPageChange(page)}
-              className={`w-8 h-8 rounded-md border-2 border-gray-500 font-bold transition-all ${
-                currentPage === page
-                  ? 'bg-purple-500 text-white shadow-none'
-                  : 'bg-white  hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
-              }`}
+              variant={currentPage === page ? 'primary' : 'secondary'}
+              size="icon"
+              aria-label={`第 ${page} 页`}
+              aria-current={currentPage === page ? 'page' : undefined}
             >
               {page}
-            </button>
+            </Button>
           ))}
 
         {/* 下一页 */}
-        <button
+        <Button
           onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className={`w-8 h-8 py-1 border-2 flex items-center justify-center rounded-md border-gray-300 font-bold transition-all ${
-            currentPage === totalPages
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-white  hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
-          }`}
+          disabled={totalPages === 0 || currentPage >= totalPages}
+          size="icon"
+          aria-label="下一页"
         >
-          <IoArrowForward className="w-4 h-4" />
-        </button>
+          <IoArrowForward className="size-4" aria-hidden="true" />
+        </Button>
       </div>
     </div>
   );

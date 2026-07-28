@@ -21,6 +21,9 @@ export interface ExerciseItem {
   type: string;
   exerciseContent: string;
   answer: string;
+  knowledge: string;
+  analysis: string;
+  source: string;
   metadata: MetadataValue;
   hints: HintsValue;
   order?: number;
@@ -64,6 +67,7 @@ export interface CreateLessonRequest {
   metadata?: MetadataValue;
   hints?: HintsValue;
   estimatedTime?: number;
+  exercises?: ExerciseItem[];
 }
 
 export interface CreateLessonResponse {
@@ -82,6 +86,7 @@ export interface UpdateLessonRequest {
   metadata?: MetadataValue;
   hints?: HintsValue;
   estimatedTime?: number;
+  exercises?: ExerciseItem[];
 }
 
 export interface UpdateLessonResponse {

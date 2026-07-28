@@ -79,6 +79,7 @@ export default function ExerciseCard({
           <button
             type="button"
             onClick={e => { e.stopPropagation(); onDelete(); }}
+            aria-label={`删除题目 ${index + 1}`}
             className="flex items-center gap-1 px-2 py-1 text-red-500 text-sm hover:bg-red-50 rounded transition-colors"
           >
             <FiTrash2 className="w-4 h-4" />
@@ -126,6 +127,39 @@ export default function ExerciseCard({
               placeholder="输入正确答案"
               rows={2}
               className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold mb-1">知识点</label>
+            <input
+              type="text"
+              value={exercise.knowledge}
+              onChange={e => handleUpdate({ knowledge: e.target.value })}
+              placeholder="例如：变量声明、条件判断"
+              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold mb-1">题目解析</label>
+            <textarea
+              value={exercise.analysis}
+              onChange={e => handleUpdate({ analysis: e.target.value })}
+              placeholder="说明正确答案、解题思路和常见错误"
+              rows={3}
+              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-y"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold mb-1">来源</label>
+            <input
+              type="text"
+              value={exercise.source === 'ai' ? 'AI 生成' : '手工录入'}
+              readOnly
+              aria-readonly="true"
+              className="w-full px-3 py-2 border-2 border-black bg-gray-100 text-gray-600 cursor-not-allowed"
             />
           </div>
 
