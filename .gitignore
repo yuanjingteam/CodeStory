@@ -39,3 +39,4 @@ docker-compose.override.yml
 *.backup
 backups/
 codestory_backup/
+.codebuddy/
