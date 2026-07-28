@@ -11,6 +11,7 @@ import type {
 import ChoiceQuestion from './ChoiceQuestion'
 import CodeQuestion from './CodeQuestion'
 import TiptapViewer from '@/components/tiptap/TiptapViewer'
+import { getAiErrorMessage } from './chat/chatErrors'
 
 interface ExerciseModalProps {
   isOpen: boolean
@@ -204,7 +205,7 @@ export default function ExerciseModal({
       setChoiceExplanation(response)
     } catch (error) {
       console.error('解释答案失败:', error)
-      setChoiceExplanationError('AI 解释暂时不可用，请稍后再试。')
+      setChoiceExplanationError(getAiErrorMessage(error).message)
     } finally {
       setChoiceExplanationLoading(false)
     }

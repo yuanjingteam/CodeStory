@@ -7,6 +7,7 @@ import { FiCheckCircle } from 'react-icons/fi';
 import { exerciseApi } from '@/app/api/courses/exercise';
 import Button from '@/components/ui/Button';
 import Dialog from '@/components/ui/Dialog';
+import { getAiErrorMessage } from './chat/chatErrors';
 
 interface HintModalProps {
   exerciseId: string;
@@ -25,6 +26,7 @@ export default function HintModal({
 }: HintModalProps) {
   const [loading, setLoading] = useState(false);
   const [loadingHints, setLoadingHints] = useState(true);
+  const [hintError, setHintError] = useState('');
   const [acquiredHints, setAcquiredHints] = useState<Array<{ level: number; content: string }>>([]);
   const maxLevel = hints?._meta.max_level || 3;
 
@@ -57,6 +59,7 @@ export default function HintModal({
     if (currentLevel >= maxLevel || loading) return;
 
     setLoading(true);
+    setHintError('');
     
     try {
       const nextLevel = currentLevel + 1;
@@ -68,6 +71,7 @@ export default function HintModal({
       }
     } catch (error) {
       console.error('获取提示失败:', error);
+      setHintError(getAiErrorMessage(error).message);
     } finally {
       setLoading(false);
     }
@@ -124,6 +128,14 @@ export default function HintModal({
         </div>
       }
     >
+          {hintError && (
+            <div
+              className="mb-4 border-2 border-black bg-red-50 p-3 text-sm font-bold text-red-700"
+              role="alert"
+            >
+              {hintError}
+            </div>
+          )}
           {loadingHints ? (
             <div
               className="mb-4 grid gap-3 py-4"

@@ -287,16 +287,20 @@ export async function applyAiCodeReviewToSubmission(params: {
 
 export async function markCodeReviewFailed(params: {
   submissionId: string;
-  error: unknown;
+  error: {
+    code: string;
+    message: string;
+    status: number;
+  };
 }) {
-  const message = params.error instanceof Error ? params.error.message : 'AI_CODE_REVIEW_FAILED';
-
   return prisma.code_submissions.update({
     where: { id: params.submissionId },
     data: {
       ai_review_status: 'failed',
       ai_review: {
-        error: message,
+        errorCode: params.error.code,
+        errorMessage: params.error.message,
+        errorStatus: params.error.status,
         fallback: 'static_grade',
         failedAt: new Date().toISOString(),
       },

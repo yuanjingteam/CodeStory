@@ -3,6 +3,10 @@ import { resolveShortId, uuidToShortId } from '../../utils/idTransform';
 import { generateChoiceExplanation } from '../ai/choice-explanation.service';
 import { reviewCodeWithAI } from '../ai/code-review.service';
 import {
+  createAiChatErrorPayload,
+  logAiError,
+} from '../ai/ai-chat-error.service';
+import {
   applyAiCodeReviewToSubmission,
   calculateAiReviewedFinalScore,
   gradeCodeExercise,
@@ -222,11 +226,14 @@ export async function submitExercise(
         status: 'completed',
       };
     } catch (error) {
+      const aiError = createAiChatErrorPayload(error);
+      logAiError('code-review', error, aiError);
       await markCodeReviewFailed({
         submissionId: submission.id,
-        error,
+        error: aiError,
       });
-      feedback = `${grade.feedback}。AI 评阅暂不可用，已保留静态初判结果。`;
+      const aiFailureMessage = aiError.message.replace(/[。！？!?]+$/, '');
+      feedback = `${grade.feedback}。${aiFailureMessage}，已保留静态初判结果。`;
       aiReviewResult = {
         isLikelyCorrect: grade.correct,
         feedback,

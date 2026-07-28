@@ -9,6 +9,7 @@ import {
   getAcquiredHints,
   getExerciseHint,
 } from '../services/courses/exercise-hint.service';
+import { sendAiErrorResponse } from '../services/ai/ai-chat-error.service';
 import { badRequest, notFound, serverError } from '../utils/response';
 import { authMiddleware } from '../middleware/auth';
 
@@ -82,7 +83,7 @@ router.post('/choice-explanation', authMiddleware, async (req, res) => {
       data: result,
     });
   } catch (error) {
-    return serverError(res, error);
+    return sendAiErrorResponse(res, 'choice-explanation', error);
   }
 });
 
@@ -107,7 +108,7 @@ router.get('/hint', authMiddleware, async (req, res) => {
       data: result,
     });
   } catch (error) {
-    return serverError(res, error);
+    return sendAiErrorResponse(res, 'exercise-hint', error);
   }
 });
 
@@ -131,7 +132,7 @@ router.get('/hints', authMiddleware, async (req, res) => {
       data: result,
     });
   } catch (error) {
-    return serverError(res, error);
+    return sendAiErrorResponse(res, 'acquired-exercise-hints', error);
   }
 });
 

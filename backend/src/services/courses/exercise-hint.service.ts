@@ -1,6 +1,7 @@
 import prisma from '../../config/prisma';
 import { resolveShortId } from '../../utils/idTransform';
 import { generateExerciseHint } from '../ai/exercise-hint.service';
+import { logAiError } from '../ai/ai-chat-error.service';
 
 const DEFAULT_AI_HINT_MAX_LEVEL = 3;
 
@@ -64,6 +65,7 @@ export async function getExerciseHint(
     });
   } catch (error) {
     if (adminHints.length === 0) throw error;
+    logAiError('exercise-hint-admin-fallback', error);
     hintContent = adminHints[adminHints.length - 1];
   }
 
