@@ -221,28 +221,78 @@ export async function getLessonChatMessages(
   }));
 }
 
-// 追加对话消息
-export async function appendLessonChatMessage(
+// 成对追加用户问题和助手回答，避免失败请求留下孤立消息
+export async function appendLessonChatExchange(
   sessionId: string,
-  role: LessonChatRole,
-  content: string,
-  metadata?: Prisma.InputJsonValue,
+  userContent: string,
+  assistantContent: string,
+  userMetadata?: Prisma.InputJsonValue,
+  assistantMetadata?: Prisma.InputJsonValue,
   messageType: LessonChatMessageType = 'chat'
 ) {
-  const trimmedContent = content.trim();
-  if (!trimmedContent) return null;
+  const trimmedUserContent = userContent.trim();
+  const trimmedAssistantContent = assistantContent.trim();
+  if (!trimmedUserContent || !trimmedAssistantContent) return null;
 
-  return prisma.ai_chat_messages.create({
-    data: {
-      session_id: sessionId,
-      role,
-      message_type: messageType,
-      content: trimmedContent,
-      metadata,
+  return prisma.$transaction(async (tx) => {
+    const userMessage = await tx.ai_chat_messages.create({
+      data: {
+        session_id: sessionId,
+        role: 'user',
+        message_type: messageType,
+        content: trimmedUserContent,
+        metadata: userMetadata,
+      },
+      select: {
+        id: true,
+        created_at: true,
+      },
+    });
+
+    const assistantMessage = await tx.ai_chat_messages.create({
+      data: {
+        session_id: sessionId,
+        role: 'assistant',
+        message_type: messageType,
+        content: trimmedAssistantContent,
+        metadata: assistantMetadata,
+      },
+      select: {
+        id: true,
+        created_at: true,
+      },
+    });
+
+    return { userMessage, assistantMessage };
+  });
+}
+
+export async function clearLessonChatMessages(
+  userId: string,
+  lessonId: string
+): Promise<number> {
+  const session = await prisma.ai_chat_sessions.findUnique({
+    where: {
+      user_id_lesson_id: {
+        user_id: userId,
+        lesson_id: lessonId,
+      },
     },
-    select: {
-      id: true,
-      created_at: true,
+    select: { id: true },
+  });
+
+  if (!session) return 0;
+
+  const result = await prisma.ai_chat_messages.updateMany({
+    where: {
+      session_id: session.id,
+      is_delete: 0,
+    },
+    data: {
+      is_delete: 1,
+      deleted_at: new Date(),
     },
   });
+
+  return result.count;
 }

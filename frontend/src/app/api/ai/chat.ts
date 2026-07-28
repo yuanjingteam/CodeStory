@@ -24,6 +24,10 @@ interface LessonChatHistoryParams {
   signal?: AbortSignal;
 }
 
+interface ClearLessonChatHistoryParams {
+  lessonId: string;
+}
+
 export interface LessonChatHistoryMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -106,6 +110,19 @@ function requestChatHistory(token: string, lessonId: string, signal?: AbortSigna
   );
 }
 
+function requestClearChatHistory(token: string, lessonId: string) {
+  return fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/ai/chat/history?lessonId=${encodeURIComponent(lessonId)}`,
+    {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+}
+
 export async function getLessonChatHistory({
   lessonId,
   signal,
@@ -144,6 +161,46 @@ export async function getLessonChatHistory({
   };
 
   return payload.data?.messages || [];
+}
+
+export async function clearLessonChatHistory({
+  lessonId,
+}: ClearLessonChatHistoryParams): Promise<number> {
+  const token = await getAccessTokenOrRefresh();
+  let response = await requestClearChatHistory(token, lessonId);
+
+  if (
+    response.status === 401 &&
+    (await getErrorCode(response)) === 'ACCESS_TOKEN_EXPIRED'
+  ) {
+    try {
+      const refreshed = await refreshAccessToken();
+      response = await requestClearChatHistory(
+        refreshed.accessToken,
+        lessonId
+      );
+    } catch (error) {
+      if (isRefreshSessionExpired(error)) {
+        handleAuthenticationFailure();
+        throw new Error('登录已过期，请重新登录');
+      }
+      throw new Error('网络异常，暂时无法续期登录状态');
+    }
+  }
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      handleAuthenticationFailure();
+      throw new Error('登录已过期，请重新登录');
+    }
+    const payload = await parseAiChatErrorPayload(response);
+    throw new AiChatStreamError(payload.message, payload.code);
+  }
+
+  const payload = (await response.json()) as {
+    data?: { deletedCount?: number };
+  };
+  return payload.data?.deletedCount || 0;
 }
 
 export async function streamLessonChat({

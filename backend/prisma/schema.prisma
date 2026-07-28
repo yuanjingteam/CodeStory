@@ -211,12 +211,14 @@ model ai_chat_messages {
   content      String
   metadata     Json?            @db.Json
   created_at   DateTime         @default(now()) @db.Timestamp(6)
+  deleted_at   DateTime?        @db.Timestamp(6)
   is_delete    Int              @default(0) @db.SmallInt
   session      ai_chat_sessions @relation(fields: [session_id], references: [id], onDelete: Cascade)
 
   @@index([session_id])
   @@index([created_at])
   @@index([is_delete])
+  @@index([is_delete, deleted_at])
 }
 
 model code_submissions {

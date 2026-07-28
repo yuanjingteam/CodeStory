@@ -4,11 +4,13 @@ import { getLessonAiContext } from '../services/ai/lesson-context.service';
 import { streamLessonChat } from '../services/ai/lesson-chat.service';
 import {
   createAiChatErrorPayload,
+  logAiError,
   sendAiChatError,
   type AiChatErrorCode,
 } from '../services/ai/ai-chat-error.service';
 import {
-  appendLessonChatMessage,
+  appendLessonChatExchange,
+  clearLessonChatMessages,
   getLessonChatMessages,
   getOrCreateLessonChatSession,
   getRecentLessonChatMessages,
@@ -107,6 +109,44 @@ router.get('/chat/history', authMiddleware, async (req, res) => {
   }
 });
 
+router.delete('/chat/history', authMiddleware, async (req, res) => {
+  const userId = typeof req.user?.id === 'string' ? req.user.id : '';
+  const lessonId =
+    typeof req.query.lessonId === 'string' ? req.query.lessonId.trim() : '';
+
+  if (!userId) {
+    return res.status(401).json({ code: 401, message: '未登录' });
+  }
+
+  if (!lessonId) {
+    return res.status(400).json({ code: 400, message: '小节不能为空' });
+  }
+
+  try {
+    const context = await getLessonAiContext(lessonId);
+    if (!context) {
+      return res.status(404).json({ code: 404, message: '小节不存在' });
+    }
+
+    const deletedCount = await clearLessonChatMessages(
+      userId,
+      context.lessonId
+    );
+
+    return res.json({
+      code: 200,
+      message: '清空成功',
+      data: { deletedCount },
+    });
+  } catch (error) {
+    console.error('清空 AI 对话历史失败:', error);
+    return res.status(500).json({
+      code: 500,
+      message: '清空 AI 对话历史失败',
+    });
+  }
+});
+
 router.post('/chat/stream', authMiddleware, async (req, res) => {
   const userId = typeof req.user?.id === 'string' ? req.user.id : '';
   const lessonId = typeof req.body.lessonId === 'string' ? req.body.lessonId.trim() : '';
@@ -158,12 +198,12 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
     const history = await getRecentLessonChatMessages(session.id, {
       currentExerciseId: context.exerciseId,
     });
-    await appendLessonChatMessage(session.id, 'user', question, {
+    const userMetadata = {
       lessonId: context.lessonId,
       exerciseId: context.exerciseId,
       hasCurrentCode: Boolean(currentCode),
       currentCodeLength: currentCode.length,
-    }, messageType);
+    };
 
     res.status(200);
     res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
@@ -182,10 +222,11 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
       const assistantContent = formatHintMessage(hint.content, hint.level, hint.maxLevel);
       writeEvent(res, { type: 'token', content: assistantContent });
 
-      await appendLessonChatMessage(
+      await appendLessonChatExchange(
         session.id,
-        'assistant',
+        question,
         assistantContent,
+        userMetadata,
         {
           lessonId: context.lessonId,
           exerciseId: context.exerciseId,
@@ -215,20 +256,27 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
     }
 
     if (!abortController.signal.aborted) {
-      await appendLessonChatMessage(session.id, 'assistant', assistantContent, {
-        lessonId: context.lessonId,
-        exerciseId: context.exerciseId,
-        modelSource: 'lesson-chat',
-        usedCurrentCode: Boolean(currentCode),
-      }, messageType);
+      await appendLessonChatExchange(
+        session.id,
+        question,
+        assistantContent,
+        userMetadata,
+        {
+          lessonId: context.lessonId,
+          exerciseId: context.exerciseId,
+          modelSource: 'lesson-chat',
+          usedCurrentCode: Boolean(currentCode),
+        },
+        messageType
+      );
       writeEvent(res, { type: 'done' });
       res.end();
     }
   } catch (error) {
     if (abortController.signal.aborted) return;
 
-    console.error('AI 对话失败:', error);
     const payload = createAiChatErrorPayload(error);
+    logAiError('lesson-chat', error, payload);
 
     if (!res.headersSent) {
       return sendAiChatError(res, payload.status, payload.code, payload.message);

@@ -19,6 +19,7 @@ import {
   lessonManageRouter,
   aiRouter,
 } from './routes/index';
+import { startAiChatCleanupScheduler } from './services/ai/chat-retention.service';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -71,6 +72,7 @@ if (!process.env.VITEST) {
     console.log(
       `Server running on port ${PORT} (${process.env.NODE_ENV || 'development'})`
     );
+    startAiChatCleanupScheduler();
   });
 }
 
