@@ -4,6 +4,18 @@ import { generateExerciseHint } from '../ai/exercise-hint.service';
 
 const DEFAULT_AI_HINT_MAX_LEVEL = 3;
 
+function resolveMaxHintLevel(hints: any): number {
+  const configuredMaxLevel = hints?._meta?.max_level;
+  if (!Number.isInteger(configuredMaxLevel)) {
+    return DEFAULT_AI_HINT_MAX_LEVEL;
+  }
+
+  return Math.min(
+    DEFAULT_AI_HINT_MAX_LEVEL,
+    Math.max(1, configuredMaxLevel)
+  );
+}
+
 export async function getExerciseHint(
   exerciseId: string,
   hintLevel: number,
@@ -26,7 +38,7 @@ export async function getExerciseHint(
   if (!exercise) return null;
 
   const hints = exercise.hints as any;
-  const maxLevel = hints?._meta?.max_level || DEFAULT_AI_HINT_MAX_LEVEL;
+  const maxLevel = resolveMaxHintLevel(hints);
 
   if (hintLevel < 1 || hintLevel > maxLevel) {
     return null;
@@ -125,7 +137,7 @@ export async function getExerciseHintProgress(
   const hints = exercise.hints as any;
   return {
     currentLevel: userAnswer?.hint_level_used || 0,
-    maxLevel: hints?._meta?.max_level || DEFAULT_AI_HINT_MAX_LEVEL,
+    maxLevel: resolveMaxHintLevel(hints),
   };
 }
 
@@ -165,7 +177,7 @@ export async function getAcquiredHints(
 
   const currentLevel = userAnswer?.hint_level_used || 0;
   const hints = exercise.hints as any;
-  const maxLevel = hints?._meta?.max_level || DEFAULT_AI_HINT_MAX_LEVEL;
+  const maxLevel = resolveMaxHintLevel(hints);
   const acquiredHints = [];
 
   for (let i = 1; i <= currentLevel && i <= maxLevel; i++) {

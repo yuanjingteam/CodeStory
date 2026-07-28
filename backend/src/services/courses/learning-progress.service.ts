@@ -1,5 +1,105 @@
 import prisma from '../../config/prisma';
 
+export const MASTERY_LEVEL_MIN = 0;
+export const MASTERY_LEVEL_MAX = 100;
+
+export interface MasteryAnswerSnapshot {
+  score: number;
+  hintLevelUsed: number;
+}
+
+export type MasteryEvent =
+  | 'choice_correct'
+  | 'choice_incorrect'
+  | 'code_passed_confident'
+  | 'code_failed'
+  | 'review_pending'
+  | 'human_mastered'
+  | 'human_not_mastered'
+  | 'guided_review_pending';
+
+export type MasteryBand =
+  | 'not_started'
+  | 'beginner'
+  | 'developing'
+  | 'proficient'
+  | 'mastered';
+
+function clampMasteryLevel(value: number): number {
+  if (!Number.isFinite(value)) return MASTERY_LEVEL_MIN;
+  return Math.min(
+    MASTERY_LEVEL_MAX,
+    Math.max(MASTERY_LEVEL_MIN, Math.round(value))
+  );
+}
+
+export function calculateAnswerMastery(
+  answer: MasteryAnswerSnapshot
+): number {
+  if (
+    !Number.isInteger(answer.hintLevelUsed)
+    || answer.hintLevelUsed < 0
+    || answer.hintLevelUsed > 3
+  ) {
+    return MASTERY_LEVEL_MIN;
+  }
+
+  // answer.score 在现有判分链中已经扣除了提示分，不能再次按 hintLevelUsed 扣分。
+  return clampMasteryLevel(answer.score);
+}
+
+export function calculateLessonMasteryLevel(
+  answers: MasteryAnswerSnapshot[],
+  totalExerciseCount: number
+): number {
+  if (!Number.isInteger(totalExerciseCount) || totalExerciseCount <= 0) {
+    return MASTERY_LEVEL_MIN;
+  }
+
+  const totalMastery = answers.reduce(
+    (sum, answer) => sum + calculateAnswerMastery(answer),
+    0
+  );
+
+  return clampMasteryLevel(totalMastery / totalExerciseCount);
+}
+
+export function getMasteryBand(level: number): MasteryBand {
+  const normalizedLevel = clampMasteryLevel(level);
+  if (normalizedLevel === 0) return 'not_started';
+  if (normalizedLevel < 40) return 'beginner';
+  if (normalizedLevel < 60) return 'developing';
+  if (normalizedLevel < 80) return 'proficient';
+  return 'mastered';
+}
+
+export function resolveMasteryLevel(params: {
+  event: MasteryEvent;
+  currentLevel: number;
+  candidateLevel: number;
+  reviewed?: boolean;
+}): number {
+  const currentLevel = clampMasteryLevel(params.currentLevel);
+  const candidateLevel = clampMasteryLevel(params.candidateLevel);
+
+  switch (params.event) {
+    case 'choice_correct':
+    case 'code_passed_confident':
+      return Math.max(currentLevel, candidateLevel);
+    case 'human_mastered':
+      return params.reviewed
+        ? Math.max(currentLevel, candidateLevel)
+        : currentLevel;
+    case 'human_not_mastered':
+      return params.reviewed ? candidateLevel : currentLevel;
+    case 'choice_incorrect':
+    case 'code_failed':
+    case 'review_pending':
+    case 'guided_review_pending':
+      return currentLevel;
+  }
+}
+
 export async function updateLessonAndCourseProgress(
   lessonId: string,
   userId: string

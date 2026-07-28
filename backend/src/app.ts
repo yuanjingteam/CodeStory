@@ -65,10 +65,13 @@ app.use(
 // Error handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(
-    `Server running on port ${PORT} (${process.env.NODE_ENV || 'development'})`
-  );
-});
+// 测试环境（vitest）下不监听端口，仅导出 app 供 supertest 直接调用
+if (!process.env.VITEST) {
+  app.listen(PORT, () => {
+    console.log(
+      `Server running on port ${PORT} (${process.env.NODE_ENV || 'development'})`
+    );
+  });
+}
 
 export default app;

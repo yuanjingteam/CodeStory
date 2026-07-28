@@ -160,7 +160,7 @@ export default function ExerciseModal({
     if (!exerciseData?.id) return false
 
     try {
-      const response = await exerciseApi.submit(exerciseData.id, answer, currentHintLevelUsed)
+      const response = await exerciseApi.submit(exerciseData.id, answer)
       setSubmitResult({
         correct: response.correct,
         score: response.score,

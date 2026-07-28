@@ -40,14 +40,14 @@ router.get('/detail', authMiddleware, async (req, res) => {
 
 router.post('/submit', authMiddleware, async (req, res) => {
   try {
-    const { exercise_id, answer, hint_level_used } = req.body;
+    const { exercise_id, answer } = req.body;
     const userId = req.user!.id;
 
     if (!exercise_id || !answer) {
       return badRequest(res, '缺少 exercise_id 或 answer 参数');
     }
 
-    const result = await submitExercise(exercise_id, answer, userId, hint_level_used || 0);
+    const result = await submitExercise(exercise_id, answer, userId);
     if (!result) {
       return notFound(res, '题目不存在');
     }

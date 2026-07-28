@@ -107,8 +107,7 @@ export async function getExerciseDetail(
 export async function submitExercise(
   exerciseId: string,
   answer: string,
-  userId: string,
-  hintLevelUsed: number = 0
+  userId: string
 ): Promise<SubmitExerciseResult | null> {
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
@@ -125,6 +124,20 @@ export async function submitExercise(
   });
 
   if (!exercise) return null;
+
+  const existingAnswer = await prisma.answer.findUnique({
+    where: {
+      user_id_exercise_id: {
+        user_id: userId,
+        exercise_id: resolvedId,
+      },
+      is_delete: 0,
+    },
+  });
+  const hintLevelUsed = Math.min(
+    3,
+    Math.max(0, existingAnswer?.hint_level_used || 0)
+  );
 
   let correct = false;
   let score = 0;
@@ -226,22 +239,8 @@ export async function submitExercise(
     }
   }
 
-  const existingAnswer = await prisma.answer.findUnique({
-    where: {
-      user_id_exercise_id: {
-        user_id: userId,
-        exercise_id: resolvedId,
-      },
-      is_delete: 0,
-    },
-  });
-
   if (existingAnswer) {
-    const newScore = exercise.type === 'code'
-      ? Math.max(existingAnswer.score, score)
-      : correct
-        ? score
-        : existingAnswer.score;
+    const newScore = Math.max(existingAnswer.score, score);
     await prisma.answer.update({
       where: { id: existingAnswer.id },
       data: {
@@ -249,7 +248,6 @@ export async function submitExercise(
         submission_count: existingAnswer.submission_count + 1,
         feedback,
         score: newScore,
-        hint_level_used: Math.max(existingAnswer.hint_level_used, hintLevelUsed),
       },
     });
   } else {
@@ -261,7 +259,7 @@ export async function submitExercise(
         submission_count: 1,
         feedback,
         score,
-        hint_level_used: hintLevelUsed,
+        hint_level_used: 0,
       },
     });
   }
