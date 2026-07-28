@@ -96,7 +96,11 @@ export default function HomeMyCourses() {
           }}
           className="px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-lg hover:bg-purple-700 transition-colors flex-shrink-0 shadow-sm"
         >
-          {course.status === 2 ? '查看' : '继续学习'}
+          {course.status === 0
+            ? '开始学习'
+            : course.status === 2
+              ? '查看'
+              : '继续学习'}
         </button>
       </div>
     );
@@ -125,12 +129,10 @@ export default function HomeMyCourses() {
     );
   }
   const displayCourses = [
-    ...inProgressCourses.slice(0, maxCourses),
-    ...completedCourses.slice(
-      0,
-      Math.max(0, maxCourses - inProgressCourses.length)
-    ),
-  ];
+    ...inProgressCourses,
+    ...completedCourses,
+    ...noStartCourses,
+  ].slice(0, maxCourses);
 
   return (
     <section className="flex-1 h-[350px] flex flex-col border-2 border-gray-200 rounded-sm px-6 pt-6">

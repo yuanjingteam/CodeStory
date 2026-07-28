@@ -1,4 +1,5 @@
 import prisma from '../../config/prisma';
+import type { Prisma } from '../../generated/prisma';
 
 export const MASTERY_LEVEL_MIN = 0;
 export const MASTERY_LEVEL_MAX = 100;
@@ -100,129 +101,210 @@ export function resolveMasteryLevel(params: {
   }
 }
 
-export async function updateLessonAndCourseProgress(
-  lessonId: string,
-  userId: string
+export function calculateCourseProgressStatus(
+  startedLessons: number,
+  completedLessons: number,
+  totalLessons: number
+): 0 | 1 | 2 {
+  if (totalLessons > 0 && completedLessons >= totalLessons) return 2;
+  if (startedLessons > 0) return 1;
+  return 0;
+}
+
+async function syncCourseProgress(
+  tx: Prisma.TransactionClient,
+  courseId: string,
+  userId: string,
+  now: Date
 ): Promise<void> {
-  const now = new Date();
-
-  const lesson = await prisma.lessons.findUnique({
-    where: { id: lessonId, is_delete: 0 },
-    include: { chapters: { include: { courses: true } } },
-  });
-
-  if (!lesson) return;
-
-  const courseId = lesson.chapters.courses.id;
-
-  const totalExercises = await prisma.exercises.count({
-    where: { lesson_id: lessonId, is_delete: 0 },
-  });
-
-  const completedExercises = await prisma.answer.count({
-    where: {
-      user_id: userId,
-      is_delete: 0,
-      submission_count: { gte: 1 },
-      exercises: {
-        lesson_id: lessonId,
-        is_delete: 0,
-      },
-    },
-  });
-
-  const allExercisesCompleted =
-    totalExercises > 0 && completedExercises >= totalExercises;
-  const newLessonStatus = allExercisesCompleted ? 2 : 1;
-
-  const existingLessonProgress = await prisma.lessons_progress.findUnique({
-    where: {
-      user_id_lesson_id: {
-        user_id: userId,
-        lesson_id: lessonId,
-      },
-    },
-  });
-
-  if (existingLessonProgress) {
-    const shouldUpdateStatus = newLessonStatus > existingLessonProgress.status;
-    await prisma.lessons_progress.update({
-      where: { id: existingLessonProgress.id },
-      data: {
-        status: shouldUpdateStatus ? newLessonStatus : existingLessonProgress.status,
-        last_learned_at: now,
-      },
-    });
-  } else {
-    await prisma.lessons_progress.create({
-      data: {
-        user_id: userId,
-        lesson_id: lessonId,
-        status: newLessonStatus,
-        mastery_level: 0,
-        last_learned_at: now,
-      },
-    });
-  }
-
   const chapterIds = (
-    await prisma.chapters.findMany({
+    await tx.chapters.findMany({
       where: { course_id: courseId, is_delete: 0 },
       select: { id: true },
     })
   ).map((chapter) => chapter.id);
 
-  const totalLessons = await prisma.lessons.count({
-    where: {
-      chapter_id: { in: chapterIds },
-      is_delete: 0,
-    },
-  });
-
-  const completedLessons = await prisma.lessons_progress.count({
-    where: {
-      user_id: userId,
-      status: 2,
-      is_delete: 0,
-      lessons: {
+  const [totalLessons, startedLessons, completedLessons] = await Promise.all([
+    tx.lessons.count({
+      where: {
         chapter_id: { in: chapterIds },
+        is_delete: 0,
       },
-    },
-  });
+    }),
+    tx.lessons_progress.count({
+      where: {
+        user_id: userId,
+        status: { in: [1, 2] },
+        is_delete: 0,
+        lessons: {
+          chapter_id: { in: chapterIds },
+          is_delete: 0,
+        },
+      },
+    }),
+    tx.lessons_progress.count({
+      where: {
+        user_id: userId,
+        status: 2,
+        is_delete: 0,
+        lessons: {
+          chapter_id: { in: chapterIds },
+          is_delete: 0,
+        },
+      },
+    }),
+  ]);
 
-  const existingCourseProgress = await prisma.courses_progress.findUnique({
+  const status = calculateCourseProgressStatus(
+    startedLessons,
+    completedLessons,
+    totalLessons
+  );
+
+  await tx.courses_progress.upsert({
     where: {
       user_id_course_id: {
         user_id: userId,
         course_id: courseId,
       },
     },
+    create: {
+      user_id: userId,
+      course_id: courseId,
+      completed_lessons: completedLessons,
+      total_lessons: totalLessons,
+      status,
+      last_learned_at: now,
+      is_delete: 0,
+    },
+    update: {
+      completed_lessons: completedLessons,
+      total_lessons: totalLessons,
+      status,
+      last_learned_at: now,
+      is_delete: 0,
+    },
   });
+}
 
-  const courseStatus =
-    completedLessons === 0 ? 0 : completedLessons >= totalLessons ? 2 : 1;
+export async function markLessonStarted(
+  lessonId: string,
+  userId: string
+): Promise<boolean> {
+  const now = new Date();
 
-  if (existingCourseProgress) {
-    const newStatus = Math.max(existingCourseProgress.status, courseStatus);
-    await prisma.courses_progress.update({
-      where: { id: existingCourseProgress.id },
-      data: {
-        completed_lessons: completedLessons,
-        total_lessons: totalLessons,
-        status: newStatus,
-        last_learned_at: now,
-      },
+  return prisma.$transaction(async (tx) => {
+    const lesson = await tx.lessons.findUnique({
+      where: { id: lessonId, is_delete: 0 },
+      include: { chapters: { select: { course_id: true } } },
     });
-  } else {
-    await prisma.courses_progress.create({
-      data: {
+
+    if (!lesson) return false;
+
+    const existingProgress = await tx.lessons_progress.findUnique({
+      where: {
+        user_id_lesson_id: {
+          user_id: userId,
+          lesson_id: lessonId,
+        },
+      },
+      select: { status: true },
+    });
+
+    await tx.lessons_progress.upsert({
+      where: {
+        user_id_lesson_id: {
+          user_id: userId,
+          lesson_id: lessonId,
+        },
+      },
+      create: {
         user_id: userId,
-        course_id: courseId,
-        completed_lessons: completedLessons,
-        total_lessons: totalLessons,
-        status: courseStatus,
+        lesson_id: lessonId,
+        status: 1,
+        mastery_level: 0,
         last_learned_at: now,
+        is_delete: 0,
+      },
+      update: {
+        status: Math.max(existingProgress?.status ?? 0, 1),
+        last_learned_at: now,
+        is_delete: 0,
       },
     });
-  }
+
+    await syncCourseProgress(tx, lesson.chapters.course_id, userId, now);
+    return true;
+  });
+}
+
+export async function updateLessonAndCourseProgress(
+  lessonId: string,
+  userId: string
+): Promise<void> {
+  const now = new Date();
+
+  await prisma.$transaction(async (tx) => {
+    const lesson = await tx.lessons.findUnique({
+      where: { id: lessonId, is_delete: 0 },
+      include: { chapters: { select: { course_id: true } } },
+    });
+
+    if (!lesson) return;
+
+    const [totalExercises, completedExercises, existingProgress] =
+      await Promise.all([
+        tx.exercises.count({
+          where: { lesson_id: lessonId, is_delete: 0 },
+        }),
+        tx.answer.count({
+          where: {
+            user_id: userId,
+            is_delete: 0,
+            submission_count: { gte: 1 },
+            exercises: {
+              lesson_id: lessonId,
+              is_delete: 0,
+            },
+          },
+        }),
+        tx.lessons_progress.findUnique({
+          where: {
+            user_id_lesson_id: {
+              user_id: userId,
+              lesson_id: lessonId,
+            },
+          },
+          select: { status: true },
+        }),
+      ]);
+
+    const allExercisesCompleted =
+      totalExercises > 0 && completedExercises >= totalExercises;
+    const candidateStatus = allExercisesCompleted ? 2 : 1;
+
+    await tx.lessons_progress.upsert({
+      where: {
+        user_id_lesson_id: {
+          user_id: userId,
+          lesson_id: lessonId,
+        },
+      },
+      create: {
+        user_id: userId,
+        lesson_id: lessonId,
+        status: candidateStatus,
+        mastery_level: 0,
+        last_learned_at: now,
+        is_delete: 0,
+      },
+      update: {
+        status: Math.max(existingProgress?.status ?? 0, candidateStatus),
+        last_learned_at: now,
+        is_delete: 0,
+      },
+    });
+
+    await syncCourseProgress(tx, lesson.chapters.course_id, userId, now);
+  });
 }

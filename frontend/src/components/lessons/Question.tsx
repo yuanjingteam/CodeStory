@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { lessonDetailApi } from '@/app/api/courses/lesson-detail'
 import type { LessonDetailData } from '@/types/lesson-detail'
 import ExerciseModal from './ExerciseModal'
 import TiptapViewer from '@/components/tiptap/TiptapViewer'
@@ -9,7 +8,10 @@ import TiptapViewer from '@/components/tiptap/TiptapViewer'
 interface QuestionProps {
   data: LessonDetailData
   onLessonCompleted?: (lessonId: string) => void
-  onLessonSwitched?: (lessonId: string, chapterId: string) => void
+  onLessonSwitched?: (
+    lessonId: string,
+    chapterId: string
+  ) => void | Promise<void>
   onCurrentExerciseChange?: (exerciseId: string | null) => void
   onCurrentExerciseCodeChange?: (code: string | null) => void
 }
@@ -23,10 +25,10 @@ export default function Question({
 }: QuestionProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [currentLessonId, setCurrentLessonId] = useState<string | undefined>(data?.currentLesson?.id)
-  const [currentLessonTitle, setCurrentLessonTitle] = useState<string | undefined>(data?.currentLesson?.title)
-  const [currentContent, setCurrentContent] = useState<string>(data?.currentLesson?.content || '')
-  const [exercises, setExercises] = useState(data?.exercises || [])
+  const currentLessonId = data?.currentLesson?.id
+  const currentLessonTitle = data?.currentLesson?.title
+  const currentContent = data?.currentLesson?.content || ''
+  const exercises = data.exercises
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(() => {
     return new Set(
       (data?.exercises || [])
@@ -165,37 +167,8 @@ export default function Question({
 
       await new Promise(resolve => setTimeout(resolve, 150))
 
-      try {
-        const lessonDetail = await lessonDetailApi.getById(targetLessonId)
-
-        setCurrentLessonId(targetLessonId)
-        setCurrentLessonTitle(lessonDetail.currentLesson?.title)
-        setCurrentContent(lessonDetail.currentLesson?.content || '')
-        setExercises(lessonDetail.exercises || [])
-        setModalOpen(false)
-        
-        const completedIds = new Set(
-          (lessonDetail.exercises || [])
-            .filter(ex => ex.isCompleted)
-            .map(ex => ex.id)
-        )
-        setCompletedExercises(completedIds)
-
-        const serverAllDone = (lessonDetail.exercises || []).length > 0 && completedIds.size === (lessonDetail.exercises || []).length
-        if (serverAllDone) {
-          serverCompletedLessonsRef.current.add(targetLessonId)
-        } else {
-          serverCompletedLessonsRef.current.delete(targetLessonId)
-        }
-
-        const newUrl = `/courses/${courseId}/chapters/${targetChapterId}/lessons/${targetLessonId}`
-        window.history.pushState({ path: newUrl }, '', newUrl)
-        onLessonSwitched?.(targetLessonId, targetChapterId)
-
-        setTimeout(() => setIsTransitioning(false), 50)
-      } catch {
-        setIsTransitioning(false)
-      }
+      await onLessonSwitched?.(targetLessonId, targetChapterId)
+      setTimeout(() => setIsTransitioning(false), 50)
     } catch (error) {
       console.error('切换小节失败:', error)
     }

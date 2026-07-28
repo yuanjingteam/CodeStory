@@ -6,6 +6,7 @@ import type {
   CatalogLesson,
   LessonExercise,
 } from '../../types/lesson';
+import { markLessonStarted } from './learning-progress.service';
 
 interface LessonDetailContext {
   courseId?: string;
@@ -15,7 +16,8 @@ interface LessonDetailContext {
 export async function getLessonDetail(
   lessonId: string,
   userId: string,
-  context: LessonDetailContext = {}
+  context: LessonDetailContext = {},
+  markAsStarted = false
 ): Promise<LessonDetailData | null> {
   const resolvedLessonId = await resolveShortId('lessons', lessonId);
   if (!resolvedLessonId) return null;
@@ -45,6 +47,10 @@ export async function getLessonDetail(
 
   if (resolvedChapterId && chapter.id !== resolvedChapterId) return null;
   if (resolvedCourseId && course.id !== resolvedCourseId) return null;
+
+  if (markAsStarted) {
+    await markLessonStarted(resolvedLessonId, userId);
+  }
 
   const courseProgress = await prisma.courses_progress.findUnique({
     where: {
@@ -152,4 +158,12 @@ export async function getLessonDetail(
       totalCount: exercises.length,
     },
   };
+}
+
+export async function startLesson(
+  lessonId: string,
+  userId: string,
+  context: LessonDetailContext = {}
+): Promise<LessonDetailData | null> {
+  return getLessonDetail(lessonId, userId, context, true);
 }

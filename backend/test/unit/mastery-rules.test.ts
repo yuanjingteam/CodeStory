@@ -3,10 +3,26 @@
 import { describe, it, expect } from 'vitest';
 import {
   calculateAnswerMastery,
+  calculateCourseProgressStatus,
   calculateLessonMasteryLevel,
   getMasteryBand,
   resolveMasteryLevel,
 } from '../../src/services/courses/learning-progress.service';
+
+describe('课程学习状态计算', () => {
+  it('没有开始任何小节时为未学习', () => {
+    expect(calculateCourseProgressStatus(0, 0, 3)).toBe(0);
+  });
+
+  it('开始或完成部分小节时为学习中', () => {
+    expect(calculateCourseProgressStatus(1, 0, 3)).toBe(1);
+    expect(calculateCourseProgressStatus(2, 1, 3)).toBe(1);
+  });
+
+  it('所有有效小节完成后才为已学完', () => {
+    expect(calculateCourseProgressStatus(3, 3, 3)).toBe(2);
+  });
+});
 
 describe('前置项 D · calculateAnswerMastery（单题掌握值）', () => {
   it('正常提示等级下返回规范化后的 score', () => {

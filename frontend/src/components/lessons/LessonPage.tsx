@@ -56,7 +56,7 @@ export default function LessonPage({
 
   const handleLessonSwitched = useCallback(async (newLessonId: string, newChapterId: string) => {
     try {
-      const response = await lessonDetailApi.getById(newLessonId, {
+      const response = await lessonDetailApi.startById(newLessonId, {
         courseId,
         chapterId: newChapterId,
       });
@@ -78,7 +78,7 @@ export default function LessonPage({
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await lessonDetailApi.getById(lessonId, {
+        const response = await lessonDetailApi.startById(lessonId, {
           courseId,
           chapterId,
         });
