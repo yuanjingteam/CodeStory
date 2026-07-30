@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 import { IoLogoWechat } from 'react-icons/io5';
 import Link from 'next/link';
 import type { LoginRequest } from '@/types/auth';
@@ -143,7 +144,12 @@ export default function LoginForm() {
       }
     } catch (error) {
       console.error(error);
-      toast.error('登录失败');
+      const message =
+        axios.isAxiosError(error) &&
+        typeof error.response?.data?.message === 'string'
+          ? error.response.data.message
+          : '登录失败';
+      toast.error(message);
       setLoginInput((prev) => ({ ...prev, password: '' }));
       captchaRef.current?.refresh();
     } finally {
