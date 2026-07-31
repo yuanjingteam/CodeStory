@@ -10,13 +10,43 @@ import {
   type AiChatErrorCode,
 } from './chat-error';
 
+export type LessonAnswerScope = 'course' | 'extended';
+export type LessonAnswerScopeRequest =
+  | 'auto'
+  | LessonAnswerScope;
+export type LessonEvidenceQuality = 'strong' | 'thin' | 'empty';
+export type LessonTutorPromptRevision =
+  | 'grounded-v2.0'
+  | 'grounded-v3.1-boundary';
+
+export interface LessonChatSourceReference {
+  index: number;
+  sourceType: 'lesson' | 'exercise' | 'doc';
+  sourceId: string;
+  title: string;
+  chunkIndex: number;
+  contentHash: string;
+  score?: number;
+}
+
+export interface LessonChatContextEvent {
+  answerScope: LessonAnswerScope;
+  promptVersion: 'grounded-v2' | 'grounded-v3';
+  promptRevision: LessonTutorPromptRevision;
+  evidenceQuality: LessonEvidenceQuality;
+  sources: LessonChatSourceReference[];
+}
+
 interface StreamChatParams {
   lessonId: string;
   exerciseId?: string | null;
   currentCode?: string | null;
   message: string;
+  answerScope?: LessonAnswerScopeRequest;
   signal: AbortSignal;
   onToken: (token: string) => void;
+  onContext?: (context: LessonChatContextEvent) => void;
+  onFinal?: (content: string) => void;
 }
 
 interface LessonChatHistoryParams {
@@ -34,13 +64,23 @@ export interface LessonChatHistoryMessage {
   messageType?: 'chat' | 'hint' | 'code_analysis' | 'system';
   content: string;
   createdAt: string;
+  answerScope?: LessonAnswerScope;
+  promptVersion?: 'grounded-v2' | 'grounded-v3';
+  promptRevision?: LessonTutorPromptRevision;
+  evidenceQuality?: LessonEvidenceQuality;
+  sources?: LessonChatSourceReference[];
 }
 
 interface StreamEvent {
-  type: 'start' | 'token' | 'done' | 'error';
+  type: 'start' | 'context' | 'token' | 'done' | 'error';
   code?: AiChatErrorCode;
   content?: string;
   message?: string;
+  answerScope?: LessonAnswerScope;
+  promptVersion?: 'grounded-v2' | 'grounded-v3';
+  promptRevision?: LessonTutorPromptRevision;
+  evidenceQuality?: LessonEvidenceQuality;
+  sources?: LessonChatSourceReference[];
 }
 
 async function getErrorCode(response: Response): Promise<string | undefined> {
@@ -58,6 +98,7 @@ function requestChatStream(
   exerciseId: string | null | undefined,
   currentCode: string | null | undefined,
   message: string,
+  answerScope: LessonAnswerScopeRequest,
   signal: AbortSignal
 ) {
   return fetch(
@@ -74,6 +115,7 @@ function requestChatStream(
         exerciseId: exerciseId || undefined,
         currentCode: currentCode?.trim() || undefined,
         message,
+        answerScope,
       }),
       signal,
     }
@@ -208,8 +250,11 @@ export async function streamLessonChat({
   exerciseId,
   currentCode,
   message,
+  answerScope = 'auto',
   signal,
   onToken,
+  onContext,
+  onFinal,
 }: StreamChatParams): Promise<void> {
   const token = await getAccessTokenOrRefresh();
 
@@ -219,6 +264,7 @@ export async function streamLessonChat({
     exerciseId,
     currentCode,
     message,
+    answerScope,
     signal
   );
 
@@ -234,6 +280,7 @@ export async function streamLessonChat({
         exerciseId,
         currentCode,
         message,
+        answerScope,
         signal
       );
     } catch (error) {
@@ -268,6 +315,22 @@ export async function streamLessonChat({
     const event = JSON.parse(line) as StreamEvent;
     if (event.type === 'token' && event.content) {
       onToken(event.content);
+    } else if (
+      event.type === 'context' &&
+      event.answerScope &&
+      event.promptVersion &&
+      event.promptRevision &&
+      event.evidenceQuality
+    ) {
+      onContext?.({
+        answerScope: event.answerScope,
+        promptVersion: event.promptVersion,
+        promptRevision: event.promptRevision,
+        evidenceQuality: event.evidenceQuality,
+        sources: event.sources || [],
+      });
+    } else if (event.type === 'done' && event.content) {
+      onFinal?.(event.content);
     } else if (event.type === 'error') {
       throw new AiChatStreamError(
         event.message || 'AI 服务调用失败',

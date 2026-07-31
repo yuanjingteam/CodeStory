@@ -6,6 +6,7 @@ import {
   getMessageTypeLabel,
   type ChatMessage,
 } from './chatTypes';
+import { AnswerScopeBadge, ChatSources } from './ChatSources';
 
 interface ChatMessageBubbleProps {
   message: ChatMessage;
@@ -32,12 +33,18 @@ export default function ChatMessageBubble({
         }`}
       >
         {message.role === 'assistant' && (
-          <div className="mb-1">
+          <div className="mb-1 flex flex-wrap items-center gap-1.5">
             <span
               className={`inline-flex items-center rounded-sm px-1.5 py-0.5 text-[10px] font-bold ${getMessageTypeClass(message.messageType)}`}
             >
               {getMessageTypeLabel(message.messageType)}
             </span>
+            {message.answerScope && (
+              <AnswerScopeBadge
+                scope={message.answerScope}
+                evidenceQuality={message.evidenceQuality}
+              />
+            )}
           </div>
         )}
 
@@ -54,6 +61,12 @@ export default function ChatMessageBubble({
         {message.status === 'streaming' && (
           <span className="inline-block w-2 h-4 ml-1 bg-purple-600 animate-pulse align-middle" />
         )}
+
+        {message.role === 'assistant' &&
+          message.status !== 'streaming' &&
+          message.sources && (
+            <ChatSources sources={message.sources} />
+          )}
 
         {message.status === 'error' && (
           <div className="mt-2 space-y-1">

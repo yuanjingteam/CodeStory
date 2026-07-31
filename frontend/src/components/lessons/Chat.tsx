@@ -68,6 +68,11 @@ export default function Chat({
             role: message.role,
             messageType: message.messageType || 'chat',
             content: message.content,
+            answerScope: message.answerScope,
+            promptVersion: message.promptVersion,
+            promptRevision: message.promptRevision,
+            evidenceQuality: message.evidenceQuality,
+            sources: message.sources,
           })),
         ]);
       })
@@ -143,12 +148,31 @@ export default function Chat({
         exerciseId,
         currentCode: attachedCurrentCode,
         message: trimmedQuestion,
+        answerScope: 'auto',
         signal: controller.signal,
         onToken: (token) => {
           setMessages((previous) =>
             previous.map((message) =>
               message.id === assistantMessageId
                 ? { ...message, content: message.content + token }
+                : message
+            )
+          );
+        },
+        onContext: (context) => {
+          setMessages((previous) =>
+            previous.map((message) =>
+              message.id === assistantMessageId
+                ? { ...message, ...context }
+                : message
+            )
+          );
+        },
+        onFinal: (content) => {
+          setMessages((previous) =>
+            previous.map((message) =>
+              message.id === assistantMessageId
+                ? { ...message, content }
                 : message
             )
           );

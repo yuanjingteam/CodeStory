@@ -1,4 +1,10 @@
 import type { AiChatErrorCode } from '@/app/api/ai/chat-error';
+import type {
+  LessonAnswerScope,
+  LessonChatSourceReference,
+  LessonEvidenceQuality,
+  LessonTutorPromptRevision,
+} from '@/app/api/ai/chat';
 
 export type ChatMessageType = 'chat' | 'hint' | 'code_analysis' | 'system';
 
@@ -12,6 +18,11 @@ export interface ChatMessage {
   retryQuestion?: string;
   retryMessageType?: ChatMessageType;
   retryCurrentCode?: string | null;
+  answerScope?: LessonAnswerScope;
+  promptVersion?: 'grounded-v2' | 'grounded-v3';
+  promptRevision?: LessonTutorPromptRevision;
+  evidenceQuality?: LessonEvidenceQuality;
+  sources?: LessonChatSourceReference[];
 }
 
 export function getMessageTypeLabel(messageType?: ChatMessageType): string {
