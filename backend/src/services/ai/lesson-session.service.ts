@@ -1,6 +1,13 @@
 import prisma from '../../config/prisma';
 import type { Prisma } from '../../generated/prisma';
 import type { LessonAiContext } from './lesson-context.service';
+import type {
+  LessonAnswerScope,
+  LessonChatSourceReference,
+  LessonEvidenceQuality,
+  LessonTutorPromptRevision,
+  LessonTutorPromptVersion,
+} from './lesson-chat.types';
 
 export type LessonChatRole = 'user' | 'assistant';
 export type LessonChatMessageType = 'chat' | 'hint' | 'code_analysis' | 'system';
@@ -14,6 +21,11 @@ export interface LessonChatHistoryMessage {
 export interface LessonChatStoredMessage extends LessonChatHistoryMessage {
   id: string;
   createdAt: string;
+  answerScope?: LessonAnswerScope;
+  promptVersion?: LessonTutorPromptVersion;
+  promptRevision?: LessonTutorPromptRevision;
+  evidenceQuality?: LessonEvidenceQuality;
+  sources?: LessonChatSourceReference[];
 }
 
 const DEFAULT_STORED_MESSAGES_LIMIT = 50;
@@ -54,6 +66,64 @@ function getMetadataExerciseId(metadata: unknown): string | null {
 
   const value = (metadata as { exerciseId?: unknown }).exerciseId;
   return typeof value === 'string' && value.trim() ? value : null;
+}
+
+function getStoredResponseMetadata(metadata: unknown): Pick<
+  LessonChatStoredMessage,
+  'answerScope' | 'promptVersion' | 'promptRevision' | 'evidenceQuality' | 'sources'
+> {
+  if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
+    return {};
+  }
+
+  const value = metadata as Record<string, unknown>;
+  const answerScope =
+    value.answerScope === 'course' ||
+    value.answerScope === 'extended'
+      ? value.answerScope
+      : undefined;
+  const promptVersion =
+    value.promptVersion === 'grounded-v2' ||
+    value.promptVersion === 'grounded-v3'
+      ? value.promptVersion
+      : undefined;
+  const promptRevision =
+    value.promptRevision === 'grounded-v2.0' ||
+    value.promptRevision === 'grounded-v3.1-boundary'
+      ? value.promptRevision
+      : undefined;
+  const evidenceQuality =
+    value.evidenceQuality === 'strong' ||
+    value.evidenceQuality === 'thin' ||
+    value.evidenceQuality === 'empty'
+      ? value.evidenceQuality
+      : undefined;
+  const sources = Array.isArray(value.sources)
+    ? value.sources.filter(
+        (source): source is LessonChatSourceReference =>
+          Boolean(
+            source &&
+              typeof source === 'object' &&
+              !Array.isArray(source) &&
+              typeof source.index === 'number' &&
+              ['lesson', 'exercise', 'doc'].includes(
+                String(source.sourceType)
+              ) &&
+              typeof source.sourceId === 'string' &&
+              typeof source.title === 'string' &&
+              typeof source.chunkIndex === 'number' &&
+              typeof source.contentHash === 'string'
+          )
+      )
+    : undefined;
+
+  return {
+    ...(answerScope ? { answerScope } : {}),
+    ...(promptVersion ? { promptVersion } : {}),
+    ...(promptRevision ? { promptRevision } : {}),
+    ...(evidenceQuality ? { evidenceQuality } : {}),
+    ...(sources?.length ? { sources } : {}),
+  };
 }
 
 function trimHistoryContent(content: string): string {
@@ -208,6 +278,7 @@ export async function getLessonChatMessages(
       role: true,
       message_type: true,
       content: true,
+      metadata: true,
       created_at: true,
     },
   });
@@ -218,6 +289,7 @@ export async function getLessonChatMessages(
     messageType: normalizeMessageType(message.message_type),
     content: message.content,
     createdAt: message.created_at.toISOString(),
+    ...getStoredResponseMetadata(message.metadata),
   }));
 }
 

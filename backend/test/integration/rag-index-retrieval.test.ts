@@ -8,6 +8,8 @@ import {
   queueKnowledgeSource,
   type EmbeddingClient,
 } from '../../src/services/rag';
+import { getLessonAiContext } from '../../src/services/ai/lesson-context.service';
+import { getLessonChatMessages } from '../../src/services/ai/lesson-session.service';
 
 const closeVector = [
   1,
@@ -38,6 +40,7 @@ describe('阶段 1 · 索引代次与授权检索', () => {
   const chapterId = randomUUID();
   const otherChapterId = randomUUID();
   const lessonId = randomUUID();
+  const siblingLessonId = randomUUID();
   const otherLessonId = randomUUID();
   const exerciseId = randomUUID();
   const aiExerciseId = randomUUID();
@@ -47,6 +50,7 @@ describe('阶段 1 · 索引代次与授权检索', () => {
     process.env.AI_EMBEDDING_MODEL =
       'Qwen/Qwen3-Embedding-4B';
     process.env.AI_EMBEDDING_DIMENSIONS = '1024';
+    process.env.AI_RAG_ENABLED = 'true';
 
     await prisma.users.createMany({
       data: [
@@ -95,6 +99,14 @@ describe('阶段 1 · 索引代次与授权检索', () => {
           content:
             '<p>SELECT 查询可以使用 WHERE 子句过滤记录。WHERE 后面填写布尔条件，例如 status = 1；还可以通过 AND 与 OR 组合多个条件，并在执行前确认字段类型和索引是否适合当前查询。</p>',
           order: 1,
+        },
+        {
+          id: siblingLessonId,
+          chapter_id: chapterId,
+          title: '同课程其他小节',
+          content:
+            '<p>SELECT 也可以使用 ORDER BY 排序，但这不是当前 WHERE 小节的内容。</p>',
+          order: 2,
         },
         {
           id: otherLessonId,
@@ -291,6 +303,7 @@ describe('阶段 1 · 索引代次与授权检索', () => {
   it('按课程和来源边界检索，静态题可用但 AI 题不可用', async () => {
     for (const source of [
       { type: 'lesson' as const, id: lessonId },
+      { type: 'lesson' as const, id: siblingLessonId },
       { type: 'exercise' as const, id: exerciseId },
       { type: 'exercise' as const, id: aiExerciseId },
     ]) {
@@ -337,6 +350,25 @@ describe('阶段 1 · 索引代次与授权检索', () => {
     expect(
       results.some((item) => item.sourceId === aiExerciseId)
     ).toBe(false);
+
+    const scopedResults = await retriever.retrieve('SELECT 怎么用？', {
+      userId,
+      courseId,
+      lessonId,
+      purpose: 'student_chat',
+      topK: 10,
+      strictLessonScope: true,
+    });
+    expect(
+      scopedResults.every(
+        (item) => item.lessonId === lessonId
+      )
+    ).toBe(true);
+    expect(
+      scopedResults.some(
+        (item) => item.sourceId === siblingLessonId
+      )
+    ).toBe(false);
     await expect(
       retriever.retrieve('WHERE', {
         userId,
@@ -359,6 +391,76 @@ describe('阶段 1 · 索引代次与授权检索', () => {
         purpose: 'admin_generation',
       })
     ).resolves.toBeDefined();
+  });
+
+  it('短小节直接使用完整上下文且不调用 Embedding', async () => {
+    const context = await getLessonAiContext(
+      lessonId,
+      undefined,
+      {
+        userId,
+        query: 'WHERE 怎么用？',
+        retriever: {
+          async retrieve() {
+            throw new Error('不应调用向量检索');
+          },
+        },
+      }
+    );
+
+    expect(context?.retrievalMode).toBe('full_context');
+    expect(context?.evidenceQuality).toBe('strong');
+    expect(context?.evidence).toHaveLength(1);
+    expect(context?.evidence[0].sourceId).toBe(lessonId);
+  });
+
+  it('历史消息保留回答范围、证据质量和课程来源', async () => {
+    const session = await prisma.ai_chat_sessions.create({
+      data: {
+        user_id: userId,
+        lesson_id: lessonId,
+      },
+    });
+    await prisma.ai_chat_messages.create({
+      data: {
+        session_id: session.id,
+        role: 'assistant',
+        message_type: 'chat',
+        content: 'WHERE 用于过滤记录 [1]。',
+        metadata: {
+          answerScope: 'course',
+          promptVersion: 'grounded-v3',
+          promptRevision: 'grounded-v3.1-boundary',
+          evidenceQuality: 'strong',
+          sources: [
+            {
+              index: 1,
+              sourceType: 'lesson',
+              sourceId: lessonId,
+              title: 'WHERE',
+              chunkIndex: 0,
+              contentHash: 'a'.repeat(64),
+              score: 1,
+            },
+          ],
+        },
+      },
+    });
+
+    const messages = await getLessonChatMessages(session.id);
+    expect(messages[0]).toMatchObject({
+      answerScope: 'course',
+      promptVersion: 'grounded-v3',
+      promptRevision: 'grounded-v3.1-boundary',
+      evidenceQuality: 'strong',
+      sources: [
+        {
+          index: 1,
+          sourceId: lessonId,
+          title: 'WHERE',
+        },
+      ],
+    });
   });
 
   it('层级删除可在同一事务内使下属索引全部失效', async () => {

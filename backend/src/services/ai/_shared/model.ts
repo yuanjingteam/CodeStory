@@ -14,6 +14,8 @@ export function createChatModel(overrides?: {
   maxTokens?: number;
   streaming?: boolean;
   streamUsage?: boolean;
+  maxRetries?: number;
+  timeoutMs?: number;
 }): ChatOpenAI {
   const config = getAiConfig();
   logger.debug(
@@ -25,12 +27,15 @@ export function createChatModel(overrides?: {
     apiKey: config.apiKey,
     model: config.model,
     temperature: overrides?.temperature ?? 0.3,
-    timeout: config.timeoutMs,
+    timeout: overrides?.timeoutMs ?? config.timeoutMs,
     maxTokens: overrides?.maxTokens
       ? Math.min(config.maxTokens, overrides.maxTokens)
       : config.maxTokens,
     streaming: overrides?.streaming ?? false,
     streamUsage: overrides?.streamUsage ?? false,
+    ...(typeof overrides?.maxRetries === 'number'
+      ? { maxRetries: overrides.maxRetries }
+      : {}),
     configuration: config.baseUrl ? { baseURL: config.baseUrl } : undefined,
   });
 }

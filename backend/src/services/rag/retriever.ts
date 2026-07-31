@@ -122,6 +122,10 @@ export class AuthorizedKnowledgeRetriever
           AND s."source_updated_at" = k."source_version"
         WHERE k."is_delete" = 0
           AND k."course_id" = ${options.courseId}
+          AND (
+            ${!options.strictLessonScope || !options.lessonId}
+            OR k."lesson_id" = ${options.lessonId || null}
+          )
           AND k."source_type" IN (
             ${Prisma.join(sourceTypes)}
           )

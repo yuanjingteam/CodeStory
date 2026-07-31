@@ -35,6 +35,7 @@ export interface RetrieveOptions {
   purpose: RetrievalPurpose;
   topK?: number;
   sourceTypes?: KnowledgeSourceType[];
+  strictLessonScope?: boolean;
 }
 
 export interface KnowledgeRetriever {

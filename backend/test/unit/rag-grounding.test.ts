@@ -5,8 +5,16 @@ import {
   htmlToKnowledgeText,
   summarizeKnowledgeStates,
 } from '../../src/services/rag';
-import { formatKnowledgeContext } from '../../src/services/ai/lesson-chat.service';
+import {
+  formatKnowledgeContext,
+  getAnswerScopeInstructions,
+  getInvalidCitationIndexes,
+  getLessonTutorPromptRevision,
+  normalizeLessonChatAnswer,
+  resolveAnswerScope,
+} from '../../src/services/ai/lesson-chat.service';
 import type { LessonAiContext } from '../../src/services/ai/lesson-context.service';
+import { buildHistoryAwareRetrievalQuery } from '../../src/services/ai/lesson-context.service';
 
 function createContext(
   overrides: Partial<LessonAiContext> = {}
@@ -20,7 +28,9 @@ function createContext(
     lessonTitle: '查询',
     lessonContent: '原始小节正文',
     exercise: null,
+    ragEnabled: true,
     retrievalMode: 'fallback',
+    evidenceQuality: 'empty',
     evidence: [],
     ...overrides,
   };
@@ -68,6 +78,107 @@ describe('阶段 1 · RAG 上下文', () => {
     expect(formatKnowledgeContext(createContext())).toContain(
       '<fallback_lesson_content>\n原始小节正文'
     );
+  });
+
+  it('grounded-v3 无可用证据时不重新注入被排除正文', () => {
+    expect(
+      formatKnowledgeContext(createContext(), 'grounded-v3')
+    ).toBe(
+      '<no_course_evidence>当前没有可用课程证据</no_course_evidence>'
+    );
+  });
+
+  it('grounded-v3 使用编号证据并识别越界引用', () => {
+    const context = createContext({
+      retrievalMode: 'full_context',
+      evidenceQuality: 'strong',
+      evidence: [
+        {
+          sourceType: 'lesson',
+          sourceId: 'source-id',
+          courseId: 'course-id',
+          lessonId: 'lesson-id',
+          sourceVersion: new Date('2026-07-30T00:00:00Z'),
+          chunkIndex: 0,
+          content: 'SELECT 使用 WHERE 过滤。',
+          contentHash: 'a'.repeat(64),
+          score: 1,
+        },
+      ],
+    });
+
+    expect(
+      formatKnowledgeContext(context, 'grounded-v3')
+    ).toContain('<evidence index="1"');
+    expect(getInvalidCitationIndexes('结论 [1]，错误 [3]', 1)).toEqual([
+      3,
+    ]);
+  });
+
+  it('课程限定优先，明确举例或应用时自动进入扩展模式', () => {
+    expect(resolveAnswerScope('请只按课程举一个例子')).toBe(
+      'course'
+    );
+    expect(resolveAnswerScope('这个知识在实际项目中怎么用？')).toBe(
+      'extended'
+    );
+    expect(resolveAnswerScope('总结本节重点')).toBe('course');
+    expect(resolveAnswerScope('总结本节重点', 'extended')).toBe(
+      'extended'
+    );
+  });
+
+  it('grounded-v3.1 将证据未明确的应用细节限定在通用补充', () => {
+    const instructions = getAnswerScopeInstructions('extended');
+
+    expect(instructions).toContain('实际编程中如何应用');
+    expect(instructions).toContain('全部移到通用补充');
+    expect(instructions).toContain('不得通过添加课程引用');
+    expect(getLessonTutorPromptRevision('grounded-v2')).toBe(
+      'grounded-v2.0'
+    );
+    expect(getLessonTutorPromptRevision('grounded-v3')).toBe(
+      'grounded-v3.1-boundary'
+    );
+  });
+
+  it('扩展回答缺少标题时确定性分隔课程结论与通用补充', () => {
+    const answer = [
+      '课程只说明了 WHERE 用于过滤记录 [1]。',
+      '',
+      '实际项目中还应配合参数化查询。',
+    ].join('\n');
+    const normalized = normalizeLessonChatAnswer(
+      answer,
+      'extended'
+    );
+
+    expect(normalized).toContain(
+      '### 课程内结论\n\n课程只说明了 WHERE 用于过滤记录 [1]。'
+    );
+    expect(normalized).toContain(
+      '### 通用补充（非课程原文）\n\n实际项目中还应配合参数化查询。'
+    );
+    expect(
+      normalizeLessonChatAnswer(normalized, 'extended')
+    ).toBe(normalized);
+  });
+
+  it('只为指代型追问拼接最近问题且限制历史长度', () => {
+    expect(
+      buildHistoryAwareRetrievalQuery(
+        '这个在代码里怎么用？',
+        '请解释 WHERE 子句'
+      )
+    ).toBe(
+      '请解释 WHERE 子句\n当前追问：这个在代码里怎么用？'
+    );
+    expect(
+      buildHistoryAwareRetrievalQuery(
+        '请解释 ORDER BY',
+        '上一条问题'
+      )
+    ).toBe('请解释 ORDER BY');
   });
 });
 

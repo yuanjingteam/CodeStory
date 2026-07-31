@@ -16,6 +16,10 @@ export interface AiEmbeddingConfig {
   timeoutMs: number;
 }
 
+export type AiTutorPromptVersion =
+  | 'grounded-v2'
+  | 'grounded-v3';
+
 const DEFAULT_EMBEDDING_BATCH_SIZE = 10;
 const SUPPORTED_EMBEDDING_DIMENSIONS = new Set([
   64, 128, 256, 512, 768, 1024, 1536, 2048, 2560, 4096,
@@ -95,4 +99,11 @@ export function getAiEmbeddingConfig(): AiEmbeddingConfig {
 
 export function isRagEnabled(): boolean {
   return process.env.AI_RAG_ENABLED?.trim().toLowerCase() === 'true';
+}
+
+export function getAiTutorPromptVersion(): AiTutorPromptVersion {
+  return process.env.AI_TUTOR_PROMPT_VERSION?.trim() ===
+    'grounded-v3'
+    ? 'grounded-v3'
+    : 'grounded-v2';
 }

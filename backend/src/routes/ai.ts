@@ -1,7 +1,23 @@
 import { Router, type Response } from 'express';
 import { authMiddleware } from '../middleware/auth';
+import { getAiTutorPromptVersion } from '../config/ai';
 import { getLessonAiContext } from '../services/ai/lesson-context.service';
-import { streamLessonChat } from '../services/ai/lesson-chat.service';
+import {
+  getInvalidCitationIndexes,
+  getLessonChatSources,
+  getLessonTutorPromptRevision,
+  normalizeLessonChatAnswer,
+  resolveAnswerScope,
+  streamLessonChat,
+} from '../services/ai/lesson-chat.service';
+import type {
+  LessonAnswerScope,
+  LessonAnswerScopeRequest,
+  LessonChatSourceReference,
+  LessonEvidenceQuality,
+  LessonTutorPromptRevision,
+  LessonTutorPromptVersion,
+} from '../services/ai/lesson-chat.types';
 import {
   createAiChatErrorPayload,
   logAiError,
@@ -26,11 +42,16 @@ const MAX_QUESTION_LENGTH = 2_000;
 const MAX_CURRENT_CODE_LENGTH = 12_000;
 
 interface StreamEvent {
-  type: 'start' | 'token' | 'done' | 'error';
+  type: 'start' | 'context' | 'token' | 'done' | 'error';
   content?: string;
   message?: string;
   sessionId?: string;
   code?: AiChatErrorCode;
+  answerScope?: LessonAnswerScope;
+  promptVersion?: LessonTutorPromptVersion;
+  promptRevision?: LessonTutorPromptRevision;
+  evidenceQuality?: LessonEvidenceQuality;
+  sources?: LessonChatSourceReference[];
 }
 
 function writeEvent(res: Response, event: StreamEvent): void {
@@ -155,6 +176,10 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
   const question = typeof req.body.message === 'string' ? req.body.message.trim() : '';
   const currentCode =
     typeof req.body.currentCode === 'string' ? req.body.currentCode.trim() : '';
+  const requestedAnswerScope =
+    typeof req.body.answerScope === 'string'
+      ? req.body.answerScope.trim()
+      : 'auto';
 
   if (!userId) {
     return res.status(401).json({ code: 401, message: '未登录' });
@@ -181,6 +206,18 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
       `当前代码不能超过 ${MAX_CURRENT_CODE_LENGTH} 个字符`
     );
   }
+  if (
+    !['auto', 'course', 'extended'].includes(
+      requestedAnswerScope
+    )
+  ) {
+    return sendAiChatError(
+      res,
+      400,
+      'AI_REQUEST_INVALID',
+      '回答范围无效'
+    );
+  }
 
   const abortController = new AbortController();
   res.on('close', () => {
@@ -197,6 +234,27 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
     }
 
     const messageType = resolveMessageType(question, currentCode, Boolean(context.exerciseId));
+    const resolvedAnswerScope = resolveAnswerScope(
+      question,
+      requestedAnswerScope as LessonAnswerScopeRequest
+    );
+    const promptVersion = getAiTutorPromptVersion();
+    const promptRevision =
+      getLessonTutorPromptRevision(promptVersion);
+    const answerScope =
+      promptVersion === 'grounded-v3'
+        ? resolvedAnswerScope
+        : 'course';
+    const sources = getLessonChatSources(context);
+    const storedSources = sources.map((source) => ({
+      index: source.index,
+      sourceType: source.sourceType,
+      sourceId: source.sourceId,
+      title: source.title,
+      chunkIndex: source.chunkIndex,
+      contentHash: source.contentHash,
+      score: source.score ?? null,
+    }));
     const session = await getOrCreateLessonChatSession(userId, context);
     const history = await getRecentLessonChatMessages(session.id, {
       currentExerciseId: context.exerciseId,
@@ -206,6 +264,7 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
       exerciseId: context.exerciseId,
       hasCurrentCode: Boolean(currentCode),
       currentCodeLength: currentCode.length,
+      requestedAnswerScope,
     };
 
     res.status(200);
@@ -245,13 +304,23 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
       return;
     }
 
+    writeEvent(res, {
+      type: 'context',
+      answerScope,
+      promptVersion,
+      promptRevision,
+      evidenceQuality: context.evidenceQuality,
+      sources,
+    });
+
     let assistantContent = '';
     for await (const token of streamLessonChat(
       context,
       question,
       abortController.signal,
       history,
-      currentCode
+      currentCode,
+      { answerScope, promptVersion }
     )) {
       if (abortController.signal.aborted) break;
       assistantContent += token;
@@ -259,10 +328,19 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
     }
 
     if (!abortController.signal.aborted) {
+      const finalAssistantContent = normalizeLessonChatAnswer(
+        assistantContent,
+        answerScope
+      );
+      const invalidCitationIndexes =
+        getInvalidCitationIndexes(
+          finalAssistantContent,
+          sources.length
+        );
       await appendLessonChatExchange(
         session.id,
         question,
-        assistantContent,
+        finalAssistantContent,
         userMetadata,
         {
           lessonId: context.lessonId,
@@ -271,10 +349,21 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
           usedCurrentCode: Boolean(currentCode),
           retrievalMode: context.retrievalMode,
           evidenceCount: context.evidence.length,
+          evidenceQuality: context.evidenceQuality,
+          answerScope,
+          promptVersion,
+          promptRevision,
+          sources: storedSources,
+          invalidCitationIndexes,
+          answerPostProcessed:
+            finalAssistantContent !== assistantContent,
         },
         messageType
       );
-      writeEvent(res, { type: 'done' });
+      writeEvent(res, {
+        type: 'done',
+        content: finalAssistantContent,
+      });
       res.end();
     }
   } catch (error) {
