@@ -28,7 +28,7 @@ CodeStory 是一个面向编程学习场景的全栈教学平台，包含课程�
 | 编辑与交互 | Tiptap 3、CodeMirror 6、Zustand 5、Axios |
 | 后端 | Express 5、TypeScript、Prisma 6 |
 | 数据与会话 | PostgreSQL 16、Redis 7、JWT、bcrypt |
-| AI | LangChain、OpenAI 兼容接口、阿里云百炼 / Qwen |
+| AI | LangChain、SiliconFlow OpenAI 兼容接口、DeepSeek / Qwen Embedding |
 | 文件存储 | 本地上传目录、阿里云 OSS |
 | 部署 | Docker、Docker Compose、Nginx |
 
@@ -113,12 +113,17 @@ JWT_REFRESH_SECRET=replace-with-a-third-long-random-secret
 EMAIL_USER=
 EMAIL_PASS=
 
-# AI 助手需要；默认兼容阿里云百炼 Qwen
-QWEN_API_KEY=
-AI_MODEL=qwen-plus
-AI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+# AI 助手需要；当前使用 SiliconFlow OpenAI 兼容端点
+AI_API_KEY=
+AI_MODEL=deepseek-ai/DeepSeek-V4-Flash
+AI_BASE_URL=https://api.siliconflow.cn/v1
 AI_TIMEOUT_MS=30000
 AI_MAX_TOKENS=1000
+AI_EMBEDDING_MODEL=Qwen/Qwen3-Embedding-4B
+AI_EMBEDDING_DIMENSIONS=1024
+AI_RAG_ENABLED=false
+CONTENT_RETENTION_DAYS=30
+CONTENT_PURGE_ENABLED=false
 
 # 可选；不配置时文件保存到 backend/uploads
 OSS_REGION=oss-cn-beijing
@@ -196,7 +201,8 @@ API 基础地址为 http://localhost:4001/api/v1。
 
 ## Docker 部署
 
-生产编排包含 frontend、backend、redis 和 nginx。PostgreSQL 使用外部数据库，不会由 docker-compose.yml 创建。
+生产编排包含 frontend、backend、PostgreSQL 和 Redis。frontend 与 backend 仅映射到
+宿主机回环地址，由宿主机 Nginx 统一处理域名、HTTPS 和公网流量。
 
 ~~~bash
 # 1. 创建并填写生产环境变量
@@ -212,13 +218,22 @@ docker compose run --rm backend pnpm exec prisma migrate deploy
 docker compose up -d
 ~~~
 
-当前 docker-compose.yml 将 Nginx 映射到宿主机 18080 端口，启动后访问：
+将 nginx/conf.d/default.conf 安装到宿主机 Nginx，并检查配置后重新加载：
 
-~~~text
-http://服务器地址:18080
+~~~bash
+sudo cp nginx/conf.d/default.conf /etc/nginx/conf.d/codestory.conf
+sudo nginx -t
+sudo systemctl reload nginx
 ~~~
 
-如需直接使用 80 端口，请将 docker-compose.yml 中 Nginx 的端口映射改为 80:80，并确认端口未被占用。
+课程、章节、小节和题目使用 30 天软删除。开发环境默认不自动清理；
+生产环境可设置 `CONTENT_PURGE_ENABLED=true`。过期且没有学习进度、答题、
+代码提交或聊天记录的内容才会永久删除；存在学习记录的内容会继续归档。
+可先执行 `pnpm run content:cleanup` 查看 dry-run，再用
+`pnpm run content:cleanup -- --execute` 手动清理。
+
+容器端口只监听 `127.0.0.1:3001` 和 `127.0.0.1:4001`，不会绕过宿主机
+Nginx 直接暴露到公网。正式部署时应按实际域名修改 Nginx 的 `server_name` 并配置 HTTPS。
 
 常用运维命令：
 
@@ -226,7 +241,6 @@ http://服务器地址:18080
 docker compose ps
 docker compose logs -f backend
 docker compose logs -f frontend
-docker compose logs -f nginx
 docker compose down
 ~~~
 

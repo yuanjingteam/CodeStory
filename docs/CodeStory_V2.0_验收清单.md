@@ -1,8 +1,8 @@
 # CodeStory V2.0 验收清单
 
-> **状态：** 阶段 0A 完成
+> **状态：** 阶段 0B 已完成；阶段 1 检索与回答模型对照完成，grounded-v2 上线门禁通过
 >
-> **最后核对：** 2026-07-28
+> **最后核对：** 2026-07-31
 >
 > **依据文档：** [`CodeStory_V2.0_AI增强执行计划.md`](./CodeStory_V2.0_AI增强执行计划.md) 第 5.0、5.2 节
 >
@@ -85,6 +85,106 @@
 
 ---
 
+## 阶段 0B — AI 基础设施与本地验证
+
+### 数据库与 pgvector
+
+| 验收点 | 实测结果 |
+| --- | --- |
+| 空临时库执行完整迁移链 | ✅ 8 条 migration 全部成功 |
+| `vector` 扩展与 `vector(1024)` | ✅ migration 创建成功 |
+| 原始 SQL 显式 `$1::vector` 查询 top-k | ✅ 最近文本以余弦距离返回第一名 |
+| 新增数据结构 | ✅ `knowledge_chunks`、`knowledge_index_state`、`learning_run_effects` 及会话运行字段已创建 |
+| 本地开发库迁移 | ✅ `20260730000000_add_ai_foundation` 已执行 |
+
+### LangGraph checkpointer
+
+| 验收点 | 命令 | 实测结果 |
+| --- | --- | --- |
+| 独立初始化 | `pnpm run setup:checkpointer` | ✅ 成功 |
+| 重复初始化 | 连续执行第二次 | ✅ 成功，已有表和数据未受损 |
+| 跨进程恢复 | `pnpm run check:langgraph` | ✅ 进程 A 在 `resume` 节点中断，进程 B 使用同一 `thread_id` 恢复并完成 |
+| 同步持久化 | 验证脚本传入 `durability: 'sync'` | ✅ 进程退出前 checkpoint 已落库 |
+| 应用启动隔离 | 检查 `src/app.ts` | ✅ 未调用 `PostgresSaver.setup()` |
+
+### RAG、结构化输出与请求上下文
+
+| 验收点 | 实测结果 |
+| --- | --- |
+| `RecursiveCharacterTextSplitter` 切片与 hash 稳定 | ✅ 单元测试通过 |
+| 11 条 embedding 本地拆批 | ✅ fake client 观测为 `[10, 1]` |
+| embedding 维度保护 | ✅ 配置固定 1024，其他维度要求先迁移并重建 |
+| 代码评阅 zod schema | ✅ 合法样本通过，越界分数被拒绝 |
+| 选择题讲解 zod schema | ✅ 合法样本通过，非法布尔值/缺失字段被拒绝 |
+| 深层 service 读取同一 `trace_id` | ✅ AsyncLocalStorage 单元测试通过 |
+| HTTP trace | ✅ 请求生成/接受安全的 `x-request-id`，响应返回 `x-trace-id` |
+| 日志脱敏 | ✅ authorization、cookie、密码、Token、API Key 和完整 Prompt 配置为脱敏字段 |
+
+### 评测夹具
+
+- `backend/evals/` 已固定统一 schema、数据集版本、Prompt 版本、默认模型和报告格式。
+- `pnpm run eval` 通过：答疑 grounding、AI 出题、代码评分各 20 条，共 60 条固定冒烟样本。
+- 当前只完成 `fixture_validation`，真实质量指标在阶段 1/2/3 分别补齐，不把夹具校验冒充模型效果。
+
+### 自动化门禁
+
+| 命令 | 实测结果 |
+| --- | --- |
+| `pnpm run build` | ✅ 通过 |
+| `pnpm run test` | ✅ 8 个测试文件 / 54 个用例全过 |
+| `pnpm run check:auth` | ✅ Token、Session、Rotation、Logout 全过 |
+| `pnpm run check` | ✅ build + auth + test 完整通过 |
+| `git diff --check` | ✅ 通过，仅有既有 CRLF 提示 |
+
+### 真实端点补验
+
+- [x] SiliconFlow `Qwen/Qwen3-Embedding-4B` 文档与查询向量均返回 1024 维有限数值。
+- [x] DeepSeek V4 Flash 代码评阅结构化输出通过 zod 校验。
+- [x] DeepSeek V4 Flash 选择题解释结构化输出通过 zod 校验。
+
+**阶段 0B 状态：** ✅ **已完成**（2026-07-30）
+
+---
+
+## 阶段 1 — RAG 检索与管理端索引闭环
+
+### 索引换代、检索与降级
+
+| 验收点 | 实测结果 |
+| --- | --- |
+| generation CAS 与整源事务换代 | ✅ 连续重建只保留当前代，过期任务不能覆盖新内容 |
+| 换代失败保护 | ✅ embedding/写入失败时旧 chunks 保留，状态可由补偿流程收敛 |
+| 授权检索 | ✅ 限定有效课程、小节与非 AI 静态题，跨课程内容不可召回 |
+| 删除失效 | ✅ 小节及层级删除会失效对应状态并移除活动 chunks |
+| 对话降级 | ✅ RAG 关闭或失败时回退既有小节正文上下文 |
+
+### 管理端可见性与恢复操作
+
+| 验收点 | 输入 | 预期 | 实测 |
+| --- | --- | --- | --- |
+| 小节索引状态 | 打开小节管理列表 | 展示 `已同步/待同步/部分失败/同步失败/未索引` | ✅ 已实现持久化汇总状态列 |
+| 单小节重试 | 点击失败小节的“重试同步” | 只重建该小节及其静态题，返回汇总状态 | ✅ 已实现 |
+| 当前筛选批量同步 | 已应用课程或章节筛选后点击“同步当前筛选” | 二次确认后只重建筛选范围 | ✅ 已实现；无课程/章节范围时禁用，后端同步校验 |
+| 保存结果反馈 | 新建/编辑小节 | 业务保存不被索引失败回滚，并区分成功/部分失败/失败 | ✅ 已实现 |
+| 层级标题联动 | 修改课程或章节标题 | 重建全部后代小节与静态题索引 | ✅ 已实现；无实际标题变化不触发 |
+| 层级删除失效 | 软删除课程、章节或小节 | 同事务失效后代索引 | ✅ 已实现 |
+| 内容就绪门禁 | 保存空白、仅标题或过短内容 | 空白不索引；短内容待审核；非空短内容可人工纳入 | ✅ 已实现 |
+| 回收与保留 | 删除课程、章节、小节或题目 | 30 天内可恢复；有学习记录的过期内容继续归档 | ✅ 已实现 |
+| 问题来源隔离 | 执行治理脚本 | 13 个来源排除，2 条测试小节进入回收站 | ✅ 已执行 |
+| 管理接口权限 | 调用 `POST /api/v1/admin/lessons/reindex-batch` | 未登录 401、普通用户 403、管理员进入业务校验 | ✅ 自动化测试通过 |
+
+### 阶段 1 自动化门禁
+
+| 命令 | 实测结果 |
+| --- | --- |
+| 后端 `pnpm run build`、`pnpm run test` | ✅ build + 10 个测试文件 / 77 个用例全过 |
+| 前端 `pnpm run check` | ✅ TypeScript + ESLint 全过 |
+| 临时库迁移 | ✅ 10 条 migration 从空库执行成功，teardown 删除临时库 |
+
+**阶段 1 状态：** ✅ 实现、内容门禁、问题来源隔离、检索与回答模型对照全部完成。4B 保持主选（Recall@5 = 1.00、MRR@5 = 0.9867）；DeepSeek V4 Flash 使用 grounded-v2 后 claim 支持率 48/53 = 0.9057；后端 10 个文件 / 77 个用例通过。仓库默认 `AI_RAG_ENABLED=false`，部署完成迁移、重建和冒烟后由环境显式开启。
+
+---
+
 ## 测试基础设施
 
 ### vitest + 临时 PostgreSQL 夹具
@@ -109,7 +209,7 @@ pnpm test                                            # 跑所有测试
 pnpm check                                           # build + auth + test 完整链路
 ```
 
-**实测（2026-07-28）：** 7 条迁移从空库执行成功，6 个测试文件 / 46 个用例全过，耗时 58.90s；teardown 已删除本次唯一临时库。
+**最新实测（2026-07-30）：** 9 条迁移从空库执行成功，10 个测试文件 / 70 个用例全过；teardown 已删除本次唯一临时库。
 
 ---
 
@@ -144,8 +244,8 @@ pnpm check                                           # build + auth + test 完�
 
 ## 后续阶段验收条目（占位）
 
-- 阶段 0B：vitest 夹具已就绪，待补 pgvector 扩展、LangGraph checkpointer、zod、pino 等
-- 阶段 1：RAG 检索层 + 集成测试 ②（向量索引换代）
+- 阶段 0B：已完成；真实 AI/embedding 端点通过
+- 阶段 1：实现、管理端索引闭环与集成测试通过；标签复核完成，13 个问题来源待清理，RAG 默认关闭
 - 阶段 2：AI 出题 + 出题/审核接口的权限三态回归
 - 阶段 3：评分复核闭环 + `mastery_level` 实际写入
 - 阶段 4：LangGraph 学习状态机

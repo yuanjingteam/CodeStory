@@ -1,5 +1,9 @@
 # 阶段 0B：AI 基础设施与本地验证
 
+> **状态：已完成（2026-07-30）**
+>
+> 本地迁移、vector top-k、checkpointer 重复初始化、跨进程恢复、评测夹具和完整后端门禁已通过。SiliconFlow `Qwen/Qwen3-Embedding-4B` 已完成真实 1024 维端点验证；正式 RAG 已在阶段 1 实现。
+
 ## 阶段定位
 
 在本地建立后续 RAG、评分和状态机共用的数据库、依赖、日志、测试与评测底座，不交付业务功能。
@@ -23,7 +27,7 @@
 3. RAG 骨架：
    - embedding 配置与客户端。
    - `RecursiveCharacterTextSplitter` 封装、检索接口类型和空实现。
-   - DashScope batch size 默认 10，本地负责把 11 条拆批。
+   - Embedding 默认 batch size 为 10，本地负责按配置拆批。
 4. 通用工程底座：
    - zod、textsplitters、pino/pino-http。
    - `AsyncLocalStorage` 请求上下文和 `trace_id`。
@@ -75,4 +79,3 @@
 - 向量维度和 embedding 模型配置一致且有注释/校验。
 - checkpoint DDL 与应用启动彻底分离。
 - 没有把空实现伪装成正式 RAG 能力。
-

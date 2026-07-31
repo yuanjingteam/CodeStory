@@ -28,8 +28,8 @@
 | 派发顺序 | 任务书 | 当前用途 | 解锁条件 |
 | --- | --- | --- | --- |
 | 1 | [阶段 0A：数据完整性收尾](./00A-data-integrity-closeout.md) | 审核并补齐现有实现，不重做 | 0B 测试夹具就绪后最终关门 |
-| 2 | [阶段 0B：AI 基础设施](./00B-ai-foundation.md) | 当前首个主要开发阶段 | 0A 代码已稳定 |
-| 3 | [阶段 1：RAG 检索层](./01-rag-grounding.md) | 建检索事实层并接入答疑 | 0A、0B 通过 |
+| 2 | [阶段 0B：AI 基础设施](./00B-ai-foundation.md) | 已完成；SiliconFlow Embedding 真实端点通过 | 0A 代码已稳定 |
+| 3 | [阶段 1：RAG 检索层](./01-rag-grounding.md) | 实现与技术门禁通过；标签复核完成，问题来源待清理 | 0A、0B 通过 |
 | 4 | [阶段 2：AI 出题与题目管理](./02-question-generation.md) | 补齐 P0 出题审核闭环 | 阶段 1 通过 |
 | 5 | [阶段 3：评分复核与掌握度](./03-grading-review.md) | 可与阶段 1/2 形成独立后端工作线 | 0A、0B 通过 |
 | 6 | [阶段 4：LangGraph 学习状态机](./04-learning-graph.md) | 最重的新模式 | 阶段 2、3 通过 |

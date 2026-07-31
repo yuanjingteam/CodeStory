@@ -2,11 +2,11 @@
 
 > **✅ 状态：当前有效**
 >
-> **文档版本：** V2.0-plan.8
+> **文档版本：** V2.0-plan.9
 >
 > **创建日期：** 2026-07-21
 >
-> **最后核对：** 2026-07-28
+> **最后核对：** 2026-07-31
 >
 > **适用范围：** `backend/src/services/ai/**`、`backend/src/services/courses/**`、`backend/src/services/course-manage/**`、`backend/src/services/rag/**`（新增）、`backend/src/middleware/**`、`backend/prisma/**`、`frontend/src/app/(admin)/exercises-manage/**`、`frontend/src/components/lessons/**`、`docker-compose*.yml`、`.env.production.example`、`docs/DEPLOY_DOCKER.md`
 >
@@ -15,6 +15,12 @@
 > **上游依据：** 需求与数据模型以 [`CodeStory_开发文档_V1.1.md`](./CodeStory_开发文档_V1.1.md) 为准；V1 AI 助手已实现范围见（已归档）`CodeStory_AI助手_V1开发路线.md`。
 >
 > **范围策略：** 务实渐进。本阶段聚焦 **AI 能力增强**：先清掉三项阻塞前置，再补齐 P0 的 AI 出题、引入 RAG（pgvector），最后用 LangGraph 落地跨请求学习状态机。真沙箱判题与 V2.1 业务模块（通知、社群、测试、多端）**不在本计划内**，仅在第 8 节列为后续方向。
+>
+> **本版（plan.9）相对 plan.8 的实质变更：**
+>
+> 1. **阶段 0B 已完成**：pgvector 数据模型、LangGraph PostgreSQL checkpointer、RAG 骨架、embedding 分批、zod 结构化输出、pino/trace_id 与评测夹具均已落地；SiliconFlow Embedding 与 DeepSeek 结构化输出已完成真实端点验证。
+> 2. **完成本地基础设施验收**：完整迁移链、vector(1024) top-k、checkpointer 重复初始化、跨进程恢复以及后端 build/auth/test 门禁通过；vitest 为 8 个文件、54 个用例全过。
+> 3. **外部端点已验证**：SiliconFlow `Qwen/Qwen3-Embedding-4B` 的 1024 维文档/查询向量，以及 DeepSeek V4 Flash 的代码评阅/选择题解释结构化输出均已实测通过。
 >
 > **本版（plan.8）相对 plan.7 的实质变更：**
 >
@@ -100,10 +106,10 @@ V1.0 基础平台与 V1.1 AI 助手核心闭环**已完成主干**，但后台�
 
 ### 1.2 技术底座现状
 
-- 后端已引入 `@langchain/openai` + `@langchain/core`，通过 OpenAI 兼容接口对接 **Qwen / 阿里云百炼**（`config/ai.ts`、`services/ai/_shared/model.ts`）。
-- **尚未引入 LangGraph**：当前所有 AI 流程为直接 `service` 链式调用。
+- 后端已引入 `@langchain/openai` + `@langchain/core`，通过 SiliconFlow OpenAI 兼容接口对接 **DeepSeek V4 Flash / Qwen3 Embedding**（`config/ai.ts`、`services/ai/_shared/model.ts`）。
+- **LangGraph 基础设施已就绪但尚未接入业务图**：依赖、独立 checkpointer setup 和跨进程恢复验证已在阶段 0B 完成；正式学习状态机仍属于阶段 4。
 - `ai_chat_sessions.state`（INIT/EXPLAIN/QUESTION…）与 `hint_level` 字段在表中存在，**但代码未真正驱动状态机**——目前是"自由流式对话 + 关键词识别提示意图"（`routes/ai.ts` 的 `isHintIntent` / `resolveMessageType`）。`getOrCreateLessonChatSession` 会把这两个字段读出来，但没有任何调用方消费或写入。
-- **尚未引入 RAG / 向量库**：小节正文整段塞入 Prompt（`lesson-chat.service.ts` 的 `lessonContent`）。
+- **RAG 正式实现、问题来源隔离、模型对照与 claim 级门禁已完成**：内容就绪门禁、30 天回收与管理端闭环已落地；4B、8B、BGE-M3 的 Recall@5 均为 1.00，按既定规则保持 4B；DeepSeek V4 Flash 使用 grounded-v2 后 claim 支持率 48/53 = 0.9057。仓库功能开关继续安全默认关闭，由部署环境完成迁移、重建和冒烟后显式开启。
 - **角色中间件已存在且已挂载**：`middleware/auth.ts` 导出 `requireAdmin`，`app.ts` 的 `user-manage` / `courses` / `chapter` / `lessons` 四组管理路由均以 `[authMiddleware, requireAdmin]` 挂载。V2.0 新增的管理接口沿用它即可，**无需新写中间件**（plan.3 此处描述有误，已撤销对应前置项）。
 - **`lessons_progress.mastery_level` 是死字段**：仅在 `learning-progress.service.ts` 的 `updateLearningProgress()` 创建记录时写入 `0`，全项目无更新点。
 - **题型实际只支持两种**：`submitExercise` 只处理 `single_choice` 与 `code`；`fill` 在前端 `EXERCISE_TYPE_MAP` 有定义但被 `getExerciseTypeOptions()` 排除，`judge` 全项目不存在。提交一道 `fill`/`judge` 题会静默走完流程并得 0 分。
@@ -115,13 +121,13 @@ V1.0 基础平台与 V1.1 AI 助手核心闭环**已完成主干**，但后台�
 
 1. **AI 出题生成**：`CodeStory_开发文档_V1.1.md` 第 2.2.1 节标记为 **P0**（"AI 生成小节题目供管理员审核"），代码中**完全缺失**，无生成服务与路由；`exercises.source` 字段存在但无任何写入方，现存题目该字段均为 `null`（既不是 `ai` 也不是 `static`）。
 2. **跨请求学习状态机**：未做。V1.1 §3.2.1 定义的 `INIT→EXPLAIN→QUESTION→WAIT_ANSWER→EVALUATE→HINT→REVIEW` 流程，代码中只有零散的单点能力，没有流程驱动。
-3. **RAG / 向量库 / 长期记忆**：未做（V1 主动延后至 V2）。
+3. **RAG / 向量库 / 长期记忆（阶段 1 门禁通过）**：pgvector 索引、授权检索、对话 grounding、内容门禁、回收机制和管理端索引闭环已落地；4B/8B/BGE-M3 的 Recall@5 均为 1.00，DeepSeek grounded-v2 的 claim 支持率为 0.9057。
 4. **三项工程前置**：代码与自动化验收均已实现；题目稳定 ID、事务回滚、字段写入链路、掌握度纯函数和三身份权限回归已进入统一 vitest 测试（见 5.0）。
 5. 其余延后项：真沙箱判题、可观测性、限流、提交历史面板、自适应难度。
 
 ### 1.4 结论
 
-项目正处于 **“阶段 0A 完成 → 阶段 0B AI 基础设施”** 的交界点。0A 地基代码、完整迁移链与自动化验收已经闭环；0C 的本地迁移准备和应用验证已完成，目标服务器导入与生产切换延期执行。当前开发进入 0B，之后按 **RAG → 补齐 P0 出题 → 评分增强 → LangGraph 学习状态机** 推进。
+项目已完成阶段 1 的检索与回答质量门禁，发布组合为 Qwen3-Embedding-4B + DeepSeek V4 Flash + grounded-v2。0C 的目标服务器导入与生产切换仍延期执行；仓库开关保持默认关闭，生产部署完成迁移、重建和冒烟后再显式开启。阶段 2 已解锁。
 
 ---
 
@@ -244,19 +250,21 @@ INIT → EXPLAIN → QUESTION → WAIT_ANSWER → EVALUATE_BASE → AI_EVALUATE 
 ### 3.2 RAG 架构
 
 - **存储：pgvector，跑在迁移后的自有服务器 Compose PostgreSQL 上**（不引入独立向量库）。
-- **Embedding：** 百炼 / DashScope embedding（OpenAI 兼容，与现有 Qwen 同源），用 `@langchain/openai` 的 `OpenAIEmbeddings`。新增配置 `AI_EMBEDDING_MODEL`、向量维度随模型确定（如 `text-embedding-v3` 为 1024）。
-  - ⚠️ **实现要点**：阿里云官方文档已明确 `text-embedding-v3/v4` 单次最多输入 **10 条**，而 `OpenAIEmbeddings` 默认 `batchSize` 为 512，直接使用会报错。配置默认固定为 `10`；阶段 0B 的真实 API 调用只负责确认当前地域、模型与 OpenAI 兼容端点行为一致，不再把已知限制写成待发现结论。
+- **Embedding：** SiliconFlow OpenAI 兼容端点，主候选为 `Qwen/Qwen3-Embedding-4B`，用 `@langchain/openai` 的 `OpenAIEmbeddings`，固定输出 1024 维。
+  - 默认 batch size 为 10，并由本地显式拆批；模型身份、维度和索引版本写入 generation 状态，切换 4B/8B/BGE-M3 必须全量重建，禁止混用向量。
 - **检索层：** 统一封装 `backend/src/services/rag/*`，对上层暴露 `indexSource()` / `retrieve(query, filter)` 接口，被"对话/出题/推荐/复习"四场景共用。
 - **索引对象：** 小节正文（按标题/段落切片）、题目（`content` + `knowledge`）、（可选）外部参考文档。
   - 题目索引中的 `knowledge` 依赖**前置项 C**（字段写入链路）先完成，否则该维度无输入。
 - **索引触发：** 小节与题目的增删改**全部发生在 `services/course-manage/lesson-manage.ts`**（`createLesson` / `updateLesson` / `deleteLesson`）与阶段 2 新增的题目管理服务中；业务事务内只登记 `pending` generation，提交后在请求内尽力执行首次索引。内容保存成功不因 embedding 失败而回滚，接口返回 `indexStatus`，失败/进程退出由阶段 1 的补偿脚本收敛；另提供全量重建脚本。**不引入消息队列**。
+  - **管理端闭环：** 小节列表从持久化状态汇总 `ready/pending/partial/failed/not_indexed`，管理员可按单小节重试，或对已应用的课程/章节筛选执行批量同步。批量接口必须显式限定 `courseId` 或 `chapterId`，避免无范围全库调用。
+  - **层级字段联动：** 课程或章节标题发生实际变化时，业务事务内登记全部后代小节与静态题的新 generation，提交后同步完成索引；仅修改封面、描述、级别或排序不触发重建。课程、章节、小节软删除时，同事务失效后代索引。
   - **换代协议：整源替换 + generation CAS，不做版本并存**。一个源（一节小节或一道题）重新索引时：① 事务内锁定/创建 `knowledge_index_state`，递增 `index_generation`，记录本次 `source_updated_at` 并置 `pending`；② **事务外**调 embedding 算出全部新 chunk；③ 在**单个事务**内锁定状态行，仅当 `index_generation` 与 `source_updated_at` 仍等于本任务快照时，才删除该 `(source_type, source_id)` 的旧 chunk、插入新 chunk并置 `ready`，否则丢弃过期结果。
   - 旧 chunk 在第 ③ 步事务提交前始终可见、提交后一次性全换，**既没有"新旧混召"窗口，也没有"索引真空"窗口**。
     - `index_generation` 解决同一来源的两个索引任务乱序完成问题：旧任务即使后返回，也因 CAS 不匹配而不能覆盖新内容。仅靠 chunk 唯一约束不能解决 stale writer。
     - plan.4 把唯一键定为 `(source_type, source_id, source_version, chunk_index)`，会让每次更新都新增一代 chunk 而旧代永不失效，检索必然同时召回新旧内容；补救需要再引入 `pending_version` / `ready_version` 与版本提升协议。**去掉版本维度后这一整类问题不再存在**，与 2.4「向量索引是可重建的派生数据」一致。
   - `source_version` 仍作为**普通元数据列**保留（记录源的 `updated_at`），只用于排查陈旧索引，不参与唯一约束、不参与检索过滤。
   - 源数据删除（`deleteLesson` / 题目软删）时，在同一事务内删除其全部 chunk 并把 `knowledge_index_state` 置为失效。
-  - **检索权限与发布状态必须在服务端收口**：学生答疑只检索其有权访问的课程、已发布小节和 `review_status='approved'` 的题目；`draft/rejected/is_delete=1` 内容不得进入学生检索结果。`retrieve()` 的调用方不能自行省略权限范围，跨小节召回默认只允许同一门课程。管理端出题所需的草稿/参考资料检索使用独立的管理员策略。
+  - **检索权限与可见状态必须在服务端收口**：阶段 1 沿用现有数据模型，只检索有效课程、小节和非 AI 静态题；阶段 2 增加 `review_status` 后切换为只检索 `approved` 题。`retrieve()` 的调用方不能自行省略权限范围，跨小节召回默认只允许同一门课程。管理用途使用独立的管理员策略。
   - 📌 修正 plan.2：`services/courses/exercise.service.ts` **不含任何题目写入逻辑**（它是学习端的详情/提交/解释服务，只写 `answer` 与 `code_submissions`），此前把它列为索引挂载点是错的。
   - 题目索引的 `source_id` 稳定性依赖**前置项 A**（题目稳定 ID）先完成，否则每次编辑小节都会使该小节全部题目索引失效。
 
@@ -510,12 +518,13 @@ V2.0 期间**不更换后端框架**。该决策与开发文档 V1.1 §5.2 的�
 
 #### 阶段 0B — AI 基础设施与本地验证
 
+- **当前状态（2026-07-30）：已完成。** 本地迁移、向量查询、checkpointer 幂等初始化、跨进程恢复、Schema/切片/分批/trace_id 测试和完整后端门禁均通过；SiliconFlow Embedding 与 DeepSeek 结构化输出真实端点已补验。
 - **目标：** 在本地打通 pgvector 与 LangGraph checkpointer 的最小可运行环境，并落地 P0 依赖。
 - **范围：**
   - `docker-compose.dev.yml` 的 postgres 镜像换为 `pgvector/pgvector:0.8.2-pg16-bookworm`（原镜像不含该扩展）。
   - 数据库启用 `vector` 扩展；新增 `knowledge_chunks`、带 `index_generation` 的 `knowledge_index_state`、`learning_run_effects` 表及必要约束/索引；`ai_chat_sessions` 加 `current_run_id`、`state_version` 与 `graph_version`；`answer.version` 和 `ai_grading_reviews` 的完整迁移随阶段 3 启用。
   - **新增 `backend/scripts/setup-checkpointer.ts`**：独立执行 `PostgresSaver.setup()`，不挂在应用启动路径上（理由见第 4 节末）。
-  - 后端新增依赖 `@langchain/langgraph`、`@langchain/langgraph-checkpoint-postgres`；确认 `OpenAIEmbeddings` 可用，将 DashScope `text-embedding-v3/v4` 的 `batchSize` 默认固定为官方上限 `10`，并做真实端点冒烟确认。
+  - 后端新增依赖 `@langchain/langgraph`、`@langchain/langgraph-checkpoint-postgres`；确认 `OpenAIEmbeddings` 可用，显式配置 batch size，并做真实端点冒烟确认。
   - `config/ai.ts` 扩展 embedding 配置（`AI_EMBEDDING_MODEL`、`AI_EMBEDDING_BATCH_SIZE` 等）。
   - 新建 `services/rag/` 骨架（embedding client、基于 `RecursiveCharacterTextSplitter` 的切片封装、检索接口签名，先空实现 + 单元测试）。
   - **按 3.8 引入 P0 依赖**：zod、`@langchain/textsplitters`、pino + pino-http、`AsyncLocalStorage` 请求上下文（`middleware/request-context.ts`）。
@@ -530,7 +539,7 @@ V2.0 期间**不更换后端框架**。该决策与开发文档 V1.1 §5.2 的�
   - `setup-checkpointer.ts` 独立跑通并建出 checkpoint 表；**重复执行一次不报错、不破坏已有数据**（部署脚本的幂等性）。
   - LangGraph 一个"hello world" 图能在本地跑通，**并验证 `PostgresSaver` 可跨进程恢复状态**（起进程 A 执行到中途、退出，进程 B 用同一 `thread_id` 续跑）；关键步骤显式使用同步持久化配置。
   - 5.2 的 2 个集成测试可在临时数据库上重复运行，`pnpm run test` 一条命令跑完纯函数与集成两部分。
-  - DashScope embeddings 配置已显式设置 `batchSize=10`，真实端点对 10 条输入调用成功，11 条输入由本地分批逻辑拆分而不是直发。
+  - Embeddings 配置已显式设置 `batchSize=10`，11 条输入由本地分批逻辑拆分；SiliconFlow 4B/1024 维真实文档与查询向量调用成功。
   - 评测脚本能固定模型、Prompt、数据集版本运行，输出逐条结果与聚合指标；此阶段只建立基线，不为追求目标值修改样本。
 - **风险：** 向量维度与所选 embedding 模型不一致 → 在配置层固定维度并在迁移注释标明。
 
@@ -585,7 +594,7 @@ V2.0 期间**不更换后端框架**。该决策与开发文档 V1.1 §5.2 的�
 - **目标：** 建成可复用检索层，并把它接入现有小节对话的上下文组装。
 - **范围：**
   - 实现小节/题目的切片与 `indexSource()`；在小节/题目落库处挂同步 upsert。切片直接用 `RecursiveCharacterTextSplitter`（配置分隔符与 overlap），**不自造切片器**；小节正文先用 `html-to-text` 转纯文本，替代现有的正则 `htmlToPlainText`。
-  - 实现 `retrieve(query, {userId, courseId, lessonId, purpose})`，返回带来源与相关度的片段。学生场景由服务端强制校验课程访问权，只允许同课程的已发布小节和 `approved` 题目；管理场景使用独立 `purpose` 策略。
+  - 实现 `retrieve(query, {userId, courseId, lessonId, purpose})`，返回带来源与相关度的片段。学生场景由服务端强制校验课程访问权；阶段 1 只允许同课程有效小节和非 AI 静态题，阶段 2 再切换为 `approved` 题；管理场景使用独立 `purpose` 策略。
   - 在 `lesson-context.service.ts` / `lesson-chat.service.ts` 的上下文组装处，用检索片段**替换/补充**"整段正文"注入（保留降级回退）。
   - 全量重建脚本 `scripts/reindex-knowledge.ts`；同时交付最小补偿脚本 `scripts/repair-knowledge-index.ts`，扫描超时 `pending` / `failed`，按当前源数据重新发起索引并丢弃过期 generation。阶段 6 只完善调度、告警和报表，不再推迟基本恢复能力。
 - **关键改动：** `services/rag/*`、`services/ai/lesson-context.service.ts`（上下文装配层）、`services/course-manage/lesson-manage.ts`（索引挂载点）、新脚本。
@@ -594,8 +603,9 @@ V2.0 期间**不更换后端框架**。该决策与开发文档 V1.1 §5.2 的�
 - **完成标准：**
   - 对同一问题，检索命中片段被注入 Prompt（日志可见来源片段）。
   - 关闭 embedding（模拟失败）时对话仍正常回复（降级验证）。
-  - 跨小节提问能召回**同一门有权访问课程内**其它已发布小节的相关片段；另一课程、未发布小节、`draft/rejected` 题目和软删除内容均无法由学生接口召回。
+  - 跨小节提问能召回**同一门有效课程内**其它有效小节的相关片段；另一课程、AI 来源题和软删除内容均无法由学生接口召回。阶段 2 增加审核态后再覆盖 `draft/rejected`。
   - 编辑并保存小节后，该小节的向量索引被增量更新，且**题目索引的 `source_id` 保持不变**（依赖前置项 A）。
+  - 管理员能在小节列表看到持久化索引状态；单小节重试和限定课程/章节范围的批量同步可恢复失败状态。课程/章节标题变化会重建后代索引，软删除会失效后代索引。
   - **5.2 集成测试 ② 通过**：同一个源连续索引两次，库中始终只有一代 chunk；改写源内容后重新索引，检索**召回不到旧内容**；换代事务中途失败时旧 chunk 完整保留、`knowledge_index_state` 停在 `pending` 且能被补偿脚本捡回；两个索引任务乱序完成时，旧 generation 不能覆盖新内容。
   - 初始答疑集上 `Recall@5 ≥ 0.85`、回答证据支持准确率 `≥ 0.90`；未达标时不得把 RAG 接入答疑主路径。
 - **风险：** 切片粒度影响召回质量 → 先用"标题+段落"策略，阶段 6 再依据验收调参。
@@ -799,7 +809,7 @@ plan.4 一律排除集成测试，但本计划**自己的验收标准里已经�
 阶段0C(生产库迁移·只阻塞发布)   └── 阶段3(复核闭环+掌握度) ──────────────┴── 阶段5(推荐/复习) ───┘
 ```
 
-- **阶段 0A + 0B** 是所有后续开发工作的前置，**不可跳过**。0A 已完成并提前建立 vitest 与测试数据库夹具；当前按 0B → 阶段 1 的顺序推进。
+- **阶段 0A + 0B** 是所有后续开发工作的前置，**不可跳过**。0A、0B 已完成；阶段 1 实现与技术门禁已通过，问题标签复核已完成，13 个问题来源清理及质量指标待执行。
 - **阶段 0C**（生产库迁移）不阻塞开发——本地用与生产一致的固定 pgvector 镜像即可推进 0B 与阶段 1——但**必须在任何阶段上线前完成**。
 - **阶段 1 → 阶段 2**：出题 grounding 依赖阶段 1 的检索层。
 - **阶段 3** 只依赖阶段 0A/0B，**可与阶段 1/2 并行**（纯 service 层，不碰检索）。
@@ -827,7 +837,7 @@ plan.4 一律排除集成测试，但本计划**自己的验收标准里已经�
 | **图版本不兼容** | 部署新节点/状态 Schema 后，旧 checkpoint 被新图错误恢复 | 每次运行固定 `graph_version`；发布前演练兼容、迁移或 `restart_required` 策略 |
 | **掌握度误判** | 复核闭环建成前就写入掌握度 | 前置项 D 只定义规则，写入推迟到阶段 3；变更严格限于 3.4.2 事件矩阵，唯一下降入口需人工复核前置 |
 | **短 ID 串改** | 管理写入路径经 5 位短 ID 解析，碰撞时静默命中错误记录 | 前置项 A2/A3：管理接口内部改用完整 UUID、更新时校验 `lesson_id` 归属、`:id` 只按 `lessons` 解析（URL 短 ID 不变，见 5.0.1） |
-| 依赖风险 | 向量维度与 embedding 模型不匹配；DashScope batchSize 限制 | 配置层固定维度与 batchSize，迁移注释标明，切换模型需重建索引 |
+| 依赖风险 | 向量维度与 embedding 模型不匹配；供应商批量限制变化 | 配置层固定维度与 batchSize，索引状态记录模型身份，切换模型需重建索引 |
 | 降级缺失 | RAG / 状态机失败阻塞主流程 | 每个新增环节强制回退到 V1 既有路径 |
 | 评测失真 | 小样本、挑选成功案例或修改样本迎合当前 Prompt | 固定版本化评测集，报告样本量和失败案例；修复后全量回归 |
 | 权限与并发 | 越权访问会话/审核接口，重复请求产生多份草稿或重复扣费 | 新增管理路由一律挂**已有的** `requireAdmin` + 资源归属校验 + 出题接口限流（阶段 2）+ 提交中禁用按钮 + 审核状态条件更新 |
@@ -858,7 +868,7 @@ plan.4 一律排除集成测试，但本计划**自己的验收标准里已经�
 ### 8.1 已登记的文档口径不一致（不在本计划内处理）
 
 - 开发文档 V1.1 §5.1 前端技术栈写"编辑器 = Monaco Editor"，实际实现用的是 `@uiw/react-codemirror` + `@codemirror/*`。属 V1.1 文档的历史遗留，登记备查，修订时机另定。
-- 开发文档 V1.1 §5.2 后端技术栈写"日志 = Winston"，实际未安装、全部使用 `console.*`。V2.0 阶段 0B 改为引入 pino（见 3.8），届时同步修订 V1.1 该行。
+- ~~开发文档 V1.1 §5.2 的日志技术栈与实现不一致。~~ 已在阶段 0B 同步为 pino + pino-http、请求 trace_id 与敏感字段脱敏。
 
 ### 8.2 已登记的既有缺陷（不在本计划内处理）
 
