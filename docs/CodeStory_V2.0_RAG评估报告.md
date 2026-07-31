@@ -1,6 +1,6 @@
 # CodeStory V2.0 RAG 评估报告
 
-> 状态：检索与回答模型对照完成；grounded-v2 claim 支持率 0.9057，阶段 1 上线门禁通过（2026-07-31）
+> 状态：检索、回答模型与 grounded-v3.1 提示词对照完成；40 条同集质量和延迟门禁通过，仓库生产默认已切换到 grounded-v3（2026-07-31）
 
 ## 当前技术结果
 
@@ -118,16 +118,89 @@ BGE-M3 的 MRR@5 低于 4B，也不切换。
 | LongCat-2.0 / 原提示 | 70 | 35 | 0.5000 | 未通过 |
 | DeepSeek V4 Flash / grounded-v2 | 53 | 48 | 0.9057 | 通过 |
 
-DeepSeek V4 Flash 继续作为正式回答模型，不切换 LongCat。生产使用
-grounded-v2 提示约束。
+DeepSeek V4 Flash 继续作为正式回答模型，不切换 LongCat。早期 20 条审核的
+grounded-v2 结果作为历史基线保留；生产提示词决策以下方 40 条同集对照为准。
+
+## grounded-v3 双模式优化
+
+`grounded-v3` 将课程事实与通用补充分区：默认只回答课程证据，用户明确要求
+举例、实际应用或拓展时，额外输出“通用补充（非课程原文）”。本轮修订号为
+`grounded-v3.1-boundary`：课程区只允许原文、直接概括和必要推导；证据没有
+给出的属性、映射、用法、比较、示例和工程实践必须进入通用补充区。
+
+学生处于明确小节时，短正文直接使用完整上下文并跳过 Embedding；长正文
+只在当前小节内检索，避免整门课程 top-5 引入无关小节。回答使用编号课程
+引用，流式协议和历史消息会保存回答范围、证据质量和来源信息。
+
+对照命令：
+
+```bash
+pnpm run eval:rag:tutor-v2
+pnpm run eval:rag:tutor-v3
+pnpm run eval:rag:tutor-v3:structure
+pnpm run eval:rag:tutor-v2:claims
+pnpm run eval:rag:tutor-v2:support
+pnpm run eval:rag:tutor-v3:claims
+pnpm run eval:rag:tutor-v3:support
+pnpm run eval:rag:tutor:compare
+```
+
+grounded-v3 门槛为：课程 claim 支持率不低于 0.90、补充 claim 正确率
+不低于 0.90、引用编号合法率 1.00、扩展回答分区标识正确率 1.00，且
+相同问题集 P95 用户首字时间和 P95 总响应时间较 grounded-v2 的恶化均不
+超过 10%。
+
+### 2026-07-31 grounded-v3.1 同集对照
+
+使用 DeepSeek V4 Flash 对同一组 40 条分层问题分别运行 grounded-v2 和
+grounded-v3.1，其中课程模式 20 条、扩展模式 20 条。两组任务在同一供应商
+时间窗口启动，各自并发数为 3；报告按回答 ID 成对比较，避免跨数据集比较。
+回答缓存身份包含提示词修订号，避免 v3.0 旧结果污染 v3.1 数据。
+
+| 质量指标 | grounded-v2 | grounded-v3.1 | 门槛 |
+| --- | ---: | ---: | ---: |
+| 课程 claim 支持率 | 118/132 = 0.8939 | 97/98 = 0.9898 | ≥ 0.90 |
+| 通用补充 claim 正确率 | 不适用 | 111/111 = 1.00 | ≥ 0.90 |
+| 引用编号合法率 | 1.00 | 1.00 | 1.00 |
+| 扩展回答分区标识正确率 | 不适用 | 1.00 | 1.00 |
+
+claim 审核采用混合流水线：本地先拆分候选 claim，Flash 流式返回候选编号
+判定，单条最多 8 个候选一组，6 路并发、逐条检查点并对网络失败重排队一次。
+最终报告标记为 `hybrid-model-assisted, agent-audited`。人工复核不仅检查模型
+判为 unsupported 的条目，也覆盖全部短证据样本；v3.1 保留 1 条
+unsupported，原因是“HTML 不控制样式或行为”没有被所列短证据完整支持。
+
+| 延迟指标 | grounded-v2 | grounded-v3.1 | v3/v2 |
+| --- | ---: | ---: | ---: |
+| 用户首字时间 P50 / P95 / 平均 | 6.61s / 20.33s / 8.71s | 8.99s / 20.55s / 9.88s | P95 1.011 |
+| 总响应时间 P50 / P95 / 平均 | 7.85s / 23.91s / 10.30s | 12.20s / 24.18s / 12.40s | P95 1.011 |
+| 输出字符数 P50 / P95 / 平均 | 143 / 524 / 208.6 | 358 / 800 / 326.0 | — |
+
+v3.1 的中位耗时因扩展回答内容更完整而上升，但两个 P95 比率均低于 1.10
+门槛。结构评分的回答范围路由、预期来源、引用覆盖、引用合法和扩展分区标识
+均为 1.00，无关来源数为 0。最终对比结果为 `passed: true`、决策为
+`switch-to-grounded-v3`。
+
+复查留痕：
+
+- 原始回答：`rag-answer-review.grounded-v2-40.json`、`rag-answer-review.grounded-v3.json`
+- claim 审核：`rag-answer-claims.grounded-v2-40.json`、`rag-answer-claims.grounded-v3.json`
+- 支持率：`rag-answer-support.grounded-v2-40.json`、`rag-answer-support.grounded-v3.json`
+- 结构评分：`rag-tutor-v3-structure.json`
+- 成对门禁：`rag-tutor-prompt-comparison.json`
+
+40 条同集质量与延迟门禁全部通过，仓库生产默认切换为 `grounded-v3`；环境
+值仍使用稳定版本名，实际内部修订号随流式上下文和会话历史记录为
+`grounded-v3.1-boundary`。出现回归时可直接将环境变量回退为
+`grounded-v2`，无需数据库迁移。
 
 ## 上线门槛
 
 - Recall@5 ≥ 0.85（当前 1.00，已通过）
-- 回答证据支持准确率 ≥ 0.90（当前 0.9057，已通过）
+- 回答证据支持准确率 ≥ 0.90（grounded-v3.1 当前 0.9898，已通过）
 - 自动化测试和真实供应商冒烟保持通过
 
 阶段 1 上线门槛已全部通过，发布组合为 Qwen3-Embedding-4B +
-DeepSeek V4 Flash + grounded-v2。仓库和示例环境中的
+DeepSeek V4 Flash + grounded-v3（内部修订 `grounded-v3.1-boundary`）。仓库和示例环境中的
 `AI_RAG_ENABLED` 继续保持安全默认值 `false`；实际部署完成迁移、
 重建和冒烟后，由部署环境显式改为 `true`，不在源码中默认开启。

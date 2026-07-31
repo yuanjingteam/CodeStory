@@ -205,6 +205,22 @@ docker compose run --rm backend pnpm run check:rag-retrieval
 `AI_RAG_ENABLED` 改为 `true` 并重启 backend。切换 Embedding 模型必须重新执行
 `rag:reindex`，不同模型的向量不可混用。
 
+导师提示词通过 `AI_TUTOR_PROMPT_VERSION` 独立切换。40 条同集对照、claim
+级人工复核以及 TTFT/总耗时门禁已通过，生产默认使用 `grounded-v3`
+（内部修订号 `grounded-v3.1-boundary`）。复查时依次执行：
+
+```bash
+pnpm run eval:rag:tutor-v3:structure
+pnpm run eval:rag:tutor-v3:support
+pnpm run eval:rag:tutor-v2:support
+pnpm run eval:rag:tutor:compare
+```
+
+出现课程/补充边界、引用或延迟异常时，将环境变量改为
+`AI_TUTOR_PROMPT_VERSION=grounded-v2` 并重启 backend 即可回退，无需迁移
+数据库。该变量与 `AI_RAG_ENABLED` 独立；后者仍须在迁移、重建索引和生产
+冒烟全部完成后显式开启。
+
 ## 6. 构建、启动与验证
 
 ```bash
