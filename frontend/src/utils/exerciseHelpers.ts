@@ -14,6 +14,7 @@ export const createEmptyExercise = (): ExerciseItem => ({
   source: 'static',
   metadata: null,
   hints: null,
+  knowledgeIndexPolicy: 'auto',
 });
 
 export const getExerciseTypeLabel = (type: string) => {

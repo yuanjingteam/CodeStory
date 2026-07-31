@@ -1,6 +1,10 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import type { CreateLessonRequest, UpdateLessonRequest } from '@/types/lesson-manage';
+import type {
+  CreateLessonRequest,
+  DeletedExerciseItem,
+  UpdateLessonRequest,
+} from '@/types/lesson-manage';
 import chapterManageApi from '@/app/api/manage/chapter-manage';
 import { SearchableSelect } from '@/components/common';
 import type { ChapterItem } from '@/types/chapter-manage';
@@ -20,6 +24,7 @@ interface LessonModelProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: (CreateLessonRequest | UpdateLessonRequest) & { id?: string }) => Promise<void>;
+  onRestoreExercise?: (exerciseId: string) => Promise<void>;
   initialData?: {
     id: string;
     chapterId: string;
@@ -28,7 +33,9 @@ interface LessonModelProps {
     difficulty: number;
     sortOrder: number;
     estimatedTime?: number;
+    knowledgeIndexPolicy?: 'auto' | 'include' | 'exclude';
     exercises?: ExerciseItem[];
+    deletedExercises?: DeletedExerciseItem[];
   };
 }
 
@@ -42,6 +49,7 @@ const normalizeExercise = (exercise: Partial<ExerciseItem>): ExerciseItem => ({
   source: exercise.source || 'static',
   metadata: exercise.metadata || null,
   hints: exercise.hints || null,
+  knowledgeIndexPolicy: exercise.knowledgeIndexPolicy || 'auto',
 });
 
 const getInitialFormData = (initialData?: LessonModelProps['initialData']) => ({
@@ -51,6 +59,7 @@ const getInitialFormData = (initialData?: LessonModelProps['initialData']) => ({
   difficulty: initialData?.difficulty ?? 0,
   sortOrder: initialData?.sortOrder ?? 0,
   estimatedTime: initialData?.estimatedTime ?? 0,
+  knowledgeIndexPolicy: initialData?.knowledgeIndexPolicy || 'auto',
   exercises: initialData?.exercises && initialData.exercises.length > 0
     ? initialData.exercises.map(normalizeExercise)
     : [],
@@ -65,18 +74,28 @@ const normalizeDraftFormData = (draft: Partial<LessonFormData>): LessonFormData 
   difficulty: draft.difficulty ?? 0,
   sortOrder: draft.sortOrder ?? 0,
   estimatedTime: draft.estimatedTime ?? 0,
+  knowledgeIndexPolicy: draft.knowledgeIndexPolicy || 'auto',
   exercises: Array.isArray(draft.exercises)
     ? draft.exercises.map(normalizeExercise)
     : [],
 });
 
-export default function LessonModel({ open, onClose, onSubmit, initialData }: LessonModelProps) {
+export default function LessonModel({
+  open,
+  onClose,
+  onSubmit,
+  onRestoreExercise,
+  initialData,
+}: LessonModelProps) {
   const isEdit = !!initialData?.id;
 
   const [formData, setFormData] = useState<LessonFormData>(() => getInitialFormData(initialData));
   const [submitting, setSubmitting] = useState(false);
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
   const [loadingChapters, setLoadingChapters] = useState(false);
+  const [restoringExerciseId, setRestoringExerciseId] = useState<
+    string | null
+  >(null);
   const [draftReady, setDraftReady] = useState(isEdit);
   const [initialSnapshot] = useState(() => JSON.stringify(getInitialFormData(initialData)));
   const submittedRef = useRef(false);
@@ -298,6 +317,30 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
             />
           </Field>
 
+          <Field
+            label="AI 知识库策略"
+            htmlFor="lesson-index-policy"
+            helperText="自动模式会阻止空白内容，并将过短内容标记为待审核。"
+          >
+            <NativeSelect
+              id="lesson-index-policy"
+              value={formData.knowledgeIndexPolicy}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  knowledgeIndexPolicy: e.target.value as
+                    | 'auto'
+                    | 'include'
+                    | 'exclude',
+                }))
+              }
+            >
+              <option value="auto">自动判断</option>
+              <option value="include">人工确认纳入</option>
+              <option value="exclude">排除出 AI 知识库</option>
+            </NativeSelect>
+          </Field>
+
           <Field label="难度" htmlFor="lesson-difficulty">
             <NativeSelect
               id="lesson-difficulty"
@@ -325,6 +368,50 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
             exercises={formData.exercises}
             onChange={exercises => setFormData(prev => ({ ...prev, exercises }))}
           />
+          {initialData?.deletedExercises &&
+            initialData.deletedExercises.length > 0 && (
+              <section className="border-2 border-black bg-zinc-100 p-4">
+                <h3 className="font-black text-zinc-950">
+                  已删除题目
+                </h3>
+                <p className="mt-1 text-sm text-zinc-600">
+                  删除后保留 30 天。恢复时会关闭当前窗口，避免旧表单再次删除该题目。
+                </p>
+                <div className="mt-3 space-y-2">
+                  {initialData.deletedExercises.map((exercise) => (
+                    <div
+                      key={exercise.id}
+                      className="flex items-center justify-between gap-3 border-2 border-black bg-white px-3 py-2"
+                    >
+                      <span className="min-w-0 truncate text-sm font-bold">
+                        {exercise.exerciseContent || '未命名题目'}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={
+                          !onRestoreExercise ||
+                          restoringExerciseId === exercise.id
+                        }
+                        onClick={async () => {
+                          if (!onRestoreExercise) return;
+                          setRestoringExerciseId(exercise.id);
+                          try {
+                            await onRestoreExercise(exercise.id);
+                          } finally {
+                            setRestoringExerciseId(null);
+                          }
+                        }}
+                        className="shrink-0 border-2 border-black bg-green-300 px-3 py-1 text-xs font-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:cursor-wait disabled:opacity-60"
+                      >
+                        {restoringExerciseId === exercise.id
+                          ? '恢复中'
+                          : '恢复'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
     </Dialog>
   );
 }

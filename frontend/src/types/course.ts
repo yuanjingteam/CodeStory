@@ -26,6 +26,8 @@ export interface Course {
   learners?: number;
   createdAt?: string;
   updatedAt?: string;
+  deletedAt?: string | null;
+  purgeAt?: string | null;
 }
 
 export interface CourseListResponse {

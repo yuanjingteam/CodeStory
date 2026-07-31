@@ -163,6 +163,31 @@ export default function ExerciseCard({
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-bold mb-1">
+              AI 知识库策略
+            </label>
+            <select
+              value={exercise.knowledgeIndexPolicy || 'auto'}
+              onChange={e =>
+                handleUpdate({
+                  knowledgeIndexPolicy: e.target.value as
+                    | 'auto'
+                    | 'include'
+                    | 'exclude',
+                })
+              }
+              className="w-full border-2 border-black bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+            >
+              <option value="auto">自动判断</option>
+              <option value="include">人工确认纳入</option>
+              <option value="exclude">排除出 AI 知识库</option>
+            </select>
+            <p className="mt-1 text-xs text-gray-600">
+              人工纳入只能覆盖短内容，空题目仍不会建立索引。
+            </p>
+          </div>
+
           {exercise.type && (
             <>
               {exercise.type === 'single_choice' && (

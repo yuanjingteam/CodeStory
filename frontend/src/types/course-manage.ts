@@ -1,3 +1,8 @@
+import type {
+  KnowledgeIndexStatus,
+  KnowledgeIndexSummary,
+} from './knowledge-index';
+
 export interface CourseFormData {
   title: string;
   description: string;
@@ -17,6 +22,8 @@ export interface CreateCourseResponse {
     level: number;
     status: number;
     cover_url?: string;
+    indexStatus?: KnowledgeIndexStatus;
+    indexSummary?: KnowledgeIndexSummary;
   };
 }
 

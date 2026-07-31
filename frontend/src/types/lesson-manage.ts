@@ -1,3 +1,8 @@
+import type {
+  KnowledgeIndexStatus,
+  KnowledgeIndexSummary,
+} from './knowledge-index';
+
 export interface ExerciseMetadata {
   template?: string;
   options?: string[];
@@ -15,6 +20,7 @@ export interface HintConfig {
 }
 
 export type HintsValue = HintConfig | string | null;
+export type KnowledgeIndexPolicy = 'auto' | 'include' | 'exclude';
 
 export interface ExerciseItem {
   id: string;
@@ -27,6 +33,12 @@ export interface ExerciseItem {
   metadata: MetadataValue;
   hints: HintsValue;
   order?: number;
+  knowledgeIndexPolicy?: KnowledgeIndexPolicy;
+}
+
+export interface DeletedExerciseItem extends ExerciseItem {
+  deletedAt?: string | null;
+  purgeAt?: string | null;
 }
 
 export interface LessonItem {
@@ -41,10 +53,16 @@ export interface LessonItem {
   difficulty: number;
   sortOrder: number;
   estimatedTime: number;
+  knowledgeIndexPolicy: KnowledgeIndexPolicy;
   exercises: ExerciseItem[];
+  deletedExercises?: DeletedExerciseItem[];
   exerciseCount: number;
   createdAt: string;
   updateAt: string;
+  deletedAt?: string | null;
+  purgeAt?: string | null;
+  indexStatus: KnowledgeIndexStatus;
+  indexSummary: KnowledgeIndexSummary;
 }
 
 export interface LessonListResponse {
@@ -67,6 +85,7 @@ export interface CreateLessonRequest {
   metadata?: MetadataValue;
   hints?: HintsValue;
   estimatedTime?: number;
+  knowledgeIndexPolicy?: KnowledgeIndexPolicy;
   exercises?: ExerciseItem[];
 }
 
@@ -86,6 +105,7 @@ export interface UpdateLessonRequest {
   metadata?: MetadataValue;
   hints?: HintsValue;
   estimatedTime?: number;
+  knowledgeIndexPolicy?: KnowledgeIndexPolicy;
   exercises?: ExerciseItem[];
 }
 
@@ -99,4 +119,37 @@ export interface DeleteLessonResponse {
   code: number;
   msg: string;
   data: null;
+}
+
+export interface ReindexLessonResponse {
+  code: number;
+  msg: string;
+  data: {
+    lessonId: string;
+    sourceCount: number;
+    readyCount: number;
+    failedCount: number;
+    indexStatus: KnowledgeIndexStatus;
+    indexSummary: KnowledgeIndexSummary;
+  };
+}
+
+export interface ReindexLessonsBatchRequest {
+  courseId?: string;
+  chapterId?: string;
+  keyword?: string;
+  difficulty?: number;
+}
+
+export interface ReindexLessonsBatchResponse {
+  code: number;
+  msg: string;
+  data: {
+    lessonCount: number;
+    sourceCount: number;
+    readyCount: number;
+    failedCount: number;
+    indexStatus: KnowledgeIndexStatus;
+    indexSummary: KnowledgeIndexSummary;
+  };
 }
