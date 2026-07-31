@@ -126,3 +126,29 @@ describe('权限三态回归 · 四组 *-manage 路由', () => {
     });
   }
 });
+
+describe('管理员索引重建接口', () => {
+  const path = '/api/v1/admin/lessons/reindex-batch';
+
+  it('未登录返回 HTTP 401', async () => {
+    const response = await request(app).post(path).send({});
+    expect(response.status).toBe(401);
+  });
+
+  it('普通用户返回 HTTP 403', async () => {
+    const response = await request(app)
+      .post(path)
+      .set('Authorization', `Bearer ${normalToken}`)
+      .send({});
+    expect(response.status).toBe(403);
+  });
+
+  it('管理员缺少课程/章节范围时返回业务 code 400', async () => {
+    const response = await request(app)
+      .post(path)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({});
+    expect(response.status).toBe(200);
+    expect(response.body.code).toBe(400);
+  });
+});

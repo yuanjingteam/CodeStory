@@ -1,0 +1,76 @@
+import type { EvalDataset } from '../types';
+
+const answerTopics = [
+  'SELECT 基础',
+  'WHERE 条件',
+  'ORDER BY 排序',
+  'GROUP BY 分组',
+  'HAVING 过滤',
+  'JOIN 连接',
+  '子查询',
+  '聚合函数',
+  'NULL 判断',
+  '字符串函数',
+  '日期函数',
+  'INSERT 语句',
+  'UPDATE 语句',
+  'DELETE 语句',
+  '表约束',
+  '主键',
+  '外键',
+  '普通索引',
+  '事务',
+  '视图',
+];
+
+const gradingCases = [
+  '标准答案一致',
+  '仅空格不同',
+  '仅大小写不同',
+  '末尾分号不同',
+  'AND 条件顺序不同',
+  '字段遗漏',
+  '表名错误',
+  '条件错误',
+  '聚合函数错误',
+  '排序方向错误',
+  '明显无关答案',
+  '空答案',
+  '注释中包含答案',
+  '等价别名',
+  '等价子查询',
+  '边界条件遗漏',
+  '可运行但风格较差',
+  '思路正确但有语法错误',
+  '结果正确但写法冗余',
+  '参考信息不足',
+];
+
+export const v1SmokeDataset: EvalDataset = {
+  datasetVersion: 'v1-smoke-2026-07-30',
+  promptVersion: 'v1-baseline',
+  defaultModel: 'qwen-plus',
+  cases: [
+    ...answerTopics.map((topic, index) => ({
+      id: `answer-${String(index + 1).padStart(2, '0')}`,
+      scenario: 'answer_grounding' as const,
+      input: { question: `${topic}是什么？`, topic },
+      expected: { requiresEvidence: true, topK: 5 },
+      tags: ['v1', 'smoke'],
+    })),
+    ...answerTopics.map((topic, index) => ({
+      id: `question-${String(index + 1).padStart(2, '0')}`,
+      scenario: 'question_generation' as const,
+      input: { topic, count: 1, type: index % 2 ? 'code' : 'single_choice' },
+      expected: { schemaValid: true, draftOnly: true },
+      tags: ['v1', 'smoke'],
+    })),
+    ...gradingCases.map((caseName, index) => ({
+      id: `grading-${String(index + 1).padStart(2, '0')}`,
+      scenario: 'code_grading' as const,
+      input: { caseName, answerClass: index < 5 ? 'correct' : index < 12 ? 'wrong' : 'boundary' },
+      expected: { scoreRange: [0, 100], manualReviewAllowed: true },
+      tags: ['v1', 'smoke'],
+    })),
+  ],
+};

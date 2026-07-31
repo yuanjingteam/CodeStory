@@ -188,7 +188,10 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
   });
 
   try {
-    const context = await getLessonAiContext(lessonId, exerciseId);
+    const context = await getLessonAiContext(lessonId, exerciseId, {
+      userId,
+      query: question,
+    });
     if (!context) {
       return sendAiChatError(res, 404, 'AI_CONTEXT_INVALID', '小节不存在');
     }
@@ -266,6 +269,8 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
           exerciseId: context.exerciseId,
           modelSource: 'lesson-chat',
           usedCurrentCode: Boolean(currentCode),
+          retrievalMode: context.retrievalMode,
+          evidenceCount: context.evidence.length,
         },
         messageType
       );

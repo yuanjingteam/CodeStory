@@ -1,5 +1,6 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { getAiConfig } from '../../../config/ai';
+import { logger } from '../../../config/logger';
 
 /**
  * 创建已配置好的 ChatOpenAI 模型实例。
@@ -15,6 +16,10 @@ export function createChatModel(overrides?: {
   streamUsage?: boolean;
 }): ChatOpenAI {
   const config = getAiConfig();
+  logger.debug(
+    { model: config.model, streaming: overrides?.streaming ?? false },
+    'Creating chat model'
+  );
 
   return new ChatOpenAI({
     apiKey: config.apiKey,

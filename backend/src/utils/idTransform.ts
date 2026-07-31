@@ -16,7 +16,8 @@ export function isShortId(id: string): boolean {
 // 短 ID 反查完整 UUID（通过 SQL 匹配前 2 位和后 3 位）
 export async function resolveShortId(
   table: 'courses' | 'chapters' | 'lessons' | 'exercises',
-  shortId: string
+  shortId: string,
+  options: { includeDeleted?: boolean } = {}
 ): Promise<string | null> {
   if (!isShortId(shortId)) {
     return shortId;
@@ -28,7 +29,7 @@ export async function resolveShortId(
   const sql = `
     SELECT id
     FROM ${table}
-    WHERE is_delete = 0
+    WHERE ${options.includeDeleted ? 'TRUE' : 'is_delete = 0'}
       AND REPLACE(id, '-', '') LIKE $1 || '%' || $2
     ORDER BY created_at ASC
     LIMIT 1

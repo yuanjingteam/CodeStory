@@ -3,8 +3,10 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { corsOptions } from './config/cors';
+import { httpLogger, logger } from './config/logger';
 import errorHandler from './middleware/errorHandler';
 import { authMiddleware, requireAdmin } from './middleware/auth';
+import { requestContextMiddleware } from './middleware/request-context';
 import { serveUploadFromOSS } from './middleware/serve-upload';
 import {
   authRouters,
@@ -20,11 +22,14 @@ import {
   aiRouter,
 } from './routes/index';
 import { startAiChatCleanupScheduler } from './services/ai/chat-retention.service';
+import { startContentCleanupScheduler } from './services/course-manage/content-retention.service';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
+app.use(requestContextMiddleware);
+app.use(httpLogger);
 app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -69,10 +74,12 @@ app.use(errorHandler);
 // 测试环境（vitest）下不监听端口，仅导出 app 供 supertest 直接调用
 if (!process.env.VITEST) {
   app.listen(PORT, () => {
-    console.log(
-      `Server running on port ${PORT} (${process.env.NODE_ENV || 'development'})`
+    logger.info(
+      { port: PORT, environment: process.env.NODE_ENV || 'development' },
+      'Server started'
     );
     startAiChatCleanupScheduler();
+    startContentCleanupScheduler();
   });
 }
 

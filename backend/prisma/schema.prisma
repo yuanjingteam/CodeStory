@@ -41,6 +41,7 @@ model courses {
   level            Int                @default(0) @db.SmallInt
   created_at       DateTime           @default(now()) @db.Timestamp(6)
   updated_at       DateTime           @updatedAt @db.Timestamp(6)
+  deleted_at       DateTime?          @db.Timestamp(6)
   is_delete        Int                @default(0) @db.SmallInt
   course_seq       Int                @default(autoincrement())
   chapters         chapters[]
@@ -48,6 +49,7 @@ model courses {
 
   @@index([level])
   @@index([is_delete])
+  @@index([is_delete, deleted_at])
   @@index([created_at])
 }
 
@@ -79,6 +81,7 @@ model chapters {
   order       Int       @default(0)
   created_at  DateTime  @default(now()) @db.Timestamp(6)
   updated_at  DateTime  @updatedAt @db.Timestamp(6)
+  deleted_at  DateTime? @db.Timestamp(6)
   is_delete   Int       @default(0) @db.SmallInt
   chapter_seq Int       @default(autoincrement())
   courses     courses   @relation(fields: [course_id], references: [id], onDelete: Cascade)
@@ -87,6 +90,7 @@ model chapters {
   @@unique([course_id, order])
   @@index([course_id])
   @@index([is_delete])
+  @@index([is_delete, deleted_at])
 }
 
 model lessons {
@@ -100,7 +104,9 @@ model lessons {
   order            Int                @default(0)
   created_at       DateTime           @default(now()) @db.Timestamp(6)
   updated_at       DateTime           @updatedAt @db.Timestamp(6)
+  deleted_at       DateTime?          @db.Timestamp(6)
   is_delete        Int                @default(0) @db.SmallInt
+  knowledge_index_policy String       @default("auto") @db.VarChar(20)
   lesson_seq       Int                @default(autoincrement())
   ai_chat_sessions ai_chat_sessions[]
   exercises        exercises[]
@@ -111,6 +117,8 @@ model lessons {
   @@index([chapter_id])
   @@index([difficulty])
   @@index([is_delete])
+  @@index([is_delete, deleted_at])
+  @@index([knowledge_index_policy])
 }
 
 model lessons_progress {
@@ -148,7 +156,9 @@ model exercises {
   order            Int                @default(0)
   created_at       DateTime           @default(now()) @db.Timestamp(6)
   updated_at       DateTime           @updatedAt @db.Timestamp(6)
+  deleted_at       DateTime?          @db.Timestamp(6)
   is_delete        Int                @default(0) @db.SmallInt
+  knowledge_index_policy String       @default("auto") @db.VarChar(20)
   answers          answer[]
   code_submissions code_submissions[]
   lessons          lessons            @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
@@ -158,6 +168,8 @@ model exercises {
   @@index([difficulty])
   @@index([source])
   @@index([is_delete])
+  @@index([is_delete, deleted_at])
+  @@index([knowledge_index_policy])
 }
 
 model answer {
@@ -185,6 +197,9 @@ model ai_chat_sessions {
   id                  String             @id @default(uuid()) @db.Char(36)
   user_id             String             @db.Char(36)
   lesson_id           String             @db.Char(36)
+  current_run_id      String?            @db.Char(36)
+  state_version       Int                @default(0)
+  graph_version       String?            @db.VarChar(30)
   state               Int                @default(0) @db.SmallInt
   current_exercise_id String?            @db.Char(36)
   hint_level          Int                @default(0)
@@ -201,6 +216,63 @@ model ai_chat_sessions {
   @@index([lesson_id])
   @@index([state])
   @@index([is_delete])
+}
+
+model knowledge_chunks {
+  id             String   @id @default(uuid()) @db.Char(36)
+  source_type    String   @db.VarChar(20)
+  source_id      String   @db.Char(36)
+  course_id      String?  @db.Char(36)
+  lesson_id      String?  @db.Char(36)
+  source_version DateTime @db.Timestamp(6)
+  chunk_index    Int
+  content        String
+  content_hash   String   @db.Char(64)
+  embedding      Unsupported("vector(1024)")
+  metadata       Json?    @db.Json
+  created_at     DateTime @default(now()) @db.Timestamp(6)
+  updated_at     DateTime @updatedAt @db.Timestamp(6)
+  is_delete      Int      @default(0) @db.SmallInt
+
+  @@unique([source_type, source_id, chunk_index])
+  @@index([course_id, lesson_id, source_type, source_id])
+  @@index([source_type, source_id])
+  @@index([is_delete])
+}
+
+model knowledge_index_state {
+  id                String    @id @default(uuid()) @db.Char(36)
+  source_type       String    @db.VarChar(20)
+  source_id         String    @db.Char(36)
+  source_updated_at DateTime  @db.Timestamp(6)
+  index_generation  BigInt    @default(0)
+  indexed_at        DateTime? @db.Timestamp(6)
+  status            String    @default("pending") @db.VarChar(20)
+  error_code        String?   @db.VarChar(100)
+  embedding_model   String?   @db.VarChar(150)
+  embedding_dimensions Int?
+  index_version     String?   @db.VarChar(30)
+  created_at        DateTime  @default(now()) @db.Timestamp(6)
+  updated_at        DateTime  @updatedAt @db.Timestamp(6)
+
+  @@unique([source_type, source_id])
+  @@index([status, indexed_at])
+}
+
+model learning_run_effects {
+  id          String    @id @default(uuid()) @db.Char(36)
+  run_id      String    @db.Char(36)
+  node_name   String    @db.VarChar(80)
+  effect_type String    @db.VarChar(80)
+  effect_key  String    @unique @db.VarChar(255)
+  payload     Json?     @db.Json
+  status      String    @default("pending") @db.VarChar(20)
+  error_code  String?   @db.VarChar(100)
+  created_at  DateTime  @default(now()) @db.Timestamp(6)
+  applied_at  DateTime? @db.Timestamp(6)
+
+  @@index([run_id])
+  @@index([status, created_at])
 }
 
 model ai_chat_messages {

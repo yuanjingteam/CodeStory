@@ -1,6 +1,14 @@
 // 课程上下文服务 让ai知道学生在学啥课程，啥章节，啥内容，啥练习
 import prisma from '../../config/prisma';
+import { isRagEnabled } from '../../config/ai';
+import { logger } from '../../config/logger';
 import { resolveShortId } from '../../utils/idTransform';
+import {
+  createKnowledgeRetriever,
+  htmlToKnowledgeText,
+  type KnowledgeRetriever,
+  type RetrievedKnowledge,
+} from '../rag';
 
 // 课程内容最大长度
 const MAX_LESSON_CONTENT_LENGTH = 20_000;
@@ -9,6 +17,7 @@ const MAX_EXERCISE_CONTENT_LENGTH = 6_000;
 export interface LessonAiContext {
   lessonId: string;
   exerciseId: string | null;
+  courseId: string;
   courseTitle: string;
   chapterTitle: string;
   lessonTitle: string;
@@ -18,32 +27,24 @@ export interface LessonAiContext {
     content: string;
     knowledge: string;
   } | null;
-}
-
-function htmlToPlainText(value: string): string {
-  return value
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/\s+/g, ' ')
-    .trim();
+  retrievalMode: 'retrieved' | 'fallback';
+  evidence: RetrievedKnowledge[];
 }
 
 function normalizeContent(value: string | null, maxLength: number): string {
-  const content = htmlToPlainText(value || '');
+  const content = htmlToKnowledgeText(value || '');
   if (content.length <= maxLength) return content;
   return `${content.slice(0, maxLength)}\n[内容过长，已截断]`;
 }
 
 export async function getLessonAiContext(
   lessonId: string,
-  exerciseId?: string
+  exerciseId?: string,
+  retrieval?: {
+    userId: string;
+    query: string;
+    retriever?: KnowledgeRetriever;
+  }
 ): Promise<LessonAiContext | null> {
   const resolvedLessonId = await resolveShortId('lessons', lessonId);
   if (!resolvedLessonId) return null;
@@ -57,7 +58,7 @@ export async function getLessonAiContext(
         select: {
           title: true,
           courses: {
-            select: { title: true },
+            select: { id: true, title: true },
           },
         },
       },
@@ -99,13 +100,56 @@ export async function getLessonAiContext(
     };
   }
 
+  let evidence: RetrievedKnowledge[] = [];
+  if (retrieval && isRagEnabled()) {
+    try {
+      evidence = await (
+        retrieval.retriever || createKnowledgeRetriever()
+      ).retrieve(retrieval.query, {
+        userId: retrieval.userId,
+        courseId: lesson.chapters.courses.id,
+        lessonId: resolvedLessonId,
+        purpose: 'student_chat',
+      });
+      logger.info(
+        {
+          course_id: lesson.chapters.courses.id,
+          lesson_id: resolvedLessonId,
+          evidence: evidence.map((item) => ({
+            source_type: item.sourceType,
+            source_id: item.sourceId,
+            chunk_index: item.chunkIndex,
+            content_hash: item.contentHash,
+            score: item.score,
+          })),
+        },
+        'lesson RAG retrieval completed'
+      );
+    } catch (error) {
+      logger.warn(
+        {
+          course_id: lesson.chapters.courses.id,
+          lesson_id: resolvedLessonId,
+          error_code:
+            error instanceof Error
+              ? error.message.split(':', 1)[0]
+              : 'RAG_RETRIEVAL_FAILED',
+        },
+        'lesson RAG retrieval fell back'
+      );
+    }
+  }
+
   return {
     lessonId: resolvedLessonId,
     exerciseId: resolvedCurrentExerciseId,
+    courseId: lesson.chapters.courses.id,
     courseTitle: lesson.chapters.courses.title,
     chapterTitle: lesson.chapters.title,
     lessonTitle: lesson.title,
     lessonContent: normalizeContent(lesson.content, MAX_LESSON_CONTENT_LENGTH) || '暂无正文',
     exercise,
+    retrievalMode: evidence.length > 0 ? 'retrieved' : 'fallback',
+    evidence,
   };
 }

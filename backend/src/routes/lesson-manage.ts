@@ -4,7 +4,11 @@ import {
   getLessonList,
   createLesson,
   updateLesson,
-  deleteLesson
+  deleteLesson,
+  reindexLesson,
+  reindexLessonsBatch,
+  restoreLesson,
+  restoreExercise,
 } from '../services/course-manage/lesson-manage';
 
 const router = Router();
@@ -17,6 +21,26 @@ router.get('/list',
 router.post('/',
   authMiddleware,
   createLesson
+);
+
+router.post('/reindex-batch',
+  authMiddleware,
+  reindexLessonsBatch
+);
+
+router.post('/:id/reindex',
+  authMiddleware,
+  reindexLesson
+);
+
+router.put('/:id/restore',
+  authMiddleware,
+  restoreLesson
+);
+
+router.put('/:id/exercises/:exerciseId/restore',
+  authMiddleware,
+  restoreExercise
 );
 
 router.put('/:id',

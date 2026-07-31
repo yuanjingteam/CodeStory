@@ -1,8 +1,8 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts';
+import { z } from 'zod';
 import { getAiConfig } from '../../config/ai';
 import {
   createChatModel,
-  extractJsonObject,
   getMessageText,
 } from './_shared/model';
 import type { CodeGradeResult } from '../courses/code-grading.service';
@@ -99,41 +99,20 @@ function getModelName(): string {
   return getAiConfig().model;
 }
 
-function clampInteger(value: unknown, min: number, max: number): number {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric)) return min;
-  return Math.min(max, Math.max(min, Math.round(numeric)));
-}
+const nonEmptyText = z.string().trim().min(1);
 
-function toStringList(value: unknown, maxLength: number): string[] {
-  if (!Array.isArray(value)) return [];
-
-  return value
-    .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
-    .map((item) => item.trim())
-    .slice(0, maxLength);
-}
-
-function validateReview(value: unknown): AiCodeReview {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new Error('AI_CODE_REVIEW_INVALID_OBJECT');
-  }
-
-  const data = value as Record<string, unknown>;
-  const feedback = typeof data.feedback === 'string' ? data.feedback.trim() : '';
-  if (!feedback) throw new Error('AI_CODE_REVIEW_FEEDBACK_MISSING');
-
-  return {
-    isLikelyCorrect: Boolean(data.isLikelyCorrect),
-    functionalScore: clampInteger(data.functionalScore, 0, 70),
-    qualityScore: clampInteger(data.qualityScore, 0, 30),
-    feedback,
-    strengths: toStringList(data.strengths, 2),
-    issues: toStringList(data.issues, 3),
-    suggestions: toStringList(data.suggestions, 3),
-    needsManualReview: Boolean(data.needsManualReview),
-  };
-}
+export const codeReviewSchema = z
+  .object({
+    isLikelyCorrect: z.boolean(),
+    functionalScore: z.number().int().min(0).max(70),
+    qualityScore: z.number().int().min(0).max(30),
+    feedback: nonEmptyText,
+    strengths: z.array(nonEmptyText).max(2),
+    issues: z.array(nonEmptyText).max(3),
+    suggestions: z.array(nonEmptyText).max(3),
+    needsManualReview: z.boolean(),
+  })
+  .strict();
 
 function formatStaticGrade(grade: CodeGradeResult): string {
   return JSON.stringify({
@@ -151,9 +130,15 @@ function formatStaticGrade(grade: CodeGradeResult): string {
 }
 
 export async function reviewCodeWithAI(input: CodeReviewInput): Promise<AiCodeReviewResult> {
-  const chain = codeReviewPrompt.pipe(
-    createChatModel({ temperature: 0.1, maxTokens: 800 })
-  );
+  const structuredModel = createChatModel({
+    temperature: 0.1,
+    maxTokens: 800,
+  }).withStructuredOutput(codeReviewSchema, {
+    name: 'code_review',
+    method: 'jsonMode',
+    includeRaw: true,
+  });
+  const chain = codeReviewPrompt.pipe(structuredModel);
   const response = await chain.invoke({
     exerciseContent: input.exerciseContent,
     knowledge: input.knowledge || '未标注',
@@ -165,10 +150,13 @@ export async function reviewCodeWithAI(input: CodeReviewInput): Promise<AiCodeRe
     staticGrade: formatStaticGrade(input.staticGrade),
   });
 
-  const rawContent = getMessageText(response.content).trim();
-  const review = validateReview(
-    extractJsonObject(rawContent, 'AI_CODE_REVIEW_JSON_NOT_FOUND')
-  );
+  if (!response.parsed) {
+    throw new Error('AI_CODE_REVIEW_SCHEMA_INVALID');
+  }
+  const rawContent =
+    getMessageText(response.raw.content).trim() ||
+    JSON.stringify(response.parsed);
+  const review: AiCodeReview = response.parsed;
 
   return {
     review,

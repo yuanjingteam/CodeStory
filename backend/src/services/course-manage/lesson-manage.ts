@@ -3,6 +3,17 @@ import { Prisma } from '../../generated/prisma';
 import prisma from '../../config/prisma';
 import { success, fail, badRequest, notFound } from '../../utils/response';
 import { uuidToShortId, resolveShortId } from '../../utils/idTransform';
+import { CONTENT_RETENTION_DAYS } from './content-retention.service';
+import {
+  aggregateKnowledgeIndexSummaries,
+  completeKnowledgeIndexes,
+  getLessonIndexSummaries,
+  getLessonIndexSummary,
+  invalidateLessonKnowledge,
+  queueLessonKnowledge,
+  queueLessonsKnowledge,
+  type KnowledgeIndexTicket,
+} from '../rag';
 
 type TransactionClient = Prisma.TransactionClient;
 
@@ -16,6 +27,7 @@ interface ManageExerciseInput {
   source?: unknown;
   metadata?: Prisma.InputJsonValue | null;
   hints?: Prisma.InputJsonValue | null;
+  knowledgeIndexPolicy?: unknown;
 }
 
 class LessonInputError extends Error {}
@@ -33,7 +45,26 @@ function getExerciseWriteData(exercise: ManageExerciseInput, difficulty: number)
     difficulty,
     metadata: exercise.metadata ?? Prisma.JsonNull,
     hints: exercise.hints ?? Prisma.JsonNull,
+    knowledge_index_policy: normalizeKnowledgeIndexPolicy(
+      exercise.knowledgeIndexPolicy
+    ),
   };
+}
+
+function normalizeKnowledgeIndexPolicy(
+  value: unknown
+): 'auto' | 'include' | 'exclude' {
+  return value === 'include' || value === 'exclude'
+    ? value
+    : 'auto';
+}
+
+function getPurgeAt(deletedAt: Date | null): string | null {
+  if (!deletedAt) return null;
+  return new Date(
+    deletedAt.getTime() +
+      CONTENT_RETENTION_DAYS * 24 * 60 * 60 * 1_000
+  ).toISOString();
 }
 
 function validateExercises(exercises: ManageExerciseInput[]): void {
@@ -85,6 +116,7 @@ function serializeManageExercise(exercise: {
   metadata: Prisma.JsonValue | null;
   hints: Prisma.JsonValue | null;
   order: number;
+  knowledge_index_policy: string;
 }) {
   return {
     id: exercise.id,
@@ -97,29 +129,49 @@ function serializeManageExercise(exercise: {
     metadata: exercise.metadata,
     hints: exercise.hints,
     order: exercise.order,
+    knowledgeIndexPolicy: exercise.knowledge_index_policy,
   };
 }
 
 export const getLessonList = async (req: Request, res: Response) => {
   try {
-    const { chapterId, courseId, keyword, difficulty, page = 1, size = 10 } = req.query;
+    const {
+      chapterId,
+      courseId,
+      keyword,
+      difficulty,
+      status = 'active',
+      page = 1,
+      size = 10,
+    } = req.query;
 
     const where: Record<string, any> = {
-      is_delete: 0
+      is_delete: status === 'deleted' ? 1 : 0,
     };
 
     if (chapterId && chapterId !== '') {
-      const resolvedChapterId = await resolveShortId('chapters', String(chapterId));
+      const resolvedChapterId = await resolveShortId(
+        'chapters',
+        String(chapterId),
+        { includeDeleted: status === 'deleted' }
+      );
       if (!resolvedChapterId) return badRequest(res, '章节不存在');
       where.chapter_id = resolvedChapterId;
     }
 
     if (courseId && courseId !== '') {
-      const resolvedCourseId = await resolveShortId('courses', String(courseId));
+      const resolvedCourseId = await resolveShortId(
+        'courses',
+        String(courseId),
+        { includeDeleted: status === 'deleted' }
+      );
       if (!resolvedCourseId) return badRequest(res, '课程不存在');
 
       const chapters = await prisma.chapters.findMany({
-        where: { course_id: resolvedCourseId, is_delete: 0 },
+        where: {
+          course_id: resolvedCourseId,
+          ...(status === 'deleted' ? {} : { is_delete: 0 }),
+        },
         select: { id: true }
       });
 
@@ -156,7 +208,6 @@ export const getLessonList = async (req: Request, res: Response) => {
           }
         },
         exercises: {
-          where: { is_delete: 0 },
           orderBy: { order: 'asc' },
           select: {
             id: true,
@@ -168,11 +219,28 @@ export const getLessonList = async (req: Request, res: Response) => {
             source: true,
             metadata: true,
             hints: true,
-            order: true
+            order: true,
+            knowledge_index_policy: true,
+            is_delete: true,
+            deleted_at: true
           }
         }
       }
     });
+    const indexSummaries =
+      status === 'deleted'
+        ? new Map()
+        : await getLessonIndexSummaries(
+            lessons.map((lesson) => ({
+              id: lesson.id,
+        exercises: lesson.exercises
+          .filter((exercise) => exercise.is_delete === 0)
+          .map((exercise) => ({
+            id: exercise.id,
+            source: exercise.source,
+          })),
+            }))
+          );
 
     const data = lessons.map(lesson => ({
       id: uuidToShortId(lesson.id),
@@ -186,10 +254,38 @@ export const getLessonList = async (req: Request, res: Response) => {
       difficulty: lesson.difficulty,
       sortOrder: lesson.order,
       estimatedTime: lesson.estimated_time || 0,
-      exercises: lesson.exercises.map(serializeManageExercise),
-      exerciseCount: lesson.exercises.length,
+      knowledgeIndexPolicy: lesson.knowledge_index_policy,
+      exercises: lesson.exercises
+        .filter((exercise) => exercise.is_delete === 0)
+        .map(serializeManageExercise),
+      deletedExercises: lesson.exercises
+        .filter((exercise) => exercise.is_delete === 1)
+        .map((exercise) => ({
+          ...serializeManageExercise(exercise),
+          deletedAt: exercise.deleted_at?.toISOString() || null,
+          purgeAt: getPurgeAt(exercise.deleted_at),
+        })),
+      exerciseCount: lesson.exercises.filter(
+        (exercise) => exercise.is_delete === 0
+      ).length,
       createdAt: lesson.created_at.toISOString().replace('T', ' ').slice(0, 19),
-      updateAt: lesson.updated_at.toISOString().replace('T', ' ').slice(0, 19)
+      updateAt: lesson.updated_at.toISOString().replace('T', ' ').slice(0, 19),
+      deletedAt: lesson.deleted_at?.toISOString() || null,
+      purgeAt: getPurgeAt(lesson.deleted_at),
+      indexSummary:
+        indexSummaries.get(lesson.id) || {
+          status: 'not_indexed',
+          totalSources: 0,
+          readySources: 0,
+          pendingSources: 0,
+          failedSources: 0,
+          needsContentSources: 0,
+          needsReviewSources: 0,
+          excludedSources: 0,
+          notIndexedSources: 0,
+          updatedAt: null,
+        },
+      indexStatus: indexSummaries.get(lesson.id)?.status || 'not_indexed',
     }));
 
     return success(res, { total, data });
@@ -201,7 +297,16 @@ export const getLessonList = async (req: Request, res: Response) => {
 
 export const createLesson = async (req: Request, res: Response) => {
   try {
-    const { chapterId, lessonName, content, difficulty, sortOrder, estimatedTime, exercises } = req.body;
+    const {
+      chapterId,
+      lessonName,
+      content,
+      difficulty,
+      sortOrder,
+      estimatedTime,
+      knowledgeIndexPolicy,
+      exercises,
+    } = req.body;
     if (!chapterId || chapterId === '') return badRequest(res, '章节ID不能为空');
     if (!lessonName || !lessonName.trim()) return badRequest(res, '小节名称不能为空');
 
@@ -230,6 +335,7 @@ export const createLesson = async (req: Request, res: Response) => {
     let result: {
       lesson: Awaited<ReturnType<TransactionClient['lessons']['create']>>;
       exercises: Awaited<ReturnType<TransactionClient['exercises']['create']>>[];
+      indexTickets: KnowledgeIndexTicket[];
     } | null = null;
     let retryCount = 0;
     const MAX_RETRY = 10;
@@ -244,7 +350,9 @@ export const createLesson = async (req: Request, res: Response) => {
               content: content || '',
               difficulty: Number(difficulty) || 0,
               order: finalOrder,
-              estimated_time: Number(estimatedTime) || 0
+              estimated_time: Number(estimatedTime) || 0,
+              knowledge_index_policy:
+                normalizeKnowledgeIndexPolicy(knowledgeIndexPolicy),
             }
           });
 
@@ -277,8 +385,16 @@ export const createLesson = async (req: Request, res: Response) => {
           }
 
           await updateCourseProgressForNewLesson(tx, chapterExists.course_id);
+          const indexTickets = await queueLessonKnowledge(
+            tx,
+            lesson.id
+          );
 
-          return { lesson, exercises: createdExercises };
+          return {
+            lesson,
+            exercises: createdExercises,
+            indexTickets,
+          };
         });
         break;
       } catch (createError) {
@@ -295,7 +411,13 @@ export const createLesson = async (req: Request, res: Response) => {
       return fail(res, '创建小节失败');
     }
 
-    const { lesson, exercises: createdExercises } = result;
+    const {
+      lesson,
+      exercises: createdExercises,
+      indexTickets,
+    } = result;
+    const indexing = await completeKnowledgeIndexes(indexTickets);
+    const indexSummary = await getLessonIndexSummary(lesson.id);
 
     return success(res, {
       id: uuidToShortId(lesson.id),
@@ -309,9 +431,12 @@ export const createLesson = async (req: Request, res: Response) => {
       difficulty: lesson.difficulty,
       sortOrder: lesson.order,
       estimatedTime: lesson.estimated_time,
+      knowledgeIndexPolicy: lesson.knowledge_index_policy,
       exerciseCount: createdExercises.length,
       createdAt: lesson.created_at.toISOString().replace('T', ' ').slice(0, 19),
-      updateAt: lesson.updated_at.toISOString().replace('T', ' ').slice(0, 19)
+      updateAt: lesson.updated_at.toISOString().replace('T', ' ').slice(0, 19),
+      indexStatus: indexing.status,
+      indexSummary,
     });
   } catch (error) {
     console.error('创建小节失败:', error);
@@ -341,7 +466,15 @@ export const updateLesson = async (req: Request, res: Response) => {
     });
     if (!existing) return notFound(res, '小节不存在');
 
-    const { lessonName, content, difficulty, sortOrder, estimatedTime, exercises } = req.body;
+    const {
+      lessonName,
+      content,
+      difficulty,
+      sortOrder,
+      estimatedTime,
+      knowledgeIndexPolicy,
+      exercises,
+    } = req.body;
     const exerciseInputs: ManageExerciseInput[] | null = Array.isArray(exercises)
       ? exercises
       : null;
@@ -366,8 +499,16 @@ export const updateLesson = async (req: Request, res: Response) => {
     if (estimatedTime !== undefined) {
       updateData.estimated_time = Number(estimatedTime) || 0;
     }
+    if (knowledgeIndexPolicy !== undefined) {
+      updateData.knowledge_index_policy =
+        normalizeKnowledgeIndexPolicy(knowledgeIndexPolicy);
+    }
 
-    const { lesson, exercises: updatedExercises } = await prisma.$transaction(async (tx) => {
+    const {
+      lesson,
+      exercises: updatedExercises,
+      indexTickets,
+    } = await prisma.$transaction(async (tx) => {
       let lesson = await tx.lessons.update({
         where: { id: resolvedLessonId },
         data: updateData
@@ -378,7 +519,15 @@ export const updateLesson = async (req: Request, res: Response) => {
           where: { lesson_id: resolvedLessonId, is_delete: 0 },
           orderBy: { order: 'asc' }
         });
-        return { lesson, exercises: currentExercises };
+        const indexTickets = await queueLessonKnowledge(
+          tx,
+          resolvedLessonId
+        );
+        return {
+          lesson,
+          exercises: currentExercises,
+          indexTickets,
+        };
       }
 
       const currentExercises = await tx.exercises.findMany({
@@ -408,10 +557,20 @@ export const updateLesson = async (req: Request, res: Response) => {
         const currentExercise = requestId ? currentById.get(requestId) : undefined;
 
         if (currentExercise) {
+          const writeData = getExerciseWriteData(
+            input,
+            lesson.difficulty
+          );
+          if (input.knowledgeIndexPolicy === undefined) {
+            writeData.knowledge_index_policy =
+              normalizeKnowledgeIndexPolicy(
+                currentExercise.knowledge_index_policy
+              );
+          }
           const exercise = await tx.exercises.update({
             where: { id: currentExercise.id },
             data: {
-              ...getExerciseWriteData(input, lesson.difficulty),
+              ...writeData,
               source: currentExercise.source || 'static',
               order: index + 1,
             }
@@ -458,7 +617,7 @@ export const updateLesson = async (req: Request, res: Response) => {
           is_delete: 0,
           id: { notIn: [...retainedIds] }
         },
-        data: { is_delete: 1 }
+        data: { is_delete: 1, deleted_at: new Date() }
       });
 
       const rewrittenContent = replaceExerciseReferences(lesson.content || '', exerciseReferenceMap);
@@ -469,8 +628,18 @@ export const updateLesson = async (req: Request, res: Response) => {
         });
       }
 
-      return { lesson, exercises: savedExercises };
+      const indexTickets = await queueLessonKnowledge(
+        tx,
+        resolvedLessonId
+      );
+      return {
+        lesson,
+        exercises: savedExercises,
+        indexTickets,
+      };
     });
+    const indexing = await completeKnowledgeIndexes(indexTickets);
+    const indexSummary = await getLessonIndexSummary(lesson.id);
 
     const chapterInfo = await prisma.chapters.findUnique({
       where: { id: lesson.chapter_id },
@@ -493,9 +662,12 @@ export const updateLesson = async (req: Request, res: Response) => {
       difficulty: lesson.difficulty,
       sortOrder: lesson.order,
       estimatedTime: lesson.estimated_time,
+      knowledgeIndexPolicy: lesson.knowledge_index_policy,
       exerciseCount: updatedExercises.length,
       createdAt: lesson.created_at.toISOString().replace('T', ' ').slice(0, 19),
-      updateAt: lesson.updated_at.toISOString().replace('T', ' ').slice(0, 19)
+      updateAt: lesson.updated_at.toISOString().replace('T', ' ').slice(0, 19),
+      indexStatus: indexing.status,
+      indexSummary,
     });
   } catch (error) {
     console.error('更新小节失败:', error);
@@ -506,6 +678,161 @@ export const updateLesson = async (req: Request, res: Response) => {
       return fail(res, '数据重复：当前章节中已存在相同排序');
     }
     return fail(res, `更新小节失败: ${error instanceof Error ? error.message : '未知错误'}`);
+  }
+};
+
+export const reindexLesson = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params as { id: string };
+    const lessonId = await resolveShortId('lessons', id, {
+      includeDeleted: true,
+    });
+    if (!lessonId) return notFound(res, '小节不存在');
+    const lesson = await prisma.lessons.findFirst({
+      where: {
+        id: lessonId,
+        is_delete: 0,
+        chapters: {
+          is_delete: 0,
+          courses: { is_delete: 0 },
+        },
+      },
+      select: { id: true },
+    });
+    if (!lesson) return notFound(res, '小节不存在');
+
+    const tickets = await prisma.$transaction((tx) =>
+      queueLessonKnowledge(tx, lesson.id)
+    );
+    const indexing = await completeKnowledgeIndexes(tickets);
+    const indexSummary = await getLessonIndexSummary(lesson.id);
+    return success(res, {
+      lessonId: uuidToShortId(lesson.id),
+      sourceCount: tickets.length,
+      readyCount: indexing.results.filter(
+        (result) => result.status === 'ready'
+      ).length,
+      failedCount: indexing.results.filter(
+        (result) => result.status === 'failed'
+      ).length,
+      indexStatus: indexSummary.status,
+      indexSummary,
+    });
+  } catch (error) {
+    console.error('重新索引小节失败:', error);
+    return fail(res, '重新索引小节失败');
+  }
+};
+
+export const reindexLessonsBatch = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { courseId, chapterId, keyword, difficulty } = req.body;
+    if (!courseId && !chapterId) {
+      return badRequest(res, '批量索引必须指定课程或章节范围');
+    }
+
+    let resolvedCourseId: string | undefined;
+    let resolvedChapterId: string | undefined;
+    if (courseId) {
+      resolvedCourseId =
+        (await resolveShortId('courses', String(courseId))) ||
+        undefined;
+      if (!resolvedCourseId) return badRequest(res, '课程不存在');
+    }
+    if (chapterId) {
+      resolvedChapterId =
+        (await resolveShortId('chapters', String(chapterId))) ||
+        undefined;
+      if (!resolvedChapterId) return badRequest(res, '章节不存在');
+    }
+
+    const chapterIds = resolvedChapterId
+      ? [resolvedChapterId]
+      : (
+          await prisma.chapters.findMany({
+            where: {
+              course_id: resolvedCourseId!,
+              is_delete: 0,
+              courses: { is_delete: 0 },
+            },
+            select: { id: true },
+          })
+        ).map((chapter) => chapter.id);
+    if (resolvedCourseId && resolvedChapterId) {
+      const belongsToCourse = await prisma.chapters.findFirst({
+        where: {
+          id: resolvedChapterId,
+          course_id: resolvedCourseId,
+          is_delete: 0,
+        },
+        select: { id: true },
+      });
+      if (!belongsToCourse) {
+        return badRequest(res, '章节不属于指定课程');
+      }
+    }
+
+    const where: Prisma.lessonsWhereInput = {
+      is_delete: 0,
+      chapter_id: { in: chapterIds },
+      chapters: {
+        is_delete: 0,
+        courses: { is_delete: 0 },
+      },
+    };
+    const normalizedKeyword = String(keyword || '').trim();
+    if (normalizedKeyword) {
+      where.OR = [
+        { title: { contains: normalizedKeyword } },
+        { content: { contains: normalizedKeyword } },
+      ];
+    }
+    if (
+      difficulty !== undefined &&
+      difficulty !== null &&
+      difficulty !== ''
+    ) {
+      where.difficulty = Number(difficulty);
+    }
+
+    const lessons = await prisma.lessons.findMany({
+      where,
+      select: { id: true },
+      orderBy: { created_at: 'asc' },
+    });
+    const tickets = await prisma.$transaction((tx) =>
+      queueLessonsKnowledge(
+        tx,
+        lessons.map((lesson) => lesson.id)
+      )
+    );
+    const indexing = await completeKnowledgeIndexes(tickets);
+    const summaries = await Promise.all(
+      lessons.map((lesson) => getLessonIndexSummary(lesson.id))
+    );
+    const indexSummary =
+      aggregateKnowledgeIndexSummaries(summaries);
+    const readyCount = indexing.results.filter(
+      (result) => result.status === 'ready'
+    ).length;
+    const failedCount = indexing.results.filter(
+      (result) => result.status === 'failed'
+    ).length;
+
+    return success(res, {
+      lessonCount: lessons.length,
+      sourceCount: tickets.length,
+      readyCount,
+      failedCount,
+      indexStatus: indexSummary.status,
+      indexSummary,
+    });
+  } catch (error) {
+    console.error('批量重新索引小节失败:', error);
+    return fail(res, '批量重新索引小节失败');
   }
 };
 
@@ -523,19 +850,103 @@ export const deleteLesson = async (req: Request, res: Response) => {
     await prisma.$transaction(async (tx) => {
       await tx.lessons.update({
         where: { id: resolvedLessonId },
-        data: { is_delete: 1 }
+        data: { is_delete: 1, deleted_at: new Date() }
       });
-
-      await tx.exercises.updateMany({
-        where: { lesson_id: resolvedLessonId },
-        data: { is_delete: 1 }
-      });
+      await invalidateLessonKnowledge(tx, resolvedLessonId);
     });
 
     return success(res, null);
   } catch (error) {
     console.error('删除小节失败:', error);
     return fail(res, '删除小节失败');
+  }
+};
+
+export const restoreLesson = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params as { id: string };
+    const lessonId = await resolveShortId('lessons', id, {
+      includeDeleted: true,
+    });
+    if (!lessonId) return notFound(res, '小节不存在');
+    const lesson = await prisma.lessons.findUnique({
+      where: { id: lessonId },
+      include: {
+        chapters: { include: { courses: true } },
+      },
+    });
+    if (!lesson || lesson.is_delete !== 1) {
+      return notFound(res, '已删除小节不存在');
+    }
+    if (
+      lesson.chapters.is_delete !== 0 ||
+      lesson.chapters.courses.is_delete !== 0
+    ) {
+      return badRequest(res, '请先恢复所属课程和章节');
+    }
+
+    const tickets = await prisma.$transaction(async (tx) => {
+      await tx.lessons.update({
+        where: { id: lessonId },
+        data: { is_delete: 0, deleted_at: null },
+      });
+      return queueLessonKnowledge(tx, lessonId);
+    });
+    await completeKnowledgeIndexes(tickets);
+    return success(res, {
+      lessonId: uuidToShortId(lessonId),
+      indexSummary: await getLessonIndexSummary(lessonId),
+    });
+  } catch (error) {
+    console.error('恢复小节失败:', error);
+    return fail(res, '恢复小节失败');
+  }
+};
+
+export const restoreExercise = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { id, exerciseId } = req.params as {
+      id: string;
+      exerciseId: string;
+    };
+    const lessonId = await resolveShortId('lessons', id);
+    if (!lessonId || !UUID_PATTERN.test(exerciseId)) {
+      return notFound(res, '题目不存在');
+    }
+    const exercise = await prisma.exercises.findFirst({
+      where: {
+        id: exerciseId,
+        lesson_id: lessonId,
+        is_delete: 1,
+        lessons: {
+          is_delete: 0,
+          chapters: {
+            is_delete: 0,
+            courses: { is_delete: 0 },
+          },
+        },
+      },
+    });
+    if (!exercise) return notFound(res, '已删除题目不存在');
+
+    const tickets = await prisma.$transaction(async (tx) => {
+      await tx.exercises.update({
+        where: { id: exercise.id },
+        data: { is_delete: 0, deleted_at: null },
+      });
+      return queueLessonKnowledge(tx, lessonId);
+    });
+    await completeKnowledgeIndexes(tickets);
+    return success(res, {
+      exerciseId: exercise.id,
+      indexSummary: await getLessonIndexSummary(lessonId),
+    });
+  } catch (error) {
+    console.error('恢复题目失败:', error);
+    return fail(res, '恢复题目失败');
   }
 };
 
