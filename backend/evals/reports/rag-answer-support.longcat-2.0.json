@@ -1,0 +1,189 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "model": "meituan-longcat/LongCat-2.0",
+  "reviewerModel": "codex-manual",
+  "rubricVersion": "rag-claim-support-v2",
+  "reviewMethod": "manual agent audit",
+  "reviewedAnswers": 20,
+  "reviewedClaims": 70,
+  "supportedClaims": 35,
+  "supportAccuracy": 0.5,
+  "passed": false,
+  "unsupportedClaims": [
+    {
+      "answerId": "lesson-100000000000000000000000000000000014-1",
+      "claim": "这些标签与 div、span 不同，并提升可读性、SEO 和无障碍访问。",
+      "reviewerNote": "差异和收益未说明"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "claim": "数据类型具体包含回答列出的基本、引用类型及类型转换。",
+      "reviewerNote": "具体类型未出现"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "claim": "运算符具体包含回答列出的算术、关系、逻辑和赋值运算符。",
+      "reviewerNote": "具体运算符未出现"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "claim": "流程控制具体包含回答列出的条件、循环和跳转语句。",
+      "reviewerNote": "具体语句未出现"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000014-2",
+      "claim": "header、footer、article、nav、section 分别具有回答所列具体用途。",
+      "reviewerNote": "具体用途未说明"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000014-2",
+      "claim": "编写页面时应按独立内容、导航、头尾和分组选择对应标签。",
+      "reviewerNote": "选择规则未出现"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000014-2",
+      "claim": "语义化标签提升无障碍、SEO、可读性和维护性。",
+      "reviewerNote": "收益未出现在证据"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000061-2",
+      "claim": "数据库用于持久化程序数据，程序重启后数据仍保留。",
+      "reviewerNote": "短标题未说明持久化"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000061-2",
+      "claim": "数据库提供结构化存储并支持快速查询、更新和删除。",
+      "reviewerNote": "具体能力未说明"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000061-2",
+      "claim": "约束可保证数据一致性和完整性，回答中的建表约束可实现这些规则。",
+      "reviewerNote": "约束未出现在证据"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000061-2",
+      "claim": "事务可控制并发并保证银行转账或库存操作安全。",
+      "reviewerNote": "事务未出现在证据"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000061-2",
+      "claim": "数据库提供权限和备份机制保护数据。",
+      "reviewerNote": "权限和备份未说明"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "claim": "String、int、double、boolean、char 应按回答示例用于相应数据。",
+      "reviewerNote": "具体类型用途未说明"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "claim": "算术、比较和逻辑运算符可按电商示例计算和判断。",
+      "reviewerNote": "具体运算符未说明"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "claim": "if-else 和 for 可按回答示例完成成绩判断与数组遍历。",
+      "reviewerNote": "具体流程用途未说明"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "claim": "while、字符串比较及状态变量可实现回答中的登录尝试逻辑。",
+      "reviewerNote": "登录示例完全超出证据"
+    },
+    {
+      "answerId": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "claim": "回答中的 CREATE TABLE、类型、主键和 INSERT 示例属于该节已给内容。",
+      "reviewerNote": "证据未提供建表细节"
+    },
+    {
+      "answerId": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "claim": "登录验证、订单排序和回答中的学习建议由证据中的课程内容支持。",
+      "reviewerNote": "场景和建议未出现"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000013-1",
+      "claim": "div 独占一行并用于布局，span 不换行并用于文本样式，两者是容器元素。",
+      "reviewerNote": "具体行为和用途未说明"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000062-1",
+      "claim": "数据库是现代应用开发不可或缺的技术组件。",
+      "reviewerNote": "价值判断未由证据支持"
+    },
+    {
+      "answerId": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-1",
+      "claim": "课程明确要求使用 if-else、&&、||、取模和返回值实现。",
+      "reviewerNote": "具体实现未出现"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000013-2",
+      "claim": "div 独占一行并用于布局分组，span 不换行并用于文本修饰。",
+      "reviewerNote": "具体行为和用途未说明"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000013-2",
+      "claim": "应优先用语义化标签，仅在无合适标签时用 div。",
+      "reviewerNote": "证据只列标签名"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000062-2",
+      "claim": "SQLite 可按回答代码持久化用户数据。",
+      "reviewerNote": "SQLite 和代码未出现"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000062-2",
+      "claim": "事务可保证转账原子性和多用户数据一致性。",
+      "reviewerNote": "事务未出现在证据"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000062-2",
+      "claim": "索引可提高大量数据查询效率。",
+      "reviewerNote": "索引未出现在证据"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000062-2",
+      "claim": "数据库用户和 GRANT 可控制访问权限，回答所列选型和安全建议适用。",
+      "reviewerNote": "权限语法和建议未出现"
+    },
+    {
+      "answerId": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-2",
+      "claim": "闰年判断应用于日期、日历、年龄、财务和日期验证。",
+      "reviewerNote": "应用场景未出现在证据"
+    },
+    {
+      "answerId": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-2",
+      "claim": "该练习训练数学规则转程序逻辑及复杂条件组合。",
+      "reviewerNote": "学习效果未由证据说明"
+    },
+    {
+      "answerId": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-2",
+      "claim": "AUTO_INCREMENT、订单状态、日期函数和多环境 USE 用法属于课程证据内容。",
+      "reviewerNote": "这些细节未出现"
+    },
+    {
+      "answerId": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-2",
+      "claim": "重要数据应软删除并先确认影响行数。",
+      "reviewerNote": "最佳实践未出现在证据"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000001-1",
+      "claim": "HTML 组织网页中的文字、图片和链接并构成网页骨架。",
+      "reviewerNote": "具体内容和骨架比喻未说明"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000063-1",
+      "claim": "课程会覆盖各行业典型案例并说明数据库如何支撑现代信息系统。",
+      "reviewerNote": "覆盖范围未具体说明"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000001-2",
+      "claim": "HTML、CSS、JavaScript 分别负责结构、外观和交互。",
+      "reviewerNote": "CSS和JS分工未出现"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000001-2",
+      "claim": "实际开发应先分析页面结构、选择合适元素并观察浏览器解析结果。",
+      "reviewerNote": "开发方法未出现在证据"
+    }
+  ]
+}

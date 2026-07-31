@@ -1,0 +1,58 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "questionCount": 20,
+  "rubricVersion": "rag-claim-support-v2",
+  "reviewMethod": "manual agent audit",
+  "reviewedAt": "2026-07-31",
+  "models": [
+    {
+      "model": "deepseek-ai/DeepSeek-V4-Flash",
+      "answerFile": "rag-answer-review.generated.json",
+      "claimFile": "rag-answer-claims.deepseek-v4-flash.manual.json",
+      "supportReport": "rag-answer-support.deepseek-v4-flash.json",
+      "generationDurationSeconds": null,
+      "reviewedClaims": 68,
+      "supportedClaims": 32,
+      "supportAccuracy": 0.47058823529411764,
+      "passed": false
+    },
+    {
+      "model": "meituan-longcat/LongCat-2.0",
+      "answerFile": "rag-answer-review.longcat-2.0.json",
+      "claimFile": "rag-answer-claims.longcat-2.0.manual.json",
+      "supportReport": "rag-answer-support.longcat-2.0.json",
+      "generationDurationSeconds": 271.9,
+      "reviewedClaims": 70,
+      "supportedClaims": 35,
+      "supportAccuracy": 0.5,
+      "passed": false
+    },
+    {
+      "model": "deepseek-ai/DeepSeek-V4-Flash",
+      "promptVersion": "grounded-v2",
+      "answerFile": "rag-answer-review.deepseek-v4-flash.grounded-v2.json",
+      "claimFile": "rag-answer-claims.deepseek-v4-flash.grounded-v2.manual.json",
+      "supportReport": "rag-answer-support.deepseek-v4-flash.grounded-v2.json",
+      "generationDurationSeconds": 266.95,
+      "reviewedClaims": 53,
+      "supportedClaims": 48,
+      "supportAccuracy": 0.9056603773584906,
+      "passed": true
+    }
+  ],
+  "supportAccuracyDeltaLongCatMinusDeepSeek": 0.02941176470588236,
+  "decision": {
+    "answerModel": "deepseek-ai/DeepSeek-V4-Flash",
+    "switchToLongCat": false,
+    "promptVersion": "grounded-v2",
+    "ragReleaseEligible": true,
+    "ragEnabledInRepositoryDefaults": false,
+    "reason": "原提示词下两者均未达到 0.90；收紧证据约束后 DeepSeek-V4-Flash 达到 0.9057，保持正式回答模型且不切换 LongCat。仓库默认开关继续关闭，由部署环境在完整回归后显式开启。"
+  },
+  "dominantFailureMode": "证据仅为短标题时，回答补充了证据未陈述的通用知识、代码示例、技术栈和最佳实践。",
+  "excludedPartialReviews": [
+    "rag-answer-claims.deepseek-v4-flash.reviewed-by-pro.partial.json",
+    "rag-answer-claims.deepseek-v4-flash.reviewed-by-flash.v1.partial.json",
+    "rag-answer-claims.deepseek-v4-flash.reviewed-by-flash.v2.partial.json"
+  ]
+}

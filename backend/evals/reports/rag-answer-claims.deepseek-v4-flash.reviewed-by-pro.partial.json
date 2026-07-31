@@ -1,0 +1,241 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "answerModel": "deepseek-ai/DeepSeek-V4-Flash",
+  "answerGeneratedAt": "2026-07-31T01:40:35.794Z",
+  "reviewerModel": "deepseek-ai/DeepSeek-V4-Pro",
+  "rubricVersion": "rag-claim-support-v1",
+  "reviewedAt": "2026-07-31T02:58:56.872Z",
+  "reviewMethod": "model-assisted, agent-audited",
+  "results": [
+    {
+      "id": "lesson-100000000000000000000000000000000014-1",
+      "answerHash": "ab16611a61c1adab3bdaf51484e68b91175690989c26f1e8f203659a8f7d8967",
+      "claims": [
+        {
+          "text": "“语义化标签”主要讲解如何使用具有明确含义的 HTML 标签来构建网页结构。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据1仅列出标签名称，未说明讲解内容为如何使用这些标签构建网页结构。"
+        },
+        {
+          "text": "这些标签包括 `<header>`、`<footer>`、`<article>` 等。",
+          "supportReview": "supported",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据1明确列出header、footer、article等标签。"
+        },
+        {
+          "text": "使用这些标签可以让代码更易读。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据中未提及代码易读性。"
+        },
+        {
+          "text": "使用这些标签可以让代码更易维护。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据中未提及代码易维护性。"
+        },
+        {
+          "text": "使用这些标签有助于搜索引擎更好地理解页面内容。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据中未提及对搜索引擎的帮助。"
+        },
+        {
+          "text": "使用这些标签有助于辅助技术（如屏幕阅读器）更好地理解页面内容。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据中未提及对辅助技术的帮助。"
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-1",
+      "answerHash": "6f14d254dd6a280f8d14d0cc0d307f32aa5588a921411b5a48a2941b6fd1246f",
+      "claims": [
+        {
+          "text": "“什么是数据库”这一小节主要讲解数据库的基础概念。",
+          "supportReview": "supported",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据1标题为“什么是数据库”，内容为“数据库基础概念”，直接支持该陈述。"
+        },
+        {
+          "text": "讲解内容包括数据库的定义。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据仅给出“数据库基础概念”这一概括，未提及“定义”的具体内容。"
+        },
+        {
+          "text": "讲解内容包括数据库的核心特性。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据仅给出“数据库基础概念”，未提及“核心特性”的具体内容。"
+        },
+        {
+          "text": "讲解内容包括数据库在数据管理中的基本作用。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据仅给出“数据库基础概念”，未提及“基本作用”的具体内容。"
+        }
+      ]
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "answerHash": "75e18ac77a49844915fc422cb428dd98fca3265524843c7896cf856eee293e17",
+      "claims": [
+        {
+          "text": "1.1小节讲解数据类型。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据仅提供小节标题，无具体讲解内容，无法确认该小节实际讲解了数据类型。"
+        },
+        {
+          "text": "1.1小节讲解运算符。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据仅提供小节标题，无具体讲解内容，无法确认该小节实际讲解了运算符。"
+        },
+        {
+          "text": "1.1小节讲解流程控制。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据仅提供小节标题，无具体讲解内容，无法确认该小节实际讲解了流程控制。"
+        },
+        {
+          "text": "1.1小节讲解的数据类型包括基本数据类型（如int、double、boolean、char等）和引用数据类型（如类、数组等）的定义和使用。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未提供任何关于数据类型具体内容的信息。"
+        },
+        {
+          "text": "1.1小节讲解的运算符包括算术运算符（+、-、*、/、%）、关系运算符（>、<、==、!=等）、逻辑运算符（&&、||、!）以及赋值、自增自减等运算符的用法。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未提供任何关于运算符具体内容的信息。"
+        },
+        {
+          "text": "1.1小节讲解的流程控制包括顺序结构、选择结构（if、if-else、switch）和循环结构（for、while、do-while）的基本语法与逻辑。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未提供任何关于流程控制具体内容的信息。"
+        },
+        {
+          "text": "后续练习（如1.3判断闰年）会用到1.1小节的知识。",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据2仅给出1.3练习题目，未说明其与1.1小节内容的关联。"
+        }
+      ]
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-1",
+      "answerHash": "614b898af09509f718510bb9c0fde29b5acc3e04dc1a0312f31a8d8b6772fdc5",
+      "claims": [
+        {
+          "text": "这一节讲解了什么是数据库：数据库是专门用来存储和管理数据的“仓库”",
+          "supportReview": "supported",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据1中明确说明“数据库就是一个专门用来存储和管理数据的仓库”"
+        },
+        {
+          "text": "这一节讲解了数据库能永久保存数据",
+          "supportReview": "supported",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据1列出“永久保存数据”"
+        },
+        {
+          "text": "这一节讲解了数据库能快速查找数据",
+          "supportReview": "supported",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据1列出“快速查找数据”"
+        },
+        {
+          "text": "这一节讲解了数据库支持多人同时使用",
+          "supportReview": "supported",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据1列出“多人同时使用”"
+        },
+        {
+          "text": "这一节讲解了数据库能保证数据安全",
+          "supportReview": "supported",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据1列出“保证数据安全”"
+        },
+        {
+          "text": "这一节讲解了数据库能方便数据分析",
+          "supportReview": "supported",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据1列出“方便数据分析”"
+        },
+        {
+          "text": "这一节对比了数据库和Excel在数据量上的差异",
+          "supportReview": "supported",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据1的对比表格中包含“数据量”维度"
+        },
+        {
+          "text": "这一节对比了数据库和Excel在操作复杂度上的差异",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未显示操作复杂度的对比内容"
+        },
+        {
+          "text": "这一节对比了数据库和Excel在多人协作上的差异",
+          "supportReview": "unsupported",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未显示多人协作的对比内容"
+        },
+        {
+          "text": "这一节说明了数据库更适合大型、复杂、共享的数据管理场景",
+          "supportReview": "supported",
+          "evidenceIndexes": [
+            3
+          ],
+          "reviewerNote": "证据3明确说明“数据库适合大型、复杂、多人共享的数据管理场景”"
+        },
+        {
+          "text": "这一节讲解了三个基本概念：表（存储数据的容器）、列（描述数据的属性/字段）、行（一条完整的数据记录）",
+          "supportReview": "supported",
+          "evidenceIndexes": [
+            3
+          ],
+          "reviewerNote": "证据3列出了表、列、行及其解释"
+        },
+        {
+          "text": "这一节讲解了SQL语言是与数据库沟通的标准语言，简单易学、功能强大",
+          "supportReview": "supported",
+          "evidenceIndexes": [
+            3
+          ],
+          "reviewerNote": "证据3明确说明“SQL 语言：和数据库沟通的标准语言，简单易学、功能强大”"
+        },
+        {
+          "text": "这一节讲解了基础SELECT语句：包括查询所有数据（SELECT * FROM 表名）、查询指定列（SELECT 列名 FROM 表名）、带条件查询（SELECT ... FROM ... WHERE 条件）",
+          "supportReview": "supported",
+          "evidenceIndexes": [
+            3
+          ],
+          "reviewerNote": "证据3列出了这三种SELECT语句示例"
+        }
+      ]
+    }
+  ]
+}

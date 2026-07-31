@@ -1,0 +1,15 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "promptVersion": "grounded-v2",
+  "reviewerModel": "codex-manual",
+  "rubricVersion": "rag-claim-support-v2",
+  "reviewMethod": "manual agent audit",
+  "reviewedAnswers": 20,
+  "reviewedClaims": 53,
+  "supportedClaims": 48,
+  "supportAccuracy": 0.9056603773584906,
+  "passed": true,
+  "detailReport": "rag-answer-support.deepseek-v4-flash.grounded-v2.json",
+  "claimFile": "rag-answer-claims.deepseek-v4-flash.grounded-v2.manual.json"
+}
