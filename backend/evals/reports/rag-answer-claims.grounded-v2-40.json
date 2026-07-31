@@ -1,0 +1,1589 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "answerModel": "deepseek-ai/DeepSeek-V4-Flash",
+  "promptVersion": "grounded-v2",
+  "promptRevision": "grounded-v2.0",
+  "answerGeneratedAt": "2026-07-31T12:37:48.942Z",
+  "reviewerModel": "deepseek-ai/DeepSeek-V4-Flash",
+  "rubricVersion": "rag-claim-support-v3",
+  "pipelineVersion": "claim-candidates-v1",
+  "reviewedAt": "2026-07-31T12:52:33.061Z",
+  "reviewMethod": "hybrid-model-assisted, agent-audited",
+  "expectedAnswers": 40,
+  "completedAnswers": 40,
+  "status": "complete",
+  "results": [
+    {
+      "id": "lesson-100000000000000000000000000000000014-1",
+      "answerHash": "dc6f9425ca92016a2b6416010640d19f4004da0be7341a95059f630e09f1cc4d",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据当前课程证据，该小节仅提到了 `header`、`footer`、`article` 等标签名称，没有进一步的讲解内容。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅列出标签名"
+        },
+        {
+          "text": "因此，**当前课程证据不足**，无法说明这些标签的具体用途、用法或语义化概念。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据未讲解用途"
+        },
+        {
+          "text": "只能概括：该小节主要涉及 `header`、`footer`、`article` 这类标签。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "概括准确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-1",
+      "answerHash": "d13f23e8ca9501a3a79fa81150044ef07b26a21a6f58569693e6ad6f2ec5a9aa",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据当前课程证据，该小节仅提供了“数据库基础概念”这一标题，没有更详细的内容。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅显示标题"
+        },
+        {
+          "text": "因此，**当前课程证据不足**，只能概括为：这一小节主要围绕数据库的基础概念进行讲解。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据不足概括合理"
+        },
+        {
+          "text": "无法补充具体定义、用途或示例。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "无法补充具体内容"
+        }
+      ]
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "answerHash": "5e59f54a658bd3271e6e3205295a6bc6ac88e20c4d84dd04e29363ce070ccb70",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据当前课程证据，仅有标题“数据类型、运算符与流程控制”，没有更详细的内容说明。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅显示标题"
+        },
+        {
+          "text": "因此，**当前课程证据不足**，只能概括标题本身：该小节主要围绕**数据类型**、**运算符**和**流程控制**三个方面展开讲解，但无法提供具体知识点或讲解细节。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "人工复核：逐字概括标题，并准确说明证据未提供细节"
+        }
+      ]
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-1",
+      "answerHash": "452faa8b7407219465296fd1addbc9a3f9dd6cab9cefd059bc1c5b4f086530e1",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "**什么是数据库**：一个专门用来存储和管理数据的“仓库”，能永久保存数据、快速查找、支持多人同时使用、保证数据安全、方便数据分析。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "与证据一致"
+        },
+        {
+          "text": "**数据库与 Excel 的对比**：数据库适合大型、复杂、多人共享的数据管理，而 Excel 更适合小型、简单、个人使用。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "与证据一致"
+        },
+        {
+          "text": "**关系型数据库的基本概念**：\n   - **表（Table）**：存储数据的基本单位，类似 Excel 的工作表。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "与证据一致"
+        },
+        {
+          "text": "**列（Column）**：也叫字段，描述数据的某个属性。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "与证据一致"
+        },
+        {
+          "text": "**行（Row）**：也叫记录，代表一条完整的数据。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "与证据一致"
+        },
+        {
+          "text": "**SQL 语言**：与数据库沟通的标准语言，简单易学、功能强大，分为查询（DQL）、增删改（DML）、定义（DDL）、控制（DCL）四大类。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "与证据一致"
+        },
+        {
+          "text": "**基础 SELECT 语句**：用于查询数据，包括查询所有列（`SELECT * FROM 表名`）、查询指定列（`SELECT 列名 FROM 表名`）以及带条件的查询（`WHERE` 子句）。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "与证据一致"
+        },
+        {
+          "text": "这些内容构成了数据库学习的起点，帮助初学者建立对数据库的基本认识。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接出自小节总结"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000014-2",
+      "answerHash": "4041e520dbaeba4ba0bc6ccba2856b9982e74abaf0897f7e367b7c2900b21e91",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据当前课程证据，本节仅列出了 `header`、`footer`、`article` 等标签名称，没有提供关于“如何在实际编程中应用”的具体说明或示例。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "仅列出标签名称"
+        },
+        {
+          "text": "因此，**当前课程证据不足**，无法给出应用方法。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据不足结论成立"
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-2",
+      "answerHash": "a309a02f1a97080a63c112b6a36b29f9ffb14aab33e6a8b85b9f4435180c88ed",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "当前课程证据仅包含“数据库基础概念”这一标题，没有更详细的解释或应用指导。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅标题"
+        },
+        {
+          "text": "因此无法基于课程内容回答如何在实际编程中应用。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "无法从标题回答"
+        }
+      ]
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "answerHash": "7149c9621de2f6571dad12d21a36b62237c924a277f13e6f1ab9a9789b078288",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "当前课程证据只有标题“数据类型、运算符与流程控制”，没有具体内容，因此无法说明在实际编程中如何应用这些核心知识。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅标题，陈述属实"
+        },
+        {
+          "text": "证据不足，我只能概括标题本身：该小节主要涉及数据类型、运算符和流程控制三个主题，但具体的使用方法、场景或示例在现有证据中并未提供。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "标题涉及三主题，无具体内容"
+        }
+      ]
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "answerHash": "c3bda60a5f7d9111aba356a69967fdda4eea105d080ed92c960d54e6cfbadca2",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "**使用 SQL 语言与数据库交互**  \n   SQL 是专门用来和数据库沟通的语言。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接支持"
+        },
+        {
+          "text": "在实际编程中，我们可以通过编写 SQL 语句来查询、插入、修改和删除数据。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接支持"
+        },
+        {
+          "text": "例如，使用 `SELECT * FROM students;` 查询所有学生信息，或使用 `SELECT name, age FROM students WHERE age > 18;` 进行条件查询。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "例子一致"
+        },
+        {
+          "text": "**理解表、列、行的概念来设计数据存储**  \n   数据库以“表”为基本单位，每个表包含若干列（描述数据的属性），每行代表一条完整记录。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "概念一致"
+        },
+        {
+          "text": "在实际编程中，我们需要先规划好表结构（例如学生表包含 id、name、age 等列），然后才能用 SQL 操作这些数据。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "人工复核：证据给出表、列、行及 students 的 id/name/age 结构，并继续介绍针对表的 SQL 操作；该句为直接应用推导"
+        },
+        {
+          "text": "**利用数据库的核心优势**  \n   课程中提到数据库能永久保存数据、快速查找、支持多人同时使用、保证数据安全等。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "核心优势一致"
+        },
+        {
+          "text": "在实际编程中，选择数据库作为数据存储方案，可以应对大规模数据和复杂操作（如多表关联查询），而 Excel 等工具难以胜任。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "对比一致"
+        },
+        {
+          "text": "目前课程证据只介绍了 SQL 的基本语法和数据库的基本概念，尚未涉及具体编程语言如何连接数据库。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅介绍基础"
+        },
+        {
+          "text": "后续章节会逐步讲解如何创建表、插入数据等更实际的操作。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "下节预告提及"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-1",
+      "answerHash": "b45f6ef6e2b080b07c0037d3ef68fe387f16b43a080de83da3a7bcecaa2cc00e",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据当前课程证据，该小节标题为“区块与行内元素”，因此主要讲解 **div** 和 **span** 分别作为区块元素与行内元素的代表。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "人工复核：证据标题为“div与span”，正文概括为“区块与行内元素”，按对应顺序直接支持"
+        },
+        {
+          "text": "不过证据仅包含这一句话，无法提供更具体的用法或区别细节。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅一句话"
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-1",
+      "answerHash": "54f4de80870543fd14ec03e1b8e87a317f9ceb8530774daf951ce9dfe150da65",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，这一小节主要讲解**数据存储与管理方面的优势**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "由于证据内容较为概括，无法展开具体细节或举例说明。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据内容概括"
+        }
+      ]
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-1",
+      "answerHash": "7425926d4a71bc3d1558bdce5d97ab839c9d9081664370f3cc7aa33d40b16783",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，“1.3判断闰年”主要讲解如何编写一个方法 `isLeapYear(int year)` 来判断某一年是否为闰年，并给出了闰年的判断规则：能被4整除但不能被100整除，或者能被400整除。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-1",
+      "answerHash": "2ffb44de82ef2d5cba31b865148e603d0639d91fb64d3a840519d327a0b5fa4b",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "这个小节主要讲解数据库最核心的基础操作，包括三大部分：",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "小节概括与证据一致"
+        },
+        {
+          "text": "**数据库的创建与删除**：使用 `CREATE DATABASE` 创建数据库，`DROP DATABASE` 删除数据库，以及 `USE` 切换数据库、`SHOW DATABASES` 查看所有数据库。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "数据库操作语法正确"
+        },
+        {
+          "text": "同时介绍了 `IF NOT EXISTS` 和编码设置 `DEFAULT CHARSET utf8mb4` 的规范写法。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "IF NOT EXISTS等规范"
+        },
+        {
+          "text": "**数据表的创建与基础规则**：使用 `CREATE TABLE` 创建数据表，需要定义表名、列名和数据类型。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "数据表创建规则正确"
+        },
+        {
+          "text": "重点介绍了三种基础数据类型：`INT`（整型）、`VARCHAR(长度)`（字符串）、`DATE`（日期），并给出了创建学生表的示例。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "数据类型和示例正确"
+        },
+        {
+          "text": "**数据增删改核心操作（DML）**：\n   - **新增**：`INSERT INTO` 插入数据（推荐指定字段方式）\n   - **修改**：`UPDATE SET` 修改数据，**必须加 WHERE 条件**\n   - **删除**：`DELETE FROM` 删除数据，**必须加 WHERE 条件**",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "DML操作描述正确"
+        },
+        {
+          "text": "此外还强调了注意事项：字符串值用单引号、数字不加引号、关键字建议大写、语句以分号结尾等。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "注意事项描述正确"
+        },
+        {
+          "text": "这些内容是从零搭建数据库、数据表以及操作数据的基础，也是后续复杂查询的前提。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "总结与证据一致"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-2",
+      "answerHash": "895347cc33b06998e0f8330232e2b8f82dfb1f025f351df9dad34f42857ca203",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据当前课程证据，仅提到“区块与行内元素”，没有具体说明 div 和 span 的用法、区别或应用场景。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅提到区块与行内元素"
+        },
+        {
+          "text": "因此，**无法给出具体的应用方法**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据未提供具体方法"
+        },
+        {
+          "text": "我能概括的是：在实际编程中，div 通常用于划分页面中的区块（块级元素），而 span 用于包裹行内内容（行内元素）。",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未明确说明用法"
+        },
+        {
+          "text": "但证据没有进一步解释如何选择或组合使用它们，所以无法提供更详细的指导。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据未解释选择组合"
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-2",
+      "answerHash": "7efdaef8de1356d48e358ada5d5233edf5fed76e1d67b8fc0a23857409256b23",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "当前课程证据仅提到“数据存储与管理优势”，没有展开具体内容，因此无法详细说明如何在实际编程中应用这些核心知识。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-2",
+      "answerHash": "5b6d659065b33ad68e6a694b7d7e8bed2dff56a88fe81bf6108486ba8298c5f6",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，核心知识是**闰年的判断规则**：能被4整除但不能被100整除，或者能被400整除。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接引用规则"
+        }
+      ]
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-2",
+      "answerHash": "3c00499c34b425891713fd9a4a7f1343419dee4c66eb6d5765a85e2b866ab982",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程内容，这些核心知识是数据库操作的基础，在实际编程中，你需要：",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "课程总结指出是基础"
+        },
+        {
+          "text": "**创建数据库与数据表**：使用 `CREATE DATABASE` 和 `CREATE TABLE` 搭建数据存储结构，定义字段和数据类型（如 `INT`、`VARCHAR`、`DATE`）。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据有创建语句和数据类型"
+        },
+        {
+          "text": "课程中的 `school` 数据库和 `students` 表示例，就是典型的应用方式。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "课程示例school和students"
+        },
+        {
+          "text": "**数据增删改**：通过 `INSERT INTO` 添加数据，`UPDATE SET` 配合 `WHERE` 修改数据，`DELETE FROM` 配合 `WHERE` 删除数据。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据详述增删改操作"
+        },
+        {
+          "text": "这些操作直接用于维护表中的实际数据。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "操作用于维护数据"
+        },
+        {
+          "text": "课程强调，这些操作是后续复杂查询、多表关联、高级功能的前提，因此在实际编程中，任何需要持久化存储数据的场景都会用到它们。",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确但课程未明确"
+        },
+        {
+          "text": "更具体的应用场景（如结合编程语言、框架使用）课程未展开，需要你在后续学习和实践中逐步体会。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "课程未展开应用场景"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-1",
+      "answerHash": "887f071e92db5b74cfebd0725aeeadc63fa6a7afbeb8d6e022b3856c228a070b",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，这一小节主要讲解：**HTML是网页结构的基础标记语言**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "与证据一致"
+        },
+        {
+          "text": "它强调了HTML在网页中的角色——用来搭建内容的结构，而不是样式或功能。",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未明确支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000063-1",
+      "answerHash": "78b7f8a7e214287c5201beca330565dae02a98a5beca33922e81feea9e11abde",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据当前课程证据，该小节仅列出了标题“常见数据库使用场景”，没有提供具体内容或要点。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "人工复核：证据小节名为“数据库应用场景”，唯一正文正是“常见数据库使用场景”；该句准确描述证据粒度"
+        },
+        {
+          "text": "因此，**当前课程证据不足**，无法详细说明“数据库应用场景”具体讲解了哪些内容。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅标题，不足"
+        },
+        {
+          "text": "我只能概括：该小节旨在介绍数据库在实际中的常见使用场景，但无法补充任何具体场景、技术栈、机制或优势。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "从标题合理概括"
+        }
+      ]
+    },
+    {
+      "id": "lesson-04bc001d-df88-41ed-a275-d6b3774f21d4-1",
+      "answerHash": "7190f72be7ebc1c34a6f49f63ec26b2c1ae2df4b73521b96b16697df8fc4e916",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，1.3 小节主要讲解三大高级查询：**模糊查询（LIKE）**、**排序查询（ORDER BY）** 和 **分页查询（LIMIT）**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据明确提到三大高级查询"
+        },
+        {
+          "text": "这些是日常开发中使用率最高的查询方式，用于精准筛选数据。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据提到使用率最高"
+        },
+        {
+          "text": "模糊查询：使用 `LIKE` 配合通配符 `%`（匹配任意多个字符）和 `_`（匹配单个字符）实现包含、开头、结尾等匹配。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据详细说明模糊查询"
+        },
+        {
+          "text": "排序查询：使用 `ORDER BY` 配合 `ASC`（升序，默认）或 `DESC`（降序）对结果排序，支持多字段排序。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据详细说明排序查询"
+        },
+        {
+          "text": "分页查询：使用 `LIMIT 起始索引, 查询条数` 限制返回的数据条数，实现分页效果。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据详细说明分页查询"
+        },
+        {
+          "text": "此外，还强调了查询语句的执行顺序：`WHERE` 筛选 → `ORDER BY` 排序 → `LIMIT` 分页。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据提到执行顺序"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-2",
+      "answerHash": "b19fa7d1cc96d6c6da560c9c13f4fcde43b428d20cd132ebf6260c4be1f01a82",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，当前小节仅说明“HTML是网页结构的基础标记语言”，没有提供具体标签、用法或实际编程中的应用方法。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "因此，关于“如何应用”的具体指导，**当前课程证据不足**，无法给出更详细的说明。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据不足成立"
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000063-2",
+      "answerHash": "8c5d4b2eb6406561827744d5758933340345b3dac042fe84afecc5b13c8219e6",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据当前课程证据，该小节仅提供了“常见数据库使用场景”这一标题，没有具体内容或要点。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅提供标题"
+        },
+        {
+          "text": "因此，我无法基于课程证据给出“在实际编程中如何应用”的具体方法或核心知识。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据无具体内容"
+        }
+      ]
+    },
+    {
+      "id": "lesson-04bc001d-df88-41ed-a275-d6b3774f21d4-2",
+      "answerHash": "91fd77efac1413c7dca5f6a305329c98c78b5a0530301754cf7cf48107f0290a",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "在实际编程中，你可以根据需求组合使用这三种高级查询：",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "课程内容支持"
+        },
+        {
+          "text": "**模糊查询（LIKE）**：当需要按部分信息匹配数据时使用，例如搜索姓名中包含某个字、以某字开头或符合特定长度模式的数据。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接支持"
+        },
+        {
+          "text": "搭配 `%`（匹配任意多个字符）和 `_`（匹配单个字符）构造匹配规则，并用单引号包裹。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接支持"
+        },
+        {
+          "text": "**排序查询（ORDER BY）**：当需要让结果按特定顺序展示时使用，例如按年龄升序（ASC）或降序（DESC）。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接支持"
+        },
+        {
+          "text": "多字段排序时，先按第一个字段排，相同再按第二个字段排。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接支持"
+        },
+        {
+          "text": "**分页查询（LIMIT）**：当数据量较大时，避免一次加载全部数据造成性能浪费，通过 `LIMIT 起始索引, 查询条数` 限制返回行数（索引从0开始）。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接支持"
+        },
+        {
+          "text": "常用于列表分页显示。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "可推断支持"
+        },
+        {
+          "text": "**执行顺序**：先 `WHERE` 筛选 → 再 `ORDER BY` 排序 → 最后 `LIMIT` 分页。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接支持"
+        },
+        {
+          "text": "这是编写组合查询时必须遵守的规则，也是实际项目中精准筛选数据的核心流程。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持核心流程和规则"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000002-1",
+      "answerHash": "46f5912d0b5f812c9f0277244fccd6ddd197df0653249503e00b4b5d8eeef7ad",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据当前课程证据，该小节主要讲解**标准HTML页面结构**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "不过证据内容只有这一句话，无法提供更具体的结构组成或细节说明。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据内容如此"
+        }
+      ]
+    },
+    {
+      "id": "lesson-33810ea6-d130-4c42-93db-3741d29cc401-1",
+      "answerHash": "a20fa4a3645acc520e85bf69cb159c3efade8038b5597d0ea25e67a1f6cde188",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，2.1 小节主要讲解**聚合函数（统计查询）**，包括：",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "**五大核心聚合函数**：`COUNT()`（统计条数）、`MAX()`（最大值）、`MIN()`（最小值）、`SUM()`（总和）、`AVG()`（平均值）。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "列举一致"
+        },
+        {
+          "text": "给出了使用聚合函数进行统计查询的实操示例（如统计学生总人数、平均年龄、最大年龄）。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "示例一致"
+        },
+        {
+          "text": "同时介绍了**分组查询 GROUP BY**，以及分组后筛选的 **HAVING** 子句（与 WHERE 的区别：WHERE 是分组前筛选，HAVING 是分组后筛选）。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "内容一致"
+        },
+        {
+          "text": "证据中明确将分组查询作为本小节的一部分，因此本小节内容涵盖聚合函数的基本用法和分组统计的基本概念。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "涵盖一致"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000002-2",
+      "answerHash": "cc07f13315b53ebc4f65d20e1e318f8ff08c0e37c44d05366b0c86f00b7b684b",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "当前课程证据仅包含标题“标准HTML页面结构详解”，没有具体说明核心知识的内容或应用方法。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅标题"
+        },
+        {
+          "text": "因此，我无法给出如何在实际编程中应用这些知识的具体建议。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据无内容"
+        }
+      ]
+    },
+    {
+      "id": "lesson-33810ea6-d130-4c42-93db-3741d29cc401-2",
+      "answerHash": "f354011bdb56c8eae0e825f29db6c55867a46d2a358db83e995010e77912d4c4",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程内容，聚合函数（COUNT、MAX、MIN、SUM、AVG）主要用于对整表或分组数据进行统计计算，例如统计总条数、最大值、最小值、平均值和总和。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "分组查询（GROUP BY）则能将相同字段的数据分为一组，再结合聚合函数实现分组统计（如按班级统计人数、按性别统计平均年龄）。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "需要统计记录总数时，使用 `COUNT(*)` 或 `COUNT(字段)`。",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "部分用法无证据"
+        },
+        {
+          "text": "需要找出某个字段的最大/最小值时，使用 `MAX(字段)` / `MIN(字段)`。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持MAX和MIN"
+        },
+        {
+          "text": "需要计算数值字段的总和或平均值时，使用 `SUM(字段)` / `AVG(字段)`。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持SUM和AVG"
+        },
+        {
+          "text": "如果希望按某个维度（如班级、性别）分别统计，则在 `SELECT` 中同时包含分组字段和聚合函数，并加上 `GROUP BY` 分组字段。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "若需对分组后的结果进一步筛选，可使用 `HAVING`（分组后筛选），而 `WHERE` 用于分组前筛选。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000003-1",
+      "answerHash": "89f9d7264c35fe03ea876acd86f7371391ea86fe58447d88f1a5cee0021f9978",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，这一小节主要讲解**如何编写并运行第一个HTML页面**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "由于证据内容较为简略，目前无法提供更具体的细节（如标签结构、工具使用等）。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据内容简略"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000003-2",
+      "answerHash": "816a5900353e1a6304e248ecbc02e831af9d46865293da24e146aa82234a5d21",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据当前课程证据，仅提到“编写并运行第一个HTML页面”，没有说明具体的核心知识（如标签、结构等）。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅提及该内容"
+        },
+        {
+          "text": "因此，我无法补充任何未在证据中出现的内容。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "基于证据必然推出"
+        },
+        {
+          "text": "当前证据不足以支持更深入的结论。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据不足结论合理"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000004-1",
+      "answerHash": "d17444d5912ec490a07ae00c04fcb74c2d94ed4e310ec799cfccdae33b9fe5ae",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，这一小节主要讲解**标题标签（h1-h6）的使用与优先级**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "与证据一致"
+        },
+        {
+          "text": "具体内容证据中只有这一概括，没有展开细节，因此无法提供更多说明。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据只有概括"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000004-2",
+      "answerHash": "f47ce6c1ea0f90ef4e8f690b8e7a33b7697ffc4db773a7ce9f6bfefcbf239349",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据当前课程证据，只提到“标题标签的使用与优先级”，没有更具体的说明。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "标题标签 `<h1>` 到 `<h6>` 用于标记不同级别的标题，其中 `<h1>` 优先级（重要性）最高，`<h6>` 最低。",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未明确优先级"
+        },
+        {
+          "text": "由于证据不足，无法给出更具体的应用场景、代码示例或最佳实践。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据不足属实"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000005-1",
+      "answerHash": "bbdfcdb58a76c66b24dba283e0cb03a31d068d1b2331dc47a72dd8989e69114f",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程内容，这一小节主要讲解 **`<p>` 标签与 `<br>` 标签的使用**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "`<p>` 标签通常用来表示一个段落，浏览器会自动在段落前后添加间距。",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未提及用法"
+        },
+        {
+          "text": "`<br>` 标签用于在文本中强制换行，它是一个空标签（没有结束标签）。",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未提及用法"
+        },
+        {
+          "text": "不过目前课程证据只给出了这两个标签的名称，没有具体用法和区别。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅提及名称"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000005-2",
+      "answerHash": "1c89a9cb8b9b9176477c6f3b4ceb834dd9697583bd9e8f279a98b4fb490efb2e",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "当前课程证据不足，仅提到“p标签与br标签使用”，无法提供具体应用指导。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅提及标签"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000006-1",
+      "answerHash": "6a5ec0da79a533d11b2dd6d6f35541577b847dc1a9436912fc1e2187c3e213b5",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，“文本格式化标签”主要讲解**加粗、斜体、删除线**等用于改变文本外观的标签。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接列出"
+        },
+        {
+          "text": "这些标签可以让文字在视觉上突出或表示特定含义（如强调、错误内容等）。",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确但无证据"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000006-2",
+      "answerHash": "5f4d62fff83b9d657c8a8aef2a56a6a60172d4f6c905be685947298089546d87",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据当前课程证据，文本格式化标签的核心内容仅提到“加粗、斜体、删除线等”，没有提供具体标签名称、用法或示例。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持此描述"
+        },
+        {
+          "text": "因此，我无法补充更多细节或给出具体的应用方法。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "人工复核：证据只列举格式化效果，未给出标签、用法或示例；该句准确说明证据边界"
+        },
+        {
+          "text": "在实际编程中，这些格式化效果通常用于突出显示文本或表达特定语义（如强调、更正等），但具体如何实现（例如使用哪些标签、如何嵌套等）需要依赖更完整的课程内容。",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未涉及此内容"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000007-1",
+      "answerHash": "678fa748814463d89510b8871f3011bbcfa2a09a11a3172d6127007c4fd12673",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，当前小节“form表单基础”主要讲解“表单标签与属性详解”。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接支持"
+        },
+        {
+          "text": "由于证据只有这一句话，无法提供更具体的内容，例如具体涉及哪些标签、属性或用法。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅一句话"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000007-2",
+      "answerHash": "d37cc1af4ab4eea68db538ae6426a803df71d5214f7c9c73b203b13ad4fd65fc",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "当前课程证据仅提到“表单标签与属性详解”，没有更详细的内容，因此无法给出具体的应用方法。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅含标题"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000008-1",
+      "answerHash": "6829e9c766b5974ae40eef1b84c3983bd54a62dc08bbf325aabecc6d188adecd",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，**“input标签类型”** 小节主要讲解 input 标签的几种常见类型，包括：",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据列出类型"
+        },
+        {
+          "text": "**输入框**（如文本输入）",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据列出输入框"
+        },
+        {
+          "text": "**单选**（radio）",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "人工复核：证据列出“单选”，但未给出 radio 属性值"
+        },
+        {
+          "text": "**多选**（checkbox）",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "人工复核：证据列出“多选”，但未给出 checkbox 属性值"
+        },
+        {
+          "text": "**按钮**（如提交按钮、普通按钮）",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "人工复核：证据只列出“按钮”，未细分提交按钮和普通按钮"
+        },
+        {
+          "text": "证据中仅列出这些类型名称，未涉及具体用法或属性细节。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅列名称"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000008-2",
+      "answerHash": "57c13f1c8a4418b1b6bf9d0f5be29d2f22d1acfa9f10f566f09dd5d8364ae995",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据当前课程证据，只列出了 input 标签的几种类型：**输入框、单选、多选、按钮**，但没有提供每种类型的具体属性值、用法或应用场景。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据确实列出类型"
+        },
+        {
+          "text": "在实际编程中，你可以通过 `<input>` 标签的 `type` 属性来指定这些类型，从而创建不同功能的表单控件。",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未提type属性"
+        },
+        {
+          "text": "具体选择哪种类型，取决于你希望用户如何与表单交互（例如输入文本、选择单个选项、选择多个选项或触发操作）。",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未提选择依据"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000009-1",
+      "answerHash": "f9833f1fe74baec628943756b67eb3aaa987998f4b32b68948039e95749b6ba3",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "当前课程证据不足，仅能概括为：该小节主要讲解 **audio 和 video 标签的使用**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": ""
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000009-2",
+      "answerHash": "41c288a11b373f3aa8a6ad63a227b4adcdd89f51ec963986b7273abf039e7a00",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "当前课程证据不足，只能概括证据中已有内容：课程涉及 **audio 和 video 标签的使用**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据提及标签使用"
+        },
+        {
+          "text": "关于实际编程中如何具体应用这些标签（如属性、格式、兼容性等），证据中没有提供更多细节，无法给出具体建议。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据无更多细节"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,708 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "evaluatedAt": "2026-07-31T12:57:40.722Z",
+  "pairedAnswers": 40,
+  "revisions": {
+    "v2": "grounded-v2.0",
+    "v3": "grounded-v3.1-boundary"
+  },
+  "quality": {
+    "v2": {
+      "datasetVersion": "rag-v1-candidates",
+      "model": "deepseek-ai/DeepSeek-V4-Flash",
+      "reviewerModel": "deepseek-ai/DeepSeek-V4-Flash",
+      "rubricVersion": "rag-claim-support-v3",
+      "promptVersion": "grounded-v2",
+      "promptRevision": "grounded-v2.0",
+      "reviewMethod": "hybrid-model-assisted, agent-audited",
+      "reviewedAnswers": 40,
+      "reviewedClaims": 132,
+      "reviewedCourseClaims": 132,
+      "reviewedSupplementClaims": 0,
+      "supportedClaims": 118,
+      "correctSupplementClaims": 0,
+      "supportAccuracy": 0.8939393939393939,
+      "supplementAccuracy": 1,
+      "citationValidity": 1,
+      "extensionLabelAccuracy": 1,
+      "passed": false,
+      "unsupportedClaims": [
+        {
+          "answerId": "lesson-100000000000000000000000000000000013-2",
+          "claim": "我能概括的是：在实际编程中，div 通常用于划分页面中的区块（块级元素），而 span 用于包裹行内内容（行内元素）。",
+          "reviewerNote": "证据未明确说明用法"
+        },
+        {
+          "answerId": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-2",
+          "claim": "课程强调，这些操作是后续复杂查询、多表关联、高级功能的前提，因此在实际编程中，任何需要持久化存储数据的场景都会用到它们。",
+          "reviewerNote": "常识正确但课程未明确"
+        },
+        {
+          "answerId": "lesson-100000000000000000000000000000000001-1",
+          "claim": "它强调了HTML在网页中的角色——用来搭建内容的结构，而不是样式或功能。",
+          "reviewerNote": "证据未明确支持"
+        },
+        {
+          "answerId": "lesson-33810ea6-d130-4c42-93db-3741d29cc401-2",
+          "claim": "需要统计记录总数时，使用 `COUNT(*)` 或 `COUNT(字段)`。",
+          "reviewerNote": "部分用法无证据"
+        },
+        {
+          "answerId": "lesson-100000000000000000000000000000000004-2",
+          "claim": "标题标签 `<h1>` 到 `<h6>` 用于标记不同级别的标题，其中 `<h1>` 优先级（重要性）最高，`<h6>` 最低。",
+          "reviewerNote": "证据未明确优先级"
+        },
+        {
+          "answerId": "lesson-100000000000000000000000000000000005-1",
+          "claim": "`<p>` 标签通常用来表示一个段落，浏览器会自动在段落前后添加间距。",
+          "reviewerNote": "证据未提及用法"
+        },
+        {
+          "answerId": "lesson-100000000000000000000000000000000005-1",
+          "claim": "`<br>` 标签用于在文本中强制换行，它是一个空标签（没有结束标签）。",
+          "reviewerNote": "证据未提及用法"
+        },
+        {
+          "answerId": "lesson-100000000000000000000000000000000006-1",
+          "claim": "这些标签可以让文字在视觉上突出或表示特定含义（如强调、错误内容等）。",
+          "reviewerNote": "常识正确但无证据"
+        },
+        {
+          "answerId": "lesson-100000000000000000000000000000000006-2",
+          "claim": "在实际编程中，这些格式化效果通常用于突出显示文本或表达特定语义（如强调、更正等），但具体如何实现（例如使用哪些标签、如何嵌套等）需要依赖更完整的课程内容。",
+          "reviewerNote": "证据未涉及此内容"
+        },
+        {
+          "answerId": "lesson-100000000000000000000000000000000008-1",
+          "claim": "**单选**（radio）",
+          "reviewerNote": "人工复核：证据列出“单选”，但未给出 radio 属性值"
+        },
+        {
+          "answerId": "lesson-100000000000000000000000000000000008-1",
+          "claim": "**多选**（checkbox）",
+          "reviewerNote": "人工复核：证据列出“多选”，但未给出 checkbox 属性值"
+        },
+        {
+          "answerId": "lesson-100000000000000000000000000000000008-1",
+          "claim": "**按钮**（如提交按钮、普通按钮）",
+          "reviewerNote": "人工复核：证据只列出“按钮”，未细分提交按钮和普通按钮"
+        },
+        {
+          "answerId": "lesson-100000000000000000000000000000000008-2",
+          "claim": "在实际编程中，你可以通过 `<input>` 标签的 `type` 属性来指定这些类型，从而创建不同功能的表单控件。",
+          "reviewerNote": "证据未提type属性"
+        },
+        {
+          "answerId": "lesson-100000000000000000000000000000000008-2",
+          "claim": "具体选择哪种类型，取决于你希望用户如何与表单交互（例如输入文本、选择单个选项、选择多个选项或触发操作）。",
+          "reviewerNote": "证据未提选择依据"
+        }
+      ],
+      "incorrectSupplementClaims": [],
+      "invalidCitations": []
+    },
+    "v3": {
+      "datasetVersion": "rag-v1-candidates",
+      "model": "deepseek-ai/DeepSeek-V4-Flash",
+      "reviewerModel": "deepseek-ai/DeepSeek-V4-Flash",
+      "rubricVersion": "rag-claim-support-v3",
+      "promptVersion": "grounded-v3",
+      "promptRevision": "grounded-v3.1-boundary",
+      "reviewMethod": "hybrid-model-assisted, agent-audited",
+      "reviewedAnswers": 40,
+      "reviewedClaims": 209,
+      "reviewedCourseClaims": 98,
+      "reviewedSupplementClaims": 111,
+      "supportedClaims": 97,
+      "correctSupplementClaims": 111,
+      "supportAccuracy": 0.9897959183673469,
+      "supplementAccuracy": 1,
+      "citationValidity": 1,
+      "extensionLabelAccuracy": 1,
+      "passed": true,
+      "unsupportedClaims": [
+        {
+          "answerId": "lesson-100000000000000000000000000000000001-2",
+          "claim": "由此可以看出，HTML的核心作用是定义和组织网页的内容结构，而不是控制样式或行为。",
+          "reviewerNote": "证据未完全支持"
+        }
+      ],
+      "incorrectSupplementClaims": [],
+      "invalidCitations": []
+    }
+  },
+  "latency": {
+    "v2": {
+      "timeToFirstToken": {
+        "p50": 6609.945799999998,
+        "p95": 20327.6175,
+        "average": 8714.084627499999
+      },
+      "total": {
+        "p50": 7848.074500000002,
+        "p95": 23914.842500000006,
+        "average": 10297.780112500008
+      },
+      "outputCharacters": {
+        "p50": 143,
+        "p95": 524,
+        "average": 208.575
+      }
+    },
+    "v3": {
+      "timeToFirstToken": {
+        "p50": 8991.413200000003,
+        "p95": 20550.842999999993,
+        "average": 9880.656605
+      },
+      "total": {
+        "p50": 12196.180799999998,
+        "p95": 24181.660000000003,
+        "average": 12395.812417500001
+      },
+      "outputCharacters": {
+        "p50": 358,
+        "p95": 800,
+        "average": 325.95
+      }
+    }
+  },
+  "ratios": {
+    "p95TimeToFirstToken": 1.010981390219488,
+    "p95Total": 1.0111569833671286
+  },
+  "gates": {
+    "v3Structure": true,
+    "v3CourseSupport": true,
+    "v3SupplementCorrectness": true,
+    "v3CitationValidity": true,
+    "v3ExtensionLabels": true,
+    "p95TimeToFirstToken": true,
+    "p95Total": true
+  },
+  "passed": true,
+  "decision": "switch-to-grounded-v3",
+  "pairedCases": [
+    {
+      "id": "lesson-100000000000000000000000000000000014-1",
+      "v2": {
+        "timeToFirstTokenMs": 3927.348900000001,
+        "totalDurationMs": 4849.269700000001,
+        "outputCharacters": 147
+      },
+      "v3": {
+        "timeToFirstTokenMs": 5350.943900000002,
+        "totalDurationMs": 5695.6469,
+        "outputCharacters": 52
+      }
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-1",
+      "v2": {
+        "timeToFirstTokenMs": 3265.2945,
+        "totalDurationMs": 4012.0206,
+        "outputCharacters": 97
+      },
+      "v3": {
+        "timeToFirstTokenMs": 6288.8355999999985,
+        "totalDurationMs": 6500.869699999999,
+        "outputCharacters": 34
+      }
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "v2": {
+        "timeToFirstTokenMs": 6609.945799999998,
+        "totalDurationMs": 7978.555199999999,
+        "outputCharacters": 122
+      },
+      "v3": {
+        "timeToFirstTokenMs": 10966.770699999997,
+        "totalDurationMs": 11783.132999999998,
+        "outputCharacters": 124
+      }
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-1",
+      "v2": {
+        "timeToFirstTokenMs": 4103.843399999998,
+        "totalDurationMs": 7821.846599999997,
+        "outputCharacters": 524
+      },
+      "v3": {
+        "timeToFirstTokenMs": 9548.331999999999,
+        "totalDurationMs": 12196.180799999998,
+        "outputCharacters": 412
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000014-2",
+      "v2": {
+        "timeToFirstTokenMs": 8290.248800000001,
+        "totalDurationMs": 9147.526899999997,
+        "outputCharacters": 127
+      },
+      "v3": {
+        "timeToFirstTokenMs": 8991.413200000003,
+        "totalDurationMs": 11785.439599999998,
+        "outputCharacters": 423
+      }
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-2",
+      "v2": {
+        "timeToFirstTokenMs": 4297.0272,
+        "totalDurationMs": 4888.443299999999,
+        "outputCharacters": 94
+      },
+      "v3": {
+        "timeToFirstTokenMs": 10505.3992,
+        "totalDurationMs": 13742.997299999995,
+        "outputCharacters": 448
+      }
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "v2": {
+        "timeToFirstTokenMs": 30151.991800000003,
+        "totalDurationMs": 32285.0371,
+        "outputCharacters": 186
+      },
+      "v3": {
+        "timeToFirstTokenMs": 9980.186699999998,
+        "totalDurationMs": 13218.270199999999,
+        "outputCharacters": 423
+      }
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "v2": {
+        "timeToFirstTokenMs": 14681.948999999997,
+        "totalDurationMs": 18607.451599999997,
+        "outputCharacters": 592
+      },
+      "v3": {
+        "timeToFirstTokenMs": 13219.948499999999,
+        "totalDurationMs": 19625.258199999997,
+        "outputCharacters": 800
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-1",
+      "v2": {
+        "timeToFirstTokenMs": 8156.489699999998,
+        "totalDurationMs": 9171.217499999999,
+        "outputCharacters": 134
+      },
+      "v3": {
+        "timeToFirstTokenMs": 5043.631399999998,
+        "totalDurationMs": 5695.828300000001,
+        "outputCharacters": 100
+      }
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-1",
+      "v2": {
+        "timeToFirstTokenMs": 3905.8735000000015,
+        "totalDurationMs": 4306.223299999998,
+        "outputCharacters": 57
+      },
+      "v3": {
+        "timeToFirstTokenMs": 2211.0032999999967,
+        "totalDurationMs": 2396.7422000000006,
+        "outputCharacters": 31
+      }
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-1",
+      "v2": {
+        "timeToFirstTokenMs": 2008.689400000003,
+        "totalDurationMs": 2664.236100000002,
+        "outputCharacters": 101
+      },
+      "v3": {
+        "timeToFirstTokenMs": 28819.921400000007,
+        "totalDurationMs": 29297.515799999994,
+        "outputCharacters": 68
+      }
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-1",
+      "v2": {
+        "timeToFirstTokenMs": 7053.572400000005,
+        "totalDurationMs": 10498.513700000003,
+        "outputCharacters": 568
+      },
+      "v3": {
+        "timeToFirstTokenMs": 18064.805199999995,
+        "totalDurationMs": 23067.864200000004,
+        "outputCharacters": 417
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-2",
+      "v2": {
+        "timeToFirstTokenMs": 5320.712400000004,
+        "totalDurationMs": 6772.316600000006,
+        "outputCharacters": 197
+      },
+      "v3": {
+        "timeToFirstTokenMs": 27910.229999999996,
+        "totalDurationMs": 33072.0509,
+        "outputCharacters": 597
+      }
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-2",
+      "v2": {
+        "timeToFirstTokenMs": 9514.3845,
+        "totalDurationMs": 11231.187600000005,
+        "outputCharacters": 170
+      },
+      "v3": {
+        "timeToFirstTokenMs": 14400.277100000007,
+        "totalDurationMs": 18246.4715,
+        "outputCharacters": 518
+      }
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-2",
+      "v2": {
+        "timeToFirstTokenMs": 13276.671200000004,
+        "totalDurationMs": 15092.385000000002,
+        "outputCharacters": 250
+      },
+      "v3": {
+        "timeToFirstTokenMs": 5121.705000000002,
+        "totalDurationMs": 12115.842300000004,
+        "outputCharacters": 568
+      }
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-2",
+      "v2": {
+        "timeToFirstTokenMs": 20327.6175,
+        "totalDurationMs": 23914.842500000006,
+        "outputCharacters": 490
+      },
+      "v3": {
+        "timeToFirstTokenMs": 5600.849799999996,
+        "totalDurationMs": 12824.597099999999,
+        "outputCharacters": 1094
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-1",
+      "v2": {
+        "timeToFirstTokenMs": 5599.012199999997,
+        "totalDurationMs": 6659.665999999997,
+        "outputCharacters": 143
+      },
+      "v3": {
+        "timeToFirstTokenMs": 4071.8015999999916,
+        "totalDurationMs": 4314.031999999992,
+        "outputCharacters": 46
+      }
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000063-1",
+      "v2": {
+        "timeToFirstTokenMs": 2848.040200000003,
+        "totalDurationMs": 3788.4572000000044,
+        "outputCharacters": 133
+      },
+      "v3": {
+        "timeToFirstTokenMs": 12429.862399999998,
+        "totalDurationMs": 12810.131699999998,
+        "outputCharacters": 57
+      }
+    },
+    {
+      "id": "lesson-04bc001d-df88-41ed-a275-d6b3774f21d4-1",
+      "v2": {
+        "timeToFirstTokenMs": 2756.9688000000024,
+        "totalDurationMs": 5206.924200000009,
+        "outputCharacters": 343
+      },
+      "v3": {
+        "timeToFirstTokenMs": 7275.452600000004,
+        "totalDurationMs": 10081.7062,
+        "outputCharacters": 356
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-2",
+      "v2": {
+        "timeToFirstTokenMs": 10045.591199999995,
+        "totalDurationMs": 11020.797099999996,
+        "outputCharacters": 137
+      },
+      "v3": {
+        "timeToFirstTokenMs": 11087.459300000017,
+        "totalDurationMs": 14485.408200000005,
+        "outputCharacters": 392
+      }
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000063-2",
+      "v2": {
+        "timeToFirstTokenMs": 8935.156300000002,
+        "totalDurationMs": 9994.324500000002,
+        "outputCharacters": 137
+      },
+      "v3": {
+        "timeToFirstTokenMs": 9363.140899999999,
+        "totalDurationMs": 12285.252899999992,
+        "outputCharacters": 416
+      }
+    },
+    {
+      "id": "lesson-04bc001d-df88-41ed-a275-d6b3774f21d4-2",
+      "v2": {
+        "timeToFirstTokenMs": 13879.533500000005,
+        "totalDurationMs": 17593.353199999998,
+        "outputCharacters": 451
+      },
+      "v3": {
+        "timeToFirstTokenMs": 7528.454799999992,
+        "totalDurationMs": 15174.367899999997,
+        "outputCharacters": 905
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000002-1",
+      "v2": {
+        "timeToFirstTokenMs": 2615.502099999998,
+        "totalDurationMs": 3417.614300000001,
+        "outputCharacters": 87
+      },
+      "v3": {
+        "timeToFirstTokenMs": 4117.598700000002,
+        "totalDurationMs": 4355.412000000011,
+        "outputCharacters": 44
+      }
+    },
+    {
+      "id": "lesson-33810ea6-d130-4c42-93db-3741d29cc401-1",
+      "v2": {
+        "timeToFirstTokenMs": 5376.303400000004,
+        "totalDurationMs": 7425.939100000003,
+        "outputCharacters": 303
+      },
+      "v3": {
+        "timeToFirstTokenMs": 4359.76920000001,
+        "totalDurationMs": 6550.8603,
+        "outputCharacters": 329
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000002-2",
+      "v2": {
+        "timeToFirstTokenMs": 4069.6737999999896,
+        "totalDurationMs": 5476.347999999998,
+        "outputCharacters": 203
+      },
+      "v3": {
+        "timeToFirstTokenMs": 12219.553100000005,
+        "totalDurationMs": 15018.476099999985,
+        "outputCharacters": 479
+      }
+    },
+    {
+      "id": "lesson-33810ea6-d130-4c42-93db-3741d29cc401-2",
+      "v2": {
+        "timeToFirstTokenMs": 15182.872099999979,
+        "totalDurationMs": 19698.760099999985,
+        "outputCharacters": 518
+      },
+      "v3": {
+        "timeToFirstTokenMs": 13913.001800000013,
+        "totalDurationMs": 18985.978600000017,
+        "outputCharacters": 736
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000003-1",
+      "v2": {
+        "timeToFirstTokenMs": 38096.33649999999,
+        "totalDurationMs": 38852.51760000001,
+        "outputCharacters": 106
+      },
+      "v3": {
+        "timeToFirstTokenMs": 3326.745900000009,
+        "totalDurationMs": 3537.488699999987,
+        "outputCharacters": 45
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000003-2",
+      "v2": {
+        "timeToFirstTokenMs": 9200.415699999998,
+        "totalDurationMs": 10679.935400000002,
+        "outputCharacters": 169
+      },
+      "v3": {
+        "timeToFirstTokenMs": 13206.461099999986,
+        "totalDurationMs": 15277.686299999972,
+        "outputCharacters": 337
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000004-1",
+      "v2": {
+        "timeToFirstTokenMs": 3619.5271000000066,
+        "totalDurationMs": 4113.820100000012,
+        "outputCharacters": 70
+      },
+      "v3": {
+        "timeToFirstTokenMs": 3210.041900000011,
+        "totalDurationMs": 3439.910200000013,
+        "outputCharacters": 38
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000004-2",
+      "v2": {
+        "timeToFirstTokenMs": 5619.732199999999,
+        "totalDurationMs": 7848.074500000002,
+        "outputCharacters": 287
+      },
+      "v3": {
+        "timeToFirstTokenMs": 11227.436699999991,
+        "totalDurationMs": 13987.653099999996,
+        "outputCharacters": 358
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000005-1",
+      "v2": {
+        "timeToFirstTokenMs": 3353.0483999999997,
+        "totalDurationMs": 4984.49029999999,
+        "outputCharacters": 205
+      },
+      "v3": {
+        "timeToFirstTokenMs": 7939.090799999976,
+        "totalDurationMs": 8193.849999999977,
+        "outputCharacters": 36
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000005-2",
+      "v2": {
+        "timeToFirstTokenMs": 7029.148000000016,
+        "totalDurationMs": 8009.394500000024,
+        "outputCharacters": 77
+      },
+      "v3": {
+        "timeToFirstTokenMs": 20550.842999999993,
+        "totalDurationMs": 24181.660000000003,
+        "outputCharacters": 412
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000006-1",
+      "v2": {
+        "timeToFirstTokenMs": 2380.1431999999913,
+        "totalDurationMs": 3029.228600000002,
+        "outputCharacters": 80
+      },
+      "v3": {
+        "timeToFirstTokenMs": 7224.819500000012,
+        "totalDurationMs": 7856.493300000002,
+        "outputCharacters": 40
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000006-2",
+      "v2": {
+        "timeToFirstTokenMs": 11146.647200000007,
+        "totalDurationMs": 13252.435000000027,
+        "outputCharacters": 201
+      },
+      "v3": {
+        "timeToFirstTokenMs": 10471.468900000007,
+        "totalDurationMs": 13641.392099999997,
+        "outputCharacters": 437
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000007-1",
+      "v2": {
+        "timeToFirstTokenMs": 4701.751199999999,
+        "totalDurationMs": 5515.1408999999985,
+        "outputCharacters": 101
+      },
+      "v3": {
+        "timeToFirstTokenMs": 5172.0674,
+        "totalDurationMs": 5447.6322999999975,
+        "outputCharacters": 39
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000007-2",
+      "v2": {
+        "timeToFirstTokenMs": 8039.237200000003,
+        "totalDurationMs": 8741.649999999994,
+        "outputCharacters": 97
+      },
+      "v3": {
+        "timeToFirstTokenMs": 17618.737399999984,
+        "totalDurationMs": 21063.38399999999,
+        "outputCharacters": 525
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000008-1",
+      "v2": {
+        "timeToFirstTokenMs": 5506.885399999999,
+        "totalDurationMs": 6729.016499999998,
+        "outputCharacters": 177
+      },
+      "v3": {
+        "timeToFirstTokenMs": 3511.1263000000035,
+        "totalDurationMs": 3933.5121000000217,
+        "outputCharacters": 61
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000008-2",
+      "v2": {
+        "timeToFirstTokenMs": 16711.924299999984,
+        "totalDurationMs": 18524.2224,
+        "outputCharacters": 289
+      },
+      "v3": {
+        "timeToFirstTokenMs": 11529.8229,
+        "totalDurationMs": 13990.5288,
+        "outputCharacters": 398
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000009-1",
+      "v2": {
+        "timeToFirstTokenMs": 10263.444499999983,
+        "totalDurationMs": 10554.886899999983,
+        "outputCharacters": 47
+      },
+      "v3": {
+        "timeToFirstTokenMs": 3578.2974000000104,
+        "totalDurationMs": 3811.5499000000127,
+        "outputCharacters": 49
+      }
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000009-2",
+      "v2": {
+        "timeToFirstTokenMs": 6694.830600000016,
+        "totalDurationMs": 7553.1348,
+        "outputCharacters": 126
+      },
+      "v3": {
+        "timeToFirstTokenMs": 8268.957599999994,
+        "totalDurationMs": 12143.421999999991,
+        "outputCharacters": 394
+      }
+    }
+  ]
+}
