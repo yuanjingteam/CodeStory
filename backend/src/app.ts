@@ -20,6 +20,7 @@ import {
   chapterManageRouter,
   lessonManageRouter,
   aiRouter,
+  gradingReviewsRouter,
 } from './routes/index';
 import { startAiChatCleanupScheduler } from './services/ai/chat-retention.service';
 import { startContentCleanupScheduler } from './services/course-manage/content-retention.service';
@@ -66,6 +67,11 @@ app.use(
   '/api/v1/admin/lessons',
   [authMiddleware, requireAdmin],
   lessonManageRouter
+);
+app.use(
+  '/api/v1/admin/grading-reviews',
+  [authMiddleware, requireAdmin],
+  gradingReviewsRouter
 );
 
 // Error handler

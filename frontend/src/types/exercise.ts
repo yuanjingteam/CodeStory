@@ -95,5 +95,6 @@ export interface ExerciseSubmitResponse {
     analysis: string;
     scoreBreakdown?: ScoreBreakdown;
     aiReview?: SubmitAiReview;
+    gradingReview?: import('./grading-review').GradingReviewSummary;
   };
 }

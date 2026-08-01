@@ -7,12 +7,14 @@ import {
   HiOutlineBookOpen,
   HiOutlineQueueList,
   HiOutlineDocumentText,
+  HiOutlineClipboardDocumentCheck,
 } from 'react-icons/hi2';
 const menuItems = [
   { name: '用户管理', href: '/users-manage', icon: HiOutlineUsers },
   { name: '课程管理', href: '/courses-manage', icon: HiOutlineBookOpen },
   { name: '章节管理', href: '/chapters-manage', icon: HiOutlineQueueList },
   { name: '小节管理', href: '/lessons-manage', icon: HiOutlineDocumentText },
+  { name: '评分复核', href: '/grading-reviews', icon: HiOutlineClipboardDocumentCheck },
 ];
 
 const AdminSider: React.FC = () => {
@@ -22,9 +24,9 @@ const AdminSider: React.FC = () => {
   };
 
   return (
-    <aside className="w-52  bg-white border-r-2 border-gray-300">
+    <aside className="w-full border-b-2 border-gray-300 bg-white md:w-52 md:flex-none md:border-r-2 md:border-b-0">
       {/* 菜单列表 */}
-      <nav className="p-3 space-y-2">
+      <nav className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-3 md:flex md:flex-col">
         {menuItems.map((item) => {
           const isItemActive = isActive(item.href);
 
@@ -33,7 +35,7 @@ const AdminSider: React.FC = () => {
               key={item.name}
               href={item.href}
               className={`
-                w-full flex items-center space-x-3 px-4 py-3 rounded-lg font-bold transition-all duration-200
+                w-full flex items-center space-x-3 px-3 py-3 rounded-lg font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2
                 ${
                   isItemActive
                     ? 'bg-purple-600 text-white shadow-md'

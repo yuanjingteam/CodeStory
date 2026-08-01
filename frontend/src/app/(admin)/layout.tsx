@@ -25,12 +25,12 @@ export default function AdminLayout({
   return (
     <div className="bg-white">
       <AdminHeader />
-      <div className="flex ">
+      <div className="flex min-w-0 flex-col md:flex-row">
         <AdminSider />
         {!hasMounted ? (
           <ErrorDataCard title="正在验证访问权限" />
         ) : isAdmin ? (
-          <main className="flex-1 p-4  relative z-10">{children}</main>
+          <main className="relative z-10 min-w-0 flex-1 p-4">{children}</main>
         ) : (
           <ErrorDataCard title="无权限访问" />
         )}

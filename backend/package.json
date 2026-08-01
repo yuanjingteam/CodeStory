@@ -37,6 +37,7 @@
     "eval:rag:tutor-v2:claims": "pnpm run eval:rag:claims -- --input=evals/reports/rag-answer-review.grounded-v2-40.json --output=evals/reports/rag-answer-claims.grounded-v2-40.json --concurrency=6",
     "eval:rag:tutor-v2:support": "pnpm run eval:rag:support -- --input=evals/reports/rag-answer-claims.grounded-v2-40.json --output=evals/reports/rag-answer-support.grounded-v2-40.json",
     "eval:rag:tutor:compare": "ts-node --files -r tsconfig-paths/register evals/compare-rag-tutor-prompts.ts",
+    "eval:grading": "ts-node --files -r tsconfig-paths/register evals/run-grading-review.ts",
     "eval:rag:claims": "ts-node --files -r tsconfig-paths/register evals/generate-rag-claim-review.ts",
     "eval:rag:support": "ts-node --files -r tsconfig-paths/register evals/score-rag-answer-support.ts",
     "check:auth": "pnpm run check:auth-token && pnpm run check:auth-session && pnpm run check:auth-rotation && pnpm run check:auth-logout",

@@ -22,6 +22,7 @@ describe('阶段 0B · 结构化输出 Schema', () => {
       isLikelyCorrect: true,
       functionalScore: 60,
       qualityScore: 25,
+      confidence: 0.92,
       feedback: '整体正确。',
       strengths: ['思路清晰'],
       issues: [],

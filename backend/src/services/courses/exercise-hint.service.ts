@@ -1,9 +1,30 @@
+import { randomUUID } from 'node:crypto';
 import prisma from '../../config/prisma';
 import { resolveShortId } from '../../utils/idTransform';
 import { generateExerciseHint } from '../ai/exercise-hint.service';
 import { logAiError } from '../ai/ai-chat-error.service';
 
 const DEFAULT_AI_HINT_MAX_LEVEL = 3;
+
+export async function recordHintLevel(
+  exerciseId: string,
+  userId: string,
+  hintLevel: number
+): Promise<void> {
+  await prisma.$executeRaw`
+    INSERT INTO "answer" (
+      "id", "user_id", "exercise_id", "answer", "submission_count",
+      "feedback", "score", "hint_level_used", "is_delete", "created_at", "updated_at"
+    ) VALUES (
+      ${randomUUID()}, ${userId}, ${exerciseId}, '', 0, '', 0, ${hintLevel}, 0,
+      CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    )
+    ON CONFLICT ("user_id", "exercise_id") DO UPDATE SET
+      "hint_level_used" = GREATEST("answer"."hint_level_used", EXCLUDED."hint_level_used"),
+      "is_delete" = 0,
+      "updated_at" = CURRENT_TIMESTAMP
+  `;
+}
 
 function resolveMaxHintLevel(hints: any): number {
   const configuredMaxLevel = hints?._meta?.max_level;
@@ -69,36 +90,7 @@ export async function getExerciseHint(
     hintContent = adminHints[adminHints.length - 1];
   }
 
-  const existingAnswer = await prisma.answer.findUnique({
-    where: {
-      user_id_exercise_id: {
-        user_id: userId,
-        exercise_id: resolvedId,
-      },
-      is_delete: 0,
-    },
-  });
-
-  if (existingAnswer) {
-    await prisma.answer.update({
-      where: { id: existingAnswer.id },
-      data: {
-        hint_level_used: Math.max(existingAnswer.hint_level_used, hintLevel),
-      },
-    });
-  } else {
-    await prisma.answer.create({
-      data: {
-        user_id: userId,
-        exercise_id: resolvedId,
-        answer: '',
-        submission_count: 0,
-        feedback: '',
-        score: 0,
-        hint_level_used: hintLevel,
-      },
-    });
-  }
+  await recordHintLevel(resolvedId, userId, hintLevel);
 
   return {
     content: hintContent,

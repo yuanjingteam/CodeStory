@@ -101,6 +101,91 @@ export function resolveMasteryLevel(params: {
   }
 }
 
+export async function updateLessonMasteryInTransaction(
+  tx: Prisma.TransactionClient,
+  lessonId: string,
+  userId: string,
+  masteryLevel: number
+): Promise<void> {
+  const existing = await tx.lessons_progress.findUnique({
+    where: { user_id_lesson_id: { user_id: userId, lesson_id: lessonId } },
+    select: { status: true },
+  });
+  await tx.lessons_progress.upsert({
+    where: { user_id_lesson_id: { user_id: userId, lesson_id: lessonId } },
+    create: {
+      user_id: userId,
+      lesson_id: lessonId,
+      status: 1,
+      mastery_level: clampMasteryLevel(masteryLevel),
+      last_learned_at: new Date(),
+      is_delete: 0,
+    },
+    update: {
+      status: Math.max(existing?.status ?? 0, 1),
+      mastery_level: clampMasteryLevel(masteryLevel),
+      last_learned_at: new Date(),
+      is_delete: 0,
+    },
+  });
+}
+
+export async function applySubmissionMasteryInTransaction(
+  tx: Prisma.TransactionClient,
+  params: {
+    lessonId: string;
+    userId: string;
+    event: Extract<MasteryEvent,
+      | 'choice_correct'
+      | 'choice_incorrect'
+      | 'code_passed_confident'
+      | 'code_failed'
+      | 'review_pending'>;
+  }
+): Promise<number> {
+  const [totalExercises, answers, progress] = await Promise.all([
+    tx.exercises.count({
+      where: { lesson_id: params.lessonId, is_delete: 0 },
+    }),
+    tx.answer.findMany({
+      where: {
+        user_id: params.userId,
+        is_delete: 0,
+        exercises: { lesson_id: params.lessonId, is_delete: 0 },
+      },
+      select: { score: true, hint_level_used: true },
+    }),
+    tx.lessons_progress.findUnique({
+      where: {
+        user_id_lesson_id: {
+          user_id: params.userId,
+          lesson_id: params.lessonId,
+        },
+      },
+      select: { mastery_level: true },
+    }),
+  ]);
+  const candidateLevel = calculateLessonMasteryLevel(
+    answers.map((answer) => ({
+      score: answer.score,
+      hintLevelUsed: answer.hint_level_used,
+    })),
+    totalExercises
+  );
+  const nextLevel = resolveMasteryLevel({
+    event: params.event,
+    currentLevel: progress?.mastery_level ?? 0,
+    candidateLevel,
+  });
+  await updateLessonMasteryInTransaction(
+    tx,
+    params.lessonId,
+    params.userId,
+    nextLevel
+  );
+  return nextLevel;
+}
+
 export function calculateCourseProgressStatus(
   startedLessons: number,
   completedLessons: number,
