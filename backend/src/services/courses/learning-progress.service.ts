@@ -145,13 +145,21 @@ export async function applySubmissionMasteryInTransaction(
 ): Promise<number> {
   const [totalExercises, answers, progress] = await Promise.all([
     tx.exercises.count({
-      where: { lesson_id: params.lessonId, is_delete: 0 },
+      where: {
+        lesson_id: params.lessonId,
+        is_delete: 0,
+        review_status: 'approved',
+      },
     }),
     tx.answer.findMany({
       where: {
         user_id: params.userId,
         is_delete: 0,
-        exercises: { lesson_id: params.lessonId, is_delete: 0 },
+        exercises: {
+          lesson_id: params.lessonId,
+          is_delete: 0,
+          review_status: 'approved',
+        },
       },
       select: { score: true, hint_level_used: true },
     }),
@@ -340,7 +348,11 @@ export async function updateLessonAndCourseProgress(
     const [totalExercises, completedExercises, existingProgress] =
       await Promise.all([
         tx.exercises.count({
-          where: { lesson_id: lessonId, is_delete: 0 },
+          where: {
+            lesson_id: lessonId,
+            is_delete: 0,
+            review_status: 'approved',
+          },
         }),
         tx.answer.count({
           where: {
@@ -350,6 +362,7 @@ export async function updateLessonAndCourseProgress(
             exercises: {
               lesson_id: lessonId,
               is_delete: 0,
+              review_status: 'approved',
             },
           },
         }),

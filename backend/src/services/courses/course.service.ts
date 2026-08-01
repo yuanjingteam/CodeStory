@@ -94,6 +94,7 @@ export async function getCourseList(params: CourseListParams, userId: string): P
 
     return {
       id: uuidToShortId(course!.id),
+      uuid: course!.id,
       title: course!.title,
       description: course!.description,
       cover_url: course!.cover_url,

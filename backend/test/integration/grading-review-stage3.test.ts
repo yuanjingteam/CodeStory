@@ -50,6 +50,7 @@ let chapterId = '';
 let lessonId = '';
 let choiceExerciseId = '';
 let codeExerciseId = '';
+let draftExerciseId = '';
 let userId = '';
 let otherUserId = '';
 let boundaryUserId = '';
@@ -104,6 +105,14 @@ beforeAll(async () => {
         type: 'code',
         content: '输出 1',
         answer: 'print(1)',
+        source: 'ai',
+        review_status: 'approved',
+        gen_metadata: {
+          traceId: `${marker}_trace`,
+          model: 'test-model',
+          promptVersion: 'exercise-gen-v1',
+          apiKey: 'must-not-enter-snapshot',
+        },
         metadata: { language: 'python' },
         order: 2,
       },
@@ -111,6 +120,29 @@ beforeAll(async () => {
   ]);
   choiceExerciseId = choice.id;
   codeExerciseId = code.id;
+  const draft = await prisma.exercises.create({
+    data: {
+      lesson_id: lesson.id,
+      type: 'single_choice',
+      content: '不可申诉的草稿题',
+      answer: 'A',
+      source: 'ai',
+      review_status: 'draft',
+      metadata: { options: ['A', 'B'] },
+      order: 3,
+    },
+  });
+  draftExerciseId = draft.id;
+  await prisma.answer.create({
+    data: {
+      user_id: user.id,
+      exercise_id: draft.id,
+      answer: 'A',
+      score: 100,
+      submission_count: 1,
+      version: 1,
+    },
+  });
 });
 
 afterAll(async () => {
@@ -366,11 +398,34 @@ describe('阶段 3 · 申诉归属与管理员权限', () => {
     expect(first.status).toBe(200);
     expect(second.body.data.id).toBe(first.body.data.id);
 
+    const review = await prisma.ai_grading_reviews.findUniqueOrThrow({
+      where: { id: first.body.data.id },
+      select: { exercise_snapshot: true },
+    });
+    expect(review.exercise_snapshot).toMatchObject({
+      source: 'ai',
+      review_status: 'approved',
+      gen_metadata: {
+        traceId: `${marker}_trace`,
+        promptVersion: 'exercise-gen-v1',
+      },
+    });
+    expect(JSON.stringify(review.exercise_snapshot)).not.toContain('must-not-enter-snapshot');
+
     const foreign = await request(app)
       .post(path)
       .set('Authorization', `Bearer ${otherUserToken}`)
       .send(body);
     expect(foreign.status).toBe(404);
+
+    const draftAppeal = await request(app)
+      .post(path)
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({
+        exercise_id: uuidToShortId(draftExerciseId),
+        reason: '草稿题不应允许申诉。',
+      });
+    expect(draftAppeal.status).toBe(404);
   });
 
   it('管理员队列未登录 401、普通用户 403、管理员 200', async () => {

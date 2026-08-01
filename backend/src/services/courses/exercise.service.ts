@@ -21,6 +21,7 @@ import {
 import {
   createGradingReviewInTransaction,
   formatSubmitGradingReview,
+  sanitizeExerciseGenerationMetadata,
   type GradingReviewTriggerReason,
 } from './grading-review.service';
 import {
@@ -121,6 +122,7 @@ export async function getExerciseDetail(
     where: {
       id: resolvedId,
       is_delete: 0,
+      review_status: 'approved',
       lessons: {
         is_delete: 0,
         chapters: { is_delete: 0, courses: { is_delete: 0 } },
@@ -165,6 +167,7 @@ export async function submitExercise(
     where: {
       id: resolvedId,
       is_delete: 0,
+      review_status: 'approved',
       lessons: {
         is_delete: 0,
         chapters: { is_delete: 0, courses: { is_delete: 0 } },
@@ -437,6 +440,11 @@ export async function submitExercise(
           analysis: exercise.analysis,
           knowledge: exercise.knowledge,
           difficulty: exercise.difficulty,
+          source: exercise.source,
+          reviewStatus: exercise.review_status,
+          genMetadata: sanitizeExerciseGenerationMetadata(
+            exercise.gen_metadata as Prisma.JsonValue | null
+          ),
           metadata: exercise.metadata,
           grading: {
             ruleCorrect,
@@ -497,8 +505,16 @@ export async function explainChoiceExercise(
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
-  const exercise = await prisma.exercises.findUnique({
-    where: { id: resolvedId, is_delete: 0 },
+  const exercise = await prisma.exercises.findFirst({
+    where: {
+      id: resolvedId,
+      is_delete: 0,
+      review_status: 'approved',
+      lessons: {
+        is_delete: 0,
+        chapters: { is_delete: 0, courses: { is_delete: 0 } },
+      },
+    },
   });
 
   if (!exercise || exercise.type !== 'single_choice') return null;

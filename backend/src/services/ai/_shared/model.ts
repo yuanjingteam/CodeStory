@@ -12,6 +12,7 @@ import { logger } from '../../../config/logger';
 export function createChatModel(overrides?: {
   temperature?: number;
   maxTokens?: number;
+  allowMaxTokensAboveDefault?: boolean;
   streaming?: boolean;
   streamUsage?: boolean;
   maxRetries?: number;
@@ -29,7 +30,9 @@ export function createChatModel(overrides?: {
     temperature: overrides?.temperature ?? 0.3,
     timeout: overrides?.timeoutMs ?? config.timeoutMs,
     maxTokens: overrides?.maxTokens
-      ? Math.min(config.maxTokens, overrides.maxTokens)
+      ? overrides.allowMaxTokensAboveDefault
+        ? overrides.maxTokens
+        : Math.min(config.maxTokens, overrides.maxTokens)
       : config.maxTokens,
     streaming: overrides?.streaming ?? false,
     streamUsage: overrides?.streamUsage ?? false,

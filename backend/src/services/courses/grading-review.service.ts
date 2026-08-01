@@ -43,6 +43,29 @@ export class GradingReviewConflictError extends Error {
   }
 }
 
+export function sanitizeExerciseGenerationMetadata(
+  value: Prisma.JsonValue | null
+): Prisma.InputJsonValue | null {
+  if (!value || Array.isArray(value) || typeof value !== 'object') return null;
+  const metadata = value as Record<string, Prisma.JsonValue>;
+  const allowedKeys = [
+    'traceId',
+    'model',
+    'promptVersion',
+    'retrieval',
+    'parameters',
+    'selfCheck',
+    'duplicateCheck',
+    'generationMetrics',
+    'generatedAt',
+  ];
+  return Object.fromEntries(
+    allowedKeys
+      .filter((key) => metadata[key] !== undefined)
+      .map((key) => [key, metadata[key]])
+  ) as Prisma.InputJsonObject;
+}
+
 const SERIALIZABLE_RETRY_LIMIT = 3;
 
 function isSerializationConflict(error: unknown): boolean {
@@ -251,12 +274,22 @@ async function calculateCandidateMastery(
   userId: string
 ) {
   const [totalExercises, answers] = await Promise.all([
-    tx.exercises.count({ where: { lesson_id: lessonId, is_delete: 0 } }),
+    tx.exercises.count({
+      where: {
+        lesson_id: lessonId,
+        is_delete: 0,
+        review_status: 'approved',
+      },
+    }),
     tx.answer.findMany({
       where: {
         user_id: userId,
         is_delete: 0,
-        exercises: { lesson_id: lessonId, is_delete: 0 },
+        exercises: {
+          lesson_id: lessonId,
+          is_delete: 0,
+          review_status: 'approved',
+        },
       },
       select: { score: true, hint_level_used: true },
     }),
@@ -448,6 +481,7 @@ export async function appealLatestSubmission(params: {
         where: {
           id: resolvedId,
           is_delete: 0,
+          review_status: 'approved',
           lessons: {
             is_delete: 0,
             chapters: { is_delete: 0, courses: { is_delete: 0 } },
@@ -462,6 +496,9 @@ export async function appealLatestSubmission(params: {
           analysis: true,
           knowledge: true,
           difficulty: true,
+          source: true,
+          review_status: true,
+          gen_metadata: true,
           metadata: true,
         },
       }),
@@ -485,6 +522,9 @@ export async function appealLatestSubmission(params: {
       hintLevelUsed: answer.hint_level_used,
       exerciseSnapshot: {
         ...exercise,
+        gen_metadata: sanitizeExerciseGenerationMetadata(
+          exercise.gen_metadata as Prisma.JsonValue | null
+        ),
         grading: {
           currentPassed: exercise.type === 'code'
             ? codeSubmission?.status === 'passed'

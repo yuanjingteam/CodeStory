@@ -46,8 +46,16 @@ export async function getExerciseHint(
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
-  const exercise = await prisma.exercises.findUnique({
-    where: { id: resolvedId, is_delete: 0 },
+  const exercise = await prisma.exercises.findFirst({
+    where: {
+      id: resolvedId,
+      is_delete: 0,
+      review_status: 'approved',
+      lessons: {
+        is_delete: 0,
+        chapters: { is_delete: 0, courses: { is_delete: 0 } },
+      },
+    },
     include: {
       lessons: {
         select: {
@@ -106,8 +114,16 @@ export async function getExerciseHintProgress(
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
-  const exercise = await prisma.exercises.findUnique({
-    where: { id: resolvedId, is_delete: 0 },
+  const exercise = await prisma.exercises.findFirst({
+    where: {
+      id: resolvedId,
+      is_delete: 0,
+      review_status: 'approved',
+      lessons: {
+        is_delete: 0,
+        chapters: { is_delete: 0, courses: { is_delete: 0 } },
+      },
+    },
     select: {
       hints: true,
     },
@@ -146,8 +162,16 @@ export async function getAcquiredHints(
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
-  const exercise = await prisma.exercises.findUnique({
-    where: { id: resolvedId, is_delete: 0 },
+  const exercise = await prisma.exercises.findFirst({
+    where: {
+      id: resolvedId,
+      is_delete: 0,
+      review_status: 'approved',
+      lessons: {
+        is_delete: 0,
+        chapters: { is_delete: 0, courses: { is_delete: 0 } },
+      },
+    },
     include: {
       lessons: {
         select: {

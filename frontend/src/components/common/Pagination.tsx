@@ -13,6 +13,7 @@ interface PaginationProps {
   showPageNumbers?: boolean;
   maxPageNumbers?: number;
   pageSizeOptions?: number[];
+  compactOnMobile?: boolean;
 }
 
 export default function Pagination({
@@ -25,6 +26,7 @@ export default function Pagination({
   showPageNumbers = true,
   maxPageNumbers = 5,
   pageSizeOptions = [10, 20, 50, 100],
+  compactOnMobile = false,
 }: PaginationProps) {
   // 计算需要显示的页码范围
   const getPageNumbers = () => {
@@ -73,7 +75,7 @@ export default function Pagination({
       </div>
 
       {/* 右侧：分页导航 */}
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex min-w-0 items-center justify-center gap-2">
         <span className="text-sm text-gray-600 font-bold">
           当前第 {currentPage}/{totalPages} 页
         </span>
@@ -89,19 +91,22 @@ export default function Pagination({
         </Button>
 
         {/* 页码 */}
-        {showPageNumbers &&
-          getPageNumbers().map((page) => (
-            <Button
-              key={page}
-              onClick={() => onPageChange(page)}
-              variant={currentPage === page ? 'primary' : 'secondary'}
-              size="icon"
-              aria-label={`第 ${page} 页`}
-              aria-current={currentPage === page ? 'page' : undefined}
-            >
-              {page}
-            </Button>
-          ))}
+        {showPageNumbers ? (
+          <div className={compactOnMobile ? 'hidden items-center gap-2 sm:flex' : 'flex items-center gap-2'}>
+            {getPageNumbers().map((page) => (
+              <Button
+                key={page}
+                onClick={() => onPageChange(page)}
+                variant={currentPage === page ? 'primary' : 'secondary'}
+                size="icon"
+                aria-label={`第 ${page} 页`}
+                aria-current={currentPage === page ? 'page' : undefined}
+              >
+                {page}
+              </Button>
+            ))}
+          </div>
+        ) : null}
 
         {/* 下一页 */}
         <Button

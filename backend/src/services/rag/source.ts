@@ -112,7 +112,7 @@ export async function loadKnowledgeSourceAssessment(
       where: {
         id: sourceId,
         is_delete: 0,
-        NOT: { source: 'ai' },
+        review_status: 'approved',
         lessons: {
           is_delete: 0,
           chapters: {

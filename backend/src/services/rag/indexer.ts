@@ -112,7 +112,7 @@ export async function queueLessonKnowledge(
     where: {
       lesson_id: lessonId,
       is_delete: 0,
-      NOT: { source: 'ai' },
+      review_status: 'approved',
     },
     select: { id: true, updated_at: true },
   });
@@ -163,7 +163,7 @@ async function invalidateHiddenLessonExercises(
         AND "source_id" IN (
           SELECT "id" FROM "exercises"
           WHERE "lesson_id" = ${lessonId}
-            AND ("is_delete" <> 0 OR "source" = 'ai')
+            AND ("is_delete" <> 0 OR "review_status" <> 'approved')
         )
     `
   );
@@ -179,7 +179,7 @@ async function invalidateHiddenLessonExercises(
         AND "source_id" IN (
           SELECT "id" FROM "exercises"
           WHERE "lesson_id" = ${lessonId}
-            AND ("is_delete" <> 0 OR "source" = 'ai')
+            AND ("is_delete" <> 0 OR "review_status" <> 'approved')
         )
     `
   );

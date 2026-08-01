@@ -60,7 +60,9 @@ export const getChapterList = async (req: Request, res: Response) => {
 
     const data = chapters.map(chapter => ({
       id: uuidToShortId(chapter.id),
+      uuid: chapter.id,
       courseId: uuidToShortId(chapter.course_id),
+      courseUuid: chapter.course_id,
       courseName: chapter.courses.title,
       chapterName: chapter.title,
       sectionCount: chapter._count.lessons,

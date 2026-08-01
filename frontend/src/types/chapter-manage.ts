@@ -5,7 +5,9 @@ import type {
 
 export interface ChapterItem {
   id: string;
+  uuid?: string;
   courseId: string;
+  courseUuid?: string;
   courseName: string;
   chapterName: string;
   sectionCount: number;

@@ -19,6 +19,7 @@ import {
   courseManageRouter,
   chapterManageRouter,
   lessonManageRouter,
+  exerciseManageRouter,
   aiRouter,
   gradingReviewsRouter,
 } from './routes/index';
@@ -72,6 +73,11 @@ app.use(
   '/api/v1/admin/grading-reviews',
   [authMiddleware, requireAdmin],
   gradingReviewsRouter
+);
+app.use(
+  '/api/v1/admin/exercises',
+  [authMiddleware, requireAdmin],
+  exerciseManageRouter
 );
 
 // Error handler

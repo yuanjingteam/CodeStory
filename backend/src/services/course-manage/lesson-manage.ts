@@ -14,6 +14,10 @@ import {
   queueLessonsKnowledge,
   type KnowledgeIndexTicket,
 } from '../rag';
+import {
+  createExerciseContentFingerprint,
+  lockLessonExerciseWrites,
+} from '../courses/exercise-write-guards';
 
 type TransactionClient = Prisma.TransactionClient;
 
@@ -244,11 +248,14 @@ export const getLessonList = async (req: Request, res: Response) => {
 
     const data = lessons.map(lesson => ({
       id: uuidToShortId(lesson.id),
+      uuid: lesson.id,
       lessonId: uuidToShortId(lesson.id),
       lessonName: lesson.title,
       courseId: uuidToShortId(lesson.chapters?.courses?.id || ''),
+      courseUuid: lesson.chapters?.courses?.id || '',
       courseName: lesson.chapters?.courses?.title || '',
       chapterId: uuidToShortId(lesson.chapter_id || ''),
+      chapterUuid: lesson.chapter_id || '',
       chapterName: lesson.chapters?.title || '',
       content: lesson.content || '',
       difficulty: lesson.difficulty,
@@ -509,6 +516,7 @@ export const updateLesson = async (req: Request, res: Response) => {
       exercises: updatedExercises,
       indexTickets,
     } = await prisma.$transaction(async (tx) => {
+      await lockLessonExerciseWrites(tx, resolvedLessonId);
       let lesson = await tx.lessons.update({
         where: { id: resolvedLessonId },
         data: updateData
@@ -572,6 +580,9 @@ export const updateLesson = async (req: Request, res: Response) => {
             data: {
               ...writeData,
               source: currentExercise.source || 'static',
+              generation_fingerprint: currentExercise.source === 'ai'
+                ? createExerciseContentFingerprint(writeData.content)
+                : null,
               order: index + 1,
             }
           });
@@ -615,7 +626,8 @@ export const updateLesson = async (req: Request, res: Response) => {
         where: {
           lesson_id: resolvedLessonId,
           is_delete: 0,
-          id: { notIn: [...retainedIds] }
+          id: { notIn: [...retainedIds] },
+          OR: [{ source: null }, { source: { not: 'ai' } }],
         },
         data: { is_delete: 1, deleted_at: new Date() }
       });
