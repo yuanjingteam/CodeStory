@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "runId": "086dab29-f263-496b-b347-831c719c7f59",
+  "createdAt": "2026-08-01T13:57:41.888Z",
+  "datasetHash": "56f08bbbbd101df0dcff21576a73ffb02e76778241d1e64ae695b44352324e7f",
+  "promptSourceHash": "bc50d7927682fb5c664789bc18710c7dee32be113b86d0b13711976c0beb0e68",
+  "codeStatus": "99344568628b2eca297681e832cbbfbf8aade3fa",
+  "sampleCount": 100,
+  "concurrency": 2,
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "baseUrl": "https://api.siliconflow.cn/v1",
+  "runtime": {
+    "promptVersion": "exercise-gen-v2",
+    "temperature": 0.1,
+    "maxTokens": 1400,
+    "timeoutMs": 180000,
+    "transportRetries": 1,
+    "structureRepairs": 1
+  }
+}

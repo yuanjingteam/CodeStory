@@ -31,6 +31,9 @@ describe('阶段 2 · 出题评测续跑保护', () => {
     try {
       delete process.env.AI_EXERCISE_GENERATION_TIMEOUT_MS;
       expect(getExerciseGenerationRuntimeConfig(1).timeoutMs).toBe(180_000);
+      expect(getExerciseGenerationRuntimeConfig(1).responseFormat).toBe(
+        'json_object'
+      );
 
       process.env.AI_EXERCISE_GENERATION_TIMEOUT_MS = '240000';
       expect(getExerciseGenerationRuntimeConfig(1).timeoutMs).toBe(240_000);

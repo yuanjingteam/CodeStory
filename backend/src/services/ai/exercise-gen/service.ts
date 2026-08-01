@@ -1,5 +1,4 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts';
-import { RunnableSequence } from '@langchain/core/runnables';
 import { ZodError } from 'zod';
 import { Prisma } from '../../../generated/prisma';
 import prisma from '../../../config/prisma';
@@ -132,6 +131,7 @@ export function getExerciseGenerationRuntimeConfig(count: number) {
     temperature: 0.1,
     maxTokens: Math.min(getGenerationMaxTokens(), 800 + count * 600),
     timeoutMs: getGenerationTimeoutMs(),
+    responseFormat: 'json_object',
     transportRetries: 1,
     structureRepairs: 1,
   } as const;
@@ -657,6 +657,8 @@ export async function runExerciseGenerationPipeline(
           firstFailureKind,
           repairFailureKind: repairFailure.kind,
           repairIssues: repairFailure.safeIssues,
+          firstResponseLength: rawResponse.length,
+          repairResponseLength: repairedRawResponse.length,
           modelCallCount,
           attemptLatenciesMs,
         }
@@ -679,7 +681,10 @@ async function invokeGenerationChain(values: GenerationValues): Promise<{
   });
   return runExerciseGenerationPipeline(values, async ({ promptKind, values: promptInput }) => {
     const prompt = promptKind === 'generation' ? generationPrompt : repairPrompt;
-    const response = await RunnableSequence.from([prompt, model]).invoke(promptInput);
+    const messages = await prompt.formatMessages(promptInput);
+    const response = await model.invoke(messages, {
+      response_format: { type: runtimeConfig.responseFormat },
+    });
     return getMessageText(response.content);
   });
 }

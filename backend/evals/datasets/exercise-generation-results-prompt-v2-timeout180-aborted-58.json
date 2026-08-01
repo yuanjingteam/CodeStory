@@ -1,0 +1,2456 @@
+[
+  {
+    "id": "exercise-stage2-001",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      30796
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，要查询所有状态为“激活”的用户，应该在 SELECT 语句中使用哪个子句来筛选记录？",
+      "answer": "WHERE",
+      "analysis": "WHERE 子句用于在 SELECT 查询中筛选满足特定条件的行。在用户管理场景中，要筛选状态为“激活”的用户，应使用 WHERE 子句。常见错误是使用 HAVING（用于分组后筛选）或 ORDER BY（用于排序），它们不适用于行级筛选。",
+      "knowledge": "SQL WHERE在用户管理中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "options": [
+          "WHERE",
+          "HAVING",
+          "ORDER BY",
+          "GROUP BY"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL WHERE | 场景:用户管理]\nWHERE 子句在 SELECT 之后筛选满足条件的行。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-002",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      61342
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在用户管理系统中，有一个名为\"users\"的表，包含字段：user_id (INT), username (VARCHAR(50)), registration_date (DATE)。表中数据如下：\n| user_id | username | registration_date |\n|---------|----------|------------------|\n| 1       | Alice    | 2023-01-01       |\n| 2       | Bob      | 2023-02-01       |\n| 3       | Charlie  | 2022-12-01       |\n请编写一个SQL查询，返回所有用户的用户名和注册日期，并按照注册日期升序排列。",
+      "answer": "SELECT username, registration_date FROM users ORDER BY registration_date ASC;",
+      "analysis": "本题考察ORDER BY子句的基本用法。正确答案是使用ORDER BY registration_date ASC，其中ASC表示升序（默认也是升序，但显式写出更清晰）。常见错误包括：忘记写ORDER BY子句、写错列名（如使用registration或date）、使用DESC导致降序、或者没有选择正确的列。注意，ORDER BY子句必须放在SELECT语句的最后。",
+      "knowledge": "SQL ORDER BY在用户管理中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "codeTemplate": "SELECT username, registration_date FROM users ORDER BY ",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "",
+            "output": "Charlie,2022-12-01\nAlice,2023-01-01\nBob,2023-02-01"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL ORDER BY | 场景:用户管理]\nORDER BY 按指定列排序，ASC 为升序，DESC 为降序。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-003",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      30824
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，需要分页显示用户列表，每页显示10条记录。若要获取第3页的用户数据，正确的SQL语句是？",
+      "answer": "SELECT * FROM users LIMIT 10 OFFSET 20;",
+      "analysis": "正确选项使用 LIMIT 10 OFFSET 20，其中 OFFSET 20 表示跳过前20条记录（第1页和第2页共20条），LIMIT 10 表示返回接下来的10条记录，即第3页数据。常见错误包括：混淆 LIMIT 与 OFFSET 的顺序（如 LIMIT 20 OFFSET 10），导致返回错误行数；偏移量计算错误（如 OFFSET 30），导致跳过过多数据；或仅使用 LIMIT 30 而忽略偏移，导致返回前30条而非第3页数据。",
+      "knowledge": "SQL LIMIT在用户管理中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "options": [
+          "SELECT * FROM users LIMIT 10 OFFSET 20;",
+          "SELECT * FROM users LIMIT 20 OFFSET 10;",
+          "SELECT * FROM users LIMIT 30;",
+          "SELECT * FROM users LIMIT 10 OFFSET 30;"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL LIMIT | 场景:用户管理]\nLIMIT 限制返回行数，可与偏移量组合实现分页。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-004",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 2,
+    "firstFailureKind": "transport_timeout",
+    "attemptLatenciesMs": [
+      180019,
+      26169
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "给定用户表 users，包含字段 id (INT), name (VARCHAR), email (VARCHAR)。请编写 SQL 查询统计用户总数。",
+      "answer": "SELECT COUNT(*) FROM users;",
+      "analysis": "COUNT(*) 用于统计结果集的行数，这里统计 users 表的所有行，即用户总数。常见错误是使用 COUNT(1) 或 COUNT(id)，虽然结果相同，但 COUNT(*) 更标准。",
+      "knowledge": "SQL COUNT 在用户管理中的应用：使用 COUNT(*) 统计用户总数。",
+      "difficulty": 0,
+      "metadata": {
+        "codeTemplate": "-- 请在此处编写 SQL 查询\n",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE users (id INT, name VARCHAR(50), email VARCHAR(50));\nINSERT INTO users VALUES (1, 'Alice', 'alice@example.com');\nINSERT INTO users VALUES (2, 'Bob', 'bob@example.com');\nINSERT INTO users VALUES (3, 'Charlie', 'charlie@example.com');",
+            "output": "3"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL COUNT | 场景:用户管理]\nCOUNT(*) 统计结果集的行数。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-005",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      37650
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，表 users 包含字段 role，要查询每个角色的用户数量，以下哪个 SQL 语句是正确的？",
+      "answer": "SELECT role, COUNT(*) FROM users GROUP BY role;",
+      "analysis": "正确答案是 A。GROUP BY 子句用于将相同键值的行分组，配合聚合函数 COUNT(*) 可以统计每个角色的用户数量。B 选项 ORDER BY 用于排序，不能分组；C 选项 WHERE 用于过滤行，不能分组统计；D 选项 HAVING 用于过滤分组后的结果，但缺少 GROUP BY 子句，语法错误。",
+      "knowledge": "SQL GROUP BY在用户管理中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "options": [
+          "SELECT role, COUNT(*) FROM users GROUP BY role;",
+          "SELECT role, COUNT(*) FROM users ORDER BY role;",
+          "SELECT role, COUNT(*) FROM users WHERE role = 'admin';",
+          "SELECT role, COUNT(*) FROM users HAVING COUNT(*) > 1;"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL GROUP BY | 场景:用户管理]\nGROUP BY 将相同键值的行分组，常与聚合函数配合。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-006",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      142262
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "给定一个用户表 users，包含字段 id (INT), name (VARCHAR), city (VARCHAR), registration_date (DATE), status (VARCHAR, 取值 'active' 或 'inactive')。请编写一个 SQL 查询，统计每个城市的用户总数和活跃用户数量，只显示活跃用户占比超过 50% 且总用户数大于 10 的城市。结果按总用户数降序排列。注意：HAVING 子句中不能直接使用列别名，应使用聚合表达式。",
+      "answer": "SELECT city, COUNT(*) AS total_users, SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active_users\nFROM users\nGROUP BY city\nHAVING SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) * 1.0 / COUNT(*) > 0.5 AND COUNT(*) > 10\nORDER BY total_users DESC;",
+      "analysis": "本题考察 HAVING 子句在分组后过滤聚合结果的应用。常见错误包括：1. 使用 WHERE 子句过滤聚合条件（WHERE 在分组前执行，无法引用聚合函数）；2. 在 HAVING 中直接使用列别名（如 active_users），标准 SQL 不允许，应重复聚合表达式；3. 忘记 GROUP BY 子句；4. 比例计算时未处理整数除法（应乘以 1.0 转为浮点）。正确答案使用 SUM(CASE WHEN ...) 计算活跃用户数，并在 HAVING 中通过表达式计算占比和总用户数，同时满足两个条件。",
+      "knowledge": "SQL HAVING在用户管理中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "codeTemplate": "SELECT city, COUNT(*) AS total_users, SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active_users\nFROM users\nGROUP BY city\nHAVING ___\nORDER BY total_users DESC;",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE users (id INT, name VARCHAR(50), city VARCHAR(50), registration_date DATE, status VARCHAR(10));\nINSERT INTO users VALUES\n(1, 'Alice', 'New York', '2023-01-15', 'active'),\n(2, 'Bob', 'New York', '2023-02-20', 'active'),\n(3, 'Charlie', 'New York', '2023-03-10', 'active'),\n(4, 'David', 'New York', '2023-04-05', 'active'),\n(5, 'Eve', 'New York', '2023-05-01', 'active'),\n(6, 'Frank', 'New York', '2023-06-01', 'active'),\n(7, 'Grace', 'New York', '2023-07-01', 'active'),\n(8, 'Hank', 'New York', '2023-08-01', 'active'),\n(9, 'Ivy', 'New York', '2023-09-01', 'active'),\n(10, 'Jack', 'New York', '2023-10-01', 'active'),\n(11, 'Kate', 'New York', '2023-11-01', 'active'),\n(12, 'Leo', 'New York', '2023-12-01', 'inactive'),\n(13, 'Mia', 'Los Angeles', '2023-01-10', 'active'),\n(14, 'Noah', 'Los Angeles', '2023-02-14', 'active'),\n(15, 'Olivia', 'Los Angeles', '2023-03-20', 'active'),\n(16, 'Paul', 'Los Angeles', '2023-04-25', 'active'),\n(17, 'Quinn', 'Los Angeles', '2023-05-30', 'active'),\n(18, 'Rachel', 'Los Angeles', '2023-06-15', 'inactive'),\n(19, 'Sam', 'Chicago', '2023-01-05', 'active'),\n(20, 'Tina', 'Chicago', '2023-02-10', 'active'),\n(21, 'Uma', 'Chicago', '2023-03-15', 'active'),\n(22, 'Victor', 'Chicago', '2023-04-20', 'active'),\n(23, 'Wendy', 'Chicago', '2023-05-25', 'active'),\n(24, 'Xander', 'Chicago', '2023-06-30', 'active'),\n(25, 'Yara', 'Chicago', '2023-07-05', 'active'),\n(26, 'Zack', 'Chicago', '2023-08-10', 'active'),\n(27, 'Amy', 'Chicago', '2023-09-15', 'active'),\n(28, 'Ben', 'Chicago', '2023-10-20', 'active'),\n(29, 'Cara', 'Chicago', '2023-11-25', 'active'),\n(30, 'Dan', 'Chicago', '2023-12-30', 'inactive'),\n(31, 'Eli', 'Houston', '2023-01-01', 'active'),\n(32, 'Fay', 'Houston', '2023-02-02', 'inactive');",
+            "output": "city | total_users | active_users\nNew York | 12 | 11\nChicago | 12 | 11"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "题目格式符合要求",
+          "答案存在且正确",
+          "难度与请求一致"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL HAVING | 场景:用户管理]\nHAVING 在分组后过滤聚合结果，WHERE 在分组前过滤行。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-007",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      14991
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，我们有两个表：users（用户表）和 orders（订单表）。我们想要获取所有下过订单的用户信息，即只返回那些在 orders 表中有对应记录的用户。应该使用哪种 JOIN？",
+      "answer": "INNER JOIN",
+      "analysis": "INNER JOIN 只返回连接条件匹配的行，因此只包含有订单的用户。常见错误是使用 LEFT JOIN，它会返回所有用户，即使没有订单。",
+      "knowledge": "SQL JOIN在用户管理中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "options": [
+          "INNER JOIN",
+          "LEFT JOIN",
+          "RIGHT JOIN",
+          "FULL OUTER JOIN"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL JOIN | 场景:用户管理]\nINNER JOIN 只返回连接条件匹配的行。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-008",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      98700
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "编写一个SQL查询，使用LEFT JOIN从users表和roles表中获取所有用户的用户名和他们的角色名。如果用户没有分配角色，则角色名显示为NULL。\n\n表结构：\n- users: id (INT), username (VARCHAR)\n- roles: user_id (INT), role_name (VARCHAR)\n\n假设每个用户只有一个角色（roles表中的user_id是唯一的）。",
+      "answer": "SELECT u.username, r.role_name\nFROM users u\nLEFT JOIN roles r ON u.id = r.user_id;",
+      "analysis": "本题考察LEFT JOIN的基本用法。LEFT JOIN保留左表（users）的所有行，右表（roles）没有匹配时填充NULL。常见错误包括：忘记指定ON条件导致笛卡尔积；使用INNER JOIN导致没有角色的用户被过滤；使用RIGHT JOIN导致右表所有行保留，不符合题目要求。正确的查询是：SELECT u.username, r.role_name FROM users u LEFT JOIN roles r ON u.id = r.user_id;",
+      "knowledge": "SQL LEFT JOIN在用户管理中的应用：通过LEFT JOIN可以获取所有用户的信息，即使某些用户没有关联数据（如角色），确保用户信息不丢失。",
+      "difficulty": 1,
+      "metadata": {
+        "codeTemplate": "SELECT u.username, r.role_name\nFROM users u\nLEFT JOIN roles r ON ",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE users (id INT, username VARCHAR);\nINSERT INTO users VALUES (1, 'Alice'), (2, 'Bob'), (3, 'Charlie');\nCREATE TABLE roles (user_id INT, role_name VARCHAR);\nINSERT INTO roles VALUES (1, 'Admin'), (2, 'User');",
+            "output": "Alice\tAdmin\nBob\tUser\nCharlie\tNULL"
+          },
+          {
+            "input": "CREATE TABLE users (id INT, username VARCHAR);\nINSERT INTO users VALUES (1, 'Alice'), (2, 'Bob');\nCREATE TABLE roles (user_id INT, role_name VARCHAR);\nINSERT INTO roles VALUES (1, 'Admin');",
+            "output": "Alice\tAdmin\nBob\tNULL"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查格式",
+          "答案存在",
+          "难度匹配"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL LEFT JOIN | 场景:用户管理]\nLEFT JOIN 保留左表全部行，右表无匹配时补 NULL。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-009",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      70281
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，有一个用户表（users）包含字段：user_id（主键，唯一），username（用户名），role（用户角色，如'admin'、'user'等）。由于一个角色可能被多个用户拥有，管理员需要查询系统中所有不同的用户角色，以便进行角色管理。以下哪个 SQL 语句可以正确返回所有不同的角色？",
+      "answer": "SELECT DISTINCT role FROM users;",
+      "analysis": "正确选项 A 使用 SELECT DISTINCT role FROM users，DISTINCT 关键字去除 SELECT 结果中的重复行，因此只返回唯一的角色值。选项 B 没有使用 DISTINCT，返回所有行，包括重复角色。选项 C 使用 SELECT DISTINCT *，会返回所有列的组合，由于 user_id 是主键，每一行都是唯一的，因此不会去除任何行，无法达到只返回不同角色的目的。选项 D 使用 SELECT DISTINCT user_id, role，同样因为 user_id 唯一，每一行组合都是唯一的，所以不会去除重复角色。常见错误是误以为 DISTINCT 作用于所有列或部分列，实际上 DISTINCT 作用于 SELECT 子句中的所有列，只有当所有选择的列值都相同时才视为重复行。",
+      "knowledge": "SQL DISTINCT在用户管理中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "options": [
+          "SELECT DISTINCT role FROM users;",
+          "SELECT role FROM users;",
+          "SELECT DISTINCT * FROM users;",
+          "SELECT DISTINCT user_id, role FROM users;"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL DISTINCT | 场景:用户管理]\nDISTINCT 去除 SELECT 结果中的重复行。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-010",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      57109
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在用户管理系统中，有一个用户表（users），包含字段：id（INT）、username（VARCHAR(50)）、email（VARCHAR(100)）。请编写SQL查询语句，找出所有email字段为NULL的用户。注意：必须使用正确的方式判断NULL，不能使用等号。",
+      "answer": "SELECT * FROM users WHERE email IS NULL;",
+      "analysis": "在SQL中，NULL表示未知值，不能使用等号进行比较，因为任何与NULL的比较结果都是未知（UNKNOWN），不会返回任何行。正确的方法是使用IS NULL或IS NOT NULL。本题中，常见错误是写成email = NULL，这不会返回任何结果。通过使用IS NULL，可以正确筛选出email为NULL的用户。",
+      "knowledge": "SQL NULL在用户管理中的应用：判断空值应使用IS NULL或IS NOT NULL，不能使用等号。",
+      "difficulty": 0,
+      "metadata": {
+        "codeTemplate": "-- 请补全SQL查询语句\nSELECT * FROM users WHERE ",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE users (id INT, username VARCHAR(50), email VARCHAR(100));\nINSERT INTO users VALUES (1, 'Alice', 'alice@example.com');\nINSERT INTO users VALUES (2, 'Bob', NULL);\nINSERT INTO users VALUES (3, 'Charlie', NULL);",
+            "output": "2|Bob|NULL\n3|Charlie|NULL"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL NULL | 场景:用户管理]\n判断空值应使用 IS NULL 或 IS NOT NULL，不能使用等号。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-011",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      53800
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，有一个空列表 users，现在需要将新用户 'David' 添加到列表末尾，应该使用哪个语句？",
+      "answer": "users.append('David')",
+      "analysis": "正确答案是 A。Python 列表使用 append 方法在末尾添加元素。常见错误：B 选项 add 是集合的方法，不适用于列表；C 选项 insert 需要指定索引，且 insert(0, 'David') 会将元素插入到开头，而不是末尾；D 选项 push 是栈的方法，Python 列表没有 push 方法。因此，只有 append 正确。",
+      "knowledge": "Python 列表在用户管理中的应用，具体是 append 方法用于添加元素。",
+      "difficulty": 1,
+      "metadata": {
+        "options": [
+          "users.append('David')",
+          "users.add('David')",
+          "users.insert(0, 'David')",
+          "users.push('David')"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 列表 | 场景:用户管理]\nPython 列表使用方括号，可按索引读取并用 append 追加元素。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-012",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      42980
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在用户管理系统中，我们使用字典来存储用户信息，其中键是用户名，值是包含用户详细信息的字典（例如，包含'age'和'email'字段）。请实现函数 `update_user_info(users, username, info)`，该函数接受用户字典 `users`、用户名 `username` 和包含更新信息的字典 `info`。如果用户名已存在，则更新该用户的字段（只更新info中存在的键）；如果用户名不存在，则添加新用户（使用info作为其值）。函数应返回更新后的用户字典。",
+      "answer": "def update_user_info(users, username, info):\n    if username in users:\n        users[username].update(info)\n    else:\n        users[username] = info\n    return users",
+      "analysis": "本题考察字典的键存在性检查、update方法以及添加新键值对。常见错误包括：未检查键是否存在直接赋值导致覆盖整个用户信息；误用update方法（如直接对users调用update）；忘记返回更新后的字典。参考实现通过`if username in users`判断用户是否存在，存在时用`update`只更新info中的字段，不存在时直接赋值添加新用户。",
+      "knowledge": "Python 字典在用户管理中的应用：通过键读取或更新对应值，使用`in`检查键是否存在，使用`update`方法合并字典。",
+      "difficulty": 2,
+      "metadata": {
+        "codeTemplate": "def update_user_info(users, username, info):\n    # 在此处编写代码\n    pass",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "update_user_info({'alice': {'age': 25, 'email': 'alice@example.com'}}, 'alice', {'age': 26})",
+            "output": "{'alice': {'age': 26, 'email': 'alice@example.com'}}"
+          },
+          {
+            "input": "update_user_info({'alice': {'age': 25}}, 'bob', {'age': 30, 'email': 'bob@example.com'})",
+            "output": "{'alice': {'age': 25}, 'bob': {'age': 30, 'email': 'bob@example.com'}}"
+          },
+          {
+            "input": "update_user_info({}, 'charlie', {'age': 35})",
+            "output": "{'charlie': {'age': 35}}"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 字典 | 场景:用户管理]\nPython 字典保存键值对，可通过键读取或更新对应值。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-013",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      35905
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，有 5 个用户，编号从 0 到 4。使用 for 循环遍历这些用户编号，正确的写法是？",
+      "answer": "for i in range(5):",
+      "analysis": "正确答案是 A，因为 range(5) 生成 0 到 4 的整数，符合要求。常见错误是选择 B，range(4) 只生成 0 到 3，漏掉编号 4；C 生成 1 到 4，漏掉 0；D 生成 0,2,4，漏掉 1 和 3。",
+      "knowledge": "Python 循环在用户管理中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "options": [
+          "for i in range(5):",
+          "for i in range(4):",
+          "for i in range(1,5):",
+          "for i in range(0,5,2):"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 循环 | 场景:用户管理]\nfor 循环可遍历可迭代对象，range(n) 产生从 0 到 n-1 的整数。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-014",
+    "firstPassStructured": false,
+    "repaired": true,
+    "modelCallCount": 2,
+    "firstFailureKind": "json_not_found",
+    "attemptLatenciesMs": [
+      15573,
+      102806
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在用户管理系统中，经常需要生成个性化的欢迎消息。请定义一个函数 `generate_welcome_message`，该函数接收一个参数 `username`（字符串），并返回一个字符串 `\"Welcome, {username}!\"`。例如，当 `username` 为 `\"Alice\"` 时，返回 `\"Welcome, Alice!\"`。",
+      "answer": "def generate_welcome_message(username):\n    return f\"Welcome, {username}!\"",
+      "analysis": "本题考察 Python 函数的基本定义与 return 语句的使用。函数通过 `def` 关键字定义，参数 `username` 接收传入的值，函数体内使用 `return` 将格式化后的字符串返回给调用方。常见错误包括忘记写 `return` 或使用 `print` 代替 `return`，导致函数没有返回值。",
+      "knowledge": "Python 函数在用户管理中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "codeTemplate": "def generate_welcome_message(username):\n    # 在此处编写代码，返回欢迎消息\n    pass",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "Alice",
+            "output": "Welcome, Alice!"
+          },
+          {
+            "input": "Bob",
+            "output": "Welcome, Bob!"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 函数 | 场景:用户管理]\n使用 def 定义函数，return 将结果返回给调用方。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-015",
+    "firstPassStructured": false,
+    "repaired": false,
+    "finalSuccess": false,
+    "modelCallCount": 2,
+    "firstFailureKind": "json_not_found",
+    "repairFailureKind": "json_not_found",
+    "attemptLatenciesMs": [
+      119079,
+      117986
+    ],
+    "validCandidateCount": 0,
+    "error": "EXERCISE_GENERATION_SCHEMA_FAILED",
+    "errorDetail": {
+      "firstFailureKind": "json_not_found",
+      "repairFailureKind": "json_not_found",
+      "repairIssues": [
+        "<root>:invalid_json"
+      ],
+      "modelCallCount": 2,
+      "attemptLatenciesMs": [
+        119079,
+        117986
+      ]
+    },
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-016",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      42052
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在用户管理系统中，有一个函数 get_first_three(user_id)，它接收一个用户ID字符串，要求返回该字符串的前三个字符作为前缀。请使用字符串切片实现该函数。",
+      "answer": "def get_first_three(user_id):\n    return user_id[:3]",
+      "analysis": "答案使用字符串切片 user_id[:3] 获取前三个字符，这是正确的。常见错误包括使用 user_id[0:2] 只获取前两个字符，或者忘记切片不包含结束索引。",
+      "knowledge": "Python 字符串在用户管理中的应用，具体是字符串切片操作。",
+      "difficulty": 0,
+      "metadata": {
+        "codeTemplate": "def get_first_three(user_id):\n    # 在此处编写代码\n    pass",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "ABC123",
+            "output": "ABC"
+          },
+          {
+            "input": "XY7890",
+            "output": "XY7"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 字符串 | 场景:用户管理]\n字符串切片 text[start:end] 包含 start，不包含 end。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-017",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      36134
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，有一个用户列表 users = ['Alice', 'Bob', 'Charlie']。现在使用 sorted(users) 对列表进行排序，以下关于 sorted 函数的说法正确的是？",
+      "answer": "sorted 会返回一个新的已排序列表，原用户列表保持不变。",
+      "analysis": "sorted 函数返回一个新的已排序列表，原列表不会被修改。常见错误是认为 sorted 会像 list.sort() 一样修改原列表，或者混淆返回值。",
+      "knowledge": "Python 排序在用户管理中的应用：sorted 函数返回新列表，原列表不变。",
+      "difficulty": 1,
+      "metadata": {
+        "options": [
+          "sorted 会直接修改原用户列表，并返回排序后的列表。",
+          "sorted 会返回一个新的已排序列表，原用户列表保持不变。",
+          "sorted 会返回 None，并修改原用户列表。",
+          "sorted 会返回一个新的未排序列表。"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 排序 | 场景:用户管理]\nsorted 返回新的已排序列表，原列表保持不变。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-018",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      54832
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在用户管理系统中，经常需要比较两个时期的用户列表。请编写一个函数 `analyze_users(old_users, new_users)`，接受两个用户ID列表作为参数，使用集合运算找出新增用户（在new_users中但不在old_users中）、移除用户（在old_users中但不在new_users中）以及共同用户（在两个列表中都存在）。要求返回一个字典，键为'added'、'removed'、'common'，对应的值为用户ID列表，并按升序排序。",
+      "answer": "def analyze_users(old_users, new_users):\n    old_set = set(old_users)\n    new_set = set(new_users)\n    added = sorted(new_set - old_set)\n    removed = sorted(old_set - new_set)\n    common = sorted(old_set & new_set)\n    return {'added': added, 'removed': removed, 'common': common}",
+      "analysis": "本题考察Python集合的差集、交集运算以及排序。常见错误包括：忘记将列表转换为集合导致重复元素影响结果；未对结果排序导致输出顺序不确定；混淆差集方向导致新增和移除颠倒。正确做法是使用set()转换，利用-、&运算符，最后用sorted()排序。",
+      "knowledge": "Python集合在用户管理中的应用：利用集合的唯一性和集合运算高效比较用户列表变化。",
+      "difficulty": 2,
+      "metadata": {
+        "codeTemplate": "def analyze_users(old_users, new_users):\n    # 在此编写你的代码\n    pass",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "analyze_users([1,2,3], [2,3,4])",
+            "output": "{'added': [4], 'removed': [1], 'common': [2,3]}"
+          },
+          {
+            "input": "analyze_users([], [1,2])",
+            "output": "{'added': [1,2], 'removed': [], 'common': []}"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 集合 | 场景:用户管理]\nset 中元素唯一，可用于去重和集合运算。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-019",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      30291
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，当你编写代码处理用户数据时，可能会遇到各种错误。为了捕获并处理这些错误，你应该将可能引发异常的代码放在哪个语句块中？",
+      "answer": "try 块",
+      "analysis": "正确答案是 try 块。在 Python 中，try 块用于包含可能引发异常的代码，而 except 块用于处理异常。常见错误是认为 except 块用于放置可能出错的代码，或者混淆 finally 块的作用。",
+      "knowledge": "Python 异常在用户管理中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "options": [
+          "try 块",
+          "except 块",
+          "finally 块",
+          "else 块"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 异常 | 场景:用户管理]\ntry 捕获可能失败的代码，except 处理指定异常。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-020",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      38886
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "编写一个函数 `get_adult_names(users)`，它接受一个用户列表作为参数，每个用户是一个包含 `'name'` 和 `'age'` 的字典。函数应使用列表推导式返回所有年龄大于等于18岁的用户的名字列表。",
+      "answer": "def get_adult_names(users):\n    return [user['name'] for user in users if user['age'] >= 18]",
+      "analysis": "本题考察列表推导式在用户管理场景中的应用。列表推导式 `[表达式 for 变量 in 可迭代对象 if 条件]` 可以简洁地构造新列表。答案中 `[user['name'] for user in users if user['age'] >= 18]` 遍历 `users`，筛选出年龄≥18的用户，并提取其 `name`。常见错误包括：忘记写 `if` 条件、条件写错（如 `>=18` 写成 `>18` 导致边界错误）、表达式写错（如写成 `user` 而非 `user['name']`）、或使用不正确的语法（如缺少方括号）。",
+      "knowledge": "Python 推导式在用户管理中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "codeTemplate": "def get_adult_names(users):\n    # 使用列表推导式返回结果\n    return ",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "[{\"name\":\"Alice\",\"age\":25},{\"name\":\"Bob\",\"age\":17},{\"name\":\"Charlie\",\"age\":19}]",
+            "output": "[\"Alice\",\"Charlie\"]"
+          },
+          {
+            "input": "[{\"name\":\"David\",\"age\":15},{\"name\":\"Eve\",\"age\":22}]",
+            "output": "[\"Eve\"]"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 推导式 | 场景:用户管理]\n列表推导式可用一个表达式和遍历条件构造新列表。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-021",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      89718
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在课程统计中，有一个选课表（enrollments），包含字段 student_id, course_name, score。现在需要查询选修了“数据库原理”或“操作系统”课程，并且成绩大于 85 分的学生。以下哪个 WHERE 子句能正确实现这个查询？",
+      "answer": "WHERE (course_name = '数据库原理' OR course_name = '操作系统') AND score > 85",
+      "analysis": "在 SQL 中，AND 运算符的优先级高于 OR，因此选项 A 和 D 实际上等价于 course_name = '数据库原理' OR (course_name = '操作系统' AND score > 85)，这会返回所有选修了“数据库原理”的学生（无论成绩）以及选修了“操作系统”且成绩大于 85 的学生，不符合题目要求。选项 C 等价于 (course_name = '数据库原理' AND score > 85) OR course_name = '操作系统'，会返回选修了“数据库原理”且成绩大于 85 的学生以及所有选修了“操作系统”的学生，也不符合。只有选项 B 使用括号明确将两个课程条件组合，再与成绩条件进行 AND，正确实现了“选修了数据库原理或操作系统，且成绩大于 85”的筛选。",
+      "knowledge": "SQL WHERE在课程统计中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "options": [
+          "WHERE course_name = '数据库原理' OR course_name = '操作系统' AND score > 85",
+          "WHERE (course_name = '数据库原理' OR course_name = '操作系统') AND score > 85",
+          "WHERE course_name = '数据库原理' AND score > 85 OR course_name = '操作系统'",
+          "WHERE course_name = '数据库原理' OR (course_name = '操作系统' AND score > 85)"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL WHERE | 场景:课程统计]\nWHERE 子句在 SELECT 之后筛选满足条件的行。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-022",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      41366
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在课程统计数据库中，有一个名为`course_enrollment`的表，包含字段`course_name`（课程名称）和`student_count`（学生人数）。请编写一条SQL查询语句，按照学生人数从多到少（降序）的顺序，列出所有课程的名称和学生人数。",
+      "answer": "SELECT course_name, student_count FROM course_enrollment ORDER BY student_count DESC;",
+      "analysis": "本题考察ORDER BY子句的基本用法，特别是降序排序。正确答案使用`ORDER BY student_count DESC`实现按学生人数降序排列。常见错误包括：忘记写DESC导致默认升序；写错列名；或者将ORDER BY放在错误位置。",
+      "knowledge": "SQL ORDER BY在课程统计中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "codeTemplate": "SELECT course_name, student_count FROM course_enrollment ORDER BY ________;",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE course_enrollment (course_name VARCHAR(50), student_count INT); INSERT INTO course_enrollment VALUES ('Math', 30), ('English', 25), ('Science', 40), ('History', 20);",
+            "output": "Science|40\nMath|30\nEnglish|25\nHistory|20"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL ORDER BY | 场景:课程统计]\nORDER BY 按指定列排序，ASC 为升序，DESC 为降序。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-023",
+    "firstPassStructured": false,
+    "repaired": true,
+    "modelCallCount": 2,
+    "firstFailureKind": "schema_validation",
+    "attemptLatenciesMs": [
+      22880,
+      37621
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在课程统计中，要查询报名人数最多的前5门课程，SQL语句中应该使用哪个子句来限制返回的行数？",
+      "answer": "LIMIT",
+      "analysis": "LIMIT子句用于限制SQL查询返回的行数，在课程统计中常与ORDER BY结合使用，例如'ORDER BY enrollment_count DESC LIMIT 5'可以获取报名人数最多的前5门课程。常见错误是选择ORDER BY，它只负责排序而不限制行数；或者选择GROUP BY和HAVING，它们用于分组和过滤分组，不直接限制行数。",
+      "knowledge": "SQL LIMIT在课程统计中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "options": [
+          "LIMIT",
+          "ORDER BY",
+          "GROUP BY",
+          "HAVING"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL LIMIT | 场景:课程统计]\nLIMIT 限制返回行数，可与偏移量组合实现分页。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-024",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      110366
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "给定课程统计数据库，包含以下两张表：\nstudents (student_id INT, name VARCHAR)\nenrollments (enrollment_id INT, student_id INT, course_id INT)\n请编写一个SQL查询，使用COUNT(*)函数，统计每个学生的选课数量，并只返回选课数量大于等于2的学生ID和选课数量，按选课数量降序排列。",
+      "answer": "SELECT student_id, COUNT(*) AS course_count\nFROM enrollments\nGROUP BY student_id\nHAVING COUNT(*) >= 2\nORDER BY course_count DESC;",
+      "analysis": "正确答案使用了GROUP BY对每个学生分组，COUNT(*)统计每个组的行数即选课数量，HAVING过滤选课数量>=2的学生，ORDER BY降序排列。常见错误包括：忘记GROUP BY导致整个表被统计为一行；使用COUNT(student_id)但student_id可能为NULL，但COUNT(*)更准确；忘记HAVING子句而使用WHERE，但WHERE不能用于聚合函数；排序时使用了错误的列名。",
+      "knowledge": "SQL COUNT在课程统计中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "codeTemplate": "SELECT student_id, COUNT(*) AS course_count\nFROM enrollments\n",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE students (student_id INT, name VARCHAR);\nINSERT INTO students VALUES (1, 'Alice'), (2, 'Bob'), (3, 'Charlie');\nCREATE TABLE enrollments (enrollment_id INT, student_id INT, course_id INT);\nINSERT INTO enrollments VALUES (1,1,101), (2,1,102), (3,2,101), (4,3,101), (5,3,102), (6,3,103);",
+            "output": "student_id | course_count\n3          | 3\n1          | 2"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL COUNT | 场景:课程统计]\nCOUNT(*) 统计结果集的行数。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-025",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      21850
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在课程统计中，要统计每门课程的学生人数，应该使用哪个 SQL 子句？",
+      "answer": "GROUP BY",
+      "analysis": "GROUP BY 子句用于将相同键值的行分组，常与聚合函数（如 COUNT）配合使用，从而统计每门课程的学生人数。常见错误是混淆 ORDER BY（排序）或 WHERE（条件过滤）或 HAVING（分组后过滤）。",
+      "knowledge": "SQL GROUP BY在课程统计中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "options": [
+          "GROUP BY",
+          "ORDER BY",
+          "WHERE",
+          "HAVING"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL GROUP BY | 场景:课程统计]\nGROUP BY 将相同键值的行分组，常与聚合函数配合。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-026",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      85929
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在课程统计系统中，有课程表courses（course_id, course_name）和成绩表scores（student_id, course_id, score）。请编写一个SQL查询，找出平均成绩大于等于80分的课程名称和平均成绩，并按平均成绩降序排列。要求必须使用HAVING子句进行分组后过滤。",
+      "answer": "SELECT c.course_name, AVG(s.score) AS avg_score\nFROM courses c\nJOIN scores s ON c.course_id = s.course_id\nGROUP BY c.course_id, c.course_name\nHAVING AVG(s.score) >= 80\nORDER BY avg_score DESC;",
+      "analysis": "本题考察HAVING子句在分组后过滤聚合结果的应用。常见错误包括：使用WHERE子句过滤聚合结果（WHERE不能与聚合函数直接使用），忘记GROUP BY，或者HAVING条件中使用别名（某些数据库不支持）。正确的做法是先通过JOIN连接表，按课程分组，计算平均成绩，然后使用HAVING过滤平均成绩>=80的课程，最后按平均成绩降序排列。",
+      "knowledge": "SQL HAVING在课程统计中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "codeTemplate": "SELECT c.course_name, AVG(s.score) AS avg_score\nFROM courses c\nJOIN scores s ON c.course_id = s.course_id\nGROUP BY c.course_id, c.course_name\nHAVING \nORDER BY avg_score DESC;",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE courses (course_id INT PRIMARY KEY, course_name VARCHAR(100));\nCREATE TABLE scores (student_id INT, course_id INT, score DECIMAL(5,2), PRIMARY KEY (student_id, course_id));\nINSERT INTO courses VALUES (1, 'Math'), (2, 'English'), (3, 'Science');\nINSERT INTO scores VALUES (101, 1, 85), (102, 1, 90), (103, 1, 78), (104, 2, 70), (105, 2, 75), (106, 3, 95), (107, 3, 88), (108, 3, 92);",
+            "output": "course_name|avg_score\nScience|91.66667\nMath|84.33333"
+          },
+          {
+            "input": "CREATE TABLE courses (course_id INT PRIMARY KEY, course_name VARCHAR(100));\nCREATE TABLE scores (student_id INT, course_id INT, score DECIMAL(5,2), PRIMARY KEY (student_id, course_id));\nINSERT INTO courses VALUES (1, 'Math'), (2, 'English'), (3, 'Science');\nINSERT INTO scores VALUES (101, 1, 60), (102, 1, 65), (103, 1, 58), (104, 2, 70), (105, 2, 75), (106, 3, 55), (107, 3, 62), (108, 3, 68);",
+            "output": ""
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL HAVING | 场景:课程统计]\nHAVING 在分组后过滤聚合结果，WHERE 在分组前过滤行。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-027",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      49697
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在课程统计中，需要统计每个学生的选课数量。假设有两张表：students（学生表，包含 student_id, name）和 enrollments（选课表，包含 student_id, course_id）。使用 INNER JOIN 连接这两张表，并按 student_id 分组计数选课数量。以下关于查询结果的描述，正确的是：",
+      "answer": "结果只包含有选课记录的学生，未选课学生不会被包含。",
+      "analysis": "INNER JOIN 只返回连接条件匹配的行。在连接 students 和 enrollments 时，只有那些在 enrollments 中有对应记录的学生才会被包含。因此，没有选课的学生不会出现在连接结果中，分组计数时也不会包含他们。常见错误是认为 INNER JOIN 会包含所有学生，或者认为未选课学生会显示为 0 或 NULL，但实际上 INNER JOIN 会过滤掉不匹配的行。",
+      "knowledge": "SQL JOIN在课程统计中的应用，重点理解 INNER JOIN 只返回匹配行的特性，避免在统计中遗漏数据。",
+      "difficulty": 2,
+      "metadata": {
+        "options": [
+          "结果包含所有学生，未选课学生的选课数量显示为 0。",
+          "结果只包含有选课记录的学生，未选课学生不会被包含。",
+          "结果包含所有学生，未选课学生的选课数量显示为 NULL。",
+          "结果包含所有学生，但未选课学生的记录会被忽略，计数为 0。"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL JOIN | 场景:课程统计]\nINNER JOIN 只返回连接条件匹配的行。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-028",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      50942
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "给定课程表 courses（course_id, course_name）和选课表 enrollments（enrollment_id, course_id, student_id），编写一个 SQL 查询，使用 LEFT JOIN 返回所有课程的名称及其选课人数。如果某门课程没有学生选课，则选课人数显示为 0。",
+      "answer": "SELECT c.course_name, COUNT(e.student_id) AS enrollment_count\nFROM courses c\nLEFT JOIN enrollments e ON c.course_id = e.course_id\nGROUP BY c.course_id, c.course_name;",
+      "analysis": "本题考察 LEFT JOIN 在课程统计中的应用。LEFT JOIN 会保留左表（courses）的所有行，右表（enrollments）没有匹配时对应字段为 NULL。使用 COUNT(e.student_id) 统计选课人数时，由于 NULL 不会被计数，因此没有选课的课程会显示为 0。常见错误包括：1）使用 INNER JOIN 导致没有选课的课程被忽略；2）使用 COUNT(*) 会包括 NULL 行，导致没有选课的课程计数为 1（因为分组后有一行）；3）忘记 GROUP BY 导致语法错误或结果不正确。",
+      "knowledge": "SQL LEFT JOIN 在课程统计中的应用：通过 LEFT JOIN 连接课程表和选课表，确保所有课程都出现在结果中，即使没有选课记录。",
+      "difficulty": 0,
+      "metadata": {
+        "codeTemplate": "-- 表结构：courses(course_id, course_name), enrollments(enrollment_id, course_id, student_id)\nSELECT c.course_name, COUNT(e.student_id) AS enrollment_count\nFROM courses c\nLEFT JOIN enrollments e\nON \nGROUP BY c.course_id, c.course_name;",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE courses (course_id INT, course_name VARCHAR(50));\nINSERT INTO courses VALUES (1, 'Math'), (2, 'English'), (3, 'Science');\nCREATE TABLE enrollments (enrollment_id INT, course_id INT, student_id INT);\nINSERT INTO enrollments VALUES (1, 1, 101), (2, 1, 102), (3, 2, 103);",
+            "output": "course_name | enrollment_count\nMath | 2\nEnglish | 1\nScience | 0"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL LEFT JOIN | 场景:课程统计]\nLEFT JOIN 保留左表全部行，右表无匹配时补 NULL。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-029",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      28018
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在课程统计中，需要查询所有不同的课程类别，以下哪个 SQL 语句可以实现去除重复行，只返回唯一的课程类别？",
+      "answer": "SELECT DISTINCT course_category FROM courses;",
+      "analysis": "正确答案是 SELECT DISTINCT course_category FROM courses;，因为 DISTINCT 关键字用于去除 SELECT 结果中的重复行，确保返回的课程类别是唯一的。常见错误是使用 SELECT ALL，它会保留所有行包括重复；或者使用 UNIQUE、DIFFERENT 等非标准关键字，这些在 SQL 中并不存在。",
+      "knowledge": "SQL DISTINCT在课程统计中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "options": [
+          "SELECT DISTINCT course_category FROM courses;",
+          "SELECT ALL course_category FROM courses;",
+          "SELECT UNIQUE course_category FROM courses;",
+          "SELECT DIFFERENT course_category FROM courses;"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL DISTINCT | 场景:课程统计]\nDISTINCT 去除 SELECT 结果中的重复行。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-030",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      75566
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "给定以下数据库表结构，用于课程统计：\n- students(student_id, name)\n- courses(course_id, course_name)\n- enrollments(student_id, course_id, score)\n\n请编写一个SQL查询，统计每个课程中缺考（score为NULL）的学生人数。结果应包含课程名称和缺考人数，并按课程名称升序排列。注意：必须正确使用IS NULL判断空值，不能使用等号。",
+      "answer": "SELECT c.course_name, COUNT(CASE WHEN e.score IS NULL THEN 1 END) AS absent_count\nFROM courses c\nLEFT JOIN enrollments e ON c.course_id = e.course_id\nGROUP BY c.course_id, c.course_name\nORDER BY c.course_name;",
+      "analysis": "本题考察SQL中NULL值的正确判断方法。在SQL中，NULL表示未知或缺失的值，不能使用等号（=）与NULL比较，因为任何与NULL的比较结果都是未知（不是TRUE也不是FALSE）。必须使用IS NULL或IS NOT NULL。\n\n常见错误：使用`WHERE score = NULL`或`WHERE score <> NULL`，这不会返回任何行。\n\n此外，为了统计每个课程的缺考人数，包括缺考人数为0的课程，需要使用LEFT JOIN保留所有课程，并在聚合函数中使用条件计数。如果使用INNER JOIN，则会遗漏没有缺考学生的课程。\n\n参考查询中，`COUNT(CASE WHEN e.score IS NULL THEN 1 END)`只计数score为NULL的行，因为COUNT忽略NULL值，所以当条件不满足时CASE返回NULL，不被计数。也可以使用`SUM(CASE WHEN e.score IS NULL THEN 1 ELSE 0 END)`达到相同效果。",
+      "knowledge": "SQL NULL在课程统计中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "codeTemplate": "-- 表结构\nCREATE TABLE students (student_id INT PRIMARY KEY, name VARCHAR(50));\nCREATE TABLE courses (course_id INT PRIMARY KEY, course_name VARCHAR(50));\nCREATE TABLE enrollments (student_id INT, course_id INT, score INT, PRIMARY KEY (student_id, course_id));\n\n-- 示例数据\nINSERT INTO students VALUES (1, 'Alice'), (2, 'Bob'), (3, 'Charlie');\nINSERT INTO courses VALUES (101, 'Math'), (102, 'Science');\nINSERT INTO enrollments VALUES (1, 101, 85), (2, 101, NULL), (3, 101, 90), (1, 102, NULL), (2, 102, 75), (3, 102, NULL);\n\n-- 请在此处编写SQL查询语句",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "",
+            "output": "course_name|absent_count\nMath|1\nScience|2"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL NULL | 场景:课程统计]\n判断空值应使用 IS NULL 或 IS NOT NULL，不能使用等号。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-031",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      19039
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在课程统计中，我们使用 Python 列表来存储学生的考试成绩。假设列表 scores = [85, 90, 78, 92] 已经创建，要获取第二个学生的成绩（索引从0开始），正确的表达式是？",
+      "answer": "scores[1]",
+      "analysis": "在 Python 列表中，索引从0开始，所以第二个元素对应索引1。常见错误是误以为索引从1开始而选择 scores[2] 或 scores[1] 的混淆。",
+      "knowledge": "Python 列表在课程统计中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "options": [
+          "scores[1]",
+          "scores[2]",
+          "scores[0]",
+          "scores[3]"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 列表 | 场景:课程统计]\nPython 列表使用方括号，可按索引读取并用 append 追加元素。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-032",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      53761
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在课程统计系统中，我们有一个字典 `course_enrollments` 记录每门课程的当前选课人数。现在有一批新学生选课，信息存储在列表 `new_students` 中，每个元素是课程名称。请编写函数 `update_enrollments(course_enrollments, new_students)`，该函数接收一个字典和一个列表，对于列表中的每个课程，将字典中对应课程的人数加1；如果课程不在字典中，则添加该课程并设置人数为1。直接修改原字典并返回它。",
+      "answer": "def update_enrollments(course_enrollments, new_students):\n    for course in new_students:\n        if course in course_enrollments:\n            course_enrollments[course] += 1\n        else:\n            course_enrollments[course] = 1\n    return course_enrollments",
+      "analysis": "本题考察字典的键值对更新与添加操作。常见错误包括：1. 忘记处理课程不存在的情况，直接使用 `course_enrollments[course] += 1` 会引发 KeyError；2. 错误地使用列表方法如 `append` 来更新字典；3. 没有返回更新后的字典。正确做法是遍历新学生列表，检查课程是否已存在，存在则加1，不存在则添加并初始化为1。",
+      "knowledge": "Python 字典在课程统计中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "codeTemplate": "def update_enrollments(course_enrollments, new_students):\n    # 在此处编写代码\n    return course_enrollments",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "{'Math': 30, 'Physics': 25}\n['Math', 'Chemistry', 'Physics']",
+            "output": "{'Math': 31, 'Physics': 26, 'Chemistry': 1}"
+          },
+          {
+            "input": "{}\n['CS', 'Math']",
+            "output": "{'CS': 1, 'Math': 1}"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 字典 | 场景:课程统计]\nPython 字典保存键值对，可通过键读取或更新对应值。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-033",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      84998
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在课程统计中，有一个包含 6 门课程成绩的列表 grades = [88, 92, 79, 85, 90, 87]。以下哪个代码片段能正确计算所有成绩的总和？",
+      "answer": "total = 0; for i in range(len(grades)): total += grades[i]",
+      "analysis": "正确答案是 A。选项 A 使用 range(len(grades)) 生成索引 0 到 5，正确遍历所有成绩。选项 B 使用 range(1, len(grades)+1) 生成索引 1 到 6，导致 grades[6] 越界。选项 C 使用 grades[i+1]，当 i=5 时 grades[6] 越界。选项 D 使用 range(len(grades)-1) 生成索引 0 到 4，漏掉最后一个成绩 grades[5]。常见错误是混淆 range 的起始和结束边界，或错误地偏移索引。",
+      "knowledge": "Python 循环在课程统计中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "options": [
+          "total = 0; for i in range(len(grades)): total += grades[i]",
+          "total = 0; for i in range(1, len(grades)+1): total += grades[i]",
+          "total = 0; for i in range(len(grades)): total += grades[i+1]",
+          "total = 0; for i in range(len(grades)-1): total += grades[i]"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 循环 | 场景:课程统计]\nfor 循环可遍历可迭代对象，range(n) 产生从 0 到 n-1 的整数。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-034",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      56637
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在课程统计中，经常需要计算两个班级的学生总数。请使用 def 定义一个函数 `total_students(a, b)`，该函数接收两个整数参数，返回它们的和。函数体只需一行 return 语句。",
+      "answer": "def total_students(a, b):\n    return a + b",
+      "analysis": "本题考察函数定义和 return 语句的使用。正确答案是使用 return 返回两个参数的和。常见错误包括：忘记写 return 导致函数返回 None；使用 print 输出结果而不是返回；函数名或参数名错误。",
+      "knowledge": "Python 函数在课程统计中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "codeTemplate": "def total_students(a, b):\n    # 在此处编写代码\n    pass",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "3, 5",
+            "output": "8"
+          },
+          {
+            "input": "10, 20",
+            "output": "30"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 函数 | 场景:课程统计]\n使用 def 定义函数，return 将结果返回给调用方。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-035",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      15005
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在课程统计中，以下代码用于根据学生分数输出等级：\nscore = 85\nif score >= 90:\n    print(\"A\")\nelif score >= 80:\n    print(\"B\")\nelse:\n    print(\"C\")\n执行后输出什么？",
+      "answer": "B",
+      "analysis": "程序按顺序判断条件。score=85 不满足 score>=90，但满足 score>=80，因此执行 elif 分支输出 B。常见错误是误以为会输出 A（忽略顺序）或 C（认为不满足任何条件）。",
+      "knowledge": "Python 条件在课程统计中的应用：if、elif、else 按条件顺序选择一个分支执行。",
+      "difficulty": 1,
+      "metadata": {
+        "options": [
+          "A",
+          "B",
+          "C",
+          "无输出"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 条件 | 场景:课程统计]\nif、elif、else 按条件顺序选择一个分支执行。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-036",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      69921
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在课程统计系统中，有一个字符串记录了各课程的学生人数，格式为\"课程代码:人数\"，多个课程之间用逗号分隔，例如：\"CS101:45,CS102:32,CS103:28\"。请编写一个函数 `calculate_total_enrollment(data)`，该函数接收这样的字符串作为参数，并返回所有课程的总学生人数。要求：在解析过程中，必须使用字符串切片来提取每个课程代码和人数，不能使用 `split()` 方法。你可以使用循环和条件判断，但提取子串必须通过切片实现。",
+      "answer": "def calculate_total_enrollment(data):\n    total = 0\n    i = 0\n    while i < len(data):\n        # 找到下一个逗号的位置\n        comma_pos = i\n        while comma_pos < len(data) and data[comma_pos] != ',':\n            comma_pos += 1\n        # 提取一个课程条目（切片）\n        entry = data[i:comma_pos]\n        # 在entry中找到冒号位置\n        colon_pos = 0\n        while colon_pos < len(entry) and entry[colon_pos] != ':':\n            colon_pos += 1\n        # 提取人数部分（切片）\n        num_str = entry[colon_pos+1:]\n        total += int(num_str)\n        i = comma_pos + 1  # 跳过逗号\n    return total",
+      "analysis": "本题要求使用字符串切片解析课程统计字符串。参考代码通过两个嵌套循环分别定位逗号和冒号，然后使用切片提取子串。常见错误包括：1) 忘记将人数字符串转换为整数；2) 切片索引错误，如未正确处理边界（例如冒号后的起始索引）；3) 未处理空字符串或格式异常的情况；4) 使用split()方法违反题目要求。通过手动查找分隔符并切片，可以加深对字符串切片机制的理解。",
+      "knowledge": "Python 字符串在课程统计中的应用：使用字符串切片解析结构化字符串，提取特定字段。",
+      "difficulty": 2,
+      "metadata": {
+        "codeTemplate": "def calculate_total_enrollment(data):\n    total = 0\n    # 请使用字符串切片和循环解析字符串，计算总人数\n    return total",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "CS101:45,CS102:32,CS103:28",
+            "output": "105"
+          },
+          {
+            "input": "MATH101:50,PHYS101:40",
+            "output": "90"
+          },
+          {
+            "input": "ENG101:30",
+            "output": "30"
+          },
+          {
+            "input": "",
+            "output": "0"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 字符串 | 场景:课程统计]\n字符串切片 text[start:end] 包含 start，不包含 end。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-037",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      15950
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在课程统计中，有一个学生成绩列表 scores = [88, 92, 75, 60, 95]，使用 sorted(scores) 后，原列表 scores 的内容是什么？",
+      "answer": "[88, 92, 75, 60, 95]",
+      "analysis": "sorted() 函数返回一个新的已排序列表，原列表保持不变。因此 scores 仍然是 [88, 92, 75, 60, 95]。常见错误是认为 sorted 会修改原列表，从而误选排序后的列表。",
+      "knowledge": "Python 排序在课程统计中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "options": [
+          "[88, 92, 75, 60, 95]",
+          "[60, 75, 88, 92, 95]",
+          "报错",
+          "不确定"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 排序 | 场景:课程统计]\nsorted 返回新的已排序列表，原列表保持不变。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-038",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      47101
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在课程统计中，经常需要找出同时选修多门课程的学生。给定一个字典 courses，键为课程名称，值为选修该课程的学生名单（列表）。请编写函数 find_common_students(courses)，返回一个集合，包含选修了所有课程的学生。如果没有学生选修所有课程，返回空集合。",
+      "answer": "def find_common_students(courses):\n    if not courses:\n        return set()\n    # 将每个课程的学生列表转换为集合\n    sets = [set(students) for students in courses.values()]\n    # 从第一个集合开始，依次取交集\n    common = sets[0]\n    for s in sets[1:]:\n        common = common & s\n    return common",
+      "analysis": "本题考察集合的交集运算在课程统计中的应用。核心思路是将每个课程的学生列表转换为集合，然后利用集合的 & 运算符依次求交集，最终得到选修所有课程的学生集合。常见错误包括：未处理空字典导致索引错误；忘记将列表转换为集合直接进行交集运算（列表不支持 & 运算符）；误用 union 或 difference 等错误运算。",
+      "knowledge": "Python 集合在课程统计中的应用：set 元素唯一性用于去重，集合运算（交集 &）用于找出同时满足多个条件的数据。",
+      "difficulty": 1,
+      "metadata": {
+        "codeTemplate": "def find_common_students(courses):\n    # 在此处编写代码\n    pass",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "{'Math': ['Alice', 'Bob', 'Charlie'], 'English': ['Bob', 'David', 'Alice'], 'History': ['Alice', 'Eve']}",
+            "output": "{'Alice'}"
+          },
+          {
+            "input": "{'Math': ['Alice', 'Bob'], 'English': ['Charlie', 'David']}",
+            "output": "set()"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 集合 | 场景:课程统计]\nset 中元素唯一，可用于去重和集合运算。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-039",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      113181
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在课程统计中，需要编写一个函数 safe_average(scores)，该函数接收学生成绩列表，返回平均分。如果列表为空或包含非数值数据，应返回 0。以下哪个实现使用了最精确的异常处理？",
+      "answer": "def safe_average(scores):\n    try:\n        return sum(scores) / len(scores)\n    except (ZeroDivisionError, TypeError):\n        return 0",
+      "analysis": "在课程统计中，计算平均分时可能遇到空列表（导致 ZeroDivisionError）或非数值数据（导致 TypeError）。选项 C 同时捕获这两种异常，是最精确的处理方式。选项 A 只处理除零错误，选项 B 只处理类型错误，选项 D 使用裸 except 会捕获所有异常，包括系统退出等，不是最佳实践。常见错误是只考虑一种异常，或使用过于宽泛的异常处理。",
+      "knowledge": "Python 异常在课程统计中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "options": [
+          "def safe_average(scores):\n    try:\n        return sum(scores) / len(scores)\n    except ZeroDivisionError:\n        return 0",
+          "def safe_average(scores):\n    try:\n        return sum(scores) / len(scores)\n    except TypeError:\n        return 0",
+          "def safe_average(scores):\n    try:\n        return sum(scores) / len(scores)\n    except (ZeroDivisionError, TypeError):\n        return 0",
+          "def safe_average(scores):\n    try:\n        return sum(scores) / len(scores)\n    except:\n        return 0"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 异常 | 场景:课程统计]\ntry 捕获可能失败的代码，except 处理指定异常。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-040",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      84809
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在课程统计中，有一个包含学生成绩的列表 scores = [85, 92, 58, 73, 45, 68]。请使用列表推导式生成一个新列表 passed_scores，其中只包含及格（大于等于60分）的成绩。请补全下面的代码，在空白处填写正确的条件。",
+      "answer": "scores = [85, 92, 58, 73, 45, 68]\npassed_scores = [score for score in scores if score >= 60]\nprint(passed_scores)",
+      "analysis": "列表推导式的语法是 [expression for item in iterable if condition]。本题中，我们需要筛选出成绩大于等于60的分数，所以条件为 score >= 60。常见错误包括：忘记写 if 关键字，或者条件写错（如 score > 60 漏掉了等于60的情况）。",
+      "knowledge": "Python 推导式在课程统计中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "codeTemplate": "scores = [85, 92, 58, 73, 45, 68]\npassed_scores = [score for score in scores if ___]  # 请填写条件\nprint(passed_scores)",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "",
+            "output": "[85, 92, 73, 68]\n"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 推导式 | 场景:课程统计]\n列表推导式可用一个表达式和遍历条件构造新列表。\n题目必须围绕课程统计场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-041",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      81363
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在订单报表的 SQL 查询中，WHERE 子句应该放在哪个位置？",
+      "answer": "FROM 子句之后，ORDER BY 子句之前",
+      "analysis": "正确答案是 B，因为 WHERE 子句在 SQL 中位于 FROM 子句之后，用于筛选满足条件的行。常见错误是将其放在 SELECT 之前（选项 A）或 ORDER BY 之后（选项 C），这会导致语法错误或逻辑错误。",
+      "knowledge": "SQL WHERE在订单报表中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "options": [
+          "SELECT 子句之后，FROM 子句之前",
+          "FROM 子句之后，ORDER BY 子句之前",
+          "ORDER BY 子句之后",
+          "GROUP BY 子句之后"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL WHERE | 场景:订单报表]\nWHERE 子句在 SELECT 之后筛选满足条件的行。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-042",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 2,
+    "firstFailureKind": "transport_timeout",
+    "attemptLatenciesMs": [
+      180010,
+      30620
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "给定订单报表表 Orders，包含列 order_id (主键), customer_name (客户名), order_date (订单日期), amount (订单金额)。请编写一条 SQL 查询，从 Orders 表中选择所有列，并按以下规则排序：首先按订单日期降序排列，如果订单日期相同，则按订单金额升序排列。",
+      "answer": "SELECT * FROM Orders ORDER BY order_date DESC, amount ASC;",
+      "analysis": "本题考察 ORDER BY 多列排序及方向控制。正确写法是 `ORDER BY order_date DESC, amount ASC`，先按日期降序（DESC），再按金额升序（ASC）。常见错误包括：忘记写 DESC 导致默认升序；将两列顺序颠倒导致先按金额排序；或误用 DESC 在金额列上。注意：多列排序时，每列可独立指定方向，逗号分隔。",
+      "knowledge": "SQL ORDER BY在订单报表中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "codeTemplate": "SELECT * FROM Orders ORDER BY ",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "Orders 表数据：\n('O001', 'Alice', '2023-01-05', 100.0)\n('O002', 'Bob', '2023-01-03', 200.0)\n('O003', 'Charlie', '2023-01-05', 150.0)",
+            "output": "排序后结果：\n('O001', 'Alice', '2023-01-05', 100.0)\n('O003', 'Charlie', '2023-01-05', 150.0)\n('O002', 'Bob', '2023-01-03', 200.0)"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL ORDER BY | 场景:订单报表]\nORDER BY 按指定列排序，ASC 为升序，DESC 为降序。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-043",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      15549
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在订单报表查询中，若要只返回前 3 条订单记录，应在 SQL 语句末尾添加什么子句？",
+      "answer": "LIMIT 3",
+      "analysis": "LIMIT 子句用于限制查询返回的行数，在订单报表中常用 LIMIT 来获取前 N 条记录。常见错误是混淆 ORDER BY（排序）或 WHERE（条件过滤），这些子句不控制返回行数。",
+      "knowledge": "SQL LIMIT在订单报表中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "options": [
+          "LIMIT 3",
+          "ORDER BY 3",
+          "WHERE 3",
+          "GROUP BY 3"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL LIMIT | 场景:订单报表]\nLIMIT 限制返回行数，可与偏移量组合实现分页。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-044",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      33779
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在订单报表中，需要统计所有订单的总数。请编写一个SQL查询，使用COUNT(*)函数从orders表中统计订单总数，并将结果列命名为total_orders。",
+      "answer": "SELECT COUNT(*) AS total_orders FROM orders;",
+      "analysis": "本题考察COUNT(*)函数在订单报表中的应用。正确答案是SELECT COUNT(*) AS total_orders FROM orders;。常见错误包括忘记使用AS别名导致列名不明确、使用COUNT(1)或COUNT(column)但可能忽略NULL行，而COUNT(*)统计所有行，包括NULL，适合统计订单总数。",
+      "knowledge": "SQL COUNT在订单报表中的应用，COUNT(*)统计结果集的行数。",
+      "difficulty": 1,
+      "metadata": {
+        "codeTemplate": "SELECT COUNT(*) AS total_orders FROM orders;",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "orders表包含3条记录",
+            "output": "total_orders: 3"
+          },
+          {
+            "input": "orders表为空",
+            "output": "total_orders: 0"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL COUNT | 场景:订单报表]\nCOUNT(*) 统计结果集的行数。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-045",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      60230
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在订单报表中，需要查询每个客户每个月的订单总金额，并按客户和月份升序显示。以下哪个 SQL 语句能正确实现？",
+      "answer": "SELECT customer_id, MONTH(order_date) AS month, SUM(amount) AS total_amount FROM orders GROUP BY customer_id, MONTH(order_date) ORDER BY customer_id, month;",
+      "analysis": "正确选项 A 使用了 GROUP BY 对 customer_id 和 MONTH(order_date) 进行分组，确保每个客户每个月的订单被分别聚合，同时 SELECT 中的非聚合列都出现在 GROUP BY 中，符合 SQL 标准。ORDER BY 子句按客户和月份排序。常见错误：选项 B 按 order_date 分组导致按天分组，不是按月；选项 C 缺少 MONTH(order_date) 在 GROUP BY 中，导致该列在 SELECT 中不合法；选项 D 的 SELECT 中包含了 order_date 但未在 GROUP BY 中，且分组粒度不匹配。",
+      "knowledge": "SQL GROUP BY在订单报表中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "options": [
+          "SELECT customer_id, MONTH(order_date) AS month, SUM(amount) AS total_amount FROM orders GROUP BY customer_id, MONTH(order_date) ORDER BY customer_id, month;",
+          "SELECT customer_id, MONTH(order_date) AS month, SUM(amount) AS total_amount FROM orders GROUP BY customer_id, order_date ORDER BY customer_id, month;",
+          "SELECT customer_id, MONTH(order_date) AS month, SUM(amount) AS total_amount FROM orders GROUP BY customer_id ORDER BY customer_id, month;",
+          "SELECT customer_id, order_date, SUM(amount) AS total_amount FROM orders GROUP BY customer_id, MONTH(order_date) ORDER BY customer_id, order_date;"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL GROUP BY | 场景:订单报表]\nGROUP BY 将相同键值的行分组，常与聚合函数配合。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-046",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 2,
+    "firstFailureKind": "transport_timeout",
+    "attemptLatenciesMs": [
+      180009,
+      40595
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "有一个订单表 orders，包含字段 order_id (整数), customer_id (整数), amount (小数)。请编写一个SQL查询，使用HAVING子句找出总订单金额大于1000的客户，返回客户ID和总金额。",
+      "answer": "SELECT customer_id, SUM(amount) AS total_amount FROM orders GROUP BY customer_id HAVING SUM(amount) > 1000;",
+      "analysis": "本题考察HAVING子句的使用。HAVING用于在GROUP BY分组后对聚合结果进行过滤，而WHERE是在分组前过滤行。常见错误是使用WHERE SUM(amount) > 1000，这会导致语法错误，因为聚合函数不能出现在WHERE子句中。正确的做法是在GROUP BY之后使用HAVING。",
+      "knowledge": "SQL HAVING在订单报表中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "codeTemplate": "SELECT customer_id, SUM(amount) AS total_amount FROM orders GROUP BY customer_id HAVING ",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE orders (order_id INT, customer_id INT, amount DECIMAL(10,2)); INSERT INTO orders VALUES (1, 1, 500), (2, 1, 600), (3, 2, 300), (4, 3, 1200);",
+            "output": "customer_id | total_amount\n1 | 1100.00\n3 | 1200.00"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL HAVING | 场景:订单报表]\nHAVING 在分组后过滤聚合结果，WHERE 在分组前过滤行。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-047",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      23008
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在订单报表中，使用 INNER JOIN 连接订单表和客户表，关于返回结果的描述，以下哪项是正确的？",
+      "answer": "只返回有匹配客户的订单",
+      "analysis": "INNER JOIN 只返回连接条件匹配的行。在订单报表场景中，这意味着只返回那些在客户表中存在匹配客户的订单。常见错误是混淆 LEFT JOIN 或 RIGHT JOIN，它们会保留不匹配的行。",
+      "knowledge": "SQL JOIN在订单报表中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "options": [
+          "只返回有匹配客户的订单",
+          "返回所有订单，包括没有匹配客户的订单",
+          "返回所有客户，包括没有订单的客户",
+          "返回订单和客户的所有组合"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL JOIN | 场景:订单报表]\nINNER JOIN 只返回连接条件匹配的行。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-048",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      61858
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "编写一个 SQL 查询，使用 LEFT JOIN 连接 orders 表和 customers 表，生成订单报表。要求返回所有订单的 order_id、order_date、total 和 customer_name，但只对 customer_name 以 'A' 开头的客户显示名称，其他客户显示 NULL。提示：将条件放在 ON 子句中。结果按 order_date 降序排序。\n\n表结构：\n- orders: order_id (INT), customer_id (INT), order_date (DATE), total (DECIMAL)\n- customers: customer_id (INT), customer_name (VARCHAR)",
+      "answer": "SELECT o.order_id, o.order_date, o.total, c.customer_name\nFROM orders o\nLEFT JOIN customers c ON o.customer_id = c.customer_id AND c.customer_name LIKE 'A%'\nORDER BY o.order_date DESC;",
+      "analysis": "本题考察 LEFT JOIN 中 ON 子句与 WHERE 子句的区别。常见错误是将条件 c.customer_name LIKE 'A%' 放在 WHERE 子句中，这样会导致 LEFT JOIN 退化为 INNER JOIN，因为 WHERE 会过滤掉右表为 NULL 的行。正确答案将条件放在 ON 子句中，确保左表所有行保留，右表不匹配时显示 NULL。此外，还需要注意排序和 NULL 值的处理。",
+      "knowledge": "SQL LEFT JOIN 在订单报表中的应用：使用 LEFT JOIN 可以保留左表（如订单表）的所有记录，即使右表（如客户表）没有匹配。通过在 ON 子句中添加条件，可以控制右表匹配的逻辑，而不会影响左表的保留。这在生成报表时非常有用，可以确保所有订单都被包含，同时根据条件显示客户信息。",
+      "difficulty": 2,
+      "metadata": {
+        "codeTemplate": "SELECT o.order_id, o.order_date, o.total, c.customer_name\nFROM orders o\nLEFT JOIN customers c ON ________\nORDER BY o.order_date DESC;",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE orders (order_id INT, customer_id INT, order_date DATE, total DECIMAL(10,2));\nCREATE TABLE customers (customer_id INT, customer_name VARCHAR(50));\nINSERT INTO orders VALUES (1,1,'2023-01-01',100.00),(2,2,'2023-01-02',200.00),(3,3,'2023-01-03',150.00),(4,NULL,'2023-01-04',50.00);\nINSERT INTO customers VALUES (1,'Alice'),(2,'Bob'),(3,'Charlie');",
+            "output": "order_id | order_date | total | customer_name\n4 | 2023-01-04 | 50.00 | NULL\n3 | 2023-01-03 | 150.00 | NULL\n2 | 2023-01-02 | 200.00 | NULL\n1 | 2023-01-01 | 100.00 | Alice"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL LEFT JOIN | 场景:订单报表]\nLEFT JOIN 保留左表全部行，右表无匹配时补 NULL。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-049",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      28236
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在订单报表中，若要查看所有不同的客户ID（即去除重复的客户ID），应在 SELECT 语句中使用哪个关键字？",
+      "answer": "DISTINCT",
+      "analysis": "DISTINCT 关键字用于去除 SELECT 结果中的重复行，从而返回唯一的值。在订单报表中，使用 SELECT DISTINCT 客户ID FROM 订单表 可以获取所有不同的客户ID。常见错误是误用 ALL（返回所有行，包括重复）或 ORDER BY（用于排序，不删除重复）。",
+      "knowledge": "SQL DISTINCT在订单报表中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "options": [
+          "DISTINCT",
+          "ALL",
+          "UNIQUE",
+          "ORDER BY"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL DISTINCT | 场景:订单报表]\nDISTINCT 去除 SELECT 结果中的重复行。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-050",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      36597
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在订单报表中，需要查询所有尚未发货的订单。订单表 orders 包含字段 order_id, customer_id, order_date, shipped_date（发货日期，未发货时为NULL）。请编写SQL语句，查询所有未发货的订单的订单ID、客户ID和订单日期。",
+      "answer": "SELECT order_id, customer_id, order_date FROM orders WHERE shipped_date IS NULL;",
+      "analysis": "在SQL中，NULL表示未知或缺失的值。判断一个值是否为NULL必须使用 IS NULL 或 IS NOT NULL，而不能使用等号（=）或不等号（<>）。因为NULL不等于任何值，包括NULL本身。使用 = NULL 会导致查询结果为空或错误。本题中，要查询未发货的订单，即 shipped_date 为 NULL，所以正确条件是 shipped_date IS NULL。常见错误是写成 shipped_date = NULL，这不会返回任何行。",
+      "knowledge": "SQL NULL在订单报表中的应用：使用 IS NULL 判断空值，避免使用等号。",
+      "difficulty": 1,
+      "metadata": {
+        "codeTemplate": "SELECT order_id, customer_id, order_date\nFROM orders\nWHERE shipped_date ___;",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE orders (order_id INT, customer_id INT, order_date DATE, shipped_date DATE);\nINSERT INTO orders VALUES (1, 101, '2023-01-01', NULL);\nINSERT INTO orders VALUES (2, 102, '2023-01-02', '2023-01-05');\nINSERT INTO orders VALUES (3, 103, '2023-01-03', NULL);",
+            "output": "order_id | customer_id | order_date\n1        | 101         | 2023-01-01\n3        | 103         | 2023-01-03"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL NULL | 场景:订单报表]\n判断空值应使用 IS NULL 或 IS NOT NULL，不能使用等号。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-051",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      109265
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在订单报表系统中，使用 Python 列表存储订单号。初始列表 orders = ['ORD001', 'ORD002']。然后执行以下操作：\norders.append('ORD003')\nx = orders[1]\norders.append('ORD004')\ny = orders[2]\n请问 x 和 y 的值分别是多少？",
+      "answer": "x='ORD002', y='ORD003'",
+      "analysis": "正确选项是 A。初始列表索引0为'ORD001'，索引1为'ORD002'。追加'ORD003'后，列表变为['ORD001','ORD002','ORD003']，此时 orders[1] 仍为'ORD002'，所以 x='ORD002'。再追加'ORD004'后，列表变为['ORD001','ORD002','ORD003','ORD004']，orders[2] 为'ORD003'，所以 y='ORD003'。常见错误是误以为追加'ORD004'后 orders[2] 变为'ORD004'，从而选择 B，或者混淆索引顺序。",
+      "knowledge": "Python 列表在订单报表中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "options": [
+          "x='ORD002', y='ORD003'",
+          "x='ORD002', y='ORD004'",
+          "x='ORD003', y='ORD004'",
+          "x='ORD001', y='ORD003'"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 列表 | 场景:订单报表]\nPython 列表使用方括号，可按索引读取并用 append 追加元素。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-052",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      106586
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在订单报表系统中，我们使用字典来存储每个订单的金额。请编写一个函数 `update_order_amount(order_dict, order_id, new_amount)`，该函数接受一个字典 `order_dict`（键为订单ID，值为金额），一个订单ID `order_id` 和一个新金额 `new_amount`。函数应将 `order_dict` 中对应订单的金额更新为 `new_amount`，如果订单ID不存在，则添加新的键值对。最后，函数应返回更新后的字典。",
+      "answer": "def update_order_amount(order_dict, order_id, new_amount):\n    order_dict[order_id] = new_amount\n    return order_dict",
+      "analysis": "参考代码通过直接赋值 `order_dict[order_id] = new_amount` 更新或添加键值对，并返回原字典。常见错误包括：忘记返回字典（导致函数返回None）、使用比较运算符 `==` 而非赋值 `=`、或未考虑不存在的键（但赋值操作会自动添加）。",
+      "knowledge": "Python 字典在订单报表中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "codeTemplate": "def update_order_amount(order_dict, order_id, new_amount):\n    pass",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "update_order_amount({'A001': 100.0, 'A002': 200.0}, 'A001', 150.0)",
+            "output": "{'A001': 150.0, 'A002': 200.0}"
+          },
+          {
+            "input": "update_order_amount({'A001': 100.0}, 'A003', 300.0)",
+            "output": "{'A001': 100.0, 'A003': 300.0}"
+          },
+          {
+            "input": "update_order_amount({'A001': 100.0, 'A002': 200.0}, 'A002', 250.0)",
+            "output": "{'A001': 100.0, 'A002': 250.0}"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 字典 | 场景:订单报表]\nPython 字典保存键值对，可通过键读取或更新对应值。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-053",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      29552
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在订单报表中，需要为10个订单生成序号（从1到10），以便在报表中显示。以下哪个range调用可以正确生成序号1到10？",
+      "answer": "range(1, 11)",
+      "analysis": "解析：range(1, 11) 生成从1到10的整数序列，符合要求。常见错误：range(1,10) 只生成1到9，漏掉10；range(10) 生成0到9，起始错误；range(0,10) 生成0到9，起始错误。",
+      "knowledge": "Python 循环在订单报表中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "options": [
+          "range(1, 11)",
+          "range(1, 10)",
+          "range(10)",
+          "range(0, 10)"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 循环 | 场景:订单报表]\nfor 循环可遍历可迭代对象，range(n) 产生从 0 到 n-1 的整数。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-054",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      41319
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在订单报表系统中，需要编写一个函数 `generate_report(orders)`，该函数接受一个订单列表，每个订单是一个字典，包含字段：`order_id`（字符串）、`amount`（浮点数）、`status`（字符串，可能为 \"completed\"、\"pending\"、\"cancelled\"）。函数应返回一个字典，包含以下统计信息：\n- `total_orders`：总订单数\n- `total_amount`：所有订单的总金额\n- `completed_orders`：已完成订单数\n- `completed_amount`：已完成订单的总金额\n- `average_amount`：所有订单的平均金额（保留两位小数）\n\n要求：必须使用 `def` 定义函数，并使用 `return` 返回结果。",
+      "answer": "def generate_report(orders):\n    total_orders = len(orders)\n    total_amount = 0\n    completed_orders = 0\n    completed_amount = 0\n    for order in orders:\n        total_amount += order['amount']\n        if order['status'] == 'completed':\n            completed_orders += 1\n            completed_amount += order['amount']\n    average_amount = round(total_amount / total_orders, 2) if total_orders > 0 else 0.0\n    return {\n        'total_orders': total_orders,\n        'total_amount': total_amount,\n        'completed_orders': completed_orders,\n        'completed_amount': completed_amount,\n        'average_amount': average_amount\n    }",
+      "analysis": "本题考察在订单报表场景中定义函数并使用 return 返回结果。常见错误包括：忘记处理空列表导致除零错误；未使用 return 或返回了错误的数据结构；混淆字典键名或数据类型；未保留两位小数。参考实现通过循环遍历订单列表，累加金额并统计已完成订单，最后计算平均值并返回字典，符合函数定义要求。",
+      "knowledge": "Python 函数在订单报表中的应用：使用 def 定义函数，通过 return 将计算结果返回给调用方，实现报表数据的封装与复用。",
+      "difficulty": 2,
+      "metadata": {
+        "codeTemplate": "def generate_report(orders):\n    # 在此编写代码，实现报表生成功能\n    # 返回一个字典，包含 total_orders, total_amount, completed_orders, completed_amount, average_amount\n    pass",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "[{\"order_id\": \"001\", \"amount\": 100.0, \"status\": \"completed\"}, {\"order_id\": \"002\", \"amount\": 50.0, \"status\": \"pending\"}, {\"order_id\": \"003\", \"amount\": 200.0, \"status\": \"completed\"}]",
+            "output": "{\"total_orders\": 3, \"total_amount\": 350.0, \"completed_orders\": 2, \"completed_amount\": 300.0, \"average_amount\": 116.67}"
+          },
+          {
+            "input": "[]",
+            "output": "{\"total_orders\": 0, \"total_amount\": 0, \"completed_orders\": 0, \"completed_amount\": 0, \"average_amount\": 0.0}"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 函数 | 场景:订单报表]\n使用 def 定义函数，return 将结果返回给调用方。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-055",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      47417
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在订单报表处理中，使用 if-elif-else 语句根据订单状态执行不同操作。代码如下：\n\nif order_status == 'pending':\n    action = '待处理'\nelif order_status == 'shipped':\n    action = '已发货'\nelse:\n    action = '已完成'\n\n对于状态为 'shipped' 的订单，action 的值是什么？",
+      "answer": "已发货",
+      "analysis": "当 order_status 为 'shipped' 时，第一个条件 order_status == 'pending' 为假，因此跳过 if 分支。接着检查 elif 条件 order_status == 'shipped'，该条件为真，所以执行该分支，将 action 赋值为 '已发货'。else 分支不会执行。常见错误是误以为会执行 else 分支，或者认为多个分支都会执行，但 if-elif-else 只会执行第一个满足条件的分支。",
+      "knowledge": "Python 条件在订单报表中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "options": [
+          "待处理",
+          "已发货",
+          "已完成",
+          "无定义"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 条件 | 场景:订单报表]\nif、elif、else 按条件顺序选择一个分支执行。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-056",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      17452
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在订单报表中，每个订单号由日期和序号组成，格式为\"YYYYMMDD-XXXX\"，例如\"20250321-0012\"。请编写一个函数 `extract_date(order_id)`，使用字符串切片返回日期部分（前8个字符）。",
+      "answer": "def extract_date(order_id):\n    return order_id[:8]",
+      "analysis": "本题考察字符串切片的基本用法。`order_id[:8]` 从索引0开始取到索引7（不包含8），正好得到前8个字符。常见错误包括：使用 `order_id[0:8]` 虽然正确但不够简洁；误用 `order_id[:7]` 导致只取到第7个字符；或忘记切片不包含结束索引而使用 `order_id[:9]`。",
+      "knowledge": "Python 字符串切片在订单报表中的应用：通过 `text[start:end]` 提取子串，start 包含，end 不包含。常用于从固定格式的订单号、日期等字段中截取特定部分。",
+      "difficulty": 1,
+      "metadata": {
+        "codeTemplate": "def extract_date(order_id):\n    # 在此编写代码\n    pass",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "20250321-0012",
+            "output": "20250321"
+          },
+          {
+            "input": "20240101-9999",
+            "output": "20240101"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 字符串 | 场景:订单报表]\n字符串切片 text[start:end] 包含 start，不包含 end。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-057",
+    "firstPassStructured": false,
+    "repaired": false,
+    "finalSuccess": false,
+    "modelCallCount": 2,
+    "firstFailureKind": "json_not_found",
+    "repairFailureKind": "json_not_found",
+    "attemptLatenciesMs": [
+      80237,
+      119547
+    ],
+    "validCandidateCount": 0,
+    "error": "EXERCISE_GENERATION_SCHEMA_FAILED",
+    "errorDetail": {
+      "firstFailureKind": "json_not_found",
+      "repairFailureKind": "json_not_found",
+      "repairIssues": [
+        "<root>:invalid_json"
+      ],
+      "modelCallCount": 2,
+      "attemptLatenciesMs": [
+        80237,
+        119547
+      ]
+    },
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-058",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      24633
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在订单报表中，有一个包含多个订单号的列表 `order_ids`，其中可能存在重复。请编写一个函数 `count_unique_orders(order_ids)`，使用 Python 集合去除重复并返回不重复订单的数量。",
+      "answer": "def count_unique_orders(order_ids):\n    unique_orders = set(order_ids)\n    return len(unique_orders)",
+      "analysis": "解析：使用 `set(order_ids)` 可以自动去除列表中的重复元素，`len()` 返回集合的大小即不重复订单的数量。常见错误：手动遍历去重或使用列表推导式，效率较低且代码冗长。",
+      "knowledge": "Python 集合在订单报表中的应用：set 元素唯一，可用于去重和集合运算。",
+      "difficulty": 0,
+      "metadata": {
+        "codeTemplate": "def count_unique_orders(order_ids):\n    # 在此处编写代码\n    pass",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "['ORD001', 'ORD002', 'ORD001', 'ORD003']",
+            "output": "3"
+          },
+          {
+            "input": "[]",
+            "output": "0"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 集合 | 场景:订单报表]\nset 中元素唯一，可用于去重和集合运算。\n题目必须围绕订单报表场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  }
+]

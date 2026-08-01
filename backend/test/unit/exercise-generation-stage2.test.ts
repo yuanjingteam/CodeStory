@@ -380,6 +380,22 @@ describe('阶段 2 · 出题调用稳定性', () => {
       },
     });
   });
+
+  it('结构修复最终失败只记录响应长度，不记录额外响应副本', async () => {
+    await expect(
+      runExerciseGenerationPipeline(values, async (invocation) =>
+        invocation.promptKind === 'generation' ? 'not json' : 'still not json'
+      )
+    ).rejects.toMatchObject({
+      code: 'EXERCISE_GENERATION_SCHEMA_FAILED',
+      originalCause: {
+        firstFailureKind: 'json_not_found',
+        repairFailureKind: 'json_not_found',
+        firstResponseLength: 8,
+        repairResponseLength: 14,
+      },
+    });
+  });
 });
 
 describe('阶段 2 · 出题限流', () => {
