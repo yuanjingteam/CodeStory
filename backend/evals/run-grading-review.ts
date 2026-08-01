@@ -1,13 +1,39 @@
 import '../src/config/env';
-import { writeFile } from 'node:fs/promises';
+import { access, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { gradingStage3Dataset } from './datasets/grading-stage3';
-import { reviewCodeWithAI } from '../src/services/ai/evaluate/code-grading-chain';
+import {
+  AI_CODE_REVIEW_RUBRIC_VERSION,
+  reviewCodeWithAI,
+} from '../src/services/ai/evaluate/code-grading-chain';
 import {
   calculateAiReviewedFinalScore,
   gradeCodeExercise,
   type CodeGradeResult,
 } from '../src/services/courses/code-grading.service';
+import { createRunIdentity, getCodeStatus, hashFile, stableHash } from './eval-integrity';
+
+export interface GradingRunManifest {
+  version: 1;
+  runId: string;
+  createdAt: string;
+  datasetHash: string;
+  promptSourceHash: string;
+  rubricHash: string;
+  codeStatus: string;
+  sampleCount: number;
+  concurrency: number;
+}
+
+async function pathExists(filePath: string): Promise<boolean> {
+  try { await access(filePath); return true; } catch { return false; }
+}
+
+export function assertNewGradingRunPath(outputExists: boolean, manifestExists: boolean): void {
+  if (outputExists || manifestExists) {
+    throw new Error('阶段三评测输出已存在，必须使用新路径，禁止覆盖或混合运行。');
+  }
+}
 
 export const NEUTRAL_GRADING_REFERENCE_ANALYSIS =
   '参考答案仅用于说明目标结果，请独立判断学生代码的语义正确性。';
@@ -58,6 +84,20 @@ async function main() {
     Number(concurrencyArg?.slice('--concurrency='.length) || 1)
   ));
   const selectedDataset = gradingStage3Dataset.slice(0, limit);
+  const manifestPath = `${outputPath}.manifest.json`;
+  assertNewGradingRunPath(await pathExists(outputPath), await pathExists(manifestPath));
+  const promptSourceHash = hashFile(path.resolve('src/services/ai/evaluate/code-grading-chain.ts'));
+  const manifest: GradingRunManifest = {
+    version: 1,
+    ...createRunIdentity(),
+    datasetHash: stableHash(selectedDataset),
+    promptSourceHash,
+    rubricHash: stableHash({ version: AI_CODE_REVIEW_RUBRIC_VERSION, promptSourceHash }),
+    codeStatus: getCodeStatus(path.resolve('..')),
+    sampleCount: selectedDataset.length,
+    concurrency,
+  };
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   const results = new Array<Record<string, unknown>>(selectedDataset.length);
   let nextIndex = 0;
 
@@ -80,7 +120,7 @@ async function main() {
       const agreement = ai.review.isLikelyCorrect === item.expectedPass;
       results[index] = {
         ...buildGradingReportCase(item),
-        labelProvenance: 'agent-audited',
+        labelProvenance: 'benchmark-agent-label',
         staticPass: staticGrade.correct,
         aiPass: ai.review.isLikelyCorrect,
         aiScore,
@@ -95,7 +135,7 @@ async function main() {
       const errorWithCause = error as Error & { cause?: unknown };
       results[index] = {
         ...buildGradingReportCase(item),
-        labelProvenance: 'agent-audited',
+        labelProvenance: 'benchmark-agent-label',
         status: 'failed',
         error: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
         errorDetail: error instanceof Error && errorWithCause.cause instanceof Error
@@ -127,6 +167,7 @@ async function main() {
     auditMode: 'agent-audited',
     humanReviewed: false,
     datasetVersion: 'grading-stage3-2026-08-01',
+    manifestHash: stableHash(manifest),
     sampleCount: selectedDataset.length,
     strata: {
       correct: selectedDataset.filter((item) => item.answerClass === 'correct').length,
@@ -148,7 +189,12 @@ async function main() {
     agreementRate,
     meanAbsoluteError,
   }, null, 2)}\n`);
-  if (completedCount !== selectedDataset.length) process.exitCode = 1;
+  if (
+    completedCount !== selectedDataset.length
+    || agreementRate < report.thresholds.agreementRate
+    || meanAbsoluteError === null
+    || meanAbsoluteError > report.thresholds.meanAbsoluteError
+  ) process.exitCode = 1;
 }
 
 if (require.main === module) {

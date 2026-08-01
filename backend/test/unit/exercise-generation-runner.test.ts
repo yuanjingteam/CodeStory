@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   assertEvaluationRunCanStart,
+  assertExistingEvaluationResults,
   type EvaluationRunManifest,
 } from '../../evals/run-exercise-generation-stage2';
 import { getExerciseGenerationRuntimeConfig } from '../../src/services/ai/exercise-gen';
@@ -9,8 +10,12 @@ function createManifest(
   overrides: Partial<EvaluationRunManifest> = {}
 ): EvaluationRunManifest {
   return {
-    version: 1,
+    version: 2,
+    runId: 'run-1',
+    createdAt: '2026-08-01T00:00:00.000Z',
     datasetHash: 'fixed-dataset-hash',
+    promptSourceHash: 'fixed-prompt-hash',
+    codeStatus: 'fixed-code-status',
     sampleCount: 100,
     concurrency: 3,
     model: 'test-model',
@@ -42,7 +47,7 @@ describe('阶段 2 · 出题评测续跑保护', () => {
     })).toThrow(/拒绝混合评测结果/);
   });
 
-  it('仅允许输出与 manifest 齐全且完全匹配的续跑', () => {
+  it('允许完整检查点或仅 manifest 的安全续跑，并忽略运行身份字段', () => {
     const manifest = createManifest();
     expect(() => assertEvaluationRunCanStart({
       resume: true,
@@ -52,5 +57,20 @@ describe('阶段 2 · 出题评测续跑保护', () => {
       currentManifest: manifest,
       existingManifest: structuredClone(manifest),
     })).not.toThrow();
+    expect(() => assertEvaluationRunCanStart({
+      resume: true,
+      outputExists: false,
+      manifestExists: true,
+      outputPath: 'missing.json',
+      currentManifest: createManifest({ runId: 'new-run', createdAt: '2026-08-02T00:00:00.000Z' }),
+      existingManifest: manifest,
+    })).not.toThrow();
+  });
+
+  it('拒绝重复、非法或不属于当前数据集的已有 ID', () => {
+    const expected = new Set(['case-1', 'case-2']);
+    expect(() => assertExistingEvaluationResults([{ id: 'case-1' }, { id: 'case-1' }], expected)).toThrow(/重复/);
+    expect(() => assertExistingEvaluationResults([{ id: '' }], expected)).toThrow(/无效/);
+    expect(() => assertExistingEvaluationResults([{ id: 'other' }], expected)).toThrow(/不属于/);
   });
 });

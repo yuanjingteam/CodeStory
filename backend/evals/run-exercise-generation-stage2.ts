@@ -1,5 +1,4 @@
 import '../src/config/env';
-import { createHash } from 'node:crypto';
 import { access, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { exerciseGenerationStage2Dataset } from './datasets/exercise-generation-stage2';
@@ -8,6 +7,13 @@ import {
   getExerciseGenerationRuntimeConfig,
 } from '../src/services/ai/exercise-gen';
 import { getAiConfig } from '../src/config/ai';
+import {
+  assertUniqueExpectedIds,
+  createRunIdentity,
+  getCodeStatus,
+  hashFile,
+  stableHash,
+} from './eval-integrity';
 
 const concurrencyArg = process.argv.find((item) => item.startsWith('--concurrency='));
 const concurrency = Math.max(1, Math.min(8, Number(concurrencyArg?.split('=')[1] || 5)));
@@ -21,8 +27,12 @@ const outputPath = path.resolve(
 const resume = process.argv.includes('--resume');
 
 export interface EvaluationRunManifest {
-  version: 1;
+  version: 2;
+  runId: string;
+  createdAt: string;
   datasetHash: string;
+  promptSourceHash: string;
+  codeStatus: string;
   sampleCount: number;
   concurrency: number;
   model: string;
@@ -43,7 +53,9 @@ export function manifestsMatch(
   left: EvaluationRunManifest,
   right: EvaluationRunManifest
 ): boolean {
-  return JSON.stringify(left) === JSON.stringify(right);
+  const { runId: _leftRunId, createdAt: _leftCreatedAt, ...leftConfig } = left;
+  const { runId: _rightRunId, createdAt: _rightCreatedAt, ...rightConfig } = right;
+  return JSON.stringify(leftConfig) === JSON.stringify(rightConfig);
 }
 
 export function assertEvaluationRunCanStart(options: {
@@ -60,8 +72,8 @@ export function assertEvaluationRunCanStart(options: {
     );
   }
   if (!options.resume) return;
-  if (!options.outputExists || !options.manifestExists) {
-    throw new Error('--resume 要求评测输出和 manifest 同时存在。');
+  if (!options.manifestExists) {
+    throw new Error('--resume 要求已有 manifest；输出可由 manifest-only 检查点安全恢复。');
   }
   if (
     !options.existingManifest
@@ -73,15 +85,24 @@ export function assertEvaluationRunCanStart(options: {
   }
 }
 
+export function assertExistingEvaluationResults(
+  existing: Array<Record<string, unknown>>,
+  expectedIds: ReadonlySet<string>
+): void {
+  assertUniqueExpectedIds(existing, expectedIds, '已有评测输出');
+}
+
 async function main() {
   const selectedDataset = exerciseGenerationStage2Dataset.slice(0, limit);
   const manifestPath = `${outputPath}.manifest.json`;
   const aiConfig = getAiConfig();
+  const promptSourcePath = path.resolve('src/services/ai/exercise-gen/service.ts');
   const manifest: EvaluationRunManifest = {
-    version: 1,
-    datasetHash: createHash('sha256')
-      .update(JSON.stringify(selectedDataset))
-      .digest('hex'),
+    version: 2,
+    ...createRunIdentity(),
+    datasetHash: stableHash(selectedDataset),
+    promptSourceHash: hashFile(promptSourcePath),
+    codeStatus: getCodeStatus(path.resolve('..')),
     sampleCount: selectedDataset.length,
     concurrency,
     model: aiConfig.model,
@@ -97,6 +118,8 @@ async function main() {
       existingManifest = JSON.parse(
         await readFile(manifestPath, 'utf8')
       ) as EvaluationRunManifest;
+      manifest.runId = existingManifest.runId;
+      manifest.createdAt = existingManifest.createdAt;
     }
   }
   assertEvaluationRunCanStart({
@@ -112,8 +135,10 @@ async function main() {
   }
 
   let existing: Array<Record<string, unknown>> = [];
-  if (resume) {
+  if (resume && outputExists) {
     existing = JSON.parse(await readFile(outputPath, 'utf8'));
+    if (!Array.isArray(existing)) throw new Error('已有评测输出必须是数组。');
+    assertExistingEvaluationResults(existing, new Set(selectedDataset.map((item) => item.id)));
   }
   const byId = new Map(existing.map((item) => [String(item.id), item]));
 
@@ -130,7 +155,7 @@ async function main() {
           agentAnswerCorrect: null,
           machineDuplicate: null,
           agentConfirmedDuplicate: null,
-          labelProvenance: 'pending-agent-audit',
+          labelProvenance: 'pending-human-review',
       };
     } catch (error) {
       const errorDetail = error && typeof error === 'object' && 'originalCause' in error
@@ -156,7 +181,7 @@ async function main() {
           agentAnswerCorrect: null,
           machineDuplicate: null,
           agentConfirmedDuplicate: null,
-          labelProvenance: 'pending-agent-audit',
+          labelProvenance: 'pending-human-review',
       };
     }
   }

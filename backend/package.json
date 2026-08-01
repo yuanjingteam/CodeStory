@@ -38,6 +38,7 @@
     "eval:rag:tutor-v2:support": "pnpm run eval:rag:support -- --input=evals/reports/rag-answer-claims.grounded-v2-40.json --output=evals/reports/rag-answer-support.grounded-v2-40.json",
     "eval:rag:tutor:compare": "ts-node --files -r tsconfig-paths/register evals/compare-rag-tutor-prompts.ts",
     "eval:grading": "ts-node --files -r tsconfig-paths/register evals/run-grading-review.ts",
+    "eval:grading:audit": "ts-node --files -r tsconfig-paths/register evals/merge-grading-review-audit.ts",
     "eval:rag:claims": "ts-node --files -r tsconfig-paths/register evals/generate-rag-claim-review.ts",
     "eval:rag:support": "ts-node --files -r tsconfig-paths/register evals/score-rag-answer-support.ts",
     "eval:exercise-generation": "ts-node --files -r tsconfig-paths/register evals/score-exercise-generation.ts",
