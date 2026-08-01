@@ -1,0 +1,200 @@
+[
+  {
+    "id": "exercise-stage2-034",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "函数正确定义并返回非空成绩列表的算术平均值；场景表述与其他样本不同。"
+  },
+  {
+    "id": "exercise-stage2-035",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "85 首先命中 score >= 70 分支，因此结果为 C；未发现明显重复题面。"
+  },
+  {
+    "id": "exercise-stage2-036",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "实现使用 find 定位分隔符并以切片提取人数，能正确求和；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-037",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "sorted 返回新列表且不修改原列表，与证据一致；相同知识点的场景化题目不视为重复。"
+  },
+  {
+    "id": "exercise-stage2-038",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "集合交集得到共同学生，sorted 按 ID 升序返回；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-039",
+    "agentAnswerCorrect": false,
+    "agentConfirmedDuplicate": false,
+    "rationale": "答案把 try、with、except 压在同一行，按 Python 语法无法执行，虽异常类型选择合理但代码片段无效。"
+  },
+  {
+    "id": "exercise-stage2-040",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "列表推导式正确筛选所有大于等于 60 的成绩；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-041",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "WHERE 用于筛选满足条件的行，与证据直接一致；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-042",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "先按金额降序、再按日期升序的 ORDER BY 顺序正确；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-043",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "LIMIT 5 正确限制为前五条记录；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-044",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "先筛选 completed，再按客户分组计数并降序排列，结果符合题意。"
+  },
+  {
+    "id": "exercise-stage2-045",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "按客户分组求和并用 HAVING 过滤总额，排序也正确；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-046",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "GROUP BY、SUM、HAVING 与降序排序均满足题目要求；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-047",
+    "agentAnswerCorrect": false,
+    "agentConfirmedDuplicate": false,
+    "rationale": "INNER JOIN 只保证客户匹配，答案没有任何已支付状态过滤，不能保证只返回已支付订单。"
+  },
+  {
+    "id": "exercise-stage2-048",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "支付金额条件放在 LEFT JOIN 的 ON 中，能保留全部订单并对无有效支付补 NULL。"
+  },
+  {
+    "id": "exercise-stage2-049",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "DISTINCT 正是查询不重复客户 ID 所需关键字；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-050",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "使用 shipped_date IS NULL 正确筛选未发货订单，与证据一致。"
+  },
+  {
+    "id": "exercise-stage2-051",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "追加后列表长度为 4，有效索引为 0 至 3，读取索引 4 会触发 IndexError。"
+  },
+  {
+    "id": "exercise-stage2-052",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "通过字典键赋值更新指定订单金额并返回原字典，符合题意。"
+  },
+  {
+    "id": "exercise-stage2-053",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "range(len(orders)) 生成全部有效索引并依次打印订单号；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-054",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "实现正确累计总额及两类状态金额，空列表也自然返回全零结果。"
+  },
+  {
+    "id": "exercise-stage2-055",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "if-elif-else 按顺序命中首个真分支后跳过其余分支，与证据一致。"
+  },
+  {
+    "id": "exercise-stage2-056",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "YYYYMMDD 中月份位于索引 4、5，切片 [4:6] 正确；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-057",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "sorted 生成排序后的新列表，orders 保持不变；与 037 场景和问法不同，不判重复。"
+  },
+  {
+    "id": "exercise-stage2-058",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "set 去重后用 sorted 返回有序唯一订单号，符合题意；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-059",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "try/except KeyError 的处理目标正确；此处为紧凑伪代码式选项，语义明确。"
+  },
+  {
+    "id": "exercise-stage2-060",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "推导式先限定 paid 订单，并按金额阈值返回九折或原额，逻辑正确。"
+  },
+  {
+    "id": "exercise-stage2-061",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "成绩大于 90 属于分组前行筛选，应使用 WHERE；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-062",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "ORDER BY 先课程升序、再成绩降序，顺序及方向均正确。"
+  },
+  {
+    "id": "exercise-stage2-063",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "每页 5 条的第 3 页偏移量为 10，排序、LIMIT 和 OFFSET 均正确。"
+  },
+  {
+    "id": "exercise-stage2-064",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "COUNT(*) 正确统计学习记录表总行数；未发现明显重复。"
+  },
+  {
+    "id": "exercise-stage2-065",
+    "agentAnswerCorrect": true,
+    "agentConfirmedDuplicate": false,
+    "rationale": "按 student_id 分组并对 score 求 AVG，正确得到每名学生平均成绩。"
+  },
+  {
+    "id": "exercise-stage2-066",
+    "agentAnswerCorrect": false,
+    "agentConfirmedDuplicate": false,
+    "rationale": "聚合与 HAVING 条件正确，但题目要求学期和平均分均降序，答案未给 semester 指定 DESC。"
+  }
+]

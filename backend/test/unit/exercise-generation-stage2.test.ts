@@ -92,6 +92,53 @@ describe('阶段 2 · 出题结构化 Schema', () => {
       }).success
     ).toBe(false);
   });
+
+  it('归一化模型常见的等价字段表示但不改变题型约束', () => {
+    const choice = generatedExerciseBatchSchema.parse({
+      candidates: [{
+        type: 'single_choice',
+        content: '正确选项是什么？',
+        answer: 'A',
+        analysis: 'A 正确。',
+        knowledge: '示例知识点',
+        difficulty: 0,
+        metadata: { options: [{ label: 'A' }, { text: 'B' }] },
+        selfCheck: {
+          formatValid: true,
+          answerExists: true,
+          difficultyMatch: true,
+          notes: '已检查',
+        },
+      }],
+    });
+    expect(choice.candidates[0].metadata).toEqual({ options: ['A', 'B'] });
+    expect(choice.candidates[0].selfCheck.notes).toEqual(['已检查']);
+
+    const code = generatedExerciseBatchSchema.parse({
+      candidates: [{
+        type: 'code',
+        content: '返回输入值。',
+        answer: 'return input',
+        analysis: '直接返回。',
+        knowledge: '函数',
+        difficulty: 0,
+        metadata: {
+          codeTemplate: 'function solve(input) {}',
+          language: 'JavaScript',
+          testCases: [{ input: { value: 1 }, expectedOutput: 1 }],
+        },
+        selfCheck: {
+          formatValid: true,
+          answerExists: true,
+          difficultyMatch: true,
+          notes: ['已检查'],
+        },
+      }],
+    });
+    expect(code.candidates[0].metadata).toMatchObject({
+      testCases: [{ input: '{"value":1}', output: '1' }],
+    });
+  });
 });
 
 describe('阶段 2 · 出题限流', () => {

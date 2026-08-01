@@ -13,9 +13,25 @@ async function main() {
   const outputPath = outputArg
     ? path.resolve(outputArg.slice('--output='.length))
     : path.resolve('evals/reports/grading-stage3.json');
-  const results = [];
+  const limitArg = process.argv.find((argument) => argument.startsWith('--limit='));
+  const concurrencyArg = process.argv.find((argument) => argument.startsWith('--concurrency='));
+  const limit = Math.max(1, Math.min(
+    gradingStage3Dataset.length,
+    Number(limitArg?.slice('--limit='.length) || gradingStage3Dataset.length)
+  ));
+  const concurrency = Math.max(1, Math.min(
+    5,
+    Number(concurrencyArg?.slice('--concurrency='.length) || 1)
+  ));
+  const selectedDataset = gradingStage3Dataset.slice(0, limit);
+  const results = new Array<Record<string, unknown>>(selectedDataset.length);
+  let nextIndex = 0;
 
-  for (const item of gradingStage3Dataset) {
+  async function worker() {
+    while (nextIndex < selectedDataset.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      const item = selectedDataset[index];
     const staticGrade = gradeCodeExercise({
       userCode: item.userCode,
       correctAnswer: item.correctAnswer,
@@ -35,7 +51,7 @@ async function main() {
       });
       const aiScore = calculateAiReviewedFinalScore(ai, 0);
       const agreement = ai.review.isLikelyCorrect === item.expectedPass;
-      results.push({
+      results[index] = {
         ...item,
         labelProvenance: 'agent-audited',
         staticPass: staticGrade.correct,
@@ -47,33 +63,51 @@ async function main() {
         agreement,
         absoluteError: Math.abs(aiScore - item.agentScore),
         status: 'completed',
-      });
+      };
     } catch (error) {
-      results.push({
+      const errorWithCause = error as Error & { cause?: unknown };
+      results[index] = {
         ...item,
         labelProvenance: 'agent-audited',
         status: 'failed',
         error: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
-      });
+        errorDetail: error instanceof Error && errorWithCause.cause instanceof Error
+          ? errorWithCause.cause.message
+          : undefined,
+      };
+    }
     }
   }
+  await Promise.all(Array.from({ length: concurrency }, () => worker()));
 
-  const completed = results.filter((item) => item.status === 'completed');
-  const agreementRate = completed.length
-    ? completed.filter((item) => item.agreement).length / completed.length
+  let completedCount = 0;
+  let agreementCount = 0;
+  let absoluteErrorTotal = 0;
+  for (const item of results) {
+    if (!('agreement' in item)) continue;
+    completedCount += 1;
+    if (item.agreement) agreementCount += 1;
+    absoluteErrorTotal += Number(item.absoluteError);
+  }
+  const agreementRate = completedCount
+    ? agreementCount / completedCount
     : 0;
-  const meanAbsoluteError = completed.length
-    ? completed.reduce((sum, item) => sum + (item.absoluteError || 0), 0) / completed.length
+  const meanAbsoluteError = completedCount
+    ? absoluteErrorTotal / completedCount
     : null;
   const report = {
     mode: 'real-model',
     auditMode: 'agent-audited',
     humanReviewed: false,
     datasetVersion: 'grading-stage3-2026-08-01',
-    sampleCount: gradingStage3Dataset.length,
-    strata: { correct: 10, wrong: 10, boundary: 10 },
-    completedCount: completed.length,
-    failedCount: results.length - completed.length,
+    sampleCount: selectedDataset.length,
+    strata: {
+      correct: selectedDataset.filter((item) => item.answerClass === 'correct').length,
+      wrong: selectedDataset.filter((item) => item.answerClass === 'wrong').length,
+      boundary: selectedDataset.filter((item) => item.answerClass === 'boundary').length,
+    },
+    completedCount,
+    failedCount: results.length - completedCount,
     agreementRate,
     meanAbsoluteError,
     thresholds: { agreementRate: 0.9, meanAbsoluteError: 10 },
@@ -87,7 +121,7 @@ async function main() {
     agreementRate,
     meanAbsoluteError,
   }, null, 2)}\n`);
-  if (completed.length !== gradingStage3Dataset.length) process.exitCode = 1;
+  if (completedCount !== selectedDataset.length) process.exitCode = 1;
 }
 
 main().catch((error) => {

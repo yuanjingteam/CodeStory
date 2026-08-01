@@ -3,12 +3,21 @@ import { z } from 'zod';
 const nonEmptyText = z.string().trim().min(1);
 const difficultySchema = z.number().int().min(0).max(2);
 
+function stringifyStructuredValue(value: unknown): unknown {
+  if (typeof value === 'string') return value;
+  if (value === undefined || value === null) return '';
+  return typeof value === 'object' ? JSON.stringify(value) : String(value);
+}
+
 const selfCheckSchema = z
   .object({
     formatValid: z.literal(true),
     answerExists: z.literal(true),
     difficultyMatch: z.literal(true),
-    notes: z.array(nonEmptyText).max(5),
+    notes: z.preprocess(
+      (value) => typeof value === 'string' ? [value] : value,
+      z.array(nonEmptyText).max(5)
+    ),
   })
   .strict();
 
@@ -22,7 +31,11 @@ const singleChoiceCandidateSchema = z
     difficulty: difficultySchema,
     metadata: z
       .object({
-        options: z.array(nonEmptyText).min(2).max(6),
+        options: z.array(z.preprocess((value) => {
+          if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+          const option = value as Record<string, unknown>;
+          return option.label ?? option.text ?? option.value;
+        }, nonEmptyText)).min(2).max(6),
       })
       .strict(),
     selfCheck: selfCheckSchema,
@@ -60,12 +73,22 @@ const codeCandidateSchema = z
         language: z.string().trim().min(1).max(30),
         testCases: z
           .array(
-            z
+            z.preprocess((value) => {
+              if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+              const testCase = value as Record<string, unknown>;
+              return {
+                input: stringifyStructuredValue(testCase.input ?? testCase.setup),
+                output: stringifyStructuredValue(
+                  testCase.output ?? testCase.expected ?? testCase.expectedOutput
+                ),
+              };
+            }, z
               .object({
                 input: z.string(),
                 output: z.string(),
               })
               .strict()
+            )
           )
           .max(8),
       })

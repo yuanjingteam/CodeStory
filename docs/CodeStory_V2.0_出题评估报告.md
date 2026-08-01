@@ -1,6 +1,6 @@
 # CodeStory V2.0 AI 出题评估报告
 
-> 阶段：阶段 2 工程终审条件通过，真实模型质量门禁待补跑  
+> 阶段：阶段 2 工程终审通过，真实模型质量门禁未通过
 > 日期：2026-08-01  
 > Prompt 版本：`exercise-gen-v1`
 
@@ -22,17 +22,22 @@
 | 解析修复次数 | 最多 1 次 | 首次链失败后只进入一次 repair chain；模型内部重试关闭 |
 | 重复初筛 | 已实现 | 同小节已采用题目的 embedding 相似度阈值 `0.92` |
 | 草稿原子落库 | 已实现 | 候选完成 Schema、自检和去重后，单一 Prisma 事务整批写入 |
-| 线上 ≥100 候选实测 | **待补跑** | 本次未自动消耗外部模型额度，也未伪造人工答案/重复标注 |
+| 线上 100 候选实测 | `99 / 100` 最终成功 | `backend/evals/datasets/exercise-generation-results-final-v2.json` |
+| Agent 语义复核 | 99 个有效候选全部复核 | 答案正确 `95 / 99`；跨课程语义重复 `22 / 99`；`humanReviewed=false` |
 | 管理页浏览器回归 | `3 / 3` 通过 | `cd frontend && pnpm run test:e2e:stage2`，使用稳定 API Mock，覆盖桌面、390px、全量层级、多页和审核流 |
 
 ## 3. 评测命令
 
-将真实端点运行结果与管理员标注整理为 JSON 数组后执行：
+真实端点运行、Agent 审查合并和评分命令：
 
 ```powershell
 cd backend
+pnpm run eval:exercise-generation:run -- `
+  --limit=100 --concurrency=3 `
+  --output=evals/datasets/exercise-generation-results-final-v2.json
+pnpm run eval:exercise-generation:audit
 pnpm run eval:exercise-generation -- `
-  --input=evals/datasets/exercise-generation-results.json `
+  --input=evals/datasets/exercise-generation-results-audited.json `
   --output=evals/reports/exercise-generation.json
 ```
 
@@ -40,7 +45,22 @@ pnpm run eval:exercise-generation -- `
 
 ## 4. 发布判断
 
-当前工程实现、数据安全回归和可重复浏览器门禁已经补齐，仍不能证明外部模型质量门槛。以下指标补齐真实样本前，阶段 2 只能进入独立工程复审，不应被审核为完全通过：
+真实模型使用 SiliconFlow `deepseek-ai/DeepSeek-V4-Flash` 完成 100 条固定分层样本。结果如下：
+
+| 指标 | 门禁 | 实测 | 结论 |
+| --- | --- | --- | --- |
+| 首次结构化成功率 | `≥ 90%` | `89%` | ❌ |
+| 修复后成功率 | `≥ 99%` | `99%` | ✅ |
+| 最终失败率 | `≤ 1%` | `1%` | ✅ |
+| 每道有效候选模型调用次数 | `≤ 1.3` | `1.1212` | ✅ |
+| Agent 复核答案正确率 | `≥ 95%` | `95 / 99 = 95.96%` | ✅ |
+| Agent 跨课程语义重复率 | `≤ 5%` | `22 / 99 = 22.22%` | ❌ |
+
+重复率为压力测试口径：跨全部 hierarchy 比较“仅替换场景或实体、核心题意与解法同构”的候选；生产机器去重按同一 lesson 执行，本次同课机器重复数为 0，两者不可混为同一指标。
+
+**结论：阶段 2 真实模型质量门禁未通过，不标记完全完成。** 未通过项为首次结构化成功率和跨课程语义重复率；答案复核为 `agent-audited`，不是管理员人工标注。
+
+目标门禁保持为：
 
 - 首次结构化成功率 `≥ 90%`；
 - 修复后成功率 `≥ 99%`；

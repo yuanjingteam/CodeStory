@@ -41,6 +41,8 @@
     "eval:rag:claims": "ts-node --files -r tsconfig-paths/register evals/generate-rag-claim-review.ts",
     "eval:rag:support": "ts-node --files -r tsconfig-paths/register evals/score-rag-answer-support.ts",
     "eval:exercise-generation": "ts-node --files -r tsconfig-paths/register evals/score-exercise-generation.ts",
+    "eval:exercise-generation:run": "ts-node --files -r tsconfig-paths/register evals/run-exercise-generation-stage2.ts",
+    "eval:exercise-generation:audit": "ts-node --files -r tsconfig-paths/register evals/merge-exercise-generation-audit.ts",
     "check:auth": "pnpm run check:auth-token && pnpm run check:auth-session && pnpm run check:auth-rotation && pnpm run check:auth-logout",
     "test": "vitest run",
     "check": "pnpm run build && pnpm run check:auth && pnpm run test"
