@@ -43,6 +43,15 @@ function getGenerationMaxTokens(): number {
     : 3_500;
 }
 
+function getGenerationTimeoutMs(): number {
+  const parsed = Number(
+    process.env.AI_EXERCISE_GENERATION_TIMEOUT_MS || 180_000
+  );
+  return Number.isInteger(parsed) && parsed >= 60_000 && parsed <= 300_000
+    ? parsed
+    : 180_000;
+}
+
 const generationPrompt = ChatPromptTemplate.fromMessages([
   [
     'system',
@@ -122,7 +131,7 @@ export function getExerciseGenerationRuntimeConfig(count: number) {
     promptVersion: EXERCISE_GENERATION_PROMPT_VERSION,
     temperature: 0.1,
     maxTokens: Math.min(getGenerationMaxTokens(), 800 + count * 600),
-    timeoutMs: 120_000,
+    timeoutMs: getGenerationTimeoutMs(),
     transportRetries: 1,
     structureRepairs: 1,
   } as const;

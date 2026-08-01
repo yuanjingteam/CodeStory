@@ -26,6 +26,26 @@ function createManifest(
 }
 
 describe('阶段 2 · 出题评测续跑保护', () => {
+  it('使用独立且有边界的出题超时配置', () => {
+    const original = process.env.AI_EXERCISE_GENERATION_TIMEOUT_MS;
+    try {
+      delete process.env.AI_EXERCISE_GENERATION_TIMEOUT_MS;
+      expect(getExerciseGenerationRuntimeConfig(1).timeoutMs).toBe(180_000);
+
+      process.env.AI_EXERCISE_GENERATION_TIMEOUT_MS = '240000';
+      expect(getExerciseGenerationRuntimeConfig(1).timeoutMs).toBe(240_000);
+
+      process.env.AI_EXERCISE_GENERATION_TIMEOUT_MS = '30000';
+      expect(getExerciseGenerationRuntimeConfig(1).timeoutMs).toBe(180_000);
+    } finally {
+      if (original === undefined) {
+        delete process.env.AI_EXERCISE_GENERATION_TIMEOUT_MS;
+      } else {
+        process.env.AI_EXERCISE_GENERATION_TIMEOUT_MS = original;
+      }
+    }
+  });
+
   it('新运行默认拒绝复用已有输出', () => {
     expect(() => assertEvaluationRunCanStart({
       resume: false,
