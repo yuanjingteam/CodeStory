@@ -40,3 +40,5 @@ docker-compose.override.yml
 backups/
 codestory_backup/
 .codebuddy/
+# Local browser-test reports, screenshots and traces
+/output/playwright/

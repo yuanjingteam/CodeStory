@@ -212,6 +212,7 @@ export async function getLessonAiContext(
         id: resolvedExerciseId,
         lesson_id: resolvedLessonId,
         is_delete: 0,
+        review_status: 'approved',
       },
       select: {
         type: true,

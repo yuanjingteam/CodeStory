@@ -1,7 +1,6 @@
 // 阶段 0A 收尾 · 权限三态回归自动化测试
 // 文档 5.2：未登录 / 普通用户 / 管理员分别调用各管理接口的状态码（401/403/200）
-// 覆盖现有四组 *-manage 路由（user-manage / courses / chapter / lessons）
-// 阶段 2 新增的出题、审核接口随阶段 2 验收，不在 0A 范围
+// 覆盖现有管理路由与阶段 2 的独立题目管理路由
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
 import prisma from '../../src/config/prisma';
@@ -91,9 +90,14 @@ const routes = [
     method: 'get' as const,
     path: '/api/v1/admin/lessons/list',
   },
+  {
+    name: 'exercise-manage',
+    method: 'get' as const,
+    path: '/api/v1/admin/exercises/list',
+  },
 ];
 
-describe('权限三态回归 · 四组 *-manage 路由', () => {
+describe('权限三态回归 · 管理路由', () => {
   for (const route of routes) {
     describe(`${route.name} · ${route.method.toUpperCase()} ${route.path}`, () => {
       it('未登录 → 401', async () => {

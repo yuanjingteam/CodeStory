@@ -13,6 +13,7 @@ export interface CourseListRequest {
 
 export interface Course {
   id: string | number;
+  uuid?: string;
   title: string;
   description: string;
   cover_url?: string;

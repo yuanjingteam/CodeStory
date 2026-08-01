@@ -255,7 +255,11 @@ export async function updateLessonAndCourseProgress(
     const [totalExercises, completedExercises, existingProgress] =
       await Promise.all([
         tx.exercises.count({
-          where: { lesson_id: lessonId, is_delete: 0 },
+          where: {
+            lesson_id: lessonId,
+            is_delete: 0,
+            review_status: 'approved',
+          },
         }),
         tx.answer.count({
           where: {
@@ -265,6 +269,7 @@ export async function updateLessonAndCourseProgress(
             exercises: {
               lesson_id: lessonId,
               is_delete: 0,
+              review_status: 'approved',
             },
           },
         }),

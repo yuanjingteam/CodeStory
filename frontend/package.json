@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "check": "pnpm run typecheck && pnpm run lint"
+    "check": "pnpm run typecheck && pnpm run lint",
+    "test:e2e:stage2": "playwright test --config=playwright.stage2.config.ts"
   },
   "dependencies": {
     "@codemirror/lang-python": "^6.2.1",
@@ -45,6 +46,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

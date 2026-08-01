@@ -151,6 +151,8 @@ model exercises {
   analysis         String?
   difficulty       Int                @default(1) @db.SmallInt
   source           String?            @db.VarChar(20)
+  review_status    String             @default("approved") @db.VarChar(20)
+  gen_metadata     Json?              @db.Json
   metadata         Json?              @db.Json
   hints            Json?              @db.Json
   order            Int                @default(0)
@@ -167,6 +169,8 @@ model exercises {
   @@index([type])
   @@index([difficulty])
   @@index([source])
+  @@index([review_status])
+  @@index([review_status, created_at])
   @@index([is_delete])
   @@index([is_delete, deleted_at])
   @@index([knowledge_index_policy])

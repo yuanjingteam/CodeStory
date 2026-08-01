@@ -19,6 +19,7 @@ import {
   courseManageRouter,
   chapterManageRouter,
   lessonManageRouter,
+  exerciseManageRouter,
   aiRouter,
 } from './routes/index';
 import { startAiChatCleanupScheduler } from './services/ai/chat-retention.service';
@@ -66,6 +67,11 @@ app.use(
   '/api/v1/admin/lessons',
   [authMiddleware, requireAdmin],
   lessonManageRouter
+);
+app.use(
+  '/api/v1/admin/exercises',
+  [authMiddleware, requireAdmin],
+  exerciseManageRouter
 );
 
 // Error handler

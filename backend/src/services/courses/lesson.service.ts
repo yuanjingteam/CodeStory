@@ -30,7 +30,11 @@ export async function getLessonDetail(
     : null;
 
   const lesson = await prisma.lessons.findUnique({
-    where: { id: resolvedLessonId, is_delete: 0 },
+    where: {
+      id: resolvedLessonId,
+      is_delete: 0,
+      chapters: { is_delete: 0, courses: { is_delete: 0 } },
+    },
     include: {
       chapters: {
         include: {
@@ -111,7 +115,11 @@ export async function getLessonDetail(
   }));
 
   const exercises = await prisma.exercises.findMany({
-    where: { lesson_id: resolvedLessonId, is_delete: 0 },
+    where: {
+      lesson_id: resolvedLessonId,
+      is_delete: 0,
+      review_status: 'approved',
+    },
     orderBy: { order: 'asc' },
   });
 
