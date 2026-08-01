@@ -33,7 +33,11 @@ function sendError(res: Response, error: unknown) {
     });
   }
   if (error instanceof ExerciseGenerationError) {
-    const status = error.code.endsWith('NOT_FOUND') ? 404 : 502;
+    const status = error.code.endsWith('NOT_FOUND')
+      ? 404
+      : error.code === 'EXERCISE_GENERATION_DUPLICATE'
+        ? 409
+        : 502;
     return res.status(status).json({
       code: error.code,
       message: error.publicMessage,

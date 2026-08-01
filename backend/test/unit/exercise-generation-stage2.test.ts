@@ -4,6 +4,9 @@ import { MemoryStore } from 'express-rate-limit';
 import { describe, expect, it } from 'vitest';
 import {
   cosineSimilarity,
+  EXERCISE_GENERATION_DUPLICATE_THRESHOLD,
+  ExerciseGenerationError,
+  findActiveDraftSemanticDuplicates,
   generatedExerciseBatchSchema,
   runExerciseGenerationPipeline,
 } from '../../src/services/ai/exercise-gen';
@@ -11,9 +14,49 @@ import { createExerciseGenerationRateLimit } from '../../src/middleware/exercise
 
 describe('阶段 2 · 出题结构化 Schema', () => {
   it('同批候选使用与索引一致的余弦阈值识别重复', () => {
+    expect(EXERCISE_GENERATION_DUPLICATE_THRESHOLD).toBe(0.92);
     expect(cosineSimilarity([1, 0], [1, 0])).toBe(1);
     expect(cosineSimilarity([1, 0], [0, 1])).toBe(0);
     expect(cosineSimilarity([1, 1], [1, 0])).toBeCloseTo(Math.SQRT1_2);
+  });
+
+  it('批量比较同小节 active draft，并用快照跳过未变化草稿', async () => {
+    const exercises = {
+      findMany: async () => [
+        { id: 'draft-close', content: '语义相同的草稿' },
+        { id: 'draft-far', content: '无关草稿' },
+      ],
+    };
+    let embeddingCalls = 0;
+    const embedDocuments = async () => {
+      embeddingCalls += 1;
+      return [[1, 0], [0, 1]];
+    };
+    const first = await findActiveDraftSemanticDuplicates(
+      { exercises } as never,
+      'lesson-1',
+      [[0.99, 0.01]],
+      [],
+      embedDocuments,
+      2
+    );
+
+    expect(first.checks).toMatchObject([{
+      matchedExerciseId: 'draft-close',
+      reviewStatus: 'draft',
+    }]);
+    expect(embeddingCalls).toBe(1);
+
+    const second = await findActiveDraftSemanticDuplicates(
+      { exercises } as never,
+      'lesson-1',
+      [[0.99, 0.01]],
+      first.snapshot,
+      embedDocuments,
+      2
+    );
+    expect(second.checks).toEqual([]);
+    expect(embeddingCalls).toBe(1);
   });
 
   it('固定构造的选择题和编程题 100% 通过', () => {
@@ -267,6 +310,75 @@ describe('阶段 2 · 出题调用稳定性', () => {
     });
     expect(result.metrics.firstFailureKind).toBe('count_mismatch');
     expect(result.metrics.modelCallCount).toBe(2);
+  });
+
+  it('题型或难度不符进入 repair，repair 后仍不符则结构失败', async () => {
+    const mismatched = {
+      candidates: [{
+        type: 'code' as const,
+        content: '返回 1。',
+        answer: 'return 1',
+        analysis: '返回常量。',
+        knowledge: '函数',
+        difficulty: 1,
+        metadata: {
+          codeTemplate: 'function solve() {}',
+          language: 'JavaScript',
+          testCases: [{ input: '', output: '1' }],
+        },
+        selfCheck: {
+          formatValid: true as const,
+          answerExists: true as const,
+          difficultyMatch: true as const,
+          notes: ['已检查'],
+        },
+      }],
+    };
+    const prompts: string[] = [];
+    await expect(
+      runExerciseGenerationPipeline(values, async (invocation) => {
+        prompts.push(invocation.promptKind);
+        if (invocation.promptKind === 'repair') {
+          expect(String(invocation.values.validationIssues)).toContain(
+            'candidates.0.type:constraint_mismatch'
+          );
+          expect(String(invocation.values.validationIssues)).toContain(
+            'candidates.0.difficulty:constraint_mismatch'
+          );
+        }
+        return JSON.stringify(mismatched);
+      })
+    ).rejects.toMatchObject({
+      code: 'EXERCISE_GENERATION_SCHEMA_FAILED',
+      originalCause: {
+        firstFailureKind: 'constraint_mismatch',
+        repairFailureKind: 'constraint_mismatch',
+      },
+    });
+    expect(prompts).toEqual(['generation', 'repair']);
+  });
+
+  it('repair 模型普通请求错误映射为 request failed', async () => {
+    let calls = 0;
+    let thrown: unknown;
+    try {
+      await runExerciseGenerationPipeline(values, async () => {
+        calls += 1;
+        if (calls === 1) return 'not json';
+        throw new Error('connection reset');
+      });
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeInstanceOf(ExerciseGenerationError);
+    expect(thrown).toMatchObject({
+      code: 'EXERCISE_GENERATION_REQUEST_FAILED',
+      originalCause: {
+        firstFailureKind: 'json_not_found',
+        modelCallCount: 2,
+      },
+    });
   });
 });
 

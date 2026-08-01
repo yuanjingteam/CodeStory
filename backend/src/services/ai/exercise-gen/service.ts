@@ -7,7 +7,7 @@ import { getAiConfig, getAiEmbeddingConfig } from '../../../config/ai';
 import { getTraceId } from '../../../middleware/request-context';
 import { htmlToKnowledgeText } from '../../rag/source';
 import { createKnowledgeRetriever } from '../../rag/retriever';
-import { embedQuery } from '../../rag/embedding';
+import { embedDocumentsInBatches, embedQuery } from '../../rag/embedding';
 import type { RetrievedKnowledge } from '../../rag/types';
 import {
   createExerciseContentFingerprint,
@@ -25,13 +25,13 @@ import {
 } from './schema';
 import {
   assertNoExerciseGenerationDuplicates,
+  EXERCISE_GENERATION_DUPLICATE_THRESHOLD,
   ExerciseGenerationDuplicateError,
   type BatchExerciseDuplicateCheck,
   type ExistingExerciseDuplicateCheck,
 } from './duplicate-policy';
 
 export const EXERCISE_GENERATION_PROMPT_VERSION = 'exercise-gen-v2';
-const DUPLICATE_THRESHOLD = 0.92;
 const MAX_REPAIR_RESPONSE_CHARS = 4_000;
 
 function getGenerationMaxTokens(): number {
@@ -132,7 +132,8 @@ export type ExerciseGenerationFailureKind =
   | 'transport_timeout'
   | 'json_not_found'
   | 'schema_validation'
-  | 'count_mismatch';
+  | 'count_mismatch'
+  | 'constraint_mismatch';
 
 type GenerationPromptKind = 'generation' | 'repair';
 
@@ -146,6 +147,12 @@ type GenerationInvoker = (invocation: GenerationInvocation) => Promise<string>;
 class CountMismatchError extends Error {
   constructor() {
     super('EXERCISE_GENERATION_COUNT_MISMATCH');
+  }
+}
+
+class ConstraintMismatchError extends Error {
+  constructor(public readonly issues: string[]) {
+    super('EXERCISE_GENERATION_CONSTRAINT_MISMATCH');
   }
 }
 
@@ -202,6 +209,78 @@ type DuplicateLookupClient = Pick<
   'exercises' | '$queryRaw'
 >;
 
+export interface ActiveDraftSnapshotEntry {
+  id: string;
+  contentFingerprint: string;
+}
+
+export async function findActiveDraftSemanticDuplicates(
+  client: Pick<Prisma.TransactionClient, 'exercises'>,
+  lessonId: string,
+  candidateVectors: number[][],
+  previousSnapshot: ActiveDraftSnapshotEntry[] = [],
+  embedDocuments: typeof embedDocumentsInBatches = embedDocumentsInBatches,
+  dimensions?: number
+): Promise<{
+  checks: ExistingExerciseDuplicateCheck[];
+  snapshot: ActiveDraftSnapshotEntry[];
+}> {
+  const drafts = await client.exercises.findMany({
+    where: {
+      lesson_id: lessonId,
+      is_delete: 0,
+      review_status: 'draft',
+    },
+    select: { id: true, content: true },
+  });
+  const snapshot = drafts.map((draft) => ({
+    id: draft.id,
+    contentFingerprint: createExerciseContentFingerprint(draft.content),
+  }));
+  const previousById = new Map(
+    previousSnapshot.map((entry) => [entry.id, entry.contentFingerprint])
+  );
+  const draftsToInspect = drafts.filter(
+    (draft, index) =>
+      previousById.get(draft.id) !== snapshot[index].contentFingerprint
+  );
+  if (draftsToInspect.length === 0 || candidateVectors.length === 0) {
+    return { checks: [], snapshot };
+  }
+
+  const draftVectors = await embedDocuments(
+    draftsToInspect.map((draft) => draft.content),
+    { dimensions: dimensions ?? getAiEmbeddingConfig().dimensions }
+  );
+  const checks: ExistingExerciseDuplicateCheck[] = [];
+  for (let candidateIndex = 0; candidateIndex < candidateVectors.length; candidateIndex += 1) {
+    let bestMatch: { draftIndex: number; similarity: number } | undefined;
+    for (let draftIndex = 0; draftIndex < draftVectors.length; draftIndex += 1) {
+      const similarity = cosineSimilarity(
+        candidateVectors[candidateIndex],
+        draftVectors[draftIndex]
+      );
+      if (
+        similarity >= EXERCISE_GENERATION_DUPLICATE_THRESHOLD &&
+        (!bestMatch || similarity > bestMatch.similarity)
+      ) {
+        bestMatch = { draftIndex, similarity };
+      }
+    }
+    if (bestMatch) {
+      checks.push({
+        candidateIndex,
+        candidateLessonId: lessonId,
+        matchedExerciseId: draftsToInspect[bestMatch.draftIndex].id,
+        matchedLessonId: lessonId,
+        reviewStatus: 'draft',
+        similarity: bestMatch.similarity,
+      });
+    }
+  }
+  return { checks, snapshot };
+}
+
 async function findStoredPotentialDuplicate(
   client: DuplicateLookupClient,
   lessonId: string,
@@ -257,7 +336,7 @@ async function findStoredPotentialDuplicate(
     `
   );
   const row = rows[0];
-  return !row || Number(row.score) < DUPLICATE_THRESHOLD
+  return !row || Number(row.score) < EXERCISE_GENERATION_DUPLICATE_THRESHOLD
     ? null
     : {
         exerciseId: row.source_id,
@@ -388,6 +467,9 @@ function classifyStructuredFailure(error: unknown): {
   if (error instanceof CountMismatchError) {
     return { kind: 'count_mismatch', safeIssues: ['candidates:count_mismatch'] };
   }
+  if (error instanceof ConstraintMismatchError) {
+    return { kind: 'constraint_mismatch', safeIssues: error.issues };
+  }
   if (error instanceof ZodError) {
     const flattenIssue = (
       issue: Record<string, unknown>,
@@ -464,6 +546,19 @@ export async function runExerciseGenerationPipeline(
     if (result.candidates.length !== values.count) {
       throw new CountMismatchError();
     }
+    const mismatchIssues = result.candidates.flatMap((candidate, index) => {
+      const issues: string[] = [];
+      if (candidate.type !== values.type) {
+        issues.push(`candidates.${index}.type:constraint_mismatch`);
+      }
+      if (candidate.difficulty !== values.difficulty) {
+        issues.push(`candidates.${index}.difficulty:constraint_mismatch`);
+      }
+      return issues;
+    });
+    if (mismatchIssues.length > 0) {
+      throw new ConstraintMismatchError(mismatchIssues);
+    }
     return result;
   };
 
@@ -509,11 +604,30 @@ export async function runExerciseGenerationPipeline(
       validationIssues: classified.safeIssues.join('\n'),
       previousResponse: truncateUntrustedResponse(rawResponse),
     };
+    let repairedRawResponse: string;
     try {
-      const repairedRawResponse = await invokeWithTimeoutRetry({
+      repairedRawResponse = await invokeWithTimeoutRetry({
         promptKind: 'repair',
         values: repairValues,
       });
+    } catch (repairRequestError) {
+      const timedOut = isTimeoutError(repairRequestError);
+      throw new ExerciseGenerationError(
+        timedOut
+          ? 'EXERCISE_GENERATION_TIMEOUT'
+          : 'EXERCISE_GENERATION_REQUEST_FAILED',
+        timedOut
+          ? 'AI 出题服务响应超时，请稍后重试。'
+          : 'AI 出题服务暂时不可用，请稍后重试。',
+        {
+          firstFailureKind,
+          repairFailureKind: timedOut ? 'transport_timeout' : undefined,
+          modelCallCount,
+          attemptLatenciesMs,
+        }
+      );
+    }
+    try {
       const result = parse(repairedRawResponse);
       return {
         candidates: result.candidates,
@@ -526,16 +640,10 @@ export async function runExerciseGenerationPipeline(
         },
       };
     } catch (repairError) {
-      const repairFailure = isTimeoutError(repairError)
-        ? { kind: 'transport_timeout' as const, safeIssues: ['transport:timeout'] }
-        : classifyStructuredFailure(repairError);
+      const repairFailure = classifyStructuredFailure(repairError);
       throw new ExerciseGenerationError(
-        repairFailure.kind === 'transport_timeout'
-          ? 'EXERCISE_GENERATION_TIMEOUT'
-          : 'EXERCISE_GENERATION_SCHEMA_FAILED',
-        repairFailure.kind === 'transport_timeout'
-          ? 'AI 出题服务响应超时，请稍后重试。'
-          : 'AI 返回的题目结构不完整，修复后仍未通过校验，请稍后重试。',
+        'EXERCISE_GENERATION_SCHEMA_FAILED',
+        'AI 返回的题目结构不完整，修复后仍未通过校验，请稍后重试。',
         {
           firstFailureKind,
           repairFailureKind: repairFailure.kind,
@@ -693,6 +801,7 @@ export async function generateExerciseDrafts(
   let candidateVectors: number[][];
   let existingDuplicateChecks: ExistingExerciseDuplicateCheck[];
   let batchDuplicateChecks: BatchExerciseDuplicateCheck[];
+  let activeDraftSnapshot: ActiveDraftSnapshotEntry[];
   try {
     fingerprints = [];
     candidateVectors = [];
@@ -719,7 +828,7 @@ export async function generateExerciseDrafts(
           inspected.vector,
           candidateVectors[previous]
         );
-        if (similarity >= DUPLICATE_THRESHOLD) {
+        if (similarity >= EXERCISE_GENERATION_DUPLICATE_THRESHOLD) {
           batchDuplicateChecks.push({
             candidateIndex: index,
             matchedCandidateIndex: previous,
@@ -732,6 +841,13 @@ export async function generateExerciseDrafts(
       fingerprints.push(inspected.fingerprint);
       candidateVectors.push(inspected.vector);
     }
+    const draftInspection = await findActiveDraftSemanticDuplicates(
+      prisma,
+      lesson.id,
+      candidateVectors
+    );
+    existingDuplicateChecks.push(...draftInspection.checks);
+    activeDraftSnapshot = draftInspection.snapshot;
   } catch (error) {
     throw new ExerciseGenerationError(
       'EXERCISE_GENERATION_DEDUP_FAILED',
@@ -746,7 +862,7 @@ export async function generateExerciseDrafts(
       existingChecks: existingDuplicateChecks,
       batchChecks: batchDuplicateChecks,
       phase: 'preflight',
-      threshold: DUPLICATE_THRESHOLD,
+      threshold: EXERCISE_GENERATION_DUPLICATE_THRESHOLD,
     });
   } catch (error) {
     if (error instanceof ExerciseGenerationDuplicateError) {
@@ -783,13 +899,20 @@ export async function generateExerciseDrafts(
         });
       }
     }
+    const postLockDraftInspection = await findActiveDraftSemanticDuplicates(
+      tx,
+      lesson.id,
+      candidateVectors,
+      activeDraftSnapshot
+    );
+    postLockExistingChecks.push(...postLockDraftInspection.checks);
     try {
       assertNoExerciseGenerationDuplicates({
         lessonId: lesson.id,
         existingChecks: postLockExistingChecks,
         batchChecks: batchDuplicateChecks,
         phase: 'post_lock',
-        threshold: DUPLICATE_THRESHOLD,
+        threshold: EXERCISE_GENERATION_DUPLICATE_THRESHOLD,
       });
     } catch (error) {
       if (error instanceof ExerciseGenerationDuplicateError) {
@@ -827,7 +950,7 @@ export async function generateExerciseDrafts(
           requestedType: input.type,
           requestedDifficulty: input.difficulty,
           requestedCount: input.count,
-          duplicateThreshold: DUPLICATE_THRESHOLD,
+          duplicateThreshold: EXERCISE_GENERATION_DUPLICATE_THRESHOLD,
         },
         selfCheck: candidate.selfCheck,
         duplicateCheck: { matched: false },
