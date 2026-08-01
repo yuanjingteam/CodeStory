@@ -3,11 +3,18 @@ import request from 'supertest';
 import { MemoryStore } from 'express-rate-limit';
 import { describe, expect, it } from 'vitest';
 import {
+  cosineSimilarity,
   generatedExerciseBatchSchema,
 } from '../../src/services/ai/exercise-gen';
 import { createExerciseGenerationRateLimit } from '../../src/middleware/exercise-generation-rate-limit';
 
 describe('阶段 2 · 出题结构化 Schema', () => {
+  it('同批候选使用与索引一致的余弦阈值识别重复', () => {
+    expect(cosineSimilarity([1, 0], [1, 0])).toBe(1);
+    expect(cosineSimilarity([1, 0], [0, 1])).toBe(0);
+    expect(cosineSimilarity([1, 1], [1, 0])).toBeCloseTo(Math.SQRT1_2);
+  });
+
   it('固定构造的选择题和编程题 100% 通过', () => {
     const samples = Array.from({ length: 100 }, (_, index) =>
       index % 2 === 0

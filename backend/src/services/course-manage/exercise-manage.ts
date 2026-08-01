@@ -6,6 +6,10 @@ import {
   queueKnowledgeSource,
   type KnowledgeIndexTicket,
 } from '../rag';
+import {
+  createExerciseContentFingerprint,
+  lockLessonExerciseWrites,
+} from '../courses/exercise-write-guards';
 
 export type ExerciseReviewStatus = 'draft' | 'approved' | 'rejected';
 export type ExerciseType = 'single_choice' | 'code';
@@ -377,6 +381,7 @@ export async function createManagedExercise(
   const lessonId = await assertActiveLesson(input.lessonId!);
   const { exercise, ticket } = await prisma.$transaction(
     async (tx) => {
+      await lockLessonExerciseWrites(tx, lessonId);
       const maxOrder = await tx.exercises.aggregate({
         where: { lesson_id: lessonId, is_delete: 0 },
         _max: { order: true },
@@ -433,11 +438,15 @@ export async function updateManagedExercise(
   const targetLessonId = await assertActiveLesson(input.lessonId!);
   let ticket: KnowledgeIndexTicket | null = null;
   await prisma.$transaction(async (tx) => {
+    await lockLessonExerciseWrites(tx, targetLessonId);
     const updated = await tx.exercises.update({
       where: { id: exerciseId },
       data: {
         lesson_id: targetLessonId,
         ...getWriteData(input),
+        generation_fingerprint: existing.source === 'ai'
+          ? createExerciseContentFingerprint(input.content)
+          : null,
         source: existing.source === 'ai' ? 'ai' : input.source,
       },
     });

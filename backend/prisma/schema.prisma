@@ -153,6 +153,7 @@ model exercises {
   source           String?            @db.VarChar(20)
   review_status    String             @default("approved") @db.VarChar(20)
   gen_metadata     Json?              @db.Json
+  generation_fingerprint String?      @db.Char(64)
   metadata         Json?              @db.Json
   hints            Json?              @db.Json
   order            Int                @default(0)

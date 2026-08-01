@@ -20,6 +20,10 @@ import {
   getManagedExercise,
   reviewManagedExercise,
 } from '../../src/services/course-manage/exercise-manage';
+import {
+  createExerciseContentFingerprint,
+  lockLessonExerciseWrites,
+} from '../../src/services/courses/exercise-write-guards';
 
 const marker = `stage2_review_${Date.now()}`;
 let userId = '';
@@ -138,6 +142,62 @@ afterAll(async () => {
 });
 
 describe('阶段 2 · 学习端审核态隔离', () => {
+  it('AI 活动题内容指纹阻止并发重复草稿', async () => {
+    const fingerprint = createExerciseContentFingerprint('并发重复题目');
+    const createDraft = () => prisma.exercises.create({
+      data: {
+        lesson_id: lessonId,
+        type: 'single_choice',
+        content: '并发重复题目',
+        answer: 'A',
+        source: 'ai',
+        review_status: 'draft',
+        generation_fingerprint: fingerprint,
+        metadata: { options: ['A', 'B'] },
+        knowledge_index_policy: 'exclude',
+        order: 500,
+      },
+    });
+    const results = await Promise.allSettled([createDraft(), createDraft()]);
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1);
+  });
+
+  it('小节级事务锁使并发追加题目得到不同顺序', async () => {
+    const append = (content: string) => prisma.$transaction(async (tx) => {
+      await lockLessonExerciseWrites(tx, lessonId);
+      const current = await tx.exercises.aggregate({
+        where: { lesson_id: lessonId, is_delete: 0 },
+        _max: { order: true },
+      });
+      return tx.exercises.create({
+        data: {
+          lesson_id: lessonId,
+          type: 'single_choice',
+          content,
+          answer: 'A',
+          source: 'static',
+          review_status: 'approved',
+          metadata: { options: ['A', 'B'] },
+          knowledge_index_policy: 'exclude',
+          order: (current._max.order || 0) + 1,
+        },
+      });
+    });
+    const created = await Promise.all([
+      append('并发排序题 A'),
+      append('并发排序题 B'),
+    ]);
+    try {
+      expect(new Set(created.map((exercise) => exercise.order)).size).toBe(2);
+    } finally {
+      await prisma.exercises.updateMany({
+        where: { id: { in: created.map((exercise) => exercise.id) } },
+        data: { is_delete: 1, deleted_at: new Date() },
+      });
+    }
+  });
+
   it('草稿在小节详情、题目详情、提交和提示入口均不可见', async () => {
     const lesson = await getLessonDetail(
       uuidToShortId(lessonId),

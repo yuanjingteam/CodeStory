@@ -8,6 +8,10 @@ import { htmlToKnowledgeText } from '../../rag/source';
 import { createKnowledgeRetriever } from '../../rag/retriever';
 import { embedQuery } from '../../rag/embedding';
 import type { RetrievedKnowledge } from '../../rag/types';
+import {
+  createExerciseContentFingerprint,
+  lockLessonExerciseWrites,
+} from '../../courses/exercise-write-guards';
 import { createChatModel } from '../_shared/model';
 import {
   generatedExerciseBatchSchema,
@@ -120,14 +124,49 @@ function formatEvidence(evidence: RetrievedKnowledge[]): string {
     .join('\n\n');
 }
 
-async function findPotentialDuplicate(
+export function cosineSimilarity(left: number[], right: number[]): number {
+  let dot = 0;
+  let leftNorm = 0;
+  let rightNorm = 0;
+  for (let index = 0; index < left.length; index += 1) {
+    dot += left[index] * right[index];
+    leftNorm += left[index] * left[index];
+    rightNorm += right[index] * right[index];
+  }
+  if (leftNorm === 0 || rightNorm === 0) return 0;
+  return dot / (Math.sqrt(leftNorm) * Math.sqrt(rightNorm));
+}
+
+async function inspectPotentialDuplicate(
   lessonId: string,
   content: string
-): Promise<{ exerciseId: string; similarity: number } | null> {
+): Promise<{
+  duplicate: { exerciseId: string; similarity: number } | null;
+  vector: number[];
+  fingerprint: string;
+}> {
+  const fingerprint = createExerciseContentFingerprint(content);
+  const exactAiDuplicate = await prisma.exercises.findFirst({
+    where: {
+      lesson_id: lessonId,
+      is_delete: 0,
+      source: 'ai',
+      review_status: { in: ['draft', 'approved'] },
+      generation_fingerprint: fingerprint,
+    },
+    select: { id: true },
+  });
   const embeddingConfig = getAiEmbeddingConfig();
   const vector = await embedQuery(content, {
     dimensions: embeddingConfig.dimensions,
   });
+  if (exactAiDuplicate) {
+    return {
+      duplicate: { exerciseId: exactAiDuplicate.id, similarity: 1 },
+      vector,
+      fingerprint,
+    };
+  }
   const vectorLiteral = `[${vector.join(',')}]`;
   const rows = await prisma.$queryRaw<DuplicateRow[]>(
     Prisma.sql`
@@ -153,10 +192,15 @@ async function findPotentialDuplicate(
     `
   );
   const row = rows[0];
-  if (!row || Number(row.score) < DUPLICATE_THRESHOLD) return null;
   return {
-    exerciseId: row.source_id,
-    similarity: Number(row.score),
+    duplicate: !row || Number(row.score) < DUPLICATE_THRESHOLD
+      ? null
+      : {
+          exerciseId: row.source_id,
+          similarity: Number(row.score),
+        },
+    vector,
+    fingerprint,
   };
 }
 
@@ -342,12 +386,34 @@ export async function generateExerciseDrafts(
     exerciseId: string;
     similarity: number;
   } | null>;
+  let fingerprints: string[];
   try {
     duplicateChecks = [];
-    for (const candidate of result.candidates) {
-      duplicateChecks.push(
-        await findPotentialDuplicate(lesson.id, candidate.content)
+    fingerprints = [];
+    const candidateVectors: number[][] = [];
+    for (let index = 0; index < result.candidates.length; index += 1) {
+      const candidate = result.candidates[index];
+      const inspected = await inspectPotentialDuplicate(
+        lesson.id,
+        candidate.content
       );
+      let duplicate = inspected.duplicate;
+      for (let previous = 0; previous < candidateVectors.length; previous += 1) {
+        const similarity = cosineSimilarity(
+          inspected.vector,
+          candidateVectors[previous]
+        );
+        if (similarity >= DUPLICATE_THRESHOLD) {
+          duplicate = {
+            exerciseId: `batch:${previous + 1}`,
+            similarity,
+          };
+          break;
+        }
+      }
+      duplicateChecks.push(duplicate);
+      fingerprints.push(inspected.fingerprint);
+      candidateVectors.push(inspected.vector);
     }
   } catch (error) {
     throw new ExerciseGenerationError(
@@ -361,6 +427,7 @@ export async function generateExerciseDrafts(
   const traceId = getTraceId() || 'trace-unavailable';
   const now = new Date();
   const drafts = await prisma.$transaction(async (tx) => {
+    await lockLessonExerciseWrites(tx, lesson.id);
     const currentOrder = await tx.exercises.aggregate({
       where: { lesson_id: lesson.id, is_delete: 0 },
       _max: { order: true },
@@ -408,6 +475,7 @@ export async function generateExerciseDrafts(
           difficulty: candidate.difficulty,
           source: 'ai',
           review_status: 'draft',
+          generation_fingerprint: fingerprints[index],
           gen_metadata:
             genMetadata as unknown as Prisma.InputJsonValue,
           metadata: candidate.metadata,

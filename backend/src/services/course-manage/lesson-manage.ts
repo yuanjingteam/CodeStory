@@ -14,6 +14,10 @@ import {
   queueLessonsKnowledge,
   type KnowledgeIndexTicket,
 } from '../rag';
+import {
+  createExerciseContentFingerprint,
+  lockLessonExerciseWrites,
+} from '../courses/exercise-write-guards';
 
 type TransactionClient = Prisma.TransactionClient;
 
@@ -512,6 +516,7 @@ export const updateLesson = async (req: Request, res: Response) => {
       exercises: updatedExercises,
       indexTickets,
     } = await prisma.$transaction(async (tx) => {
+      await lockLessonExerciseWrites(tx, resolvedLessonId);
       let lesson = await tx.lessons.update({
         where: { id: resolvedLessonId },
         data: updateData
@@ -575,6 +580,9 @@ export const updateLesson = async (req: Request, res: Response) => {
             data: {
               ...writeData,
               source: currentExercise.source || 'static',
+              generation_fingerprint: currentExercise.source === 'ai'
+                ? createExerciseContentFingerprint(writeData.content)
+                : null,
               order: index + 1,
             }
           });
