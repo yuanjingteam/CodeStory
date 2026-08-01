@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   cosineSimilarity,
   generatedExerciseBatchSchema,
+  runExerciseGenerationPipeline,
 } from '../../src/services/ai/exercise-gen';
 import { createExerciseGenerationRateLimit } from '../../src/middleware/exercise-generation-rate-limit';
 
@@ -138,6 +139,134 @@ describe('阶段 2 · 出题结构化 Schema', () => {
     expect(code.candidates[0].metadata).toMatchObject({
       testCases: [{ input: '{"value":1}', output: '1' }],
     });
+  });
+});
+
+describe('阶段 2 · 出题调用稳定性', () => {
+  const values = {
+    hierarchy: '评测课程 / SQL / WHERE',
+    knowledge: 'SQL WHERE',
+    type: 'single_choice' as const,
+    difficulty: 2,
+    count: 1,
+    evidence: 'WHERE 用于筛选满足条件的行。',
+  };
+  const validChoice = {
+    candidates: [{
+      type: 'single_choice',
+      content: '哪个子句用于筛选行？',
+      answer: 'WHERE',
+      analysis: 'WHERE 在分组前筛选行。',
+      knowledge: 'SQL WHERE',
+      difficulty: 2,
+      metadata: { options: ['WHERE', 'ORDER BY'] },
+      selfCheck: {
+        formatValid: true,
+        answerExists: true,
+        difficultyMatch: true,
+        notes: ['已检查'],
+      },
+    }],
+  };
+
+  it('传输超时只重试 generation prompt 并记录实际调用', async () => {
+    const promptKinds: string[] = [];
+    let calls = 0;
+    const result = await runExerciseGenerationPipeline(values, async (invocation) => {
+      promptKinds.push(invocation.promptKind);
+      calls += 1;
+      if (calls === 1) throw new Error('Request timed out.');
+      return JSON.stringify(validChoice);
+    });
+
+    expect(promptKinds).toEqual(['generation', 'generation']);
+    expect(result.metrics).toMatchObject({
+      firstPassStructured: true,
+      repaired: false,
+      firstFailureKind: 'transport_timeout',
+      modelCallCount: 2,
+    });
+    expect(result.metrics.attemptLatenciesMs).toHaveLength(2);
+  });
+
+  it('JSON 缺失时把截断响应和安全问题路径交给 repair', async () => {
+    const invocations: Array<{ promptKind: string; values: Record<string, unknown> }> = [];
+    const result = await runExerciseGenerationPipeline(values, async (invocation) => {
+      invocations.push(invocation);
+      return invocation.promptKind === 'generation'
+        ? '不是 JSON'.repeat(2_500)
+        : JSON.stringify(validChoice);
+    });
+
+    expect(result.metrics.firstFailureKind).toBe('json_not_found');
+    expect(result.metrics.repaired).toBe(true);
+    expect(result.metrics.modelCallCount).toBe(2);
+    expect(invocations[1].values.validationIssues).toBe('<root>:invalid_json');
+    expect(String(invocations[1].values.previousResponse)).toHaveLength(4_000);
+  });
+
+  it('Schema 错误只向 repair 暴露 issue code 与字段路径', async () => {
+    const broken = structuredClone(validChoice);
+    delete (broken.candidates[0] as Partial<typeof validChoice.candidates[0]>).selfCheck;
+    let repairIssues = '';
+    const result = await runExerciseGenerationPipeline(values, async (invocation) => {
+      if (invocation.promptKind === 'repair') {
+        repairIssues = String(invocation.values.validationIssues);
+        return JSON.stringify(validChoice);
+      }
+      return JSON.stringify(broken);
+    });
+
+    expect(result.metrics.firstFailureKind).toBe('schema_validation');
+    expect(repairIssues).toContain('candidates.0');
+    expect(repairIssues).toMatch(/invalid_type/);
+    expect(repairIssues).toContain('selfCheck');
+    expect(repairIssues).not.toContain('Invalid input');
+  });
+
+  it('数量不匹配进入 repair，Schema 示例动态匹配数量、难度与语言', async () => {
+    const codeCandidate = {
+      type: 'code' as const,
+      content: '编写 SQL 查询。',
+      answer: 'SELECT 1;',
+      analysis: '返回常量。',
+      knowledge: 'SQL SELECT',
+      difficulty: 2,
+      metadata: {
+        codeTemplate: 'SELECT ...;',
+        language: 'SQL',
+        testCases: [{ input: '', output: '1' }],
+      },
+      selfCheck: {
+        formatValid: true as const,
+        answerExists: true as const,
+        difficultyMatch: true as const,
+        notes: ['已检查'],
+      },
+    };
+    const codeValues = {
+      ...values,
+      type: 'code' as const,
+      knowledge: 'SQL SELECT',
+      count: 2,
+    };
+    let generationSchema = '';
+    const result = await runExerciseGenerationPipeline(codeValues, async (invocation) => {
+      if (invocation.promptKind === 'generation') {
+        generationSchema = String(invocation.values.schemaInstructions);
+        return JSON.stringify({ candidates: [codeCandidate] });
+      }
+      return JSON.stringify({ candidates: [codeCandidate, codeCandidate] });
+    });
+
+    const schema = JSON.parse(generationSchema);
+    expect(schema.candidates).toHaveLength(2);
+    expect(schema.candidates[0]).toMatchObject({
+      difficulty: 2,
+      metadata: { language: 'SQL' },
+    });
+    expect(result.metrics.firstFailureKind).toBe('count_mismatch');
+    expect(result.metrics.modelCallCount).toBe(2);
   });
 });
 

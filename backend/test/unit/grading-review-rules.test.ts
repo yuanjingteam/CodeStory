@@ -2,6 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { calculateAiReviewedFinalScore } from '../../src/services/courses/code-grading.service';
 import { createSubmissionFingerprint } from '../../src/services/courses/grading-review.service';
 import { gradingStage3Dataset } from '../../evals/datasets/grading-stage3';
+import {
+  buildGradingReportCase,
+  buildGradingReviewInput,
+  NEUTRAL_GRADING_REFERENCE_ANALYSIS,
+} from '../../evals/run-grading-review';
 
 describe('阶段 3 · 提交指纹', () => {
   const base = {
@@ -60,5 +65,34 @@ describe('阶段 3 · 固定评测集', () => {
       && item.agentScore >= 0
       && item.agentScore <= 100
     ))).toBe(true);
+  });
+
+  it('构造模型输入时不泄漏 Agent 金标解释', () => {
+    const item = {
+      ...gradingStage3Dataset[0],
+      rationale: 'UNIQUE_GOLD_LABEL_RATIONALE',
+    };
+    const staticGrade = {
+      correct: false,
+      score: 0,
+      feedback: '静态初判',
+      language: 'sql',
+      compileSuccess: null,
+      functionalScore: 0,
+      hintDeduction: 0,
+      passedCount: 0,
+      totalCount: 0,
+      errorType: 'wrong_answer',
+      testResult: null,
+    };
+
+    const input = buildGradingReviewInput(item, staticGrade);
+
+    expect(input.analysis).toBe(NEUTRAL_GRADING_REFERENCE_ANALYSIS);
+    expect(JSON.stringify(input)).not.toContain(item.rationale);
+
+    const reportCase = buildGradingReportCase(item);
+    expect(reportCase).not.toHaveProperty('rationale');
+    expect(JSON.stringify(reportCase)).not.toContain(item.rationale);
   });
 });

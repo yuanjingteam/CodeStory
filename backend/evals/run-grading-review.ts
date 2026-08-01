@@ -6,7 +6,41 @@ import { reviewCodeWithAI } from '../src/services/ai/evaluate/code-grading-chain
 import {
   calculateAiReviewedFinalScore,
   gradeCodeExercise,
+  type CodeGradeResult,
 } from '../src/services/courses/code-grading.service';
+
+export const NEUTRAL_GRADING_REFERENCE_ANALYSIS =
+  '参考答案仅用于说明目标结果，请独立判断学生代码的语义正确性。';
+
+export function buildGradingReviewInput(
+  item: typeof gradingStage3Dataset[number],
+  staticGrade: CodeGradeResult
+) {
+  return {
+    exerciseContent: item.exerciseContent,
+    knowledge: 'SQL 查询',
+    correctAnswer: item.correctAnswer,
+    analysis: NEUTRAL_GRADING_REFERENCE_ANALYSIS,
+    userCode: item.userCode,
+    language: 'sql',
+    hintLevelUsed: 0,
+    staticGrade,
+  };
+}
+
+export function buildGradingReportCase(
+  item: typeof gradingStage3Dataset[number]
+) {
+  return {
+    id: item.id,
+    answerClass: item.answerClass,
+    exerciseContent: item.exerciseContent,
+    correctAnswer: item.correctAnswer,
+    userCode: item.userCode,
+    expectedPass: item.expectedPass,
+    agentScore: item.agentScore,
+  };
+}
 
 async function main() {
   const outputArg = process.argv.find((argument) => argument.startsWith('--output='));
@@ -39,20 +73,13 @@ async function main() {
       hintLevelUsed: 0,
     });
     try {
-      const ai = await reviewCodeWithAI({
-        exerciseContent: item.exerciseContent,
-        knowledge: 'SQL 查询',
-        correctAnswer: item.correctAnswer,
-        analysis: item.rationale,
-        userCode: item.userCode,
-        language: 'sql',
-        hintLevelUsed: 0,
-        staticGrade,
-      });
+      const ai = await reviewCodeWithAI(
+        buildGradingReviewInput(item, staticGrade)
+      );
       const aiScore = calculateAiReviewedFinalScore(ai, 0);
       const agreement = ai.review.isLikelyCorrect === item.expectedPass;
       results[index] = {
-        ...item,
+        ...buildGradingReportCase(item),
         labelProvenance: 'agent-audited',
         staticPass: staticGrade.correct,
         aiPass: ai.review.isLikelyCorrect,
@@ -67,7 +94,7 @@ async function main() {
     } catch (error) {
       const errorWithCause = error as Error & { cause?: unknown };
       results[index] = {
-        ...item,
+        ...buildGradingReportCase(item),
         labelProvenance: 'agent-audited',
         status: 'failed',
         error: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
@@ -124,7 +151,9 @@ async function main() {
   if (completedCount !== selectedDataset.length) process.exitCode = 1;
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}
