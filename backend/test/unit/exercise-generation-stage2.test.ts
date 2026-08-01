@@ -232,6 +232,26 @@ describe('阶段 2 · 出题调用稳定性', () => {
     expect(result.metrics.attemptLatenciesMs).toHaveLength(2);
   });
 
+  it('连续两次传输超时后执行第三次同提示重试', async () => {
+    const promptKinds: string[] = [];
+    let calls = 0;
+    const result = await runExerciseGenerationPipeline(values, async (invocation) => {
+      promptKinds.push(invocation.promptKind);
+      calls += 1;
+      if (calls < 3) throw new Error('Request timed out.');
+      return JSON.stringify(validChoice);
+    });
+
+    expect(promptKinds).toEqual(['generation', 'generation', 'generation']);
+    expect(result.metrics).toMatchObject({
+      firstPassStructured: true,
+      repaired: false,
+      firstFailureKind: 'transport_timeout',
+      modelCallCount: 3,
+    });
+    expect(result.metrics.attemptLatenciesMs).toHaveLength(3);
+  });
+
   it('JSON 缺失时把截断响应和安全问题路径交给 repair', async () => {
     const invocations: Array<{ promptKind: string; values: Record<string, unknown> }> = [];
     const result = await runExerciseGenerationPipeline(values, async (invocation) => {

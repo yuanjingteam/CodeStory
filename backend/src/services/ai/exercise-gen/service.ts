@@ -32,6 +32,7 @@ import {
 
 export const EXERCISE_GENERATION_PROMPT_VERSION = 'exercise-gen-v2';
 const MAX_REPAIR_RESPONSE_CHARS = 4_000;
+const MAX_TIMEOUT_ATTEMPTS = 3;
 
 function getGenerationMaxTokens(): number {
   const parsed = Number(
@@ -539,13 +540,18 @@ export async function runExerciseGenerationPipeline(
   };
 
   const invokeWithTimeoutRetry = async (invocation: GenerationInvocation) => {
-    try {
-      return await invokeMeasured(invocation);
-    } catch (error) {
-      if (!isTimeoutError(error)) throw error;
-      firstFailureKind ||= 'transport_timeout';
-      return invokeMeasured(invocation);
+    for (let attempt = 1; attempt <= MAX_TIMEOUT_ATTEMPTS; attempt += 1) {
+      try {
+        return await invokeMeasured(invocation);
+      } catch (error) {
+        if (!isTimeoutError(error) || attempt === MAX_TIMEOUT_ATTEMPTS) {
+          throw error;
+        }
+        firstFailureKind ||= 'transport_timeout';
+      }
     }
+
+    throw new Error('EXERCISE_GENERATION_TIMEOUT_RETRY_EXHAUSTED');
   };
 
   const parse = (rawResponse: string) => {
