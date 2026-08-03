@@ -16,6 +16,7 @@ function stage2Attempts() {
     validCandidateCount: 1,
     answerCorrect: index < 48,
     humanConfirmedDuplicate: index < 2,
+    machineDuplicate: false,
     labelProvenance: 'human-reviewed',
   }));
 }

@@ -23,7 +23,7 @@ export const STAGE2_THRESHOLDS = {
   finalFailureRate: 0.01,
   modelCallsPerValidCandidate: 1.3,
   answerAccuracy: 0.95,
-  humanConfirmedDuplicateRate: 0.05,
+    humanConfirmedDuplicateRate: 0.05,
 } as const;
 
 export const STAGE2_FORMAL_SAMPLE_COUNT = 50;
@@ -94,6 +94,7 @@ export function scoreExerciseGeneration(
     modelCallsPerValidCandidate: metrics.modelCallsPerValidCandidate <= STAGE2_THRESHOLDS.modelCallsPerValidCandidate,
     answerAccuracy: metrics.answerAccuracy >= STAGE2_THRESHOLDS.answerAccuracy,
     humanConfirmedDuplicateRate: metrics.humanConfirmedDuplicateRate <= STAGE2_THRESHOLDS.humanConfirmedDuplicateRate,
+    machineDuplicateScreened: successes.every((item) => typeof item.machineDuplicate === 'boolean'),
   };
   return {
     generatedAt: new Date().toISOString(),

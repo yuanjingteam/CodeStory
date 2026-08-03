@@ -5,6 +5,8 @@ export interface ExerciseGenerationEvalCase {
   type: 'single_choice' | 'code';
   difficulty: number;
   evidence: string;
+  lessonId: string;
+  approvedBaseline: { exerciseId: string; content: string };
 }
 
 const topics = [
@@ -44,6 +46,11 @@ export const exerciseGenerationStage2Dataset: ExerciseGenerationEvalCase[] =
       type,
       difficulty: index % 3,
       evidence: `[固定证据 | ${topic} | 场景:${scenario}]\n${fact}\n题目必须围绕${scenario}场景，但不得引入证据之外的结论。`,
+      lessonId: `stage2-${scenario}-${topic}`,
+      approvedBaseline: {
+        exerciseId: `approved-${String(index + 1).padStart(3, '0')}`,
+        content: `已审核基线题目：${scenario}场景下考查${topic}。${fact}`,
+      },
     };
   });
 

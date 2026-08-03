@@ -10,6 +10,8 @@ import {
   getExerciseGenerationRuntimeConfig,
 } from '../src/services/ai/exercise-gen';
 import { getAiConfig } from '../src/config/ai';
+import { embedDocumentsInBatches } from '../src/services/rag/embedding';
+import { screenAgainstApprovedLesson } from './exercise-generation-duplicate';
 import {
   assertUniqueExpectedIds,
   createRunIdentity,
@@ -148,15 +150,27 @@ async function main() {
   async function runItem(item: typeof exerciseGenerationStage2Dataset[number]) {
     try {
       const generated = await generateExerciseCandidateForEvaluation(item);
+      const candidate = generated.candidates[0];
+      const [candidateEmbedding, baselineEmbedding] = await embedDocumentsInBatches([
+        candidate.content,
+        item.approvedBaseline.content,
+      ]);
+      const duplicate = screenAgainstApprovedLesson(
+        { lessonId: item.lessonId, embedding: candidateEmbedding },
+        [{ lessonId: item.lessonId, exerciseId: item.approvedBaseline.exerciseId, embedding: baselineEmbedding }],
+      );
       return {
           id: item.id,
           ...generated.metrics,
           finalSuccess: true,
           validCandidateCount: generated.candidates.length,
-          candidate: generated.candidates[0],
+          candidate,
           evidence: item.evidence,
+          lessonId: item.lessonId,
           agentAnswerCorrect: null,
-          machineDuplicate: null,
+          machineDuplicate: duplicate.machineDuplicate,
+          machineDuplicateSimilarity: duplicate.similarity,
+          machineDuplicateExerciseId: duplicate.matchedExerciseId,
           agentConfirmedDuplicate: null,
           labelProvenance: 'pending-human-review',
       };
