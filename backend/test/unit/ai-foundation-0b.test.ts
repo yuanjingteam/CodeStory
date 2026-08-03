@@ -68,6 +68,33 @@ describe('阶段 0B · 结构化输出 Schema', () => {
       extractJsonObject('没有结构化内容', 'INVALID_JSON')
     ).toThrow('INVALID_JSON');
   });
+
+  it('extractJsonObject 修复字符串内未转义控制字符', () => {
+    expect(
+      extractJsonObject('{"code":"line 1\n\tline 2"}', 'INVALID_JSON')
+    ).toEqual({ code: 'line 1\n\tline 2' });
+  });
+
+  it('extractJsonObject 逐个解析平衡对象且不被说明文字中的花括号干扰', () => {
+    expect(
+      extractJsonObject(
+        '说明 {not-json} 后续 {"code":"if (ok) { return {}; }"} 尾注',
+        'INVALID_JSON'
+      )
+    ).toEqual({ code: 'if (ok) { return {}; }' });
+    expect(
+      extractJsonObject('{"first":1}\n{"second":2}', 'INVALID_JSON')
+    ).toEqual({ second: 2 });
+    expect(
+      extractJsonObject('说明 { 未闭合，最终 {"ok":true}', 'INVALID_JSON')
+    ).toEqual({ ok: true });
+  });
+
+  it('extractJsonObject 不补齐被截断的对象', () => {
+    expect(() =>
+      extractJsonObject('{"code":"unfinished"', 'INVALID_JSON')
+    ).toThrow('INVALID_JSON');
+  });
 });
 
 describe('阶段 0B · RAG 纯函数与客户端边界', () => {

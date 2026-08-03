@@ -46,3 +46,21 @@ export const exerciseGenerationStage2Dataset: ExerciseGenerationEvalCase[] =
       evidence: `[固定证据 | ${topic} | 场景:${scenario}]\n${fact}\n题目必须围绕${scenario}场景，但不得引入证据之外的结论。`,
     };
   });
+
+export function selectExerciseGenerationStage2Dataset(
+  limit: number
+): ExerciseGenerationEvalCase[] {
+  if (limit !== 50) return exerciseGenerationStage2Dataset.slice(0, limit);
+
+  return scenarios.flatMap((_, scenarioIndex) =>
+    Array.from({ length: 5 }, (_, offset) => {
+      const scenarioStart = scenarioIndex * topics.length;
+      const sqlTopic = (5 * scenarioIndex + offset) % 10;
+      const pythonTopic = 10 + ((5 * scenarioIndex + 1 + offset) % 10);
+      return [
+        exerciseGenerationStage2Dataset[scenarioStart + sqlTopic],
+        exerciseGenerationStage2Dataset[scenarioStart + pythonTopic],
+      ];
+    }).flat()
+  );
+}

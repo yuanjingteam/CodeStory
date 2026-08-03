@@ -5,6 +5,7 @@ import {
   type EvaluationRunManifest,
 } from '../../evals/run-exercise-generation-stage2';
 import { getExerciseGenerationRuntimeConfig } from '../../src/services/ai/exercise-gen';
+import { selectExerciseGenerationStage2Dataset } from '../../evals/datasets/exercise-generation-stage2';
 
 function createManifest(
   overrides: Partial<EvaluationRunManifest> = {}
@@ -26,6 +27,38 @@ function createManifest(
 }
 
 describe('阶段 2 · 出题评测续跑保护', () => {
+  it('50 条正式样本保持场景、题型、难度与主题分层', () => {
+    const samples = selectExerciseGenerationStage2Dataset(50);
+    const countBy = (key: (sample: typeof samples[number]) => string) =>
+      samples.reduce<Record<string, number>>((counts, sample) => {
+        const name = key(sample);
+        counts[name] = (counts[name] || 0) + 1;
+        return counts;
+      }, {});
+
+    expect(new Set(samples.map((sample) => sample.id))).toHaveProperty('size', 50);
+    expect(countBy((sample) => sample.hierarchy.split(' / ')[1])).toEqual({
+      用户管理: 10,
+      课程统计: 10,
+      订单报表: 10,
+      学习记录: 10,
+      内容审核: 10,
+    });
+    expect(countBy((sample) => sample.type)).toEqual({ single_choice: 25, code: 25 });
+    expect(countBy((sample) => `${sample.type}-${sample.difficulty}`)).toEqual({
+      'single_choice-0': 9,
+      'single_choice-1': 8,
+      'single_choice-2': 8,
+      'code-0': 8,
+      'code-1': 9,
+      'code-2': 8,
+    });
+    expect(new Set(samples.map((sample) => sample.hierarchy.split(' / ')[2]))).toHaveProperty(
+      'size',
+      20
+    );
+  });
+
   it('使用独立且有边界的出题超时配置', () => {
     const original = process.env.AI_EXERCISE_GENERATION_TIMEOUT_MS;
     try {

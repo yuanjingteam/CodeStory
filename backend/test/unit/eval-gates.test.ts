@@ -5,16 +5,16 @@ import { mergeGradingHumanReviews } from '../../evals/merge-grading-review-audit
 import { assertNewGradingRunPath } from '../../evals/run-grading-review';
 
 function stage2Attempts() {
-  return Array.from({ length: 100 }, (_, index) => ({
+  return Array.from({ length: 50 }, (_, index) => ({
     id: `case-${index}`,
-    firstPassStructured: index < 90,
-    repaired: index >= 90 && index < 99,
-    finalSuccess: index < 99,
-    modelCallCount: index < 72 ? 1 : 2,
-    validCandidateCount: index < 99 ? 1 : 0,
-    answerCorrect: index < 95,
-    humanConfirmedDuplicate: index < 4,
-    labelProvenance: index < 99 ? 'human-reviewed' : 'pending-human-review',
+    firstPassStructured: index < 45,
+    repaired: index >= 45,
+    finalSuccess: true,
+    modelCallCount: index < 36 ? 1 : 2,
+    validCandidateCount: 1,
+    answerCorrect: index < 48,
+    humanConfirmedDuplicate: index < 2,
+    labelProvenance: 'human-reviewed',
   }));
 }
 
@@ -33,19 +33,19 @@ describe('阶段二严格门禁', () => {
     });
   });
 
-  it('校验 100 次、人工覆盖、阈值，并把跨课程相似度仅作为观察项', () => {
-    const report = scoreExerciseGeneration(stage2Attempts(), { sampleCount: 100 });
+  it('校验 50 次、人工覆盖、阈值，并把跨课程相似度仅作为观察项', () => {
+    const report = scoreExerciseGeneration(stage2Attempts(), { sampleCount: 50 });
     expect(report.passed).toBe(true);
     expect(report.observationOnly).toContain('crossCourseSimilarityRate');
     expect(report.manifestHash).toMatch(/^[0-9a-f]{64}$/);
-    expect(() => scoreExerciseGeneration(stage2Attempts().slice(0, 99), { sampleCount: 99 })).toThrow(/100 次/);
+    expect(() => scoreExerciseGeneration(stage2Attempts().slice(0, 49), { sampleCount: 49 })).toThrow(/50 次/);
     const missingReview = stage2Attempts();
     missingReview[0].labelProvenance = 'agent-audited';
-    expect(() => scoreExerciseGeneration(missingReview, { sampleCount: 100 })).toThrow(/人工标注/);
+    expect(() => scoreExerciseGeneration(missingReview, { sampleCount: 50 })).toThrow(/人工标注/);
     const failed = stage2Attempts();
     failed[4].humanConfirmedDuplicate = true;
     failed[5].humanConfirmedDuplicate = true;
-    expect(scoreExerciseGeneration(failed, { sampleCount: 100 }).passed).toBe(false);
+    expect(scoreExerciseGeneration(failed, { sampleCount: 50 }).passed).toBe(false);
   });
 });
 

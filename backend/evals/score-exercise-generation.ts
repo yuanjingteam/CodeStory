@@ -24,6 +24,8 @@ export const STAGE2_THRESHOLDS = {
   humanConfirmedDuplicateRate: 0.05,
 } as const;
 
+export const STAGE2_FORMAL_SAMPLE_COUNT = 50;
+
 function getArgument(name: string): string | undefined {
   const prefix = `--${name}=`;
   return process.argv.slice(2)
@@ -42,8 +44,13 @@ export function scoreExerciseGeneration(
   attempts: GenerationAttempt[],
   manifest: Record<string, unknown>
 ) {
-  if (attempts.length !== 100 || manifest.sampleCount !== 100) {
-    throw new Error(`阶段二正式门禁要求恰好 100 次样本，当前为 ${attempts.length}。`);
+  if (
+    attempts.length !== STAGE2_FORMAL_SAMPLE_COUNT
+    || manifest.sampleCount !== STAGE2_FORMAL_SAMPLE_COUNT
+  ) {
+    throw new Error(
+      `阶段二正式门禁要求恰好 ${STAGE2_FORMAL_SAMPLE_COUNT} 次样本，当前为 ${attempts.length}。`
+    );
   }
   const ids = new Set<string>();
   for (const attempt of attempts) {

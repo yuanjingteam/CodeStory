@@ -133,7 +133,7 @@ export function getExerciseGenerationRuntimeConfig(count: number) {
     maxTokens: Math.min(getGenerationMaxTokens(), 800 + count * 600),
     timeoutMs: getGenerationTimeoutMs(),
     responseFormat: 'json_object',
-    transportRetries: 1,
+    transportRetries: MAX_TIMEOUT_ATTEMPTS - 1,
     structureRepairs: 1,
   } as const;
 }

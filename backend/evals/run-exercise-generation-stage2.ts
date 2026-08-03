@@ -1,7 +1,10 @@
 import '../src/config/env';
 import { access, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { exerciseGenerationStage2Dataset } from './datasets/exercise-generation-stage2';
+import {
+  exerciseGenerationStage2Dataset,
+  selectExerciseGenerationStage2Dataset,
+} from './datasets/exercise-generation-stage2';
 import {
   generateExerciseCandidateForEvaluation,
   getExerciseGenerationRuntimeConfig,
@@ -93,7 +96,7 @@ export function assertExistingEvaluationResults(
 }
 
 async function main() {
-  const selectedDataset = exerciseGenerationStage2Dataset.slice(0, limit);
+  const selectedDataset = selectExerciseGenerationStage2Dataset(limit);
   const manifestPath = `${outputPath}.manifest.json`;
   const aiConfig = getAiConfig();
   const promptSourcePath = path.resolve('src/services/ai/exercise-gen/service.ts');
