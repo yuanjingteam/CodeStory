@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import type { LessonDetailData } from '@/types/lesson-detail'
 import ExerciseModal from './ExerciseModal'
 import TiptapViewer from '@/components/tiptap/TiptapViewer'
+import { recordRecommendationEvent } from '@/api/recommendations'
 
 interface QuestionProps {
   data: LessonDetailData
@@ -147,6 +148,12 @@ export default function Question({
     if (!modalOpen) onCurrentExerciseCodeChange?.(null)
   }, [currentExerciseId, modalOpen, onCurrentExerciseChange, onCurrentExerciseCodeChange])
 
+  useEffect(() => {
+    const token = searchParams.get('recommendationToken')
+    if (!modalOpen || !token) return
+    void recordRecommendationEvent(token, 'review_started').catch(() => undefined)
+  }, [modalOpen, searchParams])
+
   const handleNavigate = async (direction: 'prev' | 'next') => {
     if (!currentLessonId || !courseId || !currentChapterId) return
 
@@ -209,7 +216,8 @@ export default function Question({
           <ExerciseModal
             isOpen={modalOpen}
             exerciseId={currentExerciseId}
-            onClose={closeExercise}
+           onClose={closeExercise}
+           recommendationToken={searchParams.get('recommendationToken')}
             onComplete={handleExerciseComplete}
             onCodeChange={onCurrentExerciseCodeChange}
           />

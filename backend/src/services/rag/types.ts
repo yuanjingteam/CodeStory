@@ -26,7 +26,7 @@ export interface RetrievedKnowledge extends KnowledgeChunk {
   score: number;
 }
 
-export type RetrievalPurpose = 'student_chat' | 'admin_generation';
+export type RetrievalPurpose = 'student_chat' | 'admin_generation' | 'student_recommendation';
 
 export interface RetrieveOptions {
   userId: string;

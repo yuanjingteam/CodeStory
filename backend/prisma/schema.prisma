@@ -30,6 +30,7 @@ model users {
   grading_reviews   ai_grading_reviews[] @relation("grading_review_user")
   grading_reviews_reviewed ai_grading_reviews[] @relation("grading_review_reviewer")
   wechat_users     wechat_users[]
+  ai_feedback_events ai_feedback_events[]
 
   @@index([is_delete])
   @@index([created_at])
@@ -233,6 +234,21 @@ model ai_grading_reviews {
   @@index([status, created_at])
   @@index([user_id, exercise_id, created_at])
   @@index([reviewer_id])
+}
+
+model ai_feedback_events {
+  id         String   @id @default(uuid()) @db.Char(36)
+  trace_id   String?  @db.VarChar(128)
+  user_id    String   @db.Char(36)
+  scene      String   @db.VarChar(40)
+  event_type String   @db.VarChar(40)
+  target_type String  @db.VarChar(40)
+  target_id  String   @db.VarChar(128)
+  metadata   Json?
+  dedupe_key String   @unique @db.VarChar(255)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  @@index([user_id, scene, created_at])
 }
 
 model ai_chat_sessions {
