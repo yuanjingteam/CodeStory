@@ -45,7 +45,7 @@ export async function getRecommendations(userId: string, params: { courseId: str
       const hits = await createKnowledgeRetriever().retrieve(`${current.title}\n${current.content || ''}`, { userId, courseId: params.courseId, purpose: 'student_recommendation', sourceTypes: ['lesson'] });
       const ids = [...new Set(hits.map(h => h.sourceId).filter(id => id !== params.lessonId))].slice(0, limit);
       const lessons = await prisma.lessons.findMany({ where: { id: { in: ids }, is_delete: 0, chapters: { course_id: params.courseId, is_delete: 0 } }, include: { chapters: true } });
-      for (const [rank, lesson] of lessons.entries()) items.push({ rank: rank + 1, type: 'lesson', courseId: params.courseId, chapterId: lesson.chapter_id, lessonId: lesson.id, title: lesson.title, reason: '与你正在学习的小节相关', source: 'rag', relevanceScore: clamp(hits.find(h => h.sourceId === lesson.id)?.score || 0), href: `/courses/${params.courseId}/lessons/${lesson.id}` });
+      for (const [rank, lesson] of lessons.entries()) items.push({ rank: rank + 1, type: 'lesson', courseId: params.courseId, chapterId: lesson.chapter_id, lessonId: lesson.id, title: lesson.title, reason: '与你正在学习的小节相关', source: 'rag', relevanceScore: clamp(hits.find(h => h.sourceId === lesson.id)?.score || 0), href: `/courses/${params.courseId}/chapters/${lesson.chapter_id}/lessons/${lesson.id}` });
     } catch { /* fallback below */ }
   }
   if (params.scene === 'review' || items.length < limit) {
@@ -67,5 +67,5 @@ export async function getRecommendations(userId: string, params: { courseId: str
       : item.href;
     return { ...item, rank: index + 1, href, trackingToken };
   });
-  return { feedId, scene: params.scene, mode: result.length ? (items.some(i => i.source === 'rag') ? 'rag' : 'fallback') : 'cold_start', items: result };
+  return { feedId, scene: params.scene, mode: result.length ? (items.some(i => i.source === 'rag' || i.source === 'learning_progress' || i.source === 'mastery') ? 'personalized' : 'fallback') : 'cold_start', items: result };
 }

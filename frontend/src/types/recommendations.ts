@@ -16,6 +16,6 @@ export interface RecommendationItem {
 export interface RecommendationFeed {
   feedId: string;
   scene: 'lesson' | 'review';
-  mode: 'rag' | 'fallback' | 'cold_start';
+  mode: 'personalized' | 'fallback' | 'cold_start';
   items: RecommendationItem[];
 }
