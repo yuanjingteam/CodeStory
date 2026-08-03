@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "runId": "59141780-2935-4dea-90f3-de047ec8f935",
+  "createdAt": "2026-08-03T07:22:51.224Z",
+  "datasetHash": "e6f692562959c26d75f2630163c60b6bd70e0f7e985d61c1f2c43250994447e7",
+  "promptSourceHash": "81514f93cdba463afa264f64e4b9df4f03063f0b01b820fd477ba3c413b509d5",
+  "codeStatus": "a0a5f73fda20bb63b13eb51dc1de7a86aa5d9346",
+  "sampleCount": 50,
+  "concurrency": 5,
+  "model": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+  "baseUrl": "https://api.siliconflow.cn/v1",
+  "runtime": {
+    "promptVersion": "exercise-gen-v2",
+    "temperature": 0.1,
+    "maxTokens": 1400,
+    "timeoutMs": 180000,
+    "responseFormat": "json_object",
+    "transportRetries": 2,
+    "structureRepairs": 1
+  }
+}
