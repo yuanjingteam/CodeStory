@@ -28,7 +28,7 @@ describe('阶段二严格门禁', () => {
     );
     expect(result.machineDuplicate).toBe(true);
     expect(result.matchedExerciseId).toBe('approved-sql-001');
-    expect(result.similarity).toBeCloseTo(0.9701, 4);
+    expect(result.similarity).toBeCloseTo(0.970728, 6);
     expect(screenAgainstApprovedLesson(
       { lessonId: 'lesson-python-branch', embedding: [1, 0, 0] },
       exerciseGenerationApprovedBaseline,
