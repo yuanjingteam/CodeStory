@@ -56,10 +56,11 @@ export const exerciseApi = {
     }).then(res => res.data);
   },
 
-  submit: (exerciseId: string | number, answer: string) => {
+  submit: (exerciseId: string | number, answer: string, recommendationToken?: string) => {
     return request.post<ExerciseSubmitResponse>('exercises/submit', {
       exercise_id: exerciseId,
-      answer
+      answer,
+      ...(recommendationToken ? { recommendationToken } : {})
     }).then(res => res.data);
   },
 

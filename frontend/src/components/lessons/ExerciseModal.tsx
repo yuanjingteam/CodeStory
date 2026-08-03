@@ -24,6 +24,7 @@ interface ExerciseModalProps {
   onClose: () => void
   onComplete: (exerciseId: string) => void
   onCodeChange?: (code: string | null) => void
+  recommendationToken?: string | null
 }
 
 function ReviewList({ title, items }: { title: string; items: string[] }) {
@@ -95,6 +96,7 @@ export default function ExerciseModal({
   onClose,
   onComplete,
   onCodeChange,
+  recommendationToken,
 }: ExerciseModalProps) {
   const [exerciseData, setExerciseData] = useState<ExerciseDetailData | null>(null)
   const [loading, setLoading] = useState(false)
@@ -176,7 +178,7 @@ export default function ExerciseModal({
     if (!exerciseData?.id) return false
 
     try {
-      const response = await exerciseApi.submit(exerciseData.id, answer)
+      const response = await exerciseApi.submit(exerciseData.id, answer, recommendationToken || undefined)
       setSubmitResult({
         correct: response.correct,
         score: response.score,

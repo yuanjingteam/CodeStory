@@ -49,9 +49,23 @@ export async function getRecommendations(userId: string, params: { courseId: str
     } catch { /* fallback below */ }
   }
   if (params.scene === 'review' || items.length < limit) {
-    const answers = await prisma.answer.findMany({ where: { user_id: userId, is_delete: 0, score: { lt: 60 }, exercises: { is_delete: 0, review_status: 'approved', lessons: { is_delete: 0, chapters: { course_id: params.courseId, is_delete: 0 } } } }, orderBy: { score: 'asc' }, take: limit, include: { exercises: { include: { lessons: { include: { chapters: true } } } } } });
+    const [answers, weakLessons] = await Promise.all([
+      prisma.answer.findMany({ where: { user_id: userId, is_delete: 0, score: { lt: 60 }, exercises: { is_delete: 0, review_status: 'approved', lessons: { is_delete: 0, chapters: { course_id: params.courseId, is_delete: 0 } } } }, orderBy: { score: 'asc' }, take: limit, include: { exercises: { include: { lessons: { include: { chapters: true } } } } } }),
+      prisma.lessons.findMany({ where: { is_delete: 0, chapters: { course_id: params.courseId, is_delete: 0 }, lessons_progress: { some: { user_id: userId, is_delete: 0, mastery_level: { lt: 60 } } } }, orderBy: [{ difficulty: 'asc' }, { order: 'asc' }], take: limit, include: { chapters: true } }),
+    ]);
     for (const a of answers) if (!items.some(i => i.exerciseId === a.exercise_id)) items.push({ rank: items.length + 1, type: 'exercise', courseId: params.courseId, chapterId: a.exercises.lessons.chapter_id, lessonId: a.exercises.lesson_id, exerciseId: a.exercise_id, title: a.exercises.content, reason: '这道题此前得分较低，建议复习', source: 'learning_progress', relevanceScore: clamp((60 - a.score) / 60), href: `/courses/${params.courseId}/chapters/${a.exercises.lessons.chapter_id}/lessons/${a.exercises.lesson_id}?exercise=open&exerciseId=${a.exercise_id}` });
+    for (const lesson of weakLessons) if (items.length < limit && !items.some(i => i.lessonId === lesson.id)) items.push({ rank: items.length + 1, type: 'lesson', courseId: params.courseId, chapterId: lesson.chapter_id, lessonId: lesson.id, title: lesson.title, reason: '这个小节的掌握度还不够稳定', source: 'mastery', relevanceScore: 0.4, href: `/courses/${params.courseId}/chapters/${lesson.chapter_id}/lessons/${lesson.id}` });
   }
-  const result = items.slice(0, limit).map((item, index) => ({ ...item, rank: index + 1, trackingToken: createTrackingToken({ userId, feedId, targetType: item.type, targetId: item.exerciseId || item.lessonId, rank: index + 1 }) }));
+  if (params.scene === 'review' && items.length < limit) {
+    const foundation = await prisma.lessons.findMany({ where: { is_delete: 0, chapters: { course_id: params.courseId, is_delete: 0 } }, orderBy: [{ difficulty: 'asc' }, { order: 'asc' }], take: limit, include: { chapters: true } });
+    for (const lesson of foundation) if (items.length < limit && !items.some(i => i.lessonId === lesson.id)) items.push({ rank: items.length + 1, type: 'lesson', courseId: params.courseId, chapterId: lesson.chapter_id, lessonId: lesson.id, title: lesson.title, reason: '按课程顺序开始下一段学习', source: 'course_order', relevanceScore: null, href: `/courses/${params.courseId}/chapters/${lesson.chapter_id}/lessons/${lesson.id}` });
+  }
+  const result = items.slice(0, limit).map((item, index) => {
+    const trackingToken = createTrackingToken({ userId, feedId, targetType: item.type, targetId: item.exerciseId || item.lessonId, rank: index + 1 });
+    const href = item.type === 'exercise'
+      ? `${item.href}&recommendationToken=${encodeURIComponent(trackingToken)}`
+      : item.href;
+    return { ...item, rank: index + 1, href, trackingToken };
+  });
   return { feedId, scene: params.scene, mode: result.length ? (items.some(i => i.source === 'rag') ? 'rag' : 'fallback') : 'cold_start', items: result };
 }

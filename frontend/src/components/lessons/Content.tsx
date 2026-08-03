@@ -1,7 +1,9 @@
 import Progress from './Progress';
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { LessonDetailData, Chapter } from '@/types/lesson-detail';
+import { getLessonRecommendations, recordRecommendationEvent } from '@/api/recommendations';
+import type { RecommendationItem } from '@/types/recommendations';
 
 interface ContentProps {
   data: LessonDetailData;
@@ -34,6 +36,10 @@ export default memo(function Content({ data, onLessonClick }: ContentProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(
     getInitialExpandedChapters
   );
+  const [related, setRelated] = useState<RecommendationItem[]>([]);
+  const relatedRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { getLessonRecommendations(data.course.id, data.currentLesson.id).then((r) => setRelated(r.data?.items || [])).catch(() => setRelated([])); }, [data.currentLesson.id, data.course.id]);
+  useEffect(() => { const node = relatedRef.current; if (!node || !related.length) return; const observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) { Promise.all(related.map((item) => recordRecommendationEvent(item.trackingToken, 'impression'))).catch(() => undefined); observer.disconnect(); } }, { threshold: 0.5 }); observer.observe(node); return () => observer.disconnect(); }, [related]);
 
   useEffect(() => {
     localStorage.setItem(EXPANDED_CHAPTERS_STORAGE_KEY, JSON.stringify([...expandedChapters]));
@@ -139,6 +145,7 @@ export default memo(function Content({ data, onLessonClick }: ContentProps) {
             </div>
           ))}
         </div>
+        {related.length > 0 && <div ref={relatedRef} className="border-t-2 border-black p-4 bg-yellow-50"><h3 className="font-black mb-2">相关学习</h3><div className="grid gap-2">{related.map((item) => <button key={item.trackingToken} onClick={() => { recordRecommendationEvent(item.trackingToken, 'clicked').catch(() => undefined); router.push(item.href); }} className="text-left border-2 border-black bg-white px-3 py-2 font-bold hover:bg-yellow-300">{item.title}</button>)}</div></div>}
       </div>
     </div>
   );
