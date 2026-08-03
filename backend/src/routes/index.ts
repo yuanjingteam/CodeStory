@@ -11,3 +11,4 @@ export { default as lessonManageRouter } from './lesson-manage';
 export { default as exerciseManageRouter } from './exercise-manage';
 export { default as aiRouter } from './ai';
 export { default as gradingReviewsRouter } from './grading-reviews';
+export { default as recommendationsRouter } from './recommendations';

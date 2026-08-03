@@ -83,6 +83,7 @@ const Header: React.FC = () => {
                       <div className="font-bold text-black text-sm whitespace-nowrap overflow-hidden text-ellipsis min-w-[60px] max-w-[100px] mr-2">
                         {isLoading ? '...' : user?.nickname || 'UserName'}
                       </div>
+                      <Link href="/profile" className="font-bold text-purple-700 hover:underline">个人中心</Link>
                       <button
                         onClick={handleLogout}
                         className=" flex justify-end items-center  hover:text-purple-500 cursor-pointer transition-all font-bold text-purple-700 "

@@ -52,7 +52,7 @@ router.get('/detail', authMiddleware, async (req, res) => {
 
 router.post('/submit', authMiddleware, async (req, res) => {
   try {
-    const { exercise_id, answer } = req.body;
+    const { exercise_id, answer, recommendationToken } = req.body;
     const userId = req.user!.id;
 
     if (!exercise_id || !answer) {
@@ -64,6 +64,10 @@ router.post('/submit', authMiddleware, async (req, res) => {
       return notFound(res, '题目不存在');
     }
 
+    if (recommendationToken) {
+      const { recordRecommendationEvent } = await import('../services/recommendations/service');
+      await recordRecommendationEvent({ userId, token: recommendationToken, eventType: 'review_completed' }).catch(() => undefined);
+    }
     return res.json({
       code: 200,
       message: 'success',
