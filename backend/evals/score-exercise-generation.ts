@@ -11,6 +11,8 @@ export interface GenerationAttempt {
   validCandidateCount: number;
   answerCorrect?: boolean;
   humanConfirmedDuplicate?: boolean;
+  machineDuplicate?: boolean;
+  machineDuplicateSimilarity?: number | null;
   crossCourseSimilar?: boolean;
   labelProvenance?: string;
 }
@@ -83,6 +85,7 @@ export function scoreExerciseGeneration(
     answerAccuracy: round(ratio(successes.filter((item) => item.answerCorrect).length, successes.length)),
     humanConfirmedDuplicateRate: round(ratio(successes.filter((item) => item.humanConfirmedDuplicate).length, successes.length)),
     crossCourseSimilarityRate: round(ratio(successes.filter((item) => item.crossCourseSimilar).length, successes.length)),
+    machineDuplicateRate: round(ratio(successes.filter((item) => item.machineDuplicate === true).length, successes.length)),
   };
   const gates = {
     firstPassStructuredRate: metrics.firstPassStructuredRate >= STAGE2_THRESHOLDS.firstPassStructuredRate,
@@ -98,6 +101,13 @@ export function scoreExerciseGeneration(
     sampleSize: attempts.length,
     humanReviewedCandidateCount: successes.length,
     duplicatePolicy: 'same-lesson-and-in-batch',
+    machineDuplicatePolicy: {
+      scope: 'same-lesson-approved-baseline',
+      threshold: 0.92,
+      administratorConfirmationRequired: true,
+      screenedCandidateCount: successes.filter((item) => typeof item.machineDuplicate === 'boolean').length,
+      machineDuplicateCount: successes.filter((item) => item.machineDuplicate === true).length,
+    },
     observationOnly: ['crossCourseSimilarityRate'],
     metrics,
     thresholds: STAGE2_THRESHOLDS,

@@ -3,6 +3,8 @@ import { mergeExerciseHumanReviews } from '../../evals/merge-exercise-generation
 import { scoreExerciseGeneration } from '../../evals/score-exercise-generation';
 import { mergeGradingHumanReviews } from '../../evals/merge-grading-review-audit';
 import { assertNewGradingRunPath } from '../../evals/run-grading-review';
+import { screenAgainstApprovedLesson } from '../../evals/exercise-generation-duplicate';
+import { exerciseGenerationApprovedBaseline } from '../../evals/datasets/exercise-generation-approved-baseline';
 
 function stage2Attempts() {
   return Array.from({ length: 50 }, (_, index) => ({
@@ -19,6 +21,23 @@ function stage2Attempts() {
 }
 
 describe('阶段二严格门禁', () => {
+  it('只按同小节 approved baseline 进行 0.92 embedding 初筛', () => {
+    const result = screenAgainstApprovedLesson(
+      { lessonId: 'lesson-sql-where', embedding: [0.97, 0.24, 0] },
+      exerciseGenerationApprovedBaseline,
+    );
+    expect(result.machineDuplicate).toBe(true);
+    expect(result.matchedExerciseId).toBe('approved-sql-001');
+    expect(result.similarity).toBeCloseTo(0.9701, 4);
+    expect(screenAgainstApprovedLesson(
+      { lessonId: 'lesson-python-branch', embedding: [1, 0, 0] },
+      exerciseGenerationApprovedBaseline,
+    ).machineDuplicate).toBe(false);
+    expect(screenAgainstApprovedLesson(
+      { lessonId: 'lesson-unrelated', embedding: [1, 0, 0] },
+      exerciseGenerationApprovedBaseline,
+    ).machineDuplicate).toBe(false);
+  });
   it('只有完整管理员 sidecar 才能写入 human-reviewed provenance', () => {
     const results = [{ id: 'one', finalSuccess: true, validCandidateCount: 1 }];
     expect(() => mergeExerciseHumanReviews(results, [])).toThrow(/未覆盖/);
