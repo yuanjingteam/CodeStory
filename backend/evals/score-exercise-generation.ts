@@ -100,7 +100,7 @@ export function scoreExerciseGeneration(
     manifestHash: stableHash(manifest),
     sampleSize: attempts.length,
     humanReviewedCandidateCount: successes.length,
-    duplicatePolicy: 'same-lesson-and-in-batch',
+    duplicatePolicy: 'same-lesson-approved-baseline',
     machineDuplicatePolicy: {
       scope: 'same-lesson-approved-baseline',
       threshold: 0.92,
