@@ -43,11 +43,14 @@ export interface DeletedExerciseItem extends ExerciseItem {
 
 export interface LessonItem {
   id: string;
+  uuid?: string;
   lessonId: string;
   lessonName: string;
   courseId: string;
+  courseUuid?: string;
   courseName: string;
   chapterId: string;
+  chapterUuid?: string;
   chapterName: string;
   content: string;
   difficulty: number;

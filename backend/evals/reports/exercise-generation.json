@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-08-01T09:59:10.077Z",
+  "input": "evals\\datasets\\exercise-generation-results-audited.json",
+  "sampleSize": 100,
+  "metrics": {
+    "firstPassStructuredRate": 0.89,
+    "repairedSuccessRate": 0.99,
+    "finalFailureRate": 0.01,
+    "modelCallsPerValidCandidate": 1.1212,
+    "answerAccuracy": null,
+    "agentAuditedAnswerAccuracy": 0.9596,
+    "humanConfirmedDuplicateRate": null,
+    "agentAuditedDuplicateRate": 0.2222,
+    "machineDuplicateCount": 0,
+    "administratorAdoptionRate": null
+  },
+  "denominators": {
+    "generationAttempts": 100,
+    "validCandidates": 99,
+    "answerReviews": 0,
+    "agentAnswerReviews": 99,
+    "duplicateReviews": 0,
+    "agentDuplicateReviews": 99,
+    "adoptionSamples": 0
+  }
+}

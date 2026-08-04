@@ -117,9 +117,13 @@ BGE-M3 的 MRR@5 低于 4B，也不切换。
 | DeepSeek V4 Flash / 原提示 | 68 | 32 | 0.4706 | 未通过 |
 | LongCat-2.0 / 原提示 | 70 | 35 | 0.5000 | 未通过 |
 | DeepSeek V4 Flash / grounded-v2 | 53 | 48 | 0.9057 | 通过 |
+| Qwen3 30B / grounded-v3.1 | 121 | 116 | 0.9587 | 通过 |
 
-DeepSeek V4 Flash 继续作为正式回答模型，不切换 LongCat。早期 20 条审核的
-grounded-v2 结果作为历史基线保留；生产提示词决策以下方 40 条同集对照为准。
+DeepSeek 与 LongCat 结果作为历史基线保留。生产候选切换为 Qwen3 30B 后，
+使用同一套 40 条分层问题重新生成并完成 claim 级审核；课程 claim 支持率
+`116 / 121 = 0.9587`，通用补充正确率 `70 / 70 = 1.00`，引用合法率与扩展
+分区准确率均为 `1.00`。报告当前标记为
+`hybrid-model-assisted, pending-agent-audit`，机器门禁通过但独立人工复核待补。
 
 ## grounded-v3 双模式优化
 
@@ -186,6 +190,9 @@ v3.1 的中位耗时因扩展回答内容更完整而上升，但两个 P95 比�
 - 原始回答：`rag-answer-review.grounded-v2-40.json`、`rag-answer-review.grounded-v3.json`
 - claim 审核：`rag-answer-claims.grounded-v2-40.json`、`rag-answer-claims.grounded-v3.json`
 - 支持率：`rag-answer-support.grounded-v2-40.json`、`rag-answer-support.grounded-v3.json`
+- Qwen3 30B：`rag-answer-review.qwen3-30b.grounded-v3.json`、
+  `rag-answer-claims.qwen3-30b.grounded-v3.json`、
+  `rag-answer-support.qwen3-30b.grounded-v3.json`
 - 结构评分：`rag-tutor-v3-structure.json`
 - 成对门禁：`rag-tutor-prompt-comparison.json`
 
@@ -197,10 +204,11 @@ v3.1 的中位耗时因扩展回答内容更完整而上升，但两个 P95 比�
 ## 上线门槛
 
 - Recall@5 ≥ 0.85（当前 1.00，已通过）
-- 回答证据支持准确率 ≥ 0.90（grounded-v3.1 当前 0.9898，已通过）
+- 回答证据支持准确率 ≥ 0.90（Qwen3 30B grounded-v3.1 当前 0.9587，已通过）
 - 自动化测试和真实供应商冒烟保持通过
 
-阶段 1 上线门槛已全部通过，发布组合为 Qwen3-Embedding-4B +
-DeepSeek V4 Flash + grounded-v3（内部修订 `grounded-v3.1-boundary`）。仓库和示例环境中的
+阶段 1 工程与 Qwen3 30B 机器质量门禁已通过，独立人工复核待补。候选组合为
+Qwen3-Embedding-4B + Qwen3 30B + grounded-v3（内部修订
+`grounded-v3.1-boundary`）。仓库和示例环境中的
 `AI_RAG_ENABLED` 继续保持安全默认值 `false`；实际部署完成迁移、
 重建和冒烟后，由部署环境显式改为 `true`，不在源码中默认开启。

@@ -19,7 +19,10 @@ import {
   courseManageRouter,
   chapterManageRouter,
   lessonManageRouter,
+  exerciseManageRouter,
   aiRouter,
+  gradingReviewsRouter,
+  recommendationsRouter,
 } from './routes/index';
 import { startAiChatCleanupScheduler } from './services/ai/chat-retention.service';
 import { startContentCleanupScheduler } from './services/course-manage/content-retention.service';
@@ -46,6 +49,7 @@ app.use('/api/v1/home', homeRouter);
 app.use('/api/v1/profile', authMiddleware, profileRouter);
 app.use('/api/v1/chapter/lesson',authMiddleware, lessonsRouter);
 app.use('/api/v1/exercises', authMiddleware, exercisesRouter);
+app.use('/api/v1/recommendations', authMiddleware, recommendationsRouter);
 app.use('/api/v1/ai', aiRouter);
 app.use(
   '/api/v1/admin/user-manage',
@@ -66,6 +70,16 @@ app.use(
   '/api/v1/admin/lessons',
   [authMiddleware, requireAdmin],
   lessonManageRouter
+);
+app.use(
+  '/api/v1/admin/grading-reviews',
+  [authMiddleware, requireAdmin],
+  gradingReviewsRouter
+);
+app.use(
+  '/api/v1/admin/exercises',
+  [authMiddleware, requireAdmin],
+  exerciseManageRouter
 );
 
 // Error handler

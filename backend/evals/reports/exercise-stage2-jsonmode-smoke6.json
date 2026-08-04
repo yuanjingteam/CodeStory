@@ -1,0 +1,248 @@
+[
+  {
+    "id": "exercise-stage2-001",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      28978
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，当你执行 SELECT * FROM users 后，想要只显示年龄大于18的用户，你应该在查询中添加哪个子句？",
+      "answer": "WHERE age > 18",
+      "analysis": "正确答案是 WHERE age > 18。WHERE 子句用于在 SELECT 查询中筛选满足条件的行，这里条件是年龄大于18。常见错误是使用 ORDER BY（排序）、GROUP BY（分组）或 HAVING（用于分组后筛选），这些都不符合筛选行的需求。",
+      "knowledge": "SQL WHERE 在用户管理中的应用：WHERE 子句在 SELECT 之后筛选满足条件的行，常用于用户管理中的条件查询，如按年龄、状态等字段筛选用户。",
+      "difficulty": 0,
+      "metadata": {
+        "options": [
+          "WHERE age > 18",
+          "ORDER BY age",
+          "GROUP BY age",
+          "HAVING age > 18"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL WHERE | 场景:用户管理]\nWHERE 子句在 SELECT 之后筛选满足条件的行。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-002",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      40754
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "给定一个用户表 `users`，包含字段 `id` (INT), `username` (VARCHAR), `email` (VARCHAR), `registration_date` (DATE)。请编写一条SQL查询语句，返回所有用户的所有字段，并按照 `registration_date` 升序排列。",
+      "answer": "SELECT * FROM users ORDER BY registration_date ASC;",
+      "analysis": "本题考察ORDER BY子句的基本用法。正确答案使用`ORDER BY registration_date ASC`按注册日期升序排序。常见错误包括：忘记写ORDER BY、使用错误的列名、混淆ASC和DESC、或者在不必要时使用GROUP BY等。注意：ASC是默认排序方式，可以省略，但明确写出更清晰。",
+      "knowledge": "SQL ORDER BY在用户管理中的应用：通过ORDER BY子句可以对用户数据按指定列排序，例如按注册日期升序显示用户列表，便于管理。",
+      "difficulty": 1,
+      "metadata": {
+        "codeTemplate": "SELECT * FROM users ORDER BY ?;",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE users (id INT, username VARCHAR(50), email VARCHAR(100), registration_date DATE);\nINSERT INTO users VALUES (1, 'Alice', 'alice@example.com', '2023-01-15');\nINSERT INTO users VALUES (2, 'Bob', 'bob@example.com', '2023-03-20');\nINSERT INTO users VALUES (3, 'Charlie', 'charlie@example.com', '2023-02-10');",
+            "output": "id | username | email                | registration_date\n1  | Alice    | alice@example.com    | 2023-01-15\n3  | Charlie  | charlie@example.com  | 2023-02-10\n2  | Bob      | bob@example.com      | 2023-03-20"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "题目符合格式要求，答案存在，难度匹配"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL ORDER BY | 场景:用户管理]\nORDER BY 按指定列排序，ASC 为升序，DESC 为降序。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-003",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      36610
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，需要实现分页查询，每页显示15个用户，要获取第4页的用户数据，正确的 SQL 语句是（使用标准 SQL 语法）？",
+      "answer": "SELECT * FROM users LIMIT 15 OFFSET 45;",
+      "analysis": "正确选项 A 使用 LIMIT 15 OFFSET 45，表示返回15行，跳过前45行，即第4页的数据。常见错误包括混淆 LIMIT 和 OFFSET 的值（如 B），或者计算偏移量时忘记减1（如 C 使用 4*15=60），或者两者都错（如 D）。",
+      "knowledge": "SQL LIMIT在用户管理中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "options": [
+          "SELECT * FROM users LIMIT 15 OFFSET 45;",
+          "SELECT * FROM users LIMIT 45 OFFSET 15;",
+          "SELECT * FROM users LIMIT 15 OFFSET 60;",
+          "SELECT * FROM users LIMIT 60 OFFSET 15;"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL LIMIT | 场景:用户管理]\nLIMIT 限制返回行数，可与偏移量组合实现分页。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-004",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      45677
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在用户管理系统中，有一个用户表（users），用于存储用户信息。请编写SQL语句，使用COUNT(*)函数查询用户的总数。",
+      "answer": "SELECT COUNT(*) FROM users;",
+      "analysis": "COUNT(*)用于统计结果集的行数，这里统计users表中的所有行，即用户总数。常见错误是忘记写FROM子句或使用COUNT(列名)但列名可能包含NULL值导致计数不准确。在用户管理场景中，COUNT(*)常用于获取用户总量。",
+      "knowledge": "SQL COUNT在用户管理中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "codeTemplate": "-- 请在此处编写SQL语句\n",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE users (id INT, name VARCHAR(50), email VARCHAR(100)); INSERT INTO users VALUES (1, 'Alice', 'alice@example.com'), (2, 'Bob', 'bob@example.com'), (3, 'Charlie', 'charlie@example.com');",
+            "output": "3"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL COUNT | 场景:用户管理]\nCOUNT(*) 统计结果集的行数。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-005",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      26205
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，有一个订单表 orders，包含字段 user_id 和 order_amount。要统计每个用户的订单数量，以下哪个 SQL 语句是正确的？",
+      "answer": "SELECT user_id, COUNT(*) FROM orders GROUP BY user_id",
+      "analysis": "正确选项使用了 GROUP BY user_id，将订单按用户分组，然后使用 COUNT(*) 统计每个组的订单数量。常见错误包括：缺少 GROUP BY 导致语法错误或返回单行；按 order_id 分组无法得到每个用户的计数；使用 WHERE 条件只返回特定用户，无法统计所有用户。",
+      "knowledge": "SQL GROUP BY在用户管理中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "options": [
+          "SELECT user_id, COUNT(*) FROM orders GROUP BY user_id",
+          "SELECT user_id, COUNT(*) FROM orders",
+          "SELECT user_id, COUNT(*) FROM orders GROUP BY order_id",
+          "SELECT user_id, COUNT(*) FROM orders WHERE user_id = 1"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL GROUP BY | 场景:用户管理]\nGROUP BY 将相同键值的行分组，常与聚合函数配合。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  },
+  {
+    "id": "exercise-stage2-006",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      122996
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "给定用户表 users，包含字段：user_id INT, name VARCHAR(50), registration_date DATE, status VARCHAR(10)（'active' 或 'inactive'）。请编写一个 SQL 查询，找出在 2023 年注册的用户中，按注册月份分组，并且满足以下两个条件的月份：该月注册用户总数超过 3，且该月注册用户中活跃用户（status='active'）占比超过 50%。结果按月份升序排列。要求使用 HAVING 子句进行分组后过滤。",
+      "answer": "SELECT \n    EXTRACT(MONTH FROM registration_date) AS month,\n    COUNT(*) AS total_users,\n    SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active_users\nFROM users\nWHERE EXTRACT(YEAR FROM registration_date) = 2023\nGROUP BY EXTRACT(MONTH FROM registration_date)\nHAVING COUNT(*) > 3 \n   AND (SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) * 1.0 / COUNT(*)) > 0.5\nORDER BY month;",
+      "analysis": "本题考察 HAVING 子句在分组后过滤聚合结果的应用。常见错误包括：1）使用 WHERE 过滤聚合条件（如 WHERE COUNT(*) > 3），这是不允许的，因为 WHERE 在分组前执行；2）忘记 GROUP BY 导致聚合函数使用不当；3）整数除法导致占比计算错误，应使用浮点数除法（如 *1.0）；4）未正确提取年份和月份。正确做法是先用 WHERE 过滤 2023 年的行，再用 GROUP BY 按月分组，最后用 HAVING 同时过滤总人数和活跃占比。",
+      "knowledge": "SQL HAVING在用户管理中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "codeTemplate": "SELECT \n    EXTRACT(MONTH FROM registration_date) AS month,\n    COUNT(*) AS total_users,\n    SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active_users\nFROM users\nWHERE \n    -- 过滤2023年注册的用户\nGROUP BY \n    -- 按月份分组\nHAVING \n    -- 添加分组后过滤条件\nORDER BY month;",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE users (\n    user_id INT PRIMARY KEY,\n    name VARCHAR(50),\n    registration_date DATE,\n    status VARCHAR(10)\n);\n\nINSERT INTO users VALUES\n(1, 'Alice', '2023-01-10', 'active'),\n(2, 'Bob', '2023-01-12', 'active'),\n(3, 'Charlie', '2023-01-15', 'active'),\n(4, 'David', '2023-01-18', 'active'),\n(5, 'Eve', '2023-01-20', 'inactive'),\n(6, 'Frank', '2023-02-01', 'active'),\n(7, 'Grace', '2023-02-05', 'active'),\n(8, 'Heidi', '2023-02-10', 'inactive');",
+            "output": "month | total_users | active_users\n1     | 5           | 4"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL HAVING | 场景:用户管理]\nHAVING 在分组后过滤聚合结果，WHERE 在分组前过滤行。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-human-review"
+  }
+]

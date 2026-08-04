@@ -1,0 +1,49 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "model": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+  "reviewerModel": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+  "rubricVersion": "rag-claim-support-v3",
+  "promptVersion": "grounded-v3",
+  "promptRevision": "grounded-v3.1-boundary",
+  "reviewMethod": "hybrid-model-assisted, pending-agent-audit",
+  "reviewedAnswers": 40,
+  "reviewedClaims": 191,
+  "reviewedCourseClaims": 121,
+  "reviewedSupplementClaims": 70,
+  "supportedClaims": 116,
+  "correctSupplementClaims": 70,
+  "supportAccuracy": 0.9586776859504132,
+  "supplementAccuracy": 1,
+  "citationValidity": 1,
+  "extensionLabelAccuracy": 1,
+  "passed": true,
+  "unsupportedClaims": [
+    {
+      "answerId": "lesson-100000000000000000000000000000000005-2",
+      "claim": "p标签用于定义段落，br标签用于定义换行 [1]。",
+      "reviewerNote": "未提具体用途"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000005-2",
+      "claim": "该小节仅说明了p标签与br标签的用途，未涉及具体使用场景、嵌套规则、样式影响或与其他标签的配合方式 [1]。",
+      "reviewerNote": "课程未说明细节"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000005-2",
+      "claim": "由此可以看出，课程中仅明确指出p标签用于段落、br标签用于换行，未提供更深入的应用逻辑或实际编程建议 [1]。",
+      "reviewerNote": "课程未提应用逻辑"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000008-2",
+      "claim": "input标签支持多种类型，包括输入框、单选、多选和按钮 [1]。",
+      "reviewerNote": "未提具体类型"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000008-2",
+      "claim": "每种类型用于实现不同的用户输入交互，如文本输入、选项选择或触发操作 [1]。",
+      "reviewerNote": "未说明交互类型"
+    }
+  ],
+  "incorrectSupplementClaims": [],
+  "invalidCitations": []
+}

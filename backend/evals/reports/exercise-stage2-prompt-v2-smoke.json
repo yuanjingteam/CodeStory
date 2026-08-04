@@ -1,0 +1,503 @@
+[
+  {
+    "id": "exercise-stage2-001",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      24915
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，要筛选出所有状态为 'active' 的用户，应该在 SQL 查询中使用哪个子句？",
+      "answer": "WHERE",
+      "analysis": "WHERE 子句用于在 SELECT 查询中筛选满足条件的行。常见错误是选择 SELECT（用于指定列）或 FROM（用于指定表），而 WHERE 才是用于条件筛选的。",
+      "knowledge": "SQL WHERE 在用户管理中的应用：使用 WHERE 子句根据条件筛选用户数据。",
+      "difficulty": 0,
+      "metadata": {
+        "options": [
+          "SELECT",
+          "FROM",
+          "WHERE",
+          "GROUP BY"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL WHERE | 场景:用户管理]\nWHERE 子句在 SELECT 之后筛选满足条件的行。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-agent-audit"
+  },
+  {
+    "id": "exercise-stage2-002",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      31242
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在用户管理系统中，有一个 users 表，包含字段 id、name、registration_date。请编写 SQL 查询，按注册日期升序（ASC）返回所有用户的信息。",
+      "answer": "SELECT * FROM users ORDER BY registration_date ASC;",
+      "analysis": "正确的查询使用 ORDER BY 子句按 registration_date 升序排列。常见错误包括：忘记写 ORDER BY、写错列名、误用 DESC 导致降序。虽然 ORDER BY 默认升序，但明确指定 ASC 是良好实践。",
+      "knowledge": "SQL ORDER BY在用户管理中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "codeTemplate": "SELECT * FROM users ORDER BY ",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "users 表数据：\nid | name | registration_date\n1 | Alice | 2023-01-15\n2 | Bob | 2022-12-01\n3 | Charlie | 2023-03-20",
+            "output": "id | name | registration_date\n2 | Bob | 2022-12-01\n1 | Alice | 2023-01-15\n3 | Charlie | 2023-03-20"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL ORDER BY | 场景:用户管理]\nORDER BY 按指定列排序，ASC 为升序，DESC 为降序。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-agent-audit"
+  },
+  {
+    "id": "exercise-stage2-003",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      70575
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "用户表（users）中共有 53 条记录。现在需要实现分页显示，每页显示 10 条记录。若要获取最后一页的数据，应使用以下哪个 SQL 语句？",
+      "answer": "SELECT * FROM users LIMIT 3 OFFSET 50",
+      "analysis": "最后一页的偏移量应为前几页的总记录数，即 (总记录数 - 总记录数 % 每页条数) 或直接计算：53 条记录，每页 10 条，前 5 页共 50 条，第 6 页剩余 3 条，所以偏移量为 50，取 3 条。常见错误是使用每页固定条数 10 或错误偏移量 40。",
+      "knowledge": "SQL LIMIT在用户管理中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "options": [
+          "SELECT * FROM users LIMIT 10 OFFSET 50",
+          "SELECT * FROM users LIMIT 3 OFFSET 50",
+          "SELECT * FROM users LIMIT 10 OFFSET 40",
+          "SELECT * FROM users LIMIT 3 OFFSET 40"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL LIMIT | 场景:用户管理]\nLIMIT 限制返回行数，可与偏移量组合实现分页。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-agent-audit"
+  },
+  {
+    "id": "exercise-stage2-004",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      69006
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在用户管理系统中，有一个名为\"users\"的表，用于存储用户信息。假设当前表中没有任何用户记录。请编写一个SQL查询，统计用户的总数。",
+      "answer": "SELECT COUNT(*) FROM users;",
+      "analysis": "本题考察COUNT(*)函数的使用。COUNT(*)用于统计结果集的行数，在用户管理场景中，常用于获取用户总数。常见错误是忘记写FROM子句或使用COUNT(列名)导致忽略NULL值，但本题要求统计所有用户，所以COUNT(*)最合适。",
+      "knowledge": "SQL COUNT在用户管理中的应用",
+      "difficulty": 0,
+      "metadata": {
+        "codeTemplate": "SELECT COUNT(*) FROM ___;",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "",
+            "output": "0"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL COUNT | 场景:用户管理]\nCOUNT(*) 统计结果集的行数。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-agent-audit"
+  },
+  {
+    "id": "exercise-stage2-005",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      18334
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，有一个用户表（users），包含字段：user_id（用户ID）、name（姓名）、status（状态，如 'active', 'inactive'）、registration_date（注册日期）。现在需要统计每种状态的用户数量，以下哪个 SQL 语句是正确的？",
+      "answer": "SELECT status, COUNT(*) FROM users GROUP BY status;",
+      "analysis": "正确选项 A 使用 GROUP BY status 将相同状态的行分组，并用 COUNT(*) 统计每组行数，符合需求。选项 B 缺少 GROUP BY，在大多数 SQL 中会因 SELECT 包含非聚合列而报错。选项 C 按 name 分组，统计的是每个名字的数量，而非状态。选项 D 使用 ORDER BY 排序但不分组，同样会报错。常见错误是混淆 GROUP BY 与 ORDER BY，或忘记分组直接使用聚合函数。",
+      "knowledge": "SQL GROUP BY在用户管理中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "options": [
+          "SELECT status, COUNT(*) FROM users GROUP BY status;",
+          "SELECT status, COUNT(*) FROM users;",
+          "SELECT status, COUNT(*) FROM users GROUP BY name;",
+          "SELECT status, COUNT(*) FROM users ORDER BY status;"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL GROUP BY | 场景:用户管理]\nGROUP BY 将相同键值的行分组，常与聚合函数配合。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-agent-audit"
+  },
+  {
+    "id": "exercise-stage2-006",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      48068
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "假设有一个用户表 `users`，包含以下字段：`id` (INT, 主键), `username` (VARCHAR), `role` (VARCHAR), `status` (VARCHAR)。请编写一个SQL查询，统计每个角色的用户数量，并只返回用户数量大于等于2的角色及其用户数，结果按角色名称升序排列。",
+      "answer": "SELECT role, COUNT(*) AS user_count FROM users GROUP BY role HAVING COUNT(*) >= 2 ORDER BY role;",
+      "analysis": "本题考察HAVING子句在分组后过滤聚合结果的应用。首先使用GROUP BY按角色分组，然后用COUNT(*)统计每个组的用户数。HAVING子句用于过滤分组后的结果，只保留用户数大于等于2的角色。最后用ORDER BY排序。注意：WHERE不能用于过滤聚合结果，因为WHERE在分组前执行。常见错误是使用WHERE代替HAVING，或者忘记GROUP BY。",
+      "knowledge": "SQL HAVING在用户管理中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "codeTemplate": "-- 表结构: users(id, username, role, status)\n-- 请在此处编写SQL查询\n",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "INSERT INTO users VALUES (1,'Alice','admin','active'),(2,'Bob','user','active'),(3,'Charlie','user','inactive'),(4,'David','moderator','active'),(5,'Eve','moderator','active');",
+            "output": "moderator,2\nuser,2"
+          },
+          {
+            "input": "INSERT INTO users VALUES (1,'Alice','admin','active'),(2,'Bob','user','active');",
+            "output": ""
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL HAVING | 场景:用户管理]\nHAVING 在分组后过滤聚合结果，WHERE 在分组前过滤行。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-agent-audit"
+  },
+  {
+    "id": "exercise-stage2-007",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      20758
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，有两个表：users（用户）和 roles（角色），通过 user_id 关联。要查询所有有角色的用户信息，应该使用哪种 JOIN？",
+      "answer": "INNER JOIN",
+      "analysis": "INNER JOIN 只返回两个表中连接条件匹配的行，因此可以准确获取有角色的用户信息。常见错误是选择 LEFT JOIN 或 RIGHT JOIN，它们会保留不匹配的行，导致结果中包含无角色的用户或空角色信息。",
+      "knowledge": "SQL JOIN 在用户管理中的应用，INNER JOIN 用于获取两个表中匹配的数据行。",
+      "difficulty": 0,
+      "metadata": {
+        "options": [
+          "INNER JOIN",
+          "LEFT JOIN",
+          "RIGHT JOIN",
+          "FULL OUTER JOIN"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL JOIN | 场景:用户管理]\nINNER JOIN 只返回连接条件匹配的行。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-agent-audit"
+  },
+  {
+    "id": "exercise-stage2-008",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 2,
+    "firstFailureKind": "transport_timeout",
+    "attemptLatenciesMs": [
+      120028,
+      18514
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在用户管理系统中，有两个表：users（用户表）和orders（订单表）。users表包含字段：user_id（主键），name（用户名）。orders表包含字段：order_id（主键），user_id（外键关联users.user_id），product（产品名称）。请编写一个SQL查询，使用LEFT JOIN连接这两个表，返回所有用户的user_id、name以及他们的订单信息（order_id, product）。如果用户没有订单，则订单信息显示为NULL。",
+      "answer": "SELECT users.user_id, users.name, orders.order_id, orders.product\nFROM users\nLEFT JOIN orders ON users.user_id = orders.user_id;",
+      "analysis": "本题考察LEFT JOIN的基本用法。LEFT JOIN会保留左表（users）的全部行，当右表（orders）没有匹配行时，右表列自动填充为NULL。常见错误是误用INNER JOIN，导致没有订单的用户被过滤掉；或者忘记指定正确的连接条件（ON子句），造成笛卡尔积。",
+      "knowledge": "SQL LEFT JOIN在用户管理中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "codeTemplate": "-- 请在此处编写SQL查询\nSELECT ...",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "users表：\nuser_id | name\n1 | Alice\n2 | Bob\n3 | Charlie\n\norders表：\norder_id | user_id | product\n101 | 1 | Laptop\n102 | 1 | Mouse\n103 | 2 | Keyboard",
+            "output": "user_id | name | order_id | product\n1 | Alice | 101 | Laptop\n1 | Alice | 102 | Mouse\n2 | Bob | 103 | Keyboard\n3 | Charlie | NULL | NULL"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL LEFT JOIN | 场景:用户管理]\nLEFT JOIN 保留左表全部行，右表无匹配时补 NULL。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-agent-audit"
+  },
+  {
+    "id": "exercise-stage2-009",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      62029
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，用户表（users）包含字段：user_id, username, email, role, status。现在需要查询所有不同的用户角色（role），以便进行角色管理。以下哪个 SQL 语句能正确返回所有不同的角色？",
+      "answer": "SELECT DISTINCT role FROM users;",
+      "analysis": "正确选项 A 使用 SELECT DISTINCT role FROM users;，DISTINCT 关键字去除结果中的重复行，只返回不同的 role 值。常见错误：选项 B 没有使用 DISTINCT，会返回所有行，包括重复的 role；选项 C 使用 DISTINCT role, status，会基于 role 和 status 两列的组合去重，如果同一角色对应不同状态，则角色会重复出现，不符合题目要求。",
+      "knowledge": "SQL DISTINCT在用户管理中的应用",
+      "difficulty": 2,
+      "metadata": {
+        "options": [
+          "SELECT DISTINCT role FROM users;",
+          "SELECT role FROM users;",
+          "SELECT DISTINCT role, status FROM users;"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL DISTINCT | 场景:用户管理]\nDISTINCT 去除 SELECT 结果中的重复行。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-agent-audit"
+  },
+  {
+    "id": "exercise-stage2-010",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      56137
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在用户管理系统中，有一个用户表users，包含字段id (INT), name (VARCHAR(50)), email (VARCHAR(100))。其中email字段允许为NULL。请补全下面的SQL查询，以找出所有没有填写邮箱的用户（即email为NULL）。注意：必须使用IS NULL，不能使用等号。",
+      "answer": "SELECT id, name, email FROM users WHERE email IS NULL;",
+      "analysis": "在SQL中，NULL表示未知或缺失的值。判断一个字段是否为NULL，必须使用IS NULL或IS NOT NULL，而不能使用等号（=），因为NULL不等于任何值，包括NULL本身。常见错误是使用email = NULL，这不会返回任何行，因为NULL = NULL的结果是未知（false）。正确做法是使用email IS NULL。",
+      "knowledge": "SQL NULL在用户管理中的应用：判断空值应使用IS NULL或IS NOT NULL，不能使用等号。",
+      "difficulty": 0,
+      "metadata": {
+        "codeTemplate": "SELECT id, name, email FROM users WHERE email ___;",
+        "language": "SQL",
+        "testCases": [
+          {
+            "input": "CREATE TABLE users (id INT, name VARCHAR(50), email VARCHAR(50)); INSERT INTO users VALUES (1, 'Alice', 'alice@example.com'), (2, 'Bob', NULL), (3, 'Charlie', 'charlie@example.com');",
+            "output": "2|Bob|NULL"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | SQL NULL | 场景:用户管理]\n判断空值应使用 IS NULL 或 IS NOT NULL，不能使用等号。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-agent-audit"
+  },
+  {
+    "id": "exercise-stage2-011",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      27288
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "single_choice",
+      "content": "在用户管理系统中，有一个用户列表 users = ['Alice', 'Bob', 'Charlie']，现在需要将新用户 'David' 添加到列表末尾，以下哪个操作是正确的？",
+      "answer": "users.append('David')",
+      "analysis": "正确选项是 users.append('David')，因为 append 方法用于在列表末尾添加一个元素。常见错误是使用 insert(0, 'David') 会在开头插入，而 add 是集合的方法，extend 会添加多个元素但这里添加的是字符串，会导致字符被拆分。",
+      "knowledge": "Python 列表在用户管理中的应用",
+      "difficulty": 1,
+      "metadata": {
+        "options": [
+          "users.append('David')",
+          "users.insert(0, 'David')",
+          "users.add('David')",
+          "users.extend('David')"
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 列表 | 场景:用户管理]\nPython 列表使用方括号，可按索引读取并用 append 追加元素。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-agent-audit"
+  },
+  {
+    "id": "exercise-stage2-012",
+    "firstPassStructured": true,
+    "repaired": false,
+    "modelCallCount": 1,
+    "attemptLatenciesMs": [
+      78897
+    ],
+    "finalSuccess": true,
+    "validCandidateCount": 1,
+    "candidate": {
+      "type": "code",
+      "content": "在用户管理系统中，我们使用字典 `users` 存储用户信息，键为用户ID，值为包含用户详细信息的字典。请实现函数 `update_user_profile(users, user_id, profile)`，该函数接收三个参数：`users` 是用户字典，`user_id` 是字符串表示的用户ID，`profile` 是一个字典，包含要更新的字段。函数应更新对应用户的信息：如果用户ID已存在，则将其信息字典中对应的字段更新为 `profile` 中的值；如果用户ID不存在，则将该用户ID及其信息字典添加到 `users` 中。函数不返回任何值，直接修改 `users` 字典。",
+      "answer": "def update_user_profile(users, user_id, profile):\n    if user_id in users:\n        for key, value in profile.items():\n            users[user_id][key] = value\n    else:\n        users[user_id] = profile",
+      "analysis": "本题考察字典的键值对读取和更新操作。常见错误包括：1. 直接使用 `users[user_id] = profile` 覆盖整个用户信息，而不是合并字段；2. 忘记处理用户不存在的情况，导致 KeyError；3. 在更新时没有遍历 profile 的键值对，而是直接赋值。正确的做法是判断用户ID是否存在，若存在则逐个字段更新，若不存在则直接添加。",
+      "knowledge": "Python 字典在用户管理中的应用：通过键读取和更新对应值，以及条件判断处理键的存在性。",
+      "difficulty": 2,
+      "metadata": {
+        "codeTemplate": "def update_user_profile(users, user_id, profile):\n    # 在此处编写代码\n    pass",
+        "language": "Python",
+        "testCases": [
+          {
+            "input": "users = {'001': {'name': 'Alice', 'age': 30}}; update_user_profile(users, '001', {'age': 31})",
+            "output": "{'001': {'name': 'Alice', 'age': 31}}"
+          },
+          {
+            "input": "users = {'001': {'name': 'Alice', 'age': 30}}; update_user_profile(users, '002', {'name': 'Bob', 'age': 25})",
+            "output": "{'001': {'name': 'Alice', 'age': 30}, '002': {'name': 'Bob', 'age': 25}}"
+          }
+        ]
+      },
+      "selfCheck": {
+        "formatValid": true,
+        "answerExists": true,
+        "difficultyMatch": true,
+        "notes": [
+          "已检查"
+        ]
+      }
+    },
+    "evidence": "[固定证据 | Python 字典 | 场景:用户管理]\nPython 字典保存键值对，可通过键读取或更新对应值。\n题目必须围绕用户管理场景，但不得引入证据之外的结论。",
+    "agentAnswerCorrect": null,
+    "machineDuplicate": null,
+    "agentConfirmedDuplicate": null,
+    "labelProvenance": "pending-agent-audit"
+  }
+]

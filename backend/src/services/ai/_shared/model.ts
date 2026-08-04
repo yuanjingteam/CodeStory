@@ -12,6 +12,7 @@ import { logger } from '../../../config/logger';
 export function createChatModel(overrides?: {
   temperature?: number;
   maxTokens?: number;
+  allowMaxTokensAboveDefault?: boolean;
   streaming?: boolean;
   streamUsage?: boolean;
   maxRetries?: number;
@@ -29,7 +30,9 @@ export function createChatModel(overrides?: {
     temperature: overrides?.temperature ?? 0.3,
     timeout: overrides?.timeoutMs ?? config.timeoutMs,
     maxTokens: overrides?.maxTokens
-      ? Math.min(config.maxTokens, overrides.maxTokens)
+      ? overrides.allowMaxTokensAboveDefault
+        ? overrides.maxTokens
+        : Math.min(config.maxTokens, overrides.maxTokens)
       : config.maxTokens,
     streaming: overrides?.streaming ?? false,
     streamUsage: overrides?.streamUsage ?? false,
@@ -69,10 +72,11 @@ export function getMessageText(content: unknown): string {
 /**
  * 从 AI 返回的文本中提取 JSON 对象。
  *
- * 处理三种情况：
+ * 处理以下情况：
  * 1. 纯 JSON 文本
  * 2. 被 ```json ... ``` 代码块包裹的 JSON
- * 3. JSON 嵌在多余文本中（取第一个 { 到最后一个 }）
+ * 3. JSON 嵌在多余文本中
+ * 4. JSON 字符串中含模型输出的未转义控制字符
  *
  * @param errorCode 解析失败时抛出的错误码（如 'AI_CODE_REVIEW_JSON_NOT_FOUND'）
  *
@@ -84,12 +88,112 @@ export function extractJsonObject(text: string, errorCode: string): unknown {
   const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
   const jsonText = fenced ? fenced[1].trim() : trimmed;
 
-  try {
-    return JSON.parse(jsonText);
-  } catch {
-    const start = jsonText.indexOf('{');
-    const end = jsonText.lastIndexOf('}');
-    if (start < 0 || end <= start) throw new Error(errorCode);
-    return JSON.parse(jsonText.slice(start, end + 1));
+  const direct = tryParseModelJson(jsonText);
+  if (direct.ok) return direct.value;
+
+  for (const candidate of findBalancedJsonObjects(jsonText).reverse()) {
+    const parsed = tryParseModelJson(candidate);
+    if (parsed.ok) return parsed.value;
   }
+
+  throw new Error(errorCode);
+}
+
+function tryParseModelJson(text: string):
+  | { ok: true; value: unknown }
+  | { ok: false } {
+  try {
+    return { ok: true, value: JSON.parse(text) };
+  } catch {
+    const escaped = escapeControlCharactersInStrings(text);
+    if (escaped === text) return { ok: false };
+    try {
+      return { ok: true, value: JSON.parse(escaped) };
+    } catch {
+      return { ok: false };
+    }
+  }
+}
+
+function escapeControlCharactersInStrings(text: string): string {
+  let result = '';
+  let inString = false;
+  let escaped = false;
+
+  for (const character of text) {
+    if (!inString) {
+      result += character;
+      if (character === '"') inString = true;
+      continue;
+    }
+
+    if (escaped) {
+      result += character;
+      escaped = false;
+      continue;
+    }
+    if (character === '\\') {
+      result += character;
+      escaped = true;
+      continue;
+    }
+    if (character === '"') {
+      result += character;
+      inString = false;
+      continue;
+    }
+
+    const code = character.charCodeAt(0);
+    result += code <= 0x1f
+      ? `\\u${code.toString(16).padStart(4, '0')}`
+      : character;
+  }
+
+  return result;
+}
+
+function findBalancedJsonObjects(text: string): string[] {
+  const ranges: Array<{ start: number; end: number }> = [];
+  for (let start = 0; start < text.length; start += 1) {
+    if (text[start] !== '{') continue;
+    const end = findBalancedObjectEnd(text, start);
+    if (end >= 0) ranges.push({ start, end });
+  }
+
+  return ranges
+    .filter((range) => !ranges.some((outer) =>
+      outer.start < range.start && outer.end >= range.end
+    ))
+    .map(({ start, end }) => text.slice(start, end + 1));
+}
+
+function findBalancedObjectEnd(text: string, start: number): number {
+  let depth = 1;
+  let inString = false;
+  let escaped = false;
+
+  for (let index = start + 1; index < text.length; index += 1) {
+    const character = text[index];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (character === '\\') {
+        escaped = true;
+      } else if (character === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (character === '"') {
+      inString = true;
+    } else if (character === '{') {
+      depth += 1;
+    } else if (character === '}') {
+      depth -= 1;
+      if (depth === 0) return index;
+    }
+  }
+
+  return -1;
 }

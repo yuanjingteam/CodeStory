@@ -10,6 +10,7 @@ import {
   getMessageText,
 } from '../src/services/ai/_shared/model';
 import { getAiConfig } from '../src/config/ai';
+import { normalizeClaimBatchIndexes } from './lib/rag-claim-review';
 
 const REVIEW_RUBRIC_VERSION = 'rag-claim-support-v3';
 const REVIEW_PIPELINE_VERSION = 'claim-candidates-v1';
@@ -89,22 +90,26 @@ function normalizeClaimVerdicts(value: unknown): unknown {
       const rawIndex =
         item.index ?? item.candidateIndex ?? item.id ?? index;
       const rawIsClaim = item.isClaim ?? item.keep ?? true;
+      const isClaim =
+        typeof rawIsClaim === 'string'
+          ? rawIsClaim.toLowerCase() !== 'false'
+          : Boolean(rawIsClaim);
       return {
         index:
           typeof rawIndex === 'string'
             ? Number(rawIndex)
             : rawIndex,
-        isClaim:
-          typeof rawIsClaim === 'string'
-            ? rawIsClaim.toLowerCase() !== 'false'
-            : rawIsClaim,
-        supportReview: normalizeSupportReview(
-          item.supportReview ?? item.supported ?? item.status
-        ),
-        correctnessReview:
-          item.correctnessReview ||
-          item.correctness ||
-          'not_applicable',
+        isClaim,
+        supportReview: isClaim
+          ? normalizeSupportReview(
+              item.supportReview ?? item.supported ?? item.status
+            )
+          : 'unsupported',
+        correctnessReview: isClaim
+          ? item.correctnessReview ||
+            item.correctness ||
+            'not_applicable'
+          : 'not_applicable',
         evidenceIndexes:
           item.evidenceIndexes || item.evidence || item.sources || [],
         reviewerNote:
@@ -358,7 +363,7 @@ async function main(): Promise<void> {
     `你是严格的 RAG 事实支持审核员。审核口径版本：${REVIEW_RUBRIC_VERSION}。
 
 任务：
-1. 候选陈述已由程序拆分，不要重写或复述文本；必须为每个 index 返回一次判定。
+1. 候选陈述已由程序拆分，不要重写或复述文本；必须为每个 index 返回一次判定，并原样使用候选陈述中的 index，不能按当前批次从 0 重新编号。
 2. 问句、邀请、纯建议、主观评价设 isClaim=false；其余可核查事实设 true。
 3. course 候选只有能从证据直接找到出处或由证据必然推出时才标 supported，correctnessReview=not_applicable。
 4. supplement 候选不要求课程证据支持，supportReview 固定为 unsupported；依据成熟通用知识判断 correctnessReview。
@@ -423,17 +428,29 @@ async function main(): Promise<void> {
           )
         )
       );
-      reviews.push(...parsed.reviews);
+      reviews.push(
+        ...normalizeClaimBatchIndexes(
+          candidateBatch,
+          parsed.reviews
+        )
+      );
     }
     const reviewsByIndex = new Map(
       reviews.map((review) => [review.index, review])
     );
-    if (
-      candidates.some(
+    const missingIndexes = candidates
+      .filter(
         (candidate) => !reviewsByIndex.has(candidate.index)
       )
-    ) {
-      throw new Error(`RAG_CLAIM_REVIEW_INCOMPLETE:${item.id}`);
+      .map((candidate) => candidate.index);
+    if (missingIndexes.length > 0) {
+      throw new Error(
+        `RAG_CLAIM_REVIEW_INCOMPLETE:${item.id}:missing=${missingIndexes.join(
+          ','
+        )}:returned=${reviews
+          .map((review) => review.index)
+          .join(',')}`
+      );
     }
     const claims = candidates.flatMap((candidate) => {
       const review = reviewsByIndex.get(candidate.index)!;
@@ -480,7 +497,12 @@ async function main(): Promise<void> {
       nextIndex += 1;
       try {
         await reviewItem(task.item);
-      } catch {
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : String(error);
+        console.error(
+          `[rag-claim-review] ${task.item.id} attempt=${task.attempt}: ${message}`
+        );
         if (task.attempt < 2) {
           reviewQueue.push({
             item: task.item,

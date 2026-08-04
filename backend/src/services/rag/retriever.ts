@@ -162,7 +162,7 @@ export class AuthorizedKnowledgeRetriever
                   ON co."id" = c."course_id"
                 WHERE e."id" = k."source_id"
                   AND e."is_delete" = 0
-                  AND COALESCE(e."source", 'static') <> 'ai'
+                  AND e."review_status" = 'approved'
                   AND l."is_delete" = 0
                   AND c."is_delete" = 0
                   AND co."is_delete" = 0

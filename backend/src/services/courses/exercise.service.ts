@@ -1,7 +1,11 @@
 import prisma from '../../config/prisma';
+import type { Prisma } from '../../generated/prisma';
 import { resolveShortId, uuidToShortId } from '../../utils/idTransform';
 import { generateChoiceExplanation } from '../ai/choice-explanation.service';
-import { reviewCodeWithAI } from '../ai/code-review.service';
+import {
+  AI_CODE_REVIEW_CONFIDENCE_THRESHOLD,
+  reviewCodeWithAI,
+} from '../ai/evaluate/code-grading-chain';
 import {
   createAiChatErrorPayload,
   logAiError,
@@ -9,13 +13,46 @@ import {
 import {
   applyAiCodeReviewToSubmission,
   calculateAiReviewedFinalScore,
+  type CodeGradeResult,
   gradeCodeExercise,
   markCodeReviewFailed,
   recordCodeSubmission,
 } from './code-grading.service';
-import { updateLessonAndCourseProgress } from './learning-progress.service';
+import {
+  createGradingReviewInTransaction,
+  formatSubmitGradingReview,
+  sanitizeExerciseGenerationMetadata,
+  type GradingReviewTriggerReason,
+} from './grading-review.service';
+import {
+  applySubmissionMasteryInTransaction,
+  updateLessonAndCourseProgress,
+} from './learning-progress.service';
 
 const SCORE_DEDUCTION = [0, 10, 20, 30];
+const SERIALIZABLE_RETRY_LIMIT = 3;
+
+function isRetryableTransactionError(error: unknown): boolean {
+  const code = (error as { code?: string } | null)?.code;
+  return code === 'P2034' || code === 'P2002';
+}
+
+async function runSerializableWithRetry<T>(
+  operation: (tx: Prisma.TransactionClient) => Promise<T>
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < SERIALIZABLE_RETRY_LIMIT; attempt += 1) {
+    try {
+      return await prisma.$transaction(operation, { isolationLevel: 'Serializable' });
+    } catch (error) {
+      lastError = error;
+      if (!isRetryableTransactionError(error) || attempt === SERIALIZABLE_RETRY_LIMIT - 1) {
+        throw error;
+      }
+    }
+  }
+  throw lastError;
+}
 
 interface ScoreBreakdown {
   functionalScore: number;
@@ -31,6 +68,7 @@ interface SubmitAiReview {
   issues: string[];
   suggestions: string[];
   needsManualReview: boolean;
+  confidence?: number;
   status: 'completed' | 'failed';
 }
 
@@ -41,6 +79,7 @@ interface SubmitExerciseResult {
   analysis: string;
   scoreBreakdown?: ScoreBreakdown;
   aiReview?: SubmitAiReview;
+  gradingReview?: ReturnType<typeof formatSubmitGradingReview>;
 }
 
 export interface ExerciseDetail {
@@ -79,8 +118,16 @@ export async function getExerciseDetail(
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
-  const exercise = await prisma.exercises.findUnique({
-    where: { id: resolvedId, is_delete: 0 },
+  const exercise = await prisma.exercises.findFirst({
+    where: {
+      id: resolvedId,
+      is_delete: 0,
+      review_status: 'approved',
+      lessons: {
+        is_delete: 0,
+        chapters: { is_delete: 0, courses: { is_delete: 0 } },
+      },
+    },
     include: {
       lessons: {
         select: {
@@ -116,8 +163,16 @@ export async function submitExercise(
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
-  const exercise = await prisma.exercises.findUnique({
-    where: { id: resolvedId, is_delete: 0 },
+  const exercise = await prisma.exercises.findFirst({
+    where: {
+      id: resolvedId,
+      is_delete: 0,
+      review_status: 'approved',
+      lessons: {
+        is_delete: 0,
+        chapters: { is_delete: 0, courses: { is_delete: 0 } },
+      },
+    },
     include: {
       lessons: {
         select: {
@@ -148,6 +203,14 @@ export async function submitExercise(
   let feedback = '';
   let scoreBreakdown: ScoreBreakdown | undefined;
   let aiReviewResult: SubmitAiReview | undefined;
+  let codeGrade: CodeGradeResult | undefined;
+  let completedAiReview: Awaited<ReturnType<typeof reviewCodeWithAI>> | undefined;
+  let aiReviewFailure: ReturnType<typeof createAiChatErrorPayload> | undefined;
+  let reviewTrigger: GradingReviewTriggerReason | undefined;
+  let aiScore: number | undefined;
+  let ruleScore: number | undefined;
+  let ruleCorrect: boolean | undefined;
+  let aiCorrect: boolean | undefined;
 
   if (exercise.type === 'single_choice') {
     const metadata = exercise.metadata as any;
@@ -182,12 +245,9 @@ export async function submitExercise(
       finalScore: grade.score,
     };
 
-    const submission = await recordCodeSubmission({
-      userId,
-      exerciseId: resolvedId,
-      code: answer,
-      grade,
-    });
+    codeGrade = grade;
+    ruleScore = grade.score;
+    ruleCorrect = grade.correct;
 
     try {
       const aiReview = await reviewCodeWithAI({
@@ -201,14 +261,12 @@ export async function submitExercise(
         staticGrade: grade,
       });
 
-      await applyAiCodeReviewToSubmission({
-        submissionId: submission.id,
-        review: aiReview,
-        hintDeduction: grade.hintDeduction,
-      });
+      completedAiReview = aiReview;
 
       correct = aiReview.review.isLikelyCorrect;
       score = calculateAiReviewedFinalScore(aiReview, grade.hintDeduction);
+      aiScore = score;
+      aiCorrect = aiReview.review.isLikelyCorrect;
       feedback = aiReview.review.feedback;
       scoreBreakdown = {
         functionalScore: aiReview.review.functionalScore,
@@ -223,15 +281,20 @@ export async function submitExercise(
         issues: aiReview.review.issues,
         suggestions: aiReview.review.suggestions,
         needsManualReview: aiReview.review.needsManualReview,
+        confidence: aiReview.review.confidence,
         status: 'completed',
       };
+      if (grade.correct !== aiReview.review.isLikelyCorrect) {
+        reviewTrigger = 'rule_ai_conflict';
+      } else if (aiReview.review.needsManualReview) {
+        reviewTrigger = 'ai_requested';
+      } else if (aiReview.review.confidence < AI_CODE_REVIEW_CONFIDENCE_THRESHOLD) {
+        reviewTrigger = 'low_confidence';
+      }
     } catch (error) {
       const aiError = createAiChatErrorPayload(error);
+      aiReviewFailure = aiError;
       logAiError('code-review', error, aiError);
-      await markCodeReviewFailed({
-        submissionId: submission.id,
-        error: aiError,
-      });
       const aiFailureMessage = aiError.message.replace(/[。！？!?]+$/, '');
       feedback = `${grade.feedback}。${aiFailureMessage}，已保留静态初判结果。`;
       aiReviewResult = {
@@ -243,41 +306,180 @@ export async function submitExercise(
         needsManualReview: true,
         status: 'failed',
       };
+      reviewTrigger = 'structured_output_failure';
     }
   }
 
-  if (existingAnswer) {
-    const newScore = Math.max(existingAnswer.score, score);
-    await prisma.answer.update({
-      where: { id: existingAnswer.id },
-      data: {
-        answer,
-        submission_count: existingAnswer.submission_count + 1,
-        feedback,
-        score: newScore,
+  const persisted = await runSerializableWithRetry(async (tx) => {
+    const currentAnswer = await tx.answer.findUnique({
+      where: {
+        user_id_exercise_id: {
+          user_id: userId,
+          exercise_id: resolvedId,
+        },
       },
     });
-  } else {
-    await prisma.answer.create({
-      data: {
+    const effectiveHintLevelUsed = Math.min(
+      3,
+      Math.max(hintLevelUsed, currentAnswer?.hint_level_used || 0)
+    );
+
+    if (exercise.type === 'single_choice' && correct) {
+      score = Math.max(
+        0,
+        100 - (SCORE_DEDUCTION[effectiveHintLevelUsed] || 0)
+      );
+      feedback = effectiveHintLevelUsed > 0
+        ? `回答正确。使用了 ${effectiveHintLevelUsed} 级提示，得分：${score} 分`
+        : '回答正确，知识点掌握良好';
+    } else if (exercise.type === 'code' && codeGrade) {
+      codeGrade = gradeCodeExercise({
+        userCode: answer,
+        correctAnswer: exercise.answer,
+        metadata: exercise.metadata,
+        hintLevelUsed: effectiveHintLevelUsed,
+      });
+      ruleScore = codeGrade.score;
+      ruleCorrect = codeGrade.correct;
+      if (completedAiReview) {
+        score = calculateAiReviewedFinalScore(
+          completedAiReview,
+          codeGrade.hintDeduction
+        );
+        aiScore = score;
+        scoreBreakdown = {
+          functionalScore: completedAiReview.review.functionalScore,
+          qualityScore: completedAiReview.review.qualityScore,
+          hintDeduction: codeGrade.hintDeduction,
+          finalScore: score,
+        };
+      } else if (aiReviewFailure) {
+        score = codeGrade.score;
+        const aiFailureMessage = aiReviewFailure.message.replace(/[。！？!?]+$/, '');
+        feedback = `${codeGrade.feedback}。${aiFailureMessage}，已保留静态初判结果。`;
+        if (aiReviewResult) aiReviewResult.feedback = feedback;
+        scoreBreakdown = {
+          functionalScore: codeGrade.functionalScore,
+          qualityScore: 0,
+          hintDeduction: codeGrade.hintDeduction,
+          finalScore: score,
+        };
+      }
+    }
+
+    let codeSubmissionId: string | undefined;
+    if (exercise.type === 'code' && codeGrade) {
+      const submission = await recordCodeSubmission({
+        tx,
+        userId,
+        exerciseId: resolvedId,
+        code: answer,
+        grade: codeGrade,
+      });
+      codeSubmissionId = submission.id;
+      if (completedAiReview) {
+        await applyAiCodeReviewToSubmission({
+          tx,
+          submissionId: submission.id,
+          review: completedAiReview,
+          hintDeduction: codeGrade.hintDeduction,
+        });
+      } else if (aiReviewFailure) {
+        await markCodeReviewFailed({
+          tx,
+          submissionId: submission.id,
+          error: aiReviewFailure,
+        });
+      }
+    }
+    const savedAnswer = await tx.answer.upsert({
+      where: {
+        user_id_exercise_id: {
+          user_id: userId,
+          exercise_id: resolvedId,
+        },
+      },
+      create: {
         user_id: userId,
         exercise_id: resolvedId,
         answer,
         submission_count: 1,
         feedback,
         score,
-        hint_level_used: 0,
+        hint_level_used: effectiveHintLevelUsed,
+        version: 1,
+        is_delete: 0,
+      },
+      update: {
+        answer,
+        submission_count: { increment: 1 },
+        feedback,
+        score: Math.max(currentAnswer?.score ?? 0, score),
+        hint_level_used: effectiveHintLevelUsed,
+        version: { increment: 1 },
+        is_delete: 0,
       },
     });
-  }
 
-  const totalScore = await prisma.answer.aggregate({
-    where: { user_id: userId, is_delete: 0 },
-    _sum: { score: true },
-  });
-  await prisma.users.update({
-    where: { id: userId },
-    data: { score: totalScore._sum.score || 0 },
+    let gradingReview;
+    if (reviewTrigger) {
+      gradingReview = await createGradingReviewInTransaction(tx, {
+        userId,
+        exerciseId: resolvedId,
+        submissionType: exercise.type,
+        codeSubmissionId,
+        submittedAnswer: answer,
+        answerVersion: savedAnswer.version,
+        hintLevelUsed: effectiveHintLevelUsed,
+        exerciseSnapshot: {
+          id: exercise.id,
+          lessonId: exercise.lesson_id,
+          type: exercise.type,
+          content: exercise.content,
+          answer: exercise.answer,
+          analysis: exercise.analysis,
+          knowledge: exercise.knowledge,
+          difficulty: exercise.difficulty,
+          source: exercise.source,
+          reviewStatus: exercise.review_status,
+          genMetadata: sanitizeExerciseGenerationMetadata(
+            exercise.gen_metadata as Prisma.JsonValue | null
+          ),
+          metadata: exercise.metadata,
+          grading: {
+            ruleCorrect,
+            aiCorrect,
+            currentPassed: correct,
+          },
+        },
+        triggerReason: reviewTrigger,
+        aiScore,
+        ruleScore,
+      });
+    }
+
+    const totalScore = await tx.answer.aggregate({
+      where: { user_id: userId, is_delete: 0 },
+      _sum: { score: true },
+    });
+    await tx.users.update({
+      where: { id: userId },
+      data: { score: totalScore._sum.score || 0 },
+    });
+
+    const masteryEvent = exercise.type === 'single_choice'
+      ? (correct ? 'choice_correct' : 'choice_incorrect')
+      : reviewTrigger
+        ? 'review_pending'
+        : correct
+          ? 'code_passed_confident'
+          : 'code_failed';
+    await applySubmissionMasteryInTransaction(tx, {
+      lessonId: exercise.lesson_id,
+      userId,
+      event: masteryEvent,
+    });
+    return { gradingReview };
   });
 
   await updateLessonAndCourseProgress(exercise.lesson_id, userId);
@@ -289,6 +491,9 @@ export async function submitExercise(
     analysis: exercise.analysis || '',
     scoreBreakdown,
     aiReview: aiReviewResult,
+    gradingReview: persisted.gradingReview
+      ? formatSubmitGradingReview(persisted.gradingReview)
+      : undefined,
   };
 }
 
@@ -300,8 +505,16 @@ export async function explainChoiceExercise(
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
-  const exercise = await prisma.exercises.findUnique({
-    where: { id: resolvedId, is_delete: 0 },
+  const exercise = await prisma.exercises.findFirst({
+    where: {
+      id: resolvedId,
+      is_delete: 0,
+      review_status: 'approved',
+      lessons: {
+        is_delete: 0,
+        chapters: { is_delete: 0, courses: { is_delete: 0 } },
+      },
+    },
   });
 
   if (!exercise || exercise.type !== 'single_choice') return null;

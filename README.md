@@ -28,7 +28,7 @@ CodeStory 是一个面向编程学习场景的全栈教学平台，包含课程�
 | 编辑与交互 | Tiptap 3、CodeMirror 6、Zustand 5、Axios |
 | 后端 | Express 5、TypeScript、Prisma 6 |
 | 数据与会话 | PostgreSQL 16、Redis 7、JWT、bcrypt |
-| AI | LangChain、SiliconFlow OpenAI 兼容接口、DeepSeek / Qwen Embedding |
+| AI | LangChain、SiliconFlow OpenAI 兼容接口、Qwen3 30B / Qwen Embedding |
 | 文件存储 | 本地上传目录、阿里云 OSS |
 | 部署 | Docker、Docker Compose、Nginx |
 
@@ -115,7 +115,7 @@ EMAIL_PASS=
 
 # AI 助手需要；当前使用 SiliconFlow OpenAI 兼容端点
 AI_API_KEY=
-AI_MODEL=deepseek-ai/DeepSeek-V4-Flash
+AI_MODEL=Qwen/Qwen3-30B-A3B-Instruct-2507
 AI_BASE_URL=https://api.siliconflow.cn/v1
 AI_TIMEOUT_MS=30000
 AI_MAX_TOKENS=1000
