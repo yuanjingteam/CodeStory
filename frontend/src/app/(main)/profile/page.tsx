@@ -1,9 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { getProfile } from '@/api/profile';
-import { getReviewRecommendations, recordRecommendationEvent } from '@/api/recommendations';
+import {
+  getReviewRecommendations,
+  recordRecommendationEvent,
+  recordRecommendationEvents,
+} from '@/api/recommendations';
 import type { UserProfileInfo } from '@/types/profile';
 import type { RecommendationFeed } from '@/types/recommendations';
 
@@ -12,19 +16,49 @@ export default function ProfilePage() {
   const [feed, setFeed] = useState<RecommendationFeed | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [feedError, setFeedError] = useState(false);
+  const reviewQueueRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     let active = true;
-    Promise.all([getProfile(), getReviewRecommendations()])
-      .then(([profileResponse, feedResponse]) => {
+    Promise.allSettled([getProfile(), getReviewRecommendations()])
+      .then(([profileResult, feedResult]) => {
         if (!active) return;
-        setProfile(profileResponse.data || null);
-        setFeed(feedResponse.data || null);
+        if (profileResult.status === 'rejected') {
+          setError(true);
+          return;
+        }
+        setProfile(profileResult.value.data || null);
+        if (feedResult.status === 'fulfilled') {
+          setFeed(feedResult.value.data || null);
+        } else {
+          setFeedError(true);
+        }
       })
-      .catch(() => active && setError(true))
       .finally(() => active && setLoading(false));
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    const node = reviewQueueRef.current;
+    if (!node || !feed?.items.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          void recordRecommendationEvents(
+            feed.items.map((item) => ({
+              trackingToken: item.trackingToken,
+              eventType: 'impression',
+            }))
+          ).catch(() => undefined);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [feed]);
 
   if (loading) return <main className="mx-auto max-w-7xl p-8"><div className="h-32 animate-pulse border-4 border-black bg-yellow-100" /></main>;
   if (error) return <main className="mx-auto max-w-7xl p-8"><p className="border-4 border-black bg-red-100 p-5 font-bold">个人中心暂时无法加载，请稍后重试。</p></main>;
@@ -37,12 +71,16 @@ export default function ProfilePage() {
         <p className="mt-4 text-sm">累计积分：{profile?.score ?? 0}</p>
         <p className="text-sm">学习等级：{profile?.level ?? 0}</p>
       </section>
-      <section className="border-4 border-black bg-white p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
+      <section ref={reviewQueueRef} className="border-4 border-black bg-white p-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
         <div className="flex items-end justify-between gap-4 border-b-2 border-black pb-3">
           <div><p className="text-sm font-black uppercase tracking-widest">Review queue</p><h2 className="mt-1 text-2xl font-black">复习建议</h2></div>
           <span className="text-sm font-bold">{feed?.mode === 'cold_start' ? '从基础开始' : '按你的学习记录'}</span>
         </div>
-        {!feed?.items.length ? <p className="py-8 text-gray-600">暂时没有需要复习的内容。</p> : (
+        {feedError ? (
+          <p className="py-8 font-bold text-gray-600">
+            复习建议暂时不可用，不影响其他个人信息。
+          </p>
+        ) : !feed?.items.length ? <p className="py-8 text-gray-600">暂时没有需要复习的内容。</p> : (
           <ul className="divide-y-2 divide-black">
             {feed.items.map((item) => (
               <li key={`${feed.feedId}-${item.trackingToken}`} className="py-4">

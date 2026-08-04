@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "check": "pnpm run typecheck && pnpm run lint",
-    "test:e2e:stage2": "playwright test --config=playwright.stage2.config.ts"
+    "test:e2e:stage2": "playwright test --config=playwright.stage2.config.ts",
+    "test:e2e:stage5": "playwright test --config=playwright.stage5.config.ts"
   },
   "dependencies": {
     "@codemirror/lang-python": "^6.2.1",

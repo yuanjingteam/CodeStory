@@ -29,11 +29,11 @@
 | --- | --- | --- | --- |
 | 1 | [阶段 0A：数据完整性收尾](./00A-data-integrity-closeout.md) | 审核并补齐现有实现，不重做 | 0B 测试夹具就绪后最终关门 |
 | 2 | [阶段 0B：AI 基础设施](./00B-ai-foundation.md) | 已完成；SiliconFlow Embedding 真实端点通过 | 0A 代码已稳定 |
-| 3 | [阶段 1：RAG 检索层](./01-rag-grounding.md) | 实现与技术门禁通过；标签复核完成，问题来源待清理 | 0A、0B 通过 |
-| 4 | [阶段 2：AI 出题与题目管理](./02-question-generation.md) | 条件通过；工程终审完成，真实模型 50 题固定分层门禁待评测 | 阶段 1 通过 |
-| 5 | [阶段 3：评分复核与掌握度](./03-grading-review.md) | 可与阶段 1/2 形成独立后端工作线 | 0A、0B 通过 |
+| 3 | [阶段 1：RAG 检索层](./01-rag-grounding.md) | 工程与 Qwen3 30B 固定集机器门禁通过；独立人工复核待补 | 0A、0B 通过 |
+| 4 | [阶段 2：AI 出题与题目管理](./02-question-generation.md) | 工程与 Qwen3 30B 正式 50 题结构门禁通过；人工质量待补 | 阶段 1 通过 |
+| 5 | [阶段 3：评分复核与掌握度](./03-grading-review.md) | 工程与 Qwen3 30B 固定 Agent 基准门禁通过；人工质量待补 | 0A、0B 通过 |
 | 6 | [阶段 4：LangGraph 学习状态机](./04-learning-graph.md) | 最重的新模式 | 阶段 2、3 通过 |
-| 7 | [阶段 5：推荐与个性化复习](./05-recommendation-review.md) | 可与阶段 4 并行开发 | 阶段 1、3 通过 |
+| 7 | [阶段 5：推荐与个性化复习](./05-recommendation-review.md) | 工程与离线规则夹具通过；等待线上自然样本 | 阶段 1、3 通过 |
 | 8 | [阶段 6：治理、评估与收尾](./06-governance-release.md) | 发布前总收口 | 阶段 1～5 通过 |
 | 发布前 | [阶段 0C：生产迁移](./00C-production-migration.md) | 当前延期，不阻塞开发但阻塞上线 | 用户明确启动生产切换 |
 

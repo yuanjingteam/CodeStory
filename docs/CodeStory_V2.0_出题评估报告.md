@@ -1,8 +1,14 @@
 # CodeStory V2.0 AI 出题评估报告
 
 > 阶段：阶段 2 工程终审通过，真实模型质量门禁未通过
-> 日期：2026-08-01  
+> 日期：2026-08-04
 > Prompt 版本：`exercise-gen-v1`
+
+> 2026-08-04 模型切换说明：生产候选已从 DeepSeek 切换为 SiliconFlow
+> `Qwen/Qwen3-30B-A3B-Instruct-2507`。下文 DeepSeek 100 题结果保留为历史基线；
+> Qwen3 30B 的集成分支最新 50 题固定分层重跑为首次结构成功 `50 / 50`、
+> 最终成功 `50 / 50`、每题 1 次模型调用，且尚未完成人工答案与重复标注，因此阶段 2
+> 仍未通过。
 
 ## 1. 指标口径
 
@@ -47,6 +53,19 @@ pnpm run eval:exercise-generation -- `
 机器初筛字段（`machineDuplicate`、`machineDuplicateSimilarity`）仅表示同小节 approved baseline 的可复现预警，不能替代管理员确认；`score-exercise-generation` 报告会同时输出 `machineDuplicatePolicy` 与覆盖数量。
 
 ## 4. 发布判断
+
+### Qwen3 30B 当前候选结果
+
+证据文件为
+`backend/evals/reports/stage2-formal-qwen30b-rerun-20260803.json` 及对应
+manifest（runId `59141780-2935-4dea-90f3-de047ec8f935`）。运行使用
+`exercise-gen-v2`、`json_object`、180 秒超时、2 次传输重试和最多 1 次结构
+修复。50 条中首次结构成功率为 `100%`，最终成功率为 `100%`，每道有效候选
+模型调用次数为 `1.0`，同课机器重复数为 0；答案正确性与人工确认重复率分母
+均为 0。该结果已满足正式 50 题结构、失败率、调用成本和机器重复初筛门禁；
+阶段完全关闭仍需补齐人工答案正确性与重复标注。
+
+### DeepSeek 历史基线
 
 真实模型使用 SiliconFlow `deepseek-ai/DeepSeek-V4-Flash` 完成 100 条固定分层样本。结果如下：
 

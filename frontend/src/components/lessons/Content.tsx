@@ -2,7 +2,11 @@ import Progress from './Progress';
 import { useState, useEffect, memo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import type { LessonDetailData, Chapter } from '@/types/lesson-detail';
-import { getLessonRecommendations, recordRecommendationEvent } from '@/api/recommendations';
+import {
+  getLessonRecommendations,
+  recordRecommendationEvent,
+  recordRecommendationEvents,
+} from '@/api/recommendations';
 import type { RecommendationItem } from '@/types/recommendations';
 
 interface ContentProps {
@@ -39,7 +43,26 @@ export default memo(function Content({ data, onLessonClick }: ContentProps) {
   const [related, setRelated] = useState<RecommendationItem[]>([]);
   const relatedRef = useRef<HTMLDivElement>(null);
   useEffect(() => { getLessonRecommendations(data.course.id, data.currentLesson.id).then((r) => setRelated(r.data?.items || [])).catch(() => setRelated([])); }, [data.currentLesson.id, data.course.id]);
-  useEffect(() => { const node = relatedRef.current; if (!node || !related.length) return; const observer = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) { Promise.all(related.map((item) => recordRecommendationEvent(item.trackingToken, 'impression'))).catch(() => undefined); observer.disconnect(); } }, { threshold: 0.5 }); observer.observe(node); return () => observer.disconnect(); }, [related]);
+  useEffect(() => {
+    const node = relatedRef.current;
+    if (!node || !related.length) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          void recordRecommendationEvents(
+            related.map((item) => ({
+              trackingToken: item.trackingToken,
+              eventType: 'impression',
+            }))
+          ).catch(() => undefined);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [related]);
 
   useEffect(() => {
     localStorage.setItem(EXPANDED_CHAPTERS_STORAGE_KEY, JSON.stringify([...expandedChapters]));

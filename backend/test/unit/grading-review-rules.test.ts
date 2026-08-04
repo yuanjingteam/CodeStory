@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { calculateAiReviewedFinalScore } from '../../src/services/courses/code-grading.service';
 import { createSubmissionFingerprint } from '../../src/services/courses/grading-review.service';
+import { formatStaticGradeForPrompt } from '../../src/services/ai/evaluate/code-grading-chain';
 import { gradingStage3Dataset } from '../../evals/datasets/grading-stage3';
 import {
   buildGradingReportCase,
@@ -94,5 +95,25 @@ describe('阶段 3 · 固定评测集', () => {
     const reportCase = buildGradingReportCase(item);
     expect(reportCase).not.toHaveProperty('rationale');
     expect(JSON.stringify(reportCase)).not.toContain(item.rationale);
+  });
+
+  it('静态百分制字段不会与 AI 的 70 分 functionalScore 同名', () => {
+    const formatted = formatStaticGradeForPrompt({
+      correct: true,
+      score: 100,
+      feedback: '静态初判通过',
+      language: 'sql',
+      compileSuccess: null,
+      functionalScore: 100,
+      hintDeduction: 0,
+      passedCount: 1,
+      totalCount: 1,
+      errorType: null,
+      testResult: null,
+    });
+
+    expect(formatted).toContain('"staticOverallScore":100');
+    expect(formatted).toContain('"staticFunctionalPercent":100');
+    expect(formatted).not.toContain('"functionalScore":100');
   });
 });

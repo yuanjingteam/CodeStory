@@ -6,11 +6,16 @@
 >
 > **创建日期：** 2026-07-21
 >
-> **最后核对：** 2026-07-31
+> **最后核对：** 2026-08-04
 >
 > **适用范围：** `backend/src/services/ai/**`、`backend/src/services/courses/**`、`backend/src/services/course-manage/**`、`backend/src/services/rag/**`（新增）、`backend/src/middleware/**`、`backend/prisma/**`、`frontend/src/app/(admin)/exercises-manage/**`、`frontend/src/components/lessons/**`、`docker-compose*.yml`、`.env.production.example`、`docs/DEPLOY_DOCKER.md`
 >
 > **文档用途：** V2.0（AI 助手增强）阶段的开发、验收依据。
+
+> **2026-08-04 模型切换：** 生产候选回答、出题和评分模型改为 SiliconFlow
+> `Qwen/Qwen3-30B-A3B-Instruct-2507`。文档内 DeepSeek 指标保留为历史基线；
+> 阶段 1 回答、阶段 2 出题和阶段 3 评分的 Qwen3 固定集机器门禁已重新通过；
+> 三阶段的独立人工质量项仍待补。
 >
 > **上游依据：** 需求与数据模型以 [`CodeStory_开发文档_V1.1.md`](./CodeStory_开发文档_V1.1.md) 为准；V1 AI 助手已实现范围见（已归档）`CodeStory_AI助手_V1开发路线.md`。
 >
@@ -109,7 +114,7 @@ V1.0 基础平台与 V1.1 AI 助手核心闭环**已完成主干**，但后台�
 - 后端已引入 `@langchain/openai` + `@langchain/core`，通过 SiliconFlow OpenAI 兼容接口对接 **DeepSeek V4 Flash / Qwen3 Embedding**（`config/ai.ts`、`services/ai/_shared/model.ts`）。
 - **LangGraph 基础设施已就绪但尚未接入业务图**：依赖、独立 checkpointer setup 和跨进程恢复验证已在阶段 0B 完成；正式学习状态机仍属于阶段 4。
 - `ai_chat_sessions.state`（INIT/EXPLAIN/QUESTION…）与 `hint_level` 字段在表中存在，**但代码未真正驱动状态机**——目前是"自由流式对话 + 关键词识别提示意图"（`routes/ai.ts` 的 `isHintIntent` / `resolveMessageType`）。`getOrCreateLessonChatSession` 会把这两个字段读出来，但没有任何调用方消费或写入。
-- **RAG 正式实现、问题来源隔离、模型对照与 claim 级门禁已完成**：内容就绪门禁、30 天回收与管理端闭环已落地；4B、8B、BGE-M3 的 Recall@5 均为 1.00，按既定规则保持 4B；DeepSeek V4 Flash 使用 grounded-v2 后 claim 支持率 48/53 = 0.9057。仓库功能开关继续安全默认关闭，由部署环境完成迁移、重建和冒烟后显式开启。
+- **RAG 正式实现、问题来源隔离、模型对照与 claim 级机器门禁已完成**：内容就绪门禁、30 天回收与管理端闭环已落地；4B、8B、BGE-M3 的 Recall@5 均为 1.00，按既定规则保持 4B；Qwen3 30B 使用 grounded-v3.1 的课程 claim 支持率为 116/121 = 0.9587，独立人工复核待补。仓库功能开关继续安全默认关闭，由部署环境完成迁移、重建和冒烟后显式开启。
 - **角色中间件已存在且已挂载**：`middleware/auth.ts` 导出 `requireAdmin`，`app.ts` 的 `user-manage` / `courses` / `chapter` / `lessons` 四组管理路由均以 `[authMiddleware, requireAdmin]` 挂载。V2.0 新增的管理接口沿用它即可，**无需新写中间件**（plan.3 此处描述有误，已撤销对应前置项）。
 - **`lessons_progress.mastery_level` 是死字段**：仅在 `learning-progress.service.ts` 的 `updateLearningProgress()` 创建记录时写入 `0`，全项目无更新点。
 - **题型实际只支持两种**：`submitExercise` 只处理 `single_choice` 与 `code`；`fill` 在前端 `EXERCISE_TYPE_MAP` 有定义但被 `getExerciseTypeOptions()` 排除，`judge` 全项目不存在。提交一道 `fill`/`judge` 题会静默走完流程并得 0 分。
@@ -121,13 +126,13 @@ V1.0 基础平台与 V1.1 AI 助手核心闭环**已完成主干**，但后台�
 
 1. **AI 出题生成**：`CodeStory_开发文档_V1.1.md` 第 2.2.1 节标记为 **P0**（"AI 生成小节题目供管理员审核"），代码中**完全缺失**，无生成服务与路由；`exercises.source` 字段存在但无任何写入方，现存题目该字段均为 `null`（既不是 `ai` 也不是 `static`）。
 2. **跨请求学习状态机**：未做。V1.1 §3.2.1 定义的 `INIT→EXPLAIN→QUESTION→WAIT_ANSWER→EVALUATE→HINT→REVIEW` 流程，代码中只有零散的单点能力，没有流程驱动。
-3. **RAG / 向量库 / 长期记忆（阶段 1 门禁通过）**：pgvector 索引、授权检索、对话 grounding、内容门禁、回收机制和管理端索引闭环已落地；4B/8B/BGE-M3 的 Recall@5 均为 1.00，DeepSeek grounded-v2 的 claim 支持率为 0.9057。
+3. **RAG / 向量库 / 长期记忆（阶段 1 机器门禁通过）**：pgvector 索引、授权检索、对话 grounding、内容门禁、回收机制和管理端索引闭环已落地；4B/8B/BGE-M3 的 Recall@5 均为 1.00，Qwen3 30B grounded-v3.1 的 claim 支持率为 0.9587，独立人工复核待补。
 4. **三项工程前置**：代码与自动化验收均已实现；题目稳定 ID、事务回滚、字段写入链路、掌握度纯函数和三身份权限回归已进入统一 vitest 测试（见 5.0）。
 5. 其余延后项：真沙箱判题、可观测性、限流、提交历史面板、自适应难度。
 
 ### 1.4 结论
 
-项目已完成阶段 1 的检索与回答质量门禁，发布组合为 Qwen3-Embedding-4B + DeepSeek V4 Flash + grounded-v2。0C 的目标服务器导入与生产切换仍延期执行；仓库开关保持默认关闭，生产部署完成迁移、重建和冒烟后再显式开启。阶段 2 已解锁。
+项目已完成阶段 1 的检索与 Qwen3 30B 固定集机器质量门禁，候选组合为 Qwen3-Embedding-4B + Qwen3 30B + grounded-v3；独立人工复核仍待补。0C 的目标服务器导入与生产切换仍延期执行；仓库开关保持默认关闭，生产部署完成迁移、重建和冒烟后再显式开启。阶段 2 已解锁。
 
 ---
 
@@ -809,7 +814,7 @@ plan.4 一律排除集成测试，但本计划**自己的验收标准里已经�
 阶段0C(生产库迁移·只阻塞发布)   └── 阶段3(复核闭环+掌握度) ──────────────┴── 阶段5(推荐/复习) ───┘
 ```
 
-- **阶段 0A + 0B** 是所有后续开发工作的前置，**不可跳过**。0A、0B 已完成；阶段 1 实现与技术门禁已通过，问题标签复核已完成，13 个问题来源清理及质量指标待执行。
+- **阶段 0A + 0B** 是所有后续开发工作的前置，**不可跳过**。0A、0B 已完成；阶段 1 工程、来源治理与 Qwen3 固定集机器门禁已通过，独立人工复核待补。
 - **阶段 0C**（生产库迁移）不阻塞开发——本地用与生产一致的固定 pgvector 镜像即可推进 0B 与阶段 1——但**必须在任何阶段上线前完成**。
 - **阶段 1 → 阶段 2**：出题 grounding 依赖阶段 1 的检索层。
 - **阶段 3** 只依赖阶段 0A/0B，**可与阶段 1/2 并行**（纯 service 层，不碰检索）。
