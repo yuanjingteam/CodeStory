@@ -11,6 +11,8 @@ import { useUserStore } from '@/store/useUserStore';
 import { handleAuthenticationFailure } from '@/utils/auth-session';
 import { useRouter } from 'next/navigation';
 
+type MobileWorkspace = 'catalog' | 'lesson' | 'assistant';
+
 export default function LessonPage({
   courseId,
   chapterId,
@@ -28,6 +30,18 @@ export default function LessonPage({
   const [chatCollapsed, setChatCollapsed] = useState(false);
   const [currentExerciseId, setCurrentExerciseId] = useState<string | null>(null);
   const [currentExerciseCode, setCurrentExerciseCode] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  const [mobileWorkspace, setMobileWorkspace] =
+    useState<MobileWorkspace>('lesson');
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    const updateViewport = () => setIsMobile(mediaQuery.matches);
+
+    updateViewport();
+    mediaQuery.addEventListener('change', updateViewport);
+    return () => mediaQuery.removeEventListener('change', updateViewport);
+  }, []);
 
   const handleLessonCompleted = useCallback((lessonId: string) => {
     showToast.success('已记录学习进度');
@@ -95,15 +109,99 @@ export default function LessonPage({
     }
   }, [chapterId, courseId, lessonId, isAuthLoading, isLoggedIn]);
 
-  if (loading) {
+  if (loading || isMobile === null) {
     return (
-      <div className="flex items-center justify-center h-screen">加载中...</div>
+      <div className="flex min-h-[calc(100dvh-64px)] items-center justify-center">
+        加载中...
+      </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center h-screen">加载失败</div>
+      <div className="flex min-h-[calc(100dvh-64px)] items-center justify-center">
+        加载失败
+      </div>
+    );
+  }
+
+  if (isMobile) {
+    const workspaceButtonClass = (workspace: MobileWorkspace) =>
+      `min-h-11 border-2 border-black px-2 text-sm font-black ${
+        mobileWorkspace === workspace
+          ? 'translate-x-0.5 translate-y-0.5 bg-purple-600 text-white shadow-none'
+          : 'bg-white text-black shadow-[3px_3px_0_0_rgba(0,0,0,1)]'
+      } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300`;
+
+    return (
+      <div className="min-h-[calc(100dvh-64px)] p-2">
+        <div
+          className="mb-3 grid grid-cols-3 gap-2"
+          aria-label="小节移动端工作区"
+        >
+          <button
+            type="button"
+            className={workspaceButtonClass('catalog')}
+            aria-pressed={mobileWorkspace === 'catalog'}
+            onClick={() => setMobileWorkspace('catalog')}
+          >
+            目录
+          </button>
+          <button
+            type="button"
+            className={workspaceButtonClass('lesson')}
+            aria-pressed={mobileWorkspace === 'lesson'}
+            onClick={() => setMobileWorkspace('lesson')}
+          >
+            练习
+          </button>
+          <button
+            type="button"
+            className={workspaceButtonClass('assistant')}
+            aria-pressed={mobileWorkspace === 'assistant'}
+            onClick={() => setMobileWorkspace('assistant')}
+          >
+            AI 助手
+          </button>
+        </div>
+
+        <div
+          className={`h-[calc(100dvh-132px)] min-h-[560px] overflow-hidden rounded-lg border-4 border-black bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${
+            mobileWorkspace === 'catalog' ? 'flex flex-col' : 'hidden'
+          }`}
+        >
+          <Content data={data} onLessonClick={handleLessonSwitched} />
+        </div>
+
+        <div
+          className={`h-[calc(100dvh-132px)] min-h-[560px] overflow-hidden rounded-lg border-4 border-black bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${
+            mobileWorkspace === 'lesson' ? 'flex flex-col' : 'hidden'
+          }`}
+        >
+          <Question
+            key={data.currentLesson.id}
+            data={data}
+            onLessonCompleted={handleLessonCompleted}
+            onLessonSwitched={handleLessonSwitched}
+            onCurrentExerciseChange={setCurrentExerciseId}
+            onCurrentExerciseCodeChange={setCurrentExerciseCode}
+          />
+        </div>
+
+        <div
+          className={`h-[calc(100dvh-132px)] min-h-[560px] overflow-hidden rounded-lg border-4 border-black bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${
+            mobileWorkspace === 'assistant' ? 'flex flex-col' : 'hidden'
+          }`}
+        >
+          <Chat
+            key={data.currentLesson.id}
+            lessonId={data.currentLesson.id}
+            lessonTitle={data.currentLesson.title}
+            exerciseId={currentExerciseId}
+            currentCode={currentExerciseCode}
+          />
+        </div>
+      </div>
     );
   }
 

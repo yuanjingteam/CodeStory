@@ -28,6 +28,12 @@ import {
   applySubmissionMasteryInTransaction,
   updateLessonAndCourseProgress,
 } from './learning-progress.service';
+import {
+  getAppliedLearningEffect,
+  getAppliedLearningEffectInTransaction,
+  markLearningEffectApplied,
+  type LearningRunEffectContext,
+} from '../ai/learning-graph/effects';
 
 const SCORE_DEDUCTION = [0, 10, 20, 30];
 const SERIALIZABLE_RETRY_LIMIT = 3;
@@ -72,7 +78,7 @@ interface SubmitAiReview {
   status: 'completed' | 'failed';
 }
 
-interface SubmitExerciseResult {
+export interface SubmitExerciseResult {
   correct: boolean;
   score: number;
   feedback: string;
@@ -158,8 +164,16 @@ export async function getExerciseDetail(
 export async function submitExercise(
   exerciseId: string,
   answer: string,
-  userId: string
+  userId: string,
+  effect?: LearningRunEffectContext
 ): Promise<SubmitExerciseResult | null> {
+  if (effect) {
+    const applied =
+      await getAppliedLearningEffect<SubmitExerciseResult>(
+        effect.effectKey
+      );
+    if (applied) return applied;
+  }
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
@@ -311,6 +325,19 @@ export async function submitExercise(
   }
 
   const persisted = await runSerializableWithRetry(async (tx) => {
+    if (effect) {
+      const applied =
+        await getAppliedLearningEffectInTransaction<SubmitExerciseResult>(
+          tx,
+          effect.effectKey
+        );
+      if (applied) {
+        return {
+          replayedResult: applied,
+          result: applied,
+        };
+      }
+    }
     const currentAnswer = await tx.answer.findUnique({
       where: {
         user_id_exercise_id: {
@@ -479,22 +506,32 @@ export async function submitExercise(
       userId,
       event: masteryEvent,
     });
-    return { gradingReview };
+    const result: SubmitExerciseResult = {
+      correct,
+      score,
+      feedback,
+      analysis: exercise.analysis || '',
+      scoreBreakdown,
+      aiReview: aiReviewResult,
+      gradingReview: gradingReview
+        ? formatSubmitGradingReview(gradingReview)
+        : undefined,
+    };
+    if (effect) {
+      await markLearningEffectApplied(
+        tx,
+        effect,
+        JSON.parse(JSON.stringify(result)) as Prisma.InputJsonValue
+      );
+    }
+    return { replayedResult: null, result };
   });
 
+  if (persisted.replayedResult) {
+    return persisted.replayedResult;
+  }
   await updateLessonAndCourseProgress(exercise.lesson_id, userId);
-
-  return {
-    correct,
-    score,
-    feedback,
-    analysis: exercise.analysis || '',
-    scoreBreakdown,
-    aiReview: aiReviewResult,
-    gradingReview: persisted.gradingReview
-      ? formatSubmitGradingReview(persisted.gradingReview)
-      : undefined,
-  };
+  return persisted.result;
 }
 
 export async function explainChoiceExercise(

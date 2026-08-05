@@ -3,6 +3,13 @@ import prisma from '../../config/prisma';
 import { resolveShortId } from '../../utils/idTransform';
 import { generateExerciseHint } from '../ai/exercise-hint.service';
 import { logAiError } from '../ai/ai-chat-error.service';
+import type { Prisma } from '../../generated/prisma';
+import {
+  getAppliedLearningEffect,
+  getAppliedLearningEffectInTransaction,
+  markLearningEffectApplied,
+  type LearningRunEffectContext,
+} from '../ai/learning-graph/effects';
 
 const DEFAULT_AI_HINT_MAX_LEVEL = 3;
 
@@ -12,6 +19,27 @@ export async function recordHintLevel(
   hintLevel: number
 ): Promise<void> {
   await prisma.$executeRaw`
+    INSERT INTO "answer" (
+      "id", "user_id", "exercise_id", "answer", "submission_count",
+      "feedback", "score", "hint_level_used", "is_delete", "created_at", "updated_at"
+    ) VALUES (
+      ${randomUUID()}, ${userId}, ${exerciseId}, '', 0, '', 0, ${hintLevel}, 0,
+      CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    )
+    ON CONFLICT ("user_id", "exercise_id") DO UPDATE SET
+      "hint_level_used" = GREATEST("answer"."hint_level_used", EXCLUDED."hint_level_used"),
+      "is_delete" = 0,
+      "updated_at" = CURRENT_TIMESTAMP
+  `;
+}
+
+async function recordHintLevelInTransaction(
+  tx: Prisma.TransactionClient,
+  exerciseId: string,
+  userId: string,
+  hintLevel: number
+): Promise<void> {
+  await tx.$executeRaw`
     INSERT INTO "answer" (
       "id", "user_id", "exercise_id", "answer", "submission_count",
       "feedback", "score", "hint_level_used", "is_delete", "created_at", "updated_at"
@@ -41,8 +69,17 @@ function resolveMaxHintLevel(hints: any): number {
 export async function getExerciseHint(
   exerciseId: string,
   hintLevel: number,
-  userId: string
+  userId: string,
+  effect?: LearningRunEffectContext
 ): Promise<{ content: string; level: number; maxLevel: number } | null> {
+  if (effect) {
+    const applied = await getAppliedLearningEffect<{
+      content: string;
+      level: number;
+      maxLevel: number;
+    }>(effect.effectKey);
+    if (applied) return applied;
+  }
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
@@ -98,13 +135,30 @@ export async function getExerciseHint(
     hintContent = adminHints[adminHints.length - 1];
   }
 
-  await recordHintLevel(resolvedId, userId, hintLevel);
-
-  return {
+  const result = {
     content: hintContent,
     level: hintLevel,
     maxLevel,
   };
+  if (!effect) {
+    await recordHintLevel(resolvedId, userId, hintLevel);
+    return result;
+  }
+  return prisma.$transaction(async (tx) => {
+    const applied =
+      await getAppliedLearningEffectInTransaction<
+        typeof result
+      >(tx, effect.effectKey);
+    if (applied) return applied;
+    await recordHintLevelInTransaction(
+      tx,
+      resolvedId,
+      userId,
+      hintLevel
+    );
+    await markLearningEffectApplied(tx, effect, result);
+    return result;
+  });
 }
 
 export async function getExerciseHintProgress(

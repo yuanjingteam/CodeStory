@@ -4,6 +4,7 @@ import request from 'supertest';
 import app from '../../src/app';
 import prisma from '../../src/config/prisma';
 import { issueAccessToken } from '../../src/utils/auth-token';
+import { uuidToShortId } from '../../src/utils/idTransform';
 
 const marker = `stage5_recommendation_${Date.now()}`;
 let courseId = '';
@@ -205,6 +206,22 @@ describe('阶段 5 · 推荐、冷启动与学习数据隔离', () => {
         (item: { courseId: string }) => item.courseId === courseId
       )
     ).toBe(true);
+  });
+
+  it('学习页使用短 course/lesson ID 时仍可获取推荐', async () => {
+    const response = await request(app)
+      .get(
+        `/api/v1/recommendations/lessons/${uuidToShortId(currentLessonId)}?courseId=${uuidToShortId(courseId)}&limit=5`
+      )
+      .set('Authorization', `Bearer ${otherUserToken}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.mode).toBe('fallback');
+    expect(
+      response.body.data.items.some(
+        (item: { lessonId: string }) => item.lessonId === currentLessonId
+      )
+    ).toBe(false);
   });
 });
 

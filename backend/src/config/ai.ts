@@ -101,6 +101,14 @@ export function isRagEnabled(): boolean {
   return process.env.AI_RAG_ENABLED?.trim().toLowerCase() === 'true';
 }
 
+export function isLearningGraphEnabled(): boolean {
+  return process.env.AI_GRAPH_ENABLED?.trim().toLowerCase() === 'true';
+}
+
+export function getLearningGraphVersion(): string {
+  return process.env.AI_GRAPH_VERSION?.trim() || 'guided-learning-v1';
+}
+
 export function getAiTutorPromptVersion(): AiTutorPromptVersion {
   return process.env.AI_TUTOR_PROMPT_VERSION?.trim() ===
     'grounded-v3'

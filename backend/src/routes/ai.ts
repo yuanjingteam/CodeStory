@@ -36,13 +36,31 @@ import {
   getExerciseHint,
   getExerciseHintProgress,
 } from '../services/courses/exercise-hint.service';
+import {
+  isLearningGraphEnabled,
+} from '../config/ai';
+import guidedLearningRouter from './guided-learning';
+import {
+  GUIDED_LEARNING_PHASES,
+  type GuidedLearningPhase,
+} from '../services/ai/learning-graph/types';
 
 const router = Router();
 const MAX_QUESTION_LENGTH = 2_000;
 const MAX_CURRENT_CODE_LENGTH = 12_000;
 
+if (isLearningGraphEnabled()) {
+  router.use('/guided', guidedLearningRouter);
+}
+
 interface StreamEvent {
-  type: 'start' | 'context' | 'token' | 'done' | 'error';
+  type:
+    | 'start'
+    | 'state'
+    | 'context'
+    | 'token'
+    | 'done'
+    | 'error';
   content?: string;
   message?: string;
   sessionId?: string;
@@ -52,6 +70,12 @@ interface StreamEvent {
   promptRevision?: LessonTutorPromptRevision;
   evidenceQuality?: LessonEvidenceQuality;
   sources?: LessonChatSourceReference[];
+  guidedState?: {
+    runId: string;
+    stateVersion: number;
+    phase: GuidedLearningPhase;
+    hintLevel: number;
+  };
 }
 
 function writeEvent(res: Response, event: StreamEvent): void {
@@ -122,6 +146,15 @@ router.get('/chat/history', authMiddleware, async (req, res) => {
       data: {
         sessionId: session.id,
         messages,
+        guidedModeAvailable: isLearningGraphEnabled(),
+        guidedRun:
+          isLearningGraphEnabled() && session.current_run_id
+            ? {
+                runId: session.current_run_id,
+                stateVersion: session.state_version,
+                graphVersion: session.graph_version,
+              }
+            : null,
       },
     });
   } catch (error) {
@@ -274,6 +307,21 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
     res.flushHeaders();
 
     writeEvent(res, { type: 'start', sessionId: session.id });
+    if (
+      isLearningGraphEnabled() &&
+      session.current_run_id
+    ) {
+      writeEvent(res, {
+        type: 'state',
+        guidedState: {
+          runId: session.current_run_id,
+          stateVersion: session.state_version,
+          phase:
+            GUIDED_LEARNING_PHASES[session.state] || 'INIT',
+          hintLevel: session.hint_level,
+        },
+      });
+    }
 
     if (context.exerciseId && isHintIntent(question)) {
       const hint = await getNextHintMessage(context.exerciseId, userId);

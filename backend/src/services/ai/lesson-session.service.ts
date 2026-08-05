@@ -168,6 +168,10 @@ export async function getOrCreateLessonChatSession(
     },
     select: {
       id: true,
+      lesson_id: true,
+      current_run_id: true,
+      state_version: true,
+      graph_version: true,
       state: true,
       current_exercise_id: true,
       hint_level: true,
