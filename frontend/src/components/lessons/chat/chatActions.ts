@@ -14,6 +14,8 @@ export interface QuickAction {
   prompt: string;
   requiresExercise?: boolean;
   requiresCode?: boolean;
+  /** 显式请求分级提示，会消耗一级提示配额并扣分 */
+  hintRequest?: boolean;
   icon: ComponentType<{ className?: string }>;
 }
 
@@ -27,6 +29,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
     label: '给我提示',
     prompt: '给我一点提示，不要直接给完整答案。',
     requiresExercise: true,
+    hintRequest: true,
     icon: FiHelpCircle,
   },
   {
@@ -61,12 +64,15 @@ function isCodeAnalysisIntent(question: string): boolean {
   );
 }
 
+// 提示只由「给我提示」按钮显式触发；自由输入即使含「提示」二字也走普通问答，
+// 不再静默消耗提示配额。
 export function resolveOutgoingMessageType(
   question: string,
   hasExercise: boolean,
-  hasCurrentCode: boolean
+  hasCurrentCode: boolean,
+  hintRequest = false
 ): ChatMessageType {
-  if (hasExercise && /提示|给点思路|给.*思路|没思路|不会做|卡住|hint|clue/i.test(question)) {
+  if (hasExercise && hintRequest) {
     return 'hint';
   }
 

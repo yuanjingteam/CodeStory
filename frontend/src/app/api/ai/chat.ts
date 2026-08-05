@@ -43,6 +43,8 @@ interface StreamChatParams {
   currentCode?: string | null;
   message: string;
   answerScope?: LessonAnswerScopeRequest;
+  /** 显式请求分级提示（「给我提示」按钮），会消耗一级提示配额 */
+  hintRequest?: boolean;
   signal: AbortSignal;
   onToken: (token: string) => void;
   onContext?: (context: LessonChatContextEvent) => void;
@@ -156,6 +158,7 @@ function requestChatStream(
   currentCode: string | null | undefined,
   message: string,
   answerScope: LessonAnswerScopeRequest,
+  hintRequest: boolean,
   signal: AbortSignal
 ) {
   return fetch(
@@ -173,6 +176,7 @@ function requestChatStream(
         currentCode: currentCode?.trim() || undefined,
         message,
         answerScope,
+        hintRequest: hintRequest || undefined,
       }),
       signal,
     }
@@ -380,6 +384,7 @@ export async function streamLessonChat({
   currentCode,
   message,
   answerScope = 'auto',
+  hintRequest = false,
   signal,
   onToken,
   onContext,
@@ -395,6 +400,7 @@ export async function streamLessonChat({
     currentCode,
     message,
     answerScope,
+    hintRequest,
     signal
   );
 
@@ -411,6 +417,7 @@ export async function streamLessonChat({
         currentCode,
         message,
         answerScope,
+        hintRequest,
         signal
       );
     } catch (error) {

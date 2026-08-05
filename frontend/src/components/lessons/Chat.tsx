@@ -32,6 +32,19 @@ interface ChatProps {
 
 const WELCOME_MESSAGE_ID = 'welcome';
 
+const GUIDED_PHASE_LABELS: Record<GuidedLearningState['phase'], string> = {
+  INIT: '准备中',
+  EXPLAIN: '讲解中',
+  QUESTION: '出题中',
+  WAIT_ANSWER: '等待作答',
+  EVALUATE: '批改中',
+  HINT: '给出提示',
+  REVIEW: '本轮结束',
+  COMPLETE: '已完成',
+  EMPTY: '暂无可用题目',
+  RESTART_REQUIRED: '需重新开始',
+};
+
 function createWelcomeMessage(lessonTitle: string): ChatMessage {
   return {
     id: WELCOME_MESSAGE_ID,
@@ -119,8 +132,10 @@ export default function Chat({
     retryContext?: {
       messageType?: ChatMessageType;
       currentCode?: string | null;
+      hintRequest?: boolean;
     }
   ) => {
+    const hintRequest = retryContext?.hintRequest === true;
     const trimmedQuestion = question.trim();
     if (!trimmedQuestion || isStreaming) return;
     if (guidedMode && guidedState) {
@@ -177,7 +192,8 @@ export default function Chat({
       resolveOutgoingMessageType(
         trimmedQuestion,
         Boolean(exerciseId),
-        Boolean(currentCode?.trim())
+        Boolean(currentCode?.trim()),
+        hintRequest
       );
     const attachedCurrentCode =
       outgoingMessageType === 'code_analysis'
@@ -219,6 +235,7 @@ export default function Chat({
         currentCode: attachedCurrentCode,
         message: trimmedQuestion,
         answerScope: 'auto',
+        hintRequest,
         signal: controller.signal,
         onToken: (token) => {
           setMessages((previous) =>
@@ -309,6 +326,7 @@ export default function Chat({
     void sendMessage(message.retryQuestion, {
       messageType: message.retryMessageType,
       currentCode: message.retryCurrentCode,
+      hintRequest: message.retryMessageType === 'hint',
     });
   };
 
@@ -356,6 +374,7 @@ export default function Chat({
           role: 'assistant',
           messageType: 'system',
           content: [
+            '已切换到引导学习：我会按讲解 → 出题 → 作答 → 提示的顺序带你走一遍。随时点「自由」可以切回自由问答。',
             state.explanation,
             state.exerciseContent
               ? `练习：${state.exerciseContent}`
@@ -380,29 +399,44 @@ export default function Chat({
         <div className="bg-purple-600 text-white px-4 py-3 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <FiMessageCircle className="w-5 h-5 flex-shrink-0" />
-            <span className="font-bold">AI 学习助手</span>
+            <span className="font-bold">AI 助手</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             {guidedAvailable && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (!guidedMode && !guidedState) {
-                    void beginGuidedLearning();
-                    return;
-                  }
-                  setGuidedMode((value) => !value);
-                }}
-                disabled={isStreaming}
-                className="min-h-8 border-2 border-black bg-yellow-300 px-2 text-xs font-black text-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] disabled:opacity-50"
+              <div
+                role="group"
+                aria-label="问答模式"
+                className="flex border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
               >
-                {guidedMode ? '切换自由问答' : '引导学习'}
-              </button>
-            )}
-            {exerciseId && (
-              <span className="text-xs bg-yellow-300 text-black border-2 border-black px-2 py-0.5 font-bold flex-shrink-0">
-                已关联当前练习
-              </span>
+                <button
+                  type="button"
+                  onClick={() => setGuidedMode(false)}
+                  disabled={isStreaming}
+                  aria-pressed={!guidedMode}
+                  className={`min-h-8 px-2 text-xs font-black disabled:opacity-50 ${
+                    guidedMode ? 'bg-white text-black' : 'bg-yellow-300 text-black'
+                  }`}
+                >
+                  自由
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!guidedState) {
+                      void beginGuidedLearning();
+                      return;
+                    }
+                    setGuidedMode(true);
+                  }}
+                  disabled={isStreaming}
+                  aria-pressed={guidedMode}
+                  className={`min-h-8 border-l-2 border-black px-2 text-xs font-black disabled:opacity-50 ${
+                    guidedMode ? 'bg-yellow-300 text-black' : 'bg-white text-black'
+                  }`}
+                >
+                  引导
+                </button>
+              </div>
             )}
             {hasChatHistory && (
               <button
@@ -413,15 +447,21 @@ export default function Chat({
                 className="inline-flex min-h-8 items-center gap-1 border-2 border-black bg-white px-2 text-xs font-black text-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-transform hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <FiTrash2 className="size-3.5" aria-hidden="true" />
-                清空
+                <span className="hidden lg:inline">清空</span>
               </button>
             )}
           </div>
         </div>
 
-        {guidedMode && guidedState && (
-          <div className="border-b-2 border-black bg-yellow-100 px-4 py-2 text-xs font-bold text-black">
-            状态：{guidedState.phase} · 提示 {guidedState.hintLevel}/3
+        {(exerciseId || (guidedMode && guidedState)) && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b-2 border-black bg-yellow-100 px-4 py-2 text-xs font-bold text-black">
+            {guidedMode && guidedState && (
+              <span>状态：{GUIDED_PHASE_LABELS[guidedState.phase] ?? guidedState.phase}</span>
+            )}
+            {guidedMode && guidedState && guidedState.hintLevel > 0 && (
+              <span>已用提示 {guidedState.hintLevel}/3</span>
+            )}
+            {exerciseId && <span>已关联练习</span>}
           </div>
         )}
 
@@ -447,7 +487,11 @@ export default function Chat({
                 <button
                   key={action.label}
                   type="button"
-                  onClick={() => void sendMessage(action.prompt)}
+                  onClick={() =>
+                    void sendMessage(action.prompt, {
+                      hintRequest: action.hintRequest,
+                    })
+                  }
                   disabled={isStreaming}
                   className="flex flex-shrink-0 items-center gap-1 rounded-full border-2 border-black bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-800 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:bg-yellow-100 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
                 >

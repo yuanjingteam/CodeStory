@@ -82,21 +82,22 @@ function writeEvent(res: Response, event: StreamEvent): void {
   res.write(`${JSON.stringify(event)}\n`);
 }
 
-function isHintIntent(question: string): boolean {
-  const normalized = question.trim().toLowerCase();
-  return /提示|给点思路|给.*思路|没思路|不会做|卡住|hint|clue/.test(normalized);
-}
-
-function formatHintMessage(content: string, level: number, maxLevel: number): string {
-  return `提示 ${level}/${maxLevel}\n\n${content}`;
+// 提示只在满级时不带「提示 N/N」前缀，避免用完后每次都显示成「提示 3/3」
+function formatHintMessage(
+  content: string,
+  level: number,
+  maxLevel: number,
+  exhausted: boolean
+): string {
+  return exhausted ? content : `提示 ${level}/${maxLevel}\n\n${content}`;
 }
 
 function resolveMessageType(
-  question: string,
+  hintRequest: boolean,
   currentCode: string,
   hasExercise: boolean
 ): LessonChatMessageType {
-  if (hasExercise && isHintIntent(question)) return 'hint';
+  if (hasExercise && hintRequest) return 'hint';
   if (hasExercise && currentCode) return 'code_analysis';
   return 'chat';
 }
@@ -104,7 +105,9 @@ function resolveMessageType(
 async function getNextHintMessage(
   exerciseId: string,
   userId: string
-): Promise<{ content: string; level: number; maxLevel: number } | null> {
+): Promise<
+  { content: string; level: number; maxLevel: number; exhausted: boolean } | null
+> {
   const progress = await getExerciseHintProgress(exerciseId, userId);
   if (!progress) return null;
 
@@ -112,11 +115,17 @@ async function getNextHintMessage(
     return {
       level: progress.currentLevel,
       maxLevel: progress.maxLevel,
+      exhausted: true,
       content: `这道题的 ${progress.maxLevel} 级提示已经全部使用完了。你可以先提交一次答案，我会根据你的作答情况帮你分析；也可以把当前思路发给我，我帮你检查卡在哪里。`,
     };
   }
 
-  return getExerciseHint(exerciseId, progress.currentLevel + 1, userId);
+  const hint = await getExerciseHint(
+    exerciseId,
+    progress.currentLevel + 1,
+    userId
+  );
+  return hint ? { ...hint, exhausted: false } : null;
 }
 
 router.get('/chat/history', authMiddleware, async (req, res) => {
@@ -213,6 +222,8 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
     typeof req.body.answerScope === 'string'
       ? req.body.answerScope.trim()
       : 'auto';
+  // 只认客户端的显式提示请求（「给我提示」按钮），自由输入一律走 LLM，不消耗提示等级
+  const hintRequest = req.body.hintRequest === true;
 
   if (!userId) {
     return res.status(401).json({ code: 401, message: '未登录' });
@@ -266,7 +277,7 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
       return sendAiChatError(res, 404, 'AI_CONTEXT_INVALID', '小节不存在');
     }
 
-    const messageType = resolveMessageType(question, currentCode, Boolean(context.exerciseId));
+    const messageType = resolveMessageType(hintRequest, currentCode, Boolean(context.exerciseId));
     const resolvedAnswerScope = resolveAnswerScope(
       question,
       requestedAnswerScope as LessonAnswerScopeRequest
@@ -323,13 +334,18 @@ router.post('/chat/stream', authMiddleware, async (req, res) => {
       });
     }
 
-    if (context.exerciseId && isHintIntent(question)) {
+    if (context.exerciseId && hintRequest) {
       const hint = await getNextHintMessage(context.exerciseId, userId);
       if (!hint) {
         throw new Error('当前练习不存在');
       }
 
-      const assistantContent = formatHintMessage(hint.content, hint.level, hint.maxLevel);
+      const assistantContent = formatHintMessage(
+        hint.content,
+        hint.level,
+        hint.maxLevel,
+        hint.exhausted
+      );
       writeEvent(res, { type: 'token', content: assistantContent });
 
       await appendLessonChatExchange(
