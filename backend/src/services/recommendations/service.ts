@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { Prisma } from '../../generated/prisma';
 import prisma from '../../config/prisma';
 import { resolveShortId } from '../../utils/idTransform';
+import { isRagEnabled } from '../../config/ai';
 import { createKnowledgeRetriever } from '../rag/retriever';
 
 export type RecommendationScene = 'lesson' | 'review';
@@ -420,16 +421,24 @@ export async function getRecommendations(
       throw new RecommendationError('LESSON_NOT_FOUND', '小节不存在');
     }
 
+    const ragEnabled = isRagEnabled();
+    if (!ragEnabled) {
+      // RAG 关闭时不发起 embedding 调用，直接按回退模式走课程顺序召回
+      ragFailed = true;
+    }
+
     try {
-      const hits = await createKnowledgeRetriever().retrieve(
-        `${current.title}\n${current.content || ''}`,
-        {
-          userId,
-          courseId,
-          purpose: 'student_recommendation',
-          sourceTypes: ['lesson'],
-        }
-      );
+      const hits = !ragEnabled
+        ? []
+        : await createKnowledgeRetriever().retrieve(
+            `${current.title}\n${current.content || ''}`,
+            {
+              userId,
+              courseId,
+              purpose: 'student_recommendation',
+              sourceTypes: ['lesson'],
+            }
+          );
       const ids = [
         ...new Set(
           hits
