@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { Prisma } from '../../generated/prisma';
 import prisma from '../../config/prisma';
+import { resolveShortId } from '../../utils/idTransform';
 import { createKnowledgeRetriever } from '../rag/retriever';
 
 export type RecommendationScene = 'lesson' | 'review';
@@ -389,16 +390,26 @@ export async function getRecommendations(
   const feedId = crypto.randomUUID();
   const items: RecommendationItem[] = [];
   let ragFailed = false;
+  const courseId = await resolveShortId('courses', params.courseId);
+  const lessonId = params.lessonId
+    ? (await resolveShortId('lessons', params.lessonId)) || undefined
+    : undefined;
 
-  await assertCourseVisible(params.courseId);
+  if (!courseId) {
+    throw new RecommendationError('COURSE_NOT_FOUND', '课程不存在');
+  }
+  await assertCourseVisible(courseId);
 
   if (params.scene === 'lesson' && params.lessonId) {
+    if (!lessonId) {
+      throw new RecommendationError('LESSON_NOT_FOUND', '小节不存在');
+    }
     const current = await prisma.lessons.findFirst({
       where: {
-        id: params.lessonId,
+        id: lessonId,
         is_delete: 0,
         chapters: {
-          course_id: params.courseId,
+          course_id: courseId,
           is_delete: 0,
           courses: { is_delete: 0 },
         },
@@ -414,7 +425,7 @@ export async function getRecommendations(
         `${current.title}\n${current.content || ''}`,
         {
           userId,
-          courseId: params.courseId,
+          courseId,
           purpose: 'student_recommendation',
           sourceTypes: ['lesson'],
         }
@@ -423,7 +434,7 @@ export async function getRecommendations(
         ...new Set(
           hits
             .map((hit) => hit.sourceId)
-            .filter((id) => id !== params.lessonId)
+            .filter((id) => id !== lessonId)
         ),
       ].slice(0, limit);
       const lessons = await prisma.lessons.findMany({
@@ -431,7 +442,7 @@ export async function getRecommendations(
           id: { in: ids },
           is_delete: 0,
           chapters: {
-            course_id: params.courseId,
+            course_id: courseId,
             is_delete: 0,
             courses: { is_delete: 0 },
           },
@@ -446,14 +457,14 @@ export async function getRecommendations(
         items.push({
           rank: items.length + 1,
           type: 'lesson',
-          courseId: params.courseId,
+          courseId,
           chapterId: lesson.chapter_id,
           lessonId: lesson.id,
           title: lesson.title,
           reason: '与你正在学习的小节相关',
           source: 'rag',
           relevanceScore: clamp(hitById.get(id)?.score || 0),
-          href: `/courses/${params.courseId}/chapters/${lesson.chapter_id}/lessons/${lesson.id}`,
+          href: `/courses/${courseId}/chapters/${lesson.chapter_id}/lessons/${lesson.id}`,
         });
       }
     } catch {
@@ -462,13 +473,13 @@ export async function getRecommendations(
   }
 
   if (params.scene === 'review' || items.length < limit) {
-    await appendLearningSignals(items, userId, params.courseId, limit);
+    await appendLearningSignals(items, userId, courseId, limit);
   }
   await appendCourseOrderFallback(
     items,
-    params.courseId,
+    courseId,
     limit,
-    params.scene === 'lesson' ? params.lessonId : undefined
+    params.scene === 'lesson' ? lessonId : undefined
   );
 
   const hasPersonalizedItem = items.some((item) =>

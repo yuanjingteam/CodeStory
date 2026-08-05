@@ -8,9 +8,13 @@ import {
   FiTrash2,
 } from 'react-icons/fi';
 import {
+  advanceGuidedLearning,
   clearLessonChatHistory,
   getLessonChatHistory,
+  resumeGuidedLearning,
+  startGuidedLearning,
   streamLessonChat,
+  type GuidedLearningState,
 } from '@/app/api/ai/chat';
 import { AlertDialog } from '@/components/ui';
 import { showToast } from '@/utils/toast';
@@ -50,6 +54,10 @@ export default function Chat({
   const [isStreaming, setIsStreaming] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [guidedAvailable, setGuidedAvailable] = useState(false);
+  const [guidedMode, setGuidedMode] = useState(false);
+  const [guidedState, setGuidedState] =
+    useState<GuidedLearningState | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -58,12 +66,26 @@ export default function Chat({
     const welcomeMessage = createWelcomeMessage(lessonTitle);
 
     getLessonChatHistory({ lessonId, signal: controller.signal })
-      .then((history) => {
-        if (controller.signal.aborted || history.length === 0) return;
-
+      .then(async (bootstrap) => {
+        if (controller.signal.aborted) return;
+        setGuidedAvailable(bootstrap.guidedModeAvailable);
+        if (bootstrap.guidedRun) {
+          try {
+            const restored = await resumeGuidedLearning({
+              lessonId,
+              runId: bootstrap.guidedRun.runId,
+            });
+            if (!controller.signal.aborted) {
+              setGuidedState(restored);
+            }
+          } catch {
+            // 旧图或已结束运行不影响自由对话。
+          }
+        }
+        if (bootstrap.messages.length === 0) return;
         setMessages([
           welcomeMessage,
-          ...history.map((message) => ({
+          ...bootstrap.messages.map((message) => ({
             id: message.id,
             role: message.role,
             messageType: message.messageType || 'chat',
@@ -101,6 +123,56 @@ export default function Chat({
   ) => {
     const trimmedQuestion = question.trim();
     if (!trimmedQuestion || isStreaming) return;
+    if (guidedMode && guidedState) {
+      setIsStreaming(true);
+      setInput('');
+      setMessages((previous) => [
+        ...previous,
+        {
+          id: crypto.randomUUID(),
+          role: 'user',
+          messageType: 'chat',
+          content: trimmedQuestion,
+        },
+      ]);
+      try {
+        const next = await advanceGuidedLearning({
+          lessonId,
+          runId: guidedState.runId,
+          expectedStateVersion: guidedState.stateVersion,
+          answer: trimmedQuestion,
+        });
+        setGuidedState(next);
+        const content = [
+          next.feedback,
+          next.hint
+            ? `提示 ${next.hintLevel}/3：${next.hint}`
+            : null,
+          next.phase === 'COMPLETE' ? '本次引导学习已完成。' : null,
+          next.requiresHumanReview
+            ? '已进入人工复核前置状态，不会自动下调掌握度。'
+            : null,
+        ]
+          .filter(Boolean)
+          .join('\n\n');
+        setMessages((previous) => [
+          ...previous,
+          {
+            id: crypto.randomUUID(),
+            role: 'assistant',
+            messageType: 'system',
+            content: content || '状态已更新。',
+          },
+        ]);
+      } catch (error) {
+        showToast.error(
+          error instanceof Error ? error.message : '推进失败'
+        );
+      } finally {
+        setIsStreaming(false);
+      }
+      return;
+    }
 
     const outgoingMessageType =
       retryContext?.messageType ||
@@ -272,6 +344,38 @@ export default function Chat({
     (message) => message.id !== WELCOME_MESSAGE_ID
   );
 
+  const beginGuidedLearning = async () => {
+    if (isStreaming) return;
+    try {
+      setIsStreaming(true);
+      const state = await startGuidedLearning(lessonId);
+      setGuidedState(state);
+      setGuidedMode(true);
+      setMessages((previous) => [
+        ...previous,
+        {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          messageType: 'system',
+          content: [
+            state.explanation,
+            state.exerciseContent
+              ? `练习：${state.exerciseContent}`
+              : state.feedback,
+          ]
+            .filter(Boolean)
+            .join('\n\n'),
+        },
+      ]);
+    } catch (error) {
+      showToast.error(
+        error instanceof Error ? error.message : '启动失败'
+      );
+    } finally {
+      setIsStreaming(false);
+    }
+  };
+
   return (
     <>
       <div className="h-full flex flex-col">
@@ -281,6 +385,22 @@ export default function Chat({
             <span className="font-bold">AI 学习助手</span>
           </div>
           <div className="flex items-center gap-2">
+            {guidedAvailable && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!guidedMode && !guidedState) {
+                    void beginGuidedLearning();
+                    return;
+                  }
+                  setGuidedMode((value) => !value);
+                }}
+                disabled={isStreaming}
+                className="min-h-8 border-2 border-black bg-yellow-300 px-2 text-xs font-black text-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] disabled:opacity-50"
+              >
+                {guidedMode ? '切换自由问答' : '引导学习'}
+              </button>
+            )}
             {exerciseId && (
               <span className="text-xs bg-yellow-300 text-black border-2 border-black px-2 py-0.5 font-bold flex-shrink-0">
                 已关联当前练习
@@ -300,6 +420,12 @@ export default function Chat({
             )}
           </div>
         </div>
+
+        {guidedMode && guidedState && (
+          <div className="border-b-2 border-black bg-yellow-100 px-4 py-2 text-xs font-bold text-black">
+            状态：{guidedState.phase} · 提示 {guidedState.hintLevel}/3
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
           <div className="space-y-4">

@@ -47,6 +47,12 @@ interface StreamChatParams {
   onToken: (token: string) => void;
   onContext?: (context: LessonChatContextEvent) => void;
   onFinal?: (content: string) => void;
+  onState?: (state: {
+    runId: string;
+    stateVersion: number;
+    phase: GuidedLearningPhase;
+    hintLevel: number;
+  }) => void;
 }
 
 interface LessonChatHistoryParams {
@@ -71,8 +77,54 @@ export interface LessonChatHistoryMessage {
   sources?: LessonChatSourceReference[];
 }
 
+export type GuidedLearningPhase =
+  | 'INIT'
+  | 'EXPLAIN'
+  | 'QUESTION'
+  | 'WAIT_ANSWER'
+  | 'EVALUATE'
+  | 'HINT'
+  | 'REVIEW'
+  | 'COMPLETE'
+  | 'EMPTY'
+  | 'RESTART_REQUIRED';
+
+export interface GuidedLearningState {
+  runId: string;
+  graphVersion: string;
+  stateVersion: number;
+  phase: GuidedLearningPhase;
+  lessonId: string;
+  exerciseId: string | null;
+  exerciseContent: string | null;
+  exerciseType: string | null;
+  explanation: string | null;
+  hintLevel: number;
+  hint: string | null;
+  feedback: string | null;
+  score: number | null;
+  correct: boolean | null;
+  requiresHumanReview: boolean;
+}
+
+export interface LessonChatBootstrap {
+  messages: LessonChatHistoryMessage[];
+  guidedModeAvailable: boolean;
+  guidedRun: {
+    runId: string;
+    stateVersion: number;
+    graphVersion: string | null;
+  } | null;
+}
+
 interface StreamEvent {
-  type: 'start' | 'context' | 'token' | 'done' | 'error';
+  type:
+    | 'start'
+    | 'state'
+    | 'context'
+    | 'token'
+    | 'done'
+    | 'error';
   code?: AiChatErrorCode;
   content?: string;
   message?: string;
@@ -81,6 +133,12 @@ interface StreamEvent {
   promptRevision?: LessonTutorPromptRevision;
   evidenceQuality?: LessonEvidenceQuality;
   sources?: LessonChatSourceReference[];
+  guidedState?: {
+    runId: string;
+    stateVersion: number;
+    phase: GuidedLearningPhase;
+    hintLevel: number;
+  };
 }
 
 async function getErrorCode(response: Response): Promise<string | undefined> {
@@ -168,7 +226,7 @@ function requestClearChatHistory(token: string, lessonId: string) {
 export async function getLessonChatHistory({
   lessonId,
   signal,
-}: LessonChatHistoryParams): Promise<LessonChatHistoryMessage[]> {
+}: LessonChatHistoryParams): Promise<LessonChatBootstrap> {
   const token = await getAccessTokenOrRefresh();
 
   let response = await requestChatHistory(token, lessonId, signal);
@@ -199,10 +257,82 @@ export async function getLessonChatHistory({
   }
 
   const payload = (await response.json()) as {
-    data?: { messages?: LessonChatHistoryMessage[] };
+    data?: Partial<LessonChatBootstrap>;
   };
 
-  return payload.data?.messages || [];
+  return {
+    messages: payload.data?.messages || [],
+    guidedModeAvailable:
+      payload.data?.guidedModeAvailable === true,
+    guidedRun: payload.data?.guidedRun || null,
+  };
+}
+
+async function requestGuidedLearning(
+  path: string,
+  init: RequestInit
+): Promise<GuidedLearningState> {
+  const request = async (token: string) =>
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/ai/guided/${path}`,
+      {
+        ...init,
+        credentials: 'include',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ...(init.body ? { 'Content-Type': 'application/json' } : {}),
+        },
+      }
+    );
+  let response = await request(await getAccessTokenOrRefresh());
+  if (
+    response.status === 401 &&
+    (await getErrorCode(response)) === 'ACCESS_TOKEN_EXPIRED'
+  ) {
+    response = await request((await refreshAccessToken()).accessToken);
+  }
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => ({}))) as {
+      message?: string;
+    };
+    throw new Error(payload.message || '引导式学习暂时不可用');
+  }
+  const payload = (await response.json()) as {
+    data: GuidedLearningState;
+  };
+  return payload.data;
+}
+
+export function startGuidedLearning(lessonId: string) {
+  return requestGuidedLearning('start', {
+    method: 'POST',
+    body: JSON.stringify({ lessonId }),
+  });
+}
+
+export function advanceGuidedLearning(params: {
+  lessonId: string;
+  runId: string;
+  expectedStateVersion: number;
+  answer: string;
+}) {
+  return requestGuidedLearning('advance', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  });
+}
+
+export function resumeGuidedLearning(params: {
+  lessonId: string;
+  runId: string;
+}) {
+  const query = new URLSearchParams({
+    lessonId: params.lessonId,
+    runId: params.runId,
+  });
+  return requestGuidedLearning(`resume?${query}`, {
+    method: 'GET',
+  });
 }
 
 export async function clearLessonChatHistory({
@@ -255,6 +385,7 @@ export async function streamLessonChat({
   onToken,
   onContext,
   onFinal,
+  onState,
 }: StreamChatParams): Promise<void> {
   const token = await getAccessTokenOrRefresh();
 
@@ -315,6 +446,8 @@ export async function streamLessonChat({
     const event = JSON.parse(line) as StreamEvent;
     if (event.type === 'token' && event.content) {
       onToken(event.content);
+    } else if (event.type === 'state' && event.guidedState) {
+      onState?.(event.guidedState);
     } else if (
       event.type === 'context' &&
       event.answerScope &&

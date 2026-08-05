@@ -19,6 +19,7 @@ export type GradingReviewTriggerReason =
   | 'low_confidence'
   | 'ai_requested'
   | 'structured_output_failure'
+  | 'guided_review_pending'
   | 'user_appeal';
 
 export interface GradingReviewCandidate {
