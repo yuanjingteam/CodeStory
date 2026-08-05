@@ -1,5 +1,22 @@
 # 阶段 3：评分复核闭环与掌握度落地
 
+> **⚠️ 状态：复核闭环部分已于 2026-08-05 撤回**
+>
+> 阶段四审查认定：选择题答案固定、由规则判分、无歧义，人工复核零信息增量；
+> 代码题的自动判分链（`code-grading.service.ts`、`evaluate/code-grading-chain.ts`）
+> 已足够，不需要人工兜底队列。
+>
+> **已移除**：`ai_grading_reviews` 运行时读写、`/api/v1/admin/grading-reviews`
+> 管理端队列、学习端申诉入口、`reviewTrigger` 建单逻辑、掌握度事件矩阵中的
+> `review_pending` / `human_mastered` / `human_not_mastered` / `guided_review_pending`。
+>
+> **保留**：代码题 AI 自动判分与置信度计算、阶段三评测脚本与报告
+> （`evals/run-grading-review.ts`、`evals/reports/grading-stage3*.json`）作为质量证据；
+> `ai_grading_reviews` 建表暂留，删表需单独确认。
+>
+> 掌握度规则相应简化为**只升不降**，见主计划 2.4 的 2026-08-05 修订。
+> 本文档以下内容仅作历史记录，不再是执行依据。
+
 ## 阶段定位
 
 在不引入 LangGraph 的前提下，建立低置信度评分、申诉、人工复核和掌握度更新闭环，供普通做题与后续状态机共同复用。

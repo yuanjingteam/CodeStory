@@ -8,15 +8,10 @@ import type {
   ScoreBreakdown,
   SubmitAiReview,
 } from '@/types/exercise'
-import type {
-  GradingReviewLatest,
-  GradingReviewSummary,
-} from '@/types/grading-review'
 import ChoiceQuestion from './ChoiceQuestion'
 import CodeQuestion from './CodeQuestion'
 import TiptapViewer from '@/components/tiptap/TiptapViewer'
 import { getAiErrorMessage } from './chat/chatErrors'
-import GradingReviewStatus from './GradingReviewStatus'
 
 interface ExerciseModalProps {
   isOpen: boolean
@@ -107,9 +102,7 @@ export default function ExerciseModal({
     answer: string;
     scoreBreakdown?: ScoreBreakdown;
     aiReview?: SubmitAiReview;
-    gradingReview?: GradingReviewSummary | GradingReviewLatest;
   } | null>(null)
-  const [latestGradingReview, setLatestGradingReview] = useState<GradingReviewSummary | GradingReviewLatest | null>(null)
   const [choiceExplanation, setChoiceExplanation] = useState<ChoiceExplanationData | null>(null)
   const [choiceExplanationLoading, setChoiceExplanationLoading] = useState(false)
   const [choiceExplanationError, setChoiceExplanationError] = useState('')
@@ -128,7 +121,6 @@ export default function ExerciseModal({
         setSubmitResult(null)
         setChoiceExplanation(null)
         setChoiceExplanationError('')
-        setLatestGradingReview(null)
         setShowResult(false)
         setHasSubmitted(false)
         onCodeChange?.(null)
@@ -143,17 +135,10 @@ export default function ExerciseModal({
       setCurrentHintLevelUsed(0)
       setHasSubmitted(false)
       onCodeChange?.(null)
-      Promise.all([
-        exerciseApi.getDetail(exerciseId),
-        exerciseApi.getLatestGradingReview(exerciseId).catch(error => {
-          console.error('获取最新评分复核失败:', error)
-          return null
-        }),
-      ])
-        .then(([response, gradingReview]) => {
+      exerciseApi.getDetail(exerciseId)
+        .then(response => {
           if (cancelled) return
           setExerciseData(response)
-          setLatestGradingReview(gradingReview)
           if (response.userAnswer?.hint_level_used !== undefined) {
             setCurrentHintLevelUsed(response.userAnswer.hint_level_used)
           }
@@ -186,11 +171,7 @@ export default function ExerciseModal({
         answer,
         scoreBreakdown: response.scoreBreakdown,
         aiReview: response.aiReview,
-        gradingReview: response.gradingReview,
       })
-      if (response.gradingReview) {
-        setLatestGradingReview(response.gradingReview)
-      }
       setChoiceExplanation(null)
       setChoiceExplanationError('')
       setExerciseData(current => current ? {
@@ -213,22 +194,6 @@ export default function ExerciseModal({
     } catch (error) {
       console.error('提交答案失败:', error)
       return false
-    }
-  }
-
-  const handleAppeal = async (reason: string) => {
-    if (!exerciseData?.id) throw new Error('题目信息不可用，请重新打开题目。')
-
-    try {
-      await exerciseApi.appealGradingReview(exerciseData.id, reason)
-      const gradingReview = await exerciseApi.getLatestGradingReview(exerciseData.id)
-      setLatestGradingReview(gradingReview)
-      setSubmitResult(current => current ? {
-        ...current,
-        gradingReview: gradingReview ?? current.gradingReview,
-      } : current)
-    } catch (error) {
-      throw new Error(getAiErrorMessage(error).message)
     }
   }
 
@@ -331,12 +296,6 @@ export default function ExerciseModal({
                 )}
               </div>
             )}
-            <GradingReviewStatus
-              key={submitResult.gradingReview?.id ?? `submission-${exerciseData.id}`}
-              review={submitResult.gradingReview ?? null}
-              title="本次评分复核"
-              onAppeal={handleAppeal}
-            />
             {exerciseData.type === 'single_choice' && (
               <div className="my-4">
                 {!choiceExplanation && (
@@ -381,14 +340,6 @@ export default function ExerciseModal({
           </div>
         ) : (
           <div>
-            {latestGradingReview && (
-              <GradingReviewStatus
-                key={latestGradingReview.id}
-                review={latestGradingReview}
-                title="最近一次评分复核"
-                onAppeal={handleAppeal}
-              />
-            )}
             <div className="mb-6">
               <TiptapViewer content={exerciseData.content} />
             </div>

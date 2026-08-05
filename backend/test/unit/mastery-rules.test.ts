@@ -99,24 +99,23 @@ describe('前置项 D · resolveMasteryLevel（事件矩阵）', () => {
     ).toBe(70);
   });
 
-  it('人工改判未掌握但未复核：保持当前值', () => {
+  it('代码题未通过：保持当前值，不下调', () => {
     expect(
       resolveMasteryLevel({
-        event: 'human_not_mastered',
+        event: 'code_failed',
         currentLevel: 70,
         candidateLevel: 30,
       })
     ).toBe(70);
   });
 
-  it('人工改判未掌握且已复核：唯一允许的下调入口，取候选值', () => {
+  it('代码题通过：取 max(当前值, 候选值) 提升', () => {
     expect(
       resolveMasteryLevel({
-        event: 'human_not_mastered',
-        currentLevel: 70,
-        candidateLevel: 30,
-        reviewed: true,
+        event: 'code_passed_confident',
+        currentLevel: 40,
+        candidateLevel: 85,
       })
-    ).toBe(30);
+    ).toBe(85);
   });
 });

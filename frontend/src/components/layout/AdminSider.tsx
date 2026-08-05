@@ -19,7 +19,6 @@ const menuItems = [
     href: '/exercises-manage',
     icon: HiOutlineClipboardDocumentCheck,
   },
-  { name: '评分复核', href: '/grading-reviews', icon: HiOutlineClipboardDocumentCheck },
 ];
 
 const AdminSider: React.FC = () => {

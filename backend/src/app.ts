@@ -21,7 +21,6 @@ import {
   lessonManageRouter,
   exerciseManageRouter,
   aiRouter,
-  gradingReviewsRouter,
   recommendationsRouter,
 } from './routes/index';
 import { startAiChatCleanupScheduler } from './services/ai/chat-retention.service';
@@ -70,11 +69,6 @@ app.use(
   '/api/v1/admin/lessons',
   [authMiddleware, requireAdmin],
   lessonManageRouter
-);
-app.use(
-  '/api/v1/admin/grading-reviews',
-  [authMiddleware, requireAdmin],
-  gradingReviewsRouter
 );
 app.use(
   '/api/v1/admin/exercises',

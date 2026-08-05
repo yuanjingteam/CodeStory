@@ -2,10 +2,7 @@ import prisma from '../../config/prisma';
 import type { Prisma } from '../../generated/prisma';
 import { resolveShortId, uuidToShortId } from '../../utils/idTransform';
 import { generateChoiceExplanation } from '../ai/choice-explanation.service';
-import {
-  AI_CODE_REVIEW_CONFIDENCE_THRESHOLD,
-  reviewCodeWithAI,
-} from '../ai/evaluate/code-grading-chain';
+import { reviewCodeWithAI } from '../ai/evaluate/code-grading-chain';
 import {
   createAiChatErrorPayload,
   logAiError,
@@ -18,12 +15,6 @@ import {
   markCodeReviewFailed,
   recordCodeSubmission,
 } from './code-grading.service';
-import {
-  createGradingReviewInTransaction,
-  formatSubmitGradingReview,
-  sanitizeExerciseGenerationMetadata,
-  type GradingReviewTriggerReason,
-} from './grading-review.service';
 import {
   applySubmissionMasteryInTransaction,
   updateLessonAndCourseProgress,
@@ -85,7 +76,6 @@ export interface SubmitExerciseResult {
   analysis: string;
   scoreBreakdown?: ScoreBreakdown;
   aiReview?: SubmitAiReview;
-  gradingReview?: ReturnType<typeof formatSubmitGradingReview>;
 }
 
 export interface ExerciseDetail {
@@ -220,11 +210,6 @@ export async function submitExercise(
   let codeGrade: CodeGradeResult | undefined;
   let completedAiReview: Awaited<ReturnType<typeof reviewCodeWithAI>> | undefined;
   let aiReviewFailure: ReturnType<typeof createAiChatErrorPayload> | undefined;
-  let reviewTrigger: GradingReviewTriggerReason | undefined;
-  let aiScore: number | undefined;
-  let ruleScore: number | undefined;
-  let ruleCorrect: boolean | undefined;
-  let aiCorrect: boolean | undefined;
 
   if (exercise.type === 'single_choice') {
     const metadata = exercise.metadata as any;
@@ -260,8 +245,6 @@ export async function submitExercise(
     };
 
     codeGrade = grade;
-    ruleScore = grade.score;
-    ruleCorrect = grade.correct;
 
     try {
       const aiReview = await reviewCodeWithAI({
@@ -279,8 +262,6 @@ export async function submitExercise(
 
       correct = aiReview.review.isLikelyCorrect;
       score = calculateAiReviewedFinalScore(aiReview, grade.hintDeduction);
-      aiScore = score;
-      aiCorrect = aiReview.review.isLikelyCorrect;
       feedback = aiReview.review.feedback;
       scoreBreakdown = {
         functionalScore: aiReview.review.functionalScore,
@@ -298,13 +279,6 @@ export async function submitExercise(
         confidence: aiReview.review.confidence,
         status: 'completed',
       };
-      if (grade.correct !== aiReview.review.isLikelyCorrect) {
-        reviewTrigger = 'rule_ai_conflict';
-      } else if (aiReview.review.needsManualReview) {
-        reviewTrigger = 'ai_requested';
-      } else if (aiReview.review.confidence < AI_CODE_REVIEW_CONFIDENCE_THRESHOLD) {
-        reviewTrigger = 'low_confidence';
-      }
     } catch (error) {
       const aiError = createAiChatErrorPayload(error);
       aiReviewFailure = aiError;
@@ -320,7 +294,6 @@ export async function submitExercise(
         needsManualReview: true,
         status: 'failed',
       };
-      reviewTrigger = 'structured_output_failure';
     }
   }
 
@@ -366,14 +339,11 @@ export async function submitExercise(
         metadata: exercise.metadata,
         hintLevelUsed: effectiveHintLevelUsed,
       });
-      ruleScore = codeGrade.score;
-      ruleCorrect = codeGrade.correct;
       if (completedAiReview) {
         score = calculateAiReviewedFinalScore(
           completedAiReview,
           codeGrade.hintDeduction
         );
-        aiScore = score;
         scoreBreakdown = {
           functionalScore: completedAiReview.review.functionalScore,
           qualityScore: completedAiReview.review.qualityScore,
@@ -448,43 +418,6 @@ export async function submitExercise(
       },
     });
 
-    let gradingReview;
-    if (reviewTrigger) {
-      gradingReview = await createGradingReviewInTransaction(tx, {
-        userId,
-        exerciseId: resolvedId,
-        submissionType: exercise.type,
-        codeSubmissionId,
-        submittedAnswer: answer,
-        answerVersion: savedAnswer.version,
-        hintLevelUsed: effectiveHintLevelUsed,
-        exerciseSnapshot: {
-          id: exercise.id,
-          lessonId: exercise.lesson_id,
-          type: exercise.type,
-          content: exercise.content,
-          answer: exercise.answer,
-          analysis: exercise.analysis,
-          knowledge: exercise.knowledge,
-          difficulty: exercise.difficulty,
-          source: exercise.source,
-          reviewStatus: exercise.review_status,
-          genMetadata: sanitizeExerciseGenerationMetadata(
-            exercise.gen_metadata as Prisma.JsonValue | null
-          ),
-          metadata: exercise.metadata,
-          grading: {
-            ruleCorrect,
-            aiCorrect,
-            currentPassed: correct,
-          },
-        },
-        triggerReason: reviewTrigger,
-        aiScore,
-        ruleScore,
-      });
-    }
-
     const totalScore = await tx.answer.aggregate({
       where: { user_id: userId, is_delete: 0 },
       _sum: { score: true },
@@ -496,11 +429,9 @@ export async function submitExercise(
 
     const masteryEvent = exercise.type === 'single_choice'
       ? (correct ? 'choice_correct' : 'choice_incorrect')
-      : reviewTrigger
-        ? 'review_pending'
-        : correct
-          ? 'code_passed_confident'
-          : 'code_failed';
+      : correct
+        ? 'code_passed_confident'
+        : 'code_failed';
     await applySubmissionMasteryInTransaction(tx, {
       lessonId: exercise.lesson_id,
       userId,
@@ -513,9 +444,6 @@ export async function submitExercise(
       analysis: exercise.analysis || '',
       scoreBreakdown,
       aiReview: aiReviewResult,
-      gradingReview: gradingReview
-        ? formatSubmitGradingReview(gradingReview)
-        : undefined,
     };
     if (effect) {
       await markLearningEffectApplied(

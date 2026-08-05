@@ -149,9 +149,7 @@ export default function Chat({
             ? `提示 ${next.hintLevel}/3：${next.hint}`
             : null,
           next.phase === 'COMPLETE' ? '本次引导学习已完成。' : null,
-          next.requiresHumanReview
-            ? '已进入人工复核前置状态，不会自动下调掌握度。'
-            : null,
+          next.phase === 'REVIEW' ? '本轮引导结束，可以重新开始或继续自由问答。' : null,
         ]
           .filter(Boolean)
           .join('\n\n');

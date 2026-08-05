@@ -104,7 +104,6 @@ export interface GuidedLearningState {
   feedback: string | null;
   score: number | null;
   correct: boolean | null;
-  requiresHumanReview: boolean;
 }
 
 export interface LessonChatBootstrap {

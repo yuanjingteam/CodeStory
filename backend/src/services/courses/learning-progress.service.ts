@@ -13,11 +13,7 @@ export type MasteryEvent =
   | 'choice_correct'
   | 'choice_incorrect'
   | 'code_passed_confident'
-  | 'code_failed'
-  | 'review_pending'
-  | 'human_mastered'
-  | 'human_not_mastered'
-  | 'guided_review_pending';
+  | 'code_failed';
 
 export type MasteryBand =
   | 'not_started'
@@ -78,7 +74,6 @@ export function resolveMasteryLevel(params: {
   event: MasteryEvent;
   currentLevel: number;
   candidateLevel: number;
-  reviewed?: boolean;
 }): number {
   const currentLevel = clampMasteryLevel(params.currentLevel);
   const candidateLevel = clampMasteryLevel(params.candidateLevel);
@@ -87,16 +82,8 @@ export function resolveMasteryLevel(params: {
     case 'choice_correct':
     case 'code_passed_confident':
       return Math.max(currentLevel, candidateLevel);
-    case 'human_mastered':
-      return params.reviewed
-        ? Math.max(currentLevel, candidateLevel)
-        : currentLevel;
-    case 'human_not_mastered':
-      return params.reviewed ? candidateLevel : currentLevel;
     case 'choice_incorrect':
     case 'code_failed':
-    case 'review_pending':
-    case 'guided_review_pending':
       return currentLevel;
   }
 }
@@ -135,12 +122,7 @@ export async function applySubmissionMasteryInTransaction(
   params: {
     lessonId: string;
     userId: string;
-    event: Extract<MasteryEvent,
-      | 'choice_correct'
-      | 'choice_incorrect'
-      | 'code_passed_confident'
-      | 'code_failed'
-      | 'review_pending'>;
+    event: MasteryEvent;
   }
 ): Promise<number> {
   const [totalExercises, answers, progress] = await Promise.all([

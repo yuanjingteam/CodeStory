@@ -73,7 +73,6 @@ function toPublicState(
     feedback: values.feedback || null,
     score: values.score ?? null,
     correct: values.correct ?? null,
-    requiresHumanReview: Boolean(values.requiresHumanReview),
   };
 }
 
@@ -193,7 +192,6 @@ export async function startGuidedLearning(
       feedback: null,
       score: null,
       correct: null,
-      requiresHumanReview: false,
     },
     graphConfig(runId)
   );
@@ -248,7 +246,6 @@ export async function advanceGuidedLearning(params: {
         feedback: null,
         score: null,
         correct: null,
-        requiresHumanReview: false,
       }),
       phase: 'RESTART_REQUIRED',
     };

@@ -349,7 +349,7 @@ describe('阶段 4 · PostgreSQL checkpoint 恢复', () => {
     ]);
   });
 
-  it('三级提示后进入人工复核，重学换发 run ID，旧 run 被拒绝', async () => {
+  it('三级提示后直接给出参考答案结束本轮，重学换发 run ID，旧 run 被拒绝', async () => {
     const firstSession = await prisma.ai_chat_sessions.findUniqueOrThrow({
       where: {
         user_id_lesson_id: {
@@ -375,16 +375,13 @@ describe('阶段 4 · PostgreSQL checkpoint 恢复', () => {
     expect(state).toMatchObject({
       phase: 'REVIEW',
       hintLevel: 3,
-      requiresHumanReview: true,
     });
-    const review = await prisma.ai_grading_reviews.findFirst({
-      where: {
-        user_id: userId,
-        exercise_id: exerciseId,
-        trigger_reason: 'guided_review_pending',
-      },
+    // 人工复核已移除：本轮直接给出参考答案，不再建复核单
+    expect(state.feedback).toContain('参考答案：A. 正确');
+    const reviewCount = await prisma.ai_grading_reviews.count({
+      where: { user_id: userId, exercise_id: exerciseId },
     });
-    expect(review?.status).toBe('pending');
+    expect(reviewCount).toBe(0);
 
     const restarted = await startGuidedLearning(userId, lessonId);
     expect(restarted.runId).not.toBe(state.runId);

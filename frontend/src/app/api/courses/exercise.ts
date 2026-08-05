@@ -4,11 +4,6 @@ import type {
   ExerciseDetailResponse,
   ExerciseSubmitResponse,
 } from '@/types/exercise';
-import type {
-  GradingReviewLatest,
-  GradingReviewSummary,
-  ResponseData,
-} from '@/types/grading-review';
 
 interface HintData {
   content: string;
@@ -62,24 +57,6 @@ export const exerciseApi = {
       answer,
       ...(recommendationToken ? { recommendationToken } : {})
     }).then(res => res.data);
-  },
-
-  getLatestGradingReview: (exerciseId: string | number) => {
-    return request
-      .get<ResponseData<GradingReviewLatest | null>>(
-        'exercises/grading-reviews/latest',
-        { params: { exercise_id: exerciseId } }
-      )
-      .then((response) => response.data);
-  },
-
-  appealGradingReview: (exerciseId: string | number, reason: string) => {
-    return request
-      .post<ResponseData<GradingReviewSummary>>(
-        'exercises/grading-reviews/appeal',
-        { exercise_id: exerciseId, reason }
-      )
-      .then((response) => response.data);
   },
 
   explainChoice: (exerciseId: string | number, answer: string) => {

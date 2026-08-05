@@ -14,7 +14,7 @@ import type {
   GuidedLearningInput,
   GuidedLearningPhase,
 } from './types';
-import { createGuidedLearningReview } from './review';
+import { getGuidedLearningSolution } from './review';
 
 export const GuidedLearningState = Annotation.Root({
   runId: Annotation<string>,
@@ -32,7 +32,6 @@ export const GuidedLearningState = Annotation.Root({
   feedback: Annotation<string | null>,
   score: Annotation<number | null>,
   correct: Annotation<boolean | null>,
-  requiresHumanReview: Annotation<boolean>,
 });
 
 export type GuidedLearningGraphState =
@@ -110,8 +109,7 @@ async function evaluateNode(
   if (!state.exerciseId || !state.answer) {
     return {
       phase: 'REVIEW',
-      feedback: '未收到有效答案，需要人工复核。',
-      requiresHumanReview: true,
+      feedback: '未收到有效答案，本轮引导结束。',
     };
   }
   const result = await submitExercise(
@@ -129,7 +127,6 @@ async function evaluateNode(
     return {
       phase: 'REVIEW',
       feedback: '当前题目已不可用，需要重新开始。',
-      requiresHumanReview: true,
     };
   }
   return {
@@ -146,10 +143,7 @@ async function hintNode(
   if (!state.exerciseId || state.hintLevel >= 3) {
     return {
       phase: 'REVIEW',
-      requiresHumanReview: true,
-      feedback:
-        state.feedback ||
-        '三级提示后仍未通过，等待人工复核后再判断未掌握。',
+      feedback: state.feedback || '三级提示后仍未通过，本轮引导结束。',
     };
   }
   const nextLevel = state.hintLevel + 1;
@@ -167,8 +161,7 @@ async function hintNode(
   if (!hint) {
     return {
       phase: 'REVIEW',
-      requiresHumanReview: true,
-      feedback: '提示不可用，等待人工复核。',
+      feedback: '提示不可用，本轮引导结束。',
     };
   }
   return {
@@ -181,12 +174,18 @@ async function hintNode(
 async function reviewNode(
   state: GuidedLearningGraphState
 ): Promise<Partial<GuidedLearningGraphState>> {
-  if (!state.correct && state.requiresHumanReview) {
-    await createGuidedLearningReview(state);
+  if (state.correct) {
+    return { phase: 'COMPLETE' };
+  }
+  const solution = await getGuidedLearningSolution(state);
+  const lines = [state.feedback || '本轮引导结束。'];
+  if (solution) {
+    lines.push(`参考答案：${solution.answer}`);
+    if (solution.analysis) lines.push(`解析：${solution.analysis}`);
   }
   return {
-    phase: state.correct ? 'COMPLETE' : 'REVIEW',
-    requiresHumanReview: !state.correct,
+    phase: 'REVIEW',
+    feedback: lines.join('\n'),
   };
 }
 

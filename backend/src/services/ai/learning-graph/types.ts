@@ -49,7 +49,6 @@ export interface GuidedLearningPublicState {
   feedback: string | null;
   score: number | null;
   correct: boolean | null;
-  requiresHumanReview: boolean;
 }
 
 export class GuidedLearningConflictError extends Error {
