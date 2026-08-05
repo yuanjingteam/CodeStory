@@ -226,7 +226,8 @@ async function appendLearningSignals(
   items: RecommendationItem[],
   userId: string,
   courseId: string,
-  limit: number
+  limit: number,
+  excludeLessonId?: string
 ): Promise<void> {
   const [answers, weakLessons] = await Promise.all([
     prisma.answer.findMany({
@@ -305,6 +306,7 @@ async function appendLearningSignals(
   for (const lesson of weakLessons) {
     if (
       items.length >= limit ||
+      lesson.id === excludeLessonId ||
       items.some((item) => item.lessonId === lesson.id)
     ) {
       continue;
@@ -482,7 +484,13 @@ export async function getRecommendations(
   }
 
   if (params.scene === 'review' || items.length < limit) {
-    await appendLearningSignals(items, userId, courseId, limit);
+    await appendLearningSignals(
+      items,
+      userId,
+      courseId,
+      limit,
+      params.scene === 'lesson' ? lessonId : undefined
+    );
   }
   await appendCourseOrderFallback(
     items,
