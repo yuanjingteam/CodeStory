@@ -134,9 +134,10 @@ export default function LessonPage({
       } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300`;
 
     return (
-      <div className="min-h-[calc(100dvh-64px)] p-2">
+      // 90px = 外壳 my-3 (24px) + 外壳上下边框 (4px) + Header (62px)
+      <div className="flex h-[calc(100dvh-90px)] flex-col p-2">
         <div
-          className="mb-3 grid grid-cols-3 gap-2"
+          className="mb-3 grid shrink-0 grid-cols-3 gap-2"
           aria-label="小节移动端工作区"
         >
           <button
@@ -166,16 +167,16 @@ export default function LessonPage({
         </div>
 
         <div
-          className={`h-[calc(100dvh-132px)] min-h-[560px] overflow-hidden rounded-lg border-4 border-black bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${
-            mobileWorkspace === 'catalog' ? 'flex flex-col' : 'hidden'
+          className={`min-h-0 overflow-hidden rounded-lg border-4 border-black bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${
+            mobileWorkspace === 'catalog' ? 'flex flex-1 flex-col' : 'hidden'
           }`}
         >
           <Content data={data} onLessonClick={handleLessonSwitched} />
         </div>
 
         <div
-          className={`h-[calc(100dvh-132px)] min-h-[560px] overflow-hidden rounded-lg border-4 border-black bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${
-            mobileWorkspace === 'lesson' ? 'flex flex-col' : 'hidden'
+          className={`min-h-0 overflow-hidden rounded-lg border-4 border-black bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${
+            mobileWorkspace === 'lesson' ? 'flex flex-1 flex-col' : 'hidden'
           }`}
         >
           <Question
@@ -189,8 +190,8 @@ export default function LessonPage({
         </div>
 
         <div
-          className={`h-[calc(100dvh-132px)] min-h-[560px] overflow-hidden rounded-lg border-4 border-black bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${
-            mobileWorkspace === 'assistant' ? 'flex flex-col' : 'hidden'
+          className={`min-h-0 overflow-hidden rounded-lg border-4 border-black bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] ${
+            mobileWorkspace === 'assistant' ? 'flex flex-1 flex-col' : 'hidden'
           }`}
         >
           <Chat
@@ -206,16 +207,17 @@ export default function LessonPage({
   }
 
   return (
-    <div className="p-3 box-border h-[calc(100vh-110px)]">
+    // 90px = 外壳 my-3 (24px) + 外壳上下边框 (4px) + Header (62px)
+    <div className="p-3 box-border h-[calc(100dvh-90px)]">
       <Group orientation="horizontal" className="h-full">
         <Panel
           defaultSize="22%"
-          minSize="3%"
-          maxSize="35%"
+          minSize="260px"
+          maxSize="420px"
           collapsible
-          collapsedSize="3%"
+          collapsedSize="44px"
           onResize={(size) => {
-            setSidebarCollapsed(size.asPercentage <= 3)
+            setSidebarCollapsed(size.inPixels <= 48)
           }}
         >
           <div className="h-full border-4 border-black rounded-lg shadow-[1px_1px_0_0_rgba(0,0,0,1)] bg-white relative flex flex-col overflow-hidden">
@@ -234,7 +236,7 @@ export default function LessonPage({
           <div className="w-1 h-8 bg-gray-400 rounded-full hover:bg-purple-600 active:bg-purple-700 transition-colors duration-150" />
         </Separator>
 
-        <Panel defaultSize="50%" minSize="30%">
+        <Panel defaultSize="50%" minSize="420px">
           <div className="h-full border-4 border-black rounded-lg shadow-[1px_1px_0_0_rgba(0,0,0,1)] bg-white relative flex flex-col overflow-hidden">
             <Question
               key={data.currentLesson.id}
@@ -251,9 +253,9 @@ export default function LessonPage({
           <div className="w-1 h-8 bg-gray-400 rounded-full hover:bg-purple-600 active:bg-purple-700 transition-colors duration-150" />
         </Separator>
 
-        <Panel defaultSize="28%" minSize="3%" maxSize="50%" collapsible collapsedSize="3%"
+        <Panel defaultSize="28%" minSize="340px" maxSize="560px" collapsible collapsedSize="44px"
           onResize={(size) => {
-            setChatCollapsed(size.asPercentage <= 3)
+            setChatCollapsed(size.inPixels <= 48)
           }}
         >
           <div className="h-full border-4 border-black rounded-lg shadow-[1px_1px_0_0_rgba(0,0,0,1)] bg-white relative flex flex-col overflow-hidden">

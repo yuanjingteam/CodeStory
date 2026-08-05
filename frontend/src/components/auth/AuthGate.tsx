@@ -10,7 +10,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (isLoading && !isAuthPage) {
     return (
-      <div className="flex min-h-[calc(100vh-2rem)] items-center justify-center text-sm font-bold text-gray-500">
+      <div className="flex min-h-[calc(100dvh-1.5rem)] items-center justify-center text-sm font-bold text-gray-500">
         加载中...
       </div>
     );

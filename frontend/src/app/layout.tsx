@@ -19,7 +19,7 @@ export default function RootLayout({
         <div className="fixed inset-0 pointer-events-none z-0">
           <div className="absolute inset-0 bg-[radial-gradient(circle,_#000_1px,_transparent_1px)] bg-[size:20px_20px]"></div>
         </div>
-        <div className="w-[95%] min-h-[calc(100vh-2rem)] max-w-[1500px] mx-auto my-4 border-2 border-black bg-white shadow-[4px_4px_0px_#000] rounded-sm relative z-10 flex flex-col">
+        <div className="w-[calc(100%-1.5rem)] min-h-[calc(100dvh-1.5rem)] max-w-[1760px] mx-auto my-3 border-2 border-black bg-white shadow-[4px_4px_0px_#000] rounded-sm relative z-10 flex flex-col">
           <AuthGate>{children}</AuthGate>
         </div>
         <Toaster

@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import type { LessonDetailData } from '@/types/lesson-detail'
 import ExerciseModal from './ExerciseModal'
 import TiptapViewer from '@/components/tiptap/TiptapViewer'
+import RelatedLearning from './RelatedLearning'
 import { recordRecommendationEvent } from '@/api/recommendations'
 
 interface QuestionProps {
@@ -189,17 +190,17 @@ export default function Question({
   return (
     <div className="h-full flex flex-col">
       {/* 头部 */}
-      <div className="bg-purple-600 text-white px-6 py-3 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="font-bold">{currentChapterTitle}</span>
-          <span className="text-yellow-300">›</span>
-          <span>{currentLessonTitle}</span>
+      <div className="bg-purple-600 text-white px-4 py-3 sm:px-6 flex items-center justify-between gap-3 flex-shrink-0">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="hidden truncate font-bold sm:inline">{currentChapterTitle}</span>
+          <span className="hidden text-yellow-300 sm:inline" aria-hidden="true">›</span>
+          <span className="truncate">{currentLessonTitle}</span>
         </div>
         <button
           onClick={() => router.push(`/courses/${courseId}`)}
-          className="border-2 border-black px-3 py-1 bg-green-500 text-white font-bold rounded-lg shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
+          className="shrink-0 whitespace-nowrap border-2 border-black px-3 py-1 bg-green-500 text-white font-bold rounded-lg shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
         >
-          <span>‹</span>
+          <span aria-hidden="true">‹</span>
           <span>返回</span>
         </button>
       </div>
@@ -280,22 +281,29 @@ export default function Question({
         )}
       </div>
 
+      {courseId && currentLessonId && (
+        <div className="flex-shrink-0">
+          <RelatedLearning courseId={courseId} lessonId={currentLessonId} />
+        </div>
+      )}
+
       {/* 底部导航 */}
-      <div className="bg-white border-t-4 border-black px-6 py-4 flex-shrink-0">
-        <div className="grid grid-cols-5 gap-3 max-w-4xl mx-auto">
+      <div className="bg-white border-t-4 border-black px-3 py-4 sm:px-6 flex-shrink-0">
+        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 max-w-4xl mx-auto">
           <button
             onClick={() => handleNavigate('prev')}
             disabled={!hasPrev}
-            className={`col-span-1 py-3 px-4 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2 text-base ${
+            aria-label="上一节"
+            className={`py-3 px-3 sm:px-4 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2 text-base whitespace-nowrap ${
               hasPrev
                 ? 'bg-yellow-400 text-black hover:bg-yellow-500 rounded-lg hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed rounded-lg'
             }`}
           >
-            <span>‹</span>
-            <span>上一节</span>
+            <span aria-hidden="true">‹</span>
+            <span className="hidden sm:inline">上一节</span>
           </button>
-          <div className="col-span-3 flex items-center justify-center">
+          <div className="flex min-w-0 items-center justify-center">
             {hasExercises && (
               <div className="w-full max-w-md px-4">
                 <div className="flex items-center justify-between mb-1">
@@ -321,14 +329,15 @@ export default function Question({
           <button
             onClick={() => handleNavigate('next')}
             disabled={!hasNext}
-            className={`col-span-1 py-3 px-4 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2 text-base ${
+            aria-label="下一节"
+            className={`py-3 px-3 sm:px-4 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2 text-base whitespace-nowrap ${
               hasNext
                 ? 'bg-yellow-400 text-black hover:bg-yellow-500 rounded-lg hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed rounded-lg'
             }`}
           >
-            <span>下一节</span>
-            <span>›</span>
+            <span className="hidden sm:inline">下一节</span>
+            <span aria-hidden="true">›</span>
           </button>
         </div>
       </div>
