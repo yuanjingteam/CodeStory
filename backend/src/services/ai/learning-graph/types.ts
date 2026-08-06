@@ -43,6 +43,7 @@ export interface GuidedLearningPublicState {
   exerciseId: string | null;
   exerciseContent: string | null;
   exerciseType: string | null;
+  exerciseOptions: string[] | null;
   explanation: string | null;
   hintLevel: number;
   hint: string | null;

@@ -19,6 +19,7 @@ import {
 import { AlertDialog } from '@/components/ui';
 import { showToast } from '@/utils/toast';
 import ChatMessageBubble from './chat/ChatMessageBubble';
+import GuidedPanel from './chat/GuidedPanel';
 import { QUICK_ACTIONS, resolveOutgoingMessageType } from './chat/chatActions';
 import { getAiErrorMessage } from './chat/chatErrors';
 import type { ChatMessage, ChatMessageType } from './chat/chatTypes';
@@ -81,7 +82,6 @@ export default function Chat({
     getLessonChatHistory({ lessonId, signal: controller.signal })
       .then(async (bootstrap) => {
         if (controller.signal.aborted) return;
-        setGuidedAvailable(bootstrap.guidedModeAvailable);
         if (bootstrap.guidedRun) {
           try {
             const restored = await resumeGuidedLearning({
@@ -95,6 +95,10 @@ export default function Chat({
             // 旧图或已结束运行不影响自由对话。
           }
         }
+        // 必须等 resume 落定再放出切换控件：否则这段窗口里点「引导」会因为
+        // guidedState 还是 null 而另起一轮，把进行中的运行连同提示等级丢掉。
+        if (controller.signal.aborted) return;
+        setGuidedAvailable(bootstrap.guidedModeAvailable);
         if (bootstrap.messages.length === 0) return;
         setMessages([
           welcomeMessage,
@@ -138,45 +142,19 @@ export default function Chat({
     const hintRequest = retryContext?.hintRequest === true;
     const trimmedQuestion = question.trim();
     if (!trimmedQuestion || isStreaming) return;
+    // 引导模式独占界面：输入即作答，只推进状态机，不写入自由问答的消息流。
     if (guidedMode && guidedState) {
       setIsStreaming(true);
       setInput('');
-      setMessages((previous) => [
-        ...previous,
-        {
-          id: crypto.randomUUID(),
-          role: 'user',
-          messageType: 'chat',
-          content: trimmedQuestion,
-        },
-      ]);
       try {
-        const next = await advanceGuidedLearning({
-          lessonId,
-          runId: guidedState.runId,
-          expectedStateVersion: guidedState.stateVersion,
-          answer: trimmedQuestion,
-        });
-        setGuidedState(next);
-        const content = [
-          next.feedback,
-          next.hint
-            ? `提示 ${next.hintLevel}/3：${next.hint}`
-            : null,
-          next.phase === 'COMPLETE' ? '本次引导学习已完成。' : null,
-          next.phase === 'REVIEW' ? '本轮引导结束，可以重新开始或继续自由问答。' : null,
-        ]
-          .filter(Boolean)
-          .join('\n\n');
-        setMessages((previous) => [
-          ...previous,
-          {
-            id: crypto.randomUUID(),
-            role: 'assistant',
-            messageType: 'system',
-            content: content || '状态已更新。',
-          },
-        ]);
+        setGuidedState(
+          await advanceGuidedLearning({
+            lessonId,
+            runId: guidedState.runId,
+            expectedStateVersion: guidedState.stateVersion,
+            answer: trimmedQuestion,
+          })
+        );
       } catch (error) {
         showToast.error(
           error instanceof Error ? error.message : '推进失败'
@@ -359,31 +337,20 @@ export default function Chat({
   const hasChatHistory = messages.some(
     (message) => message.id !== WELCOME_MESSAGE_ID
   );
+  const inGuidedView = guidedMode && Boolean(guidedState);
+  // 只有停在 WAIT_ANSWER 才收作答；其余相位输入框不接受输入，避免向已结束的运行提交。
+  const canAnswer = guidedState?.phase === 'WAIT_ANSWER';
+  const guidedEnded = inGuidedView && !canAnswer;
+  // 选择题在选项按钮上作答（提交的是字母），不再给一个只会判错的打字框。
+  const guidedChoice =
+    inGuidedView && (guidedState?.exerciseOptions?.length ?? 0) > 0;
 
   const beginGuidedLearning = async () => {
     if (isStreaming) return;
     try {
       setIsStreaming(true);
-      const state = await startGuidedLearning(lessonId);
-      setGuidedState(state);
+      setGuidedState(await startGuidedLearning(lessonId));
       setGuidedMode(true);
-      setMessages((previous) => [
-        ...previous,
-        {
-          id: crypto.randomUUID(),
-          role: 'assistant',
-          messageType: 'system',
-          content: [
-            '已切换到引导学习：我会按讲解 → 出题 → 作答 → 提示的顺序带你走一遍。随时点「自由」可以切回自由问答。',
-            state.explanation,
-            state.exerciseContent
-              ? `练习：${state.exerciseContent}`
-              : state.feedback,
-          ]
-            .filter(Boolean)
-            .join('\n\n'),
-        },
-      ]);
     } catch (error) {
       showToast.error(
         error instanceof Error ? error.message : '启动失败'
@@ -438,7 +405,7 @@ export default function Chat({
                 </button>
               </div>
             )}
-            {hasChatHistory && (
+            {hasChatHistory && !inGuidedView && (
               <button
                 type="button"
                 onClick={() => setClearDialogOpen(true)}
@@ -453,33 +420,43 @@ export default function Chat({
           </div>
         </div>
 
-        {(exerciseId || (guidedMode && guidedState)) && (
+        {(exerciseId || inGuidedView) && (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b-2 border-black bg-yellow-100 px-4 py-2 text-xs font-bold text-black">
-            {guidedMode && guidedState && (
+            {inGuidedView && guidedState && (
               <span>状态：{GUIDED_PHASE_LABELS[guidedState.phase] ?? guidedState.phase}</span>
             )}
-            {guidedMode && guidedState && guidedState.hintLevel > 0 && (
-              <span>已用提示 {guidedState.hintLevel}/3</span>
+            {inGuidedView && guidedState && guidedState.hintLevel > 0 && (
+              <span>本轮提示 {guidedState.hintLevel}/3</span>
             )}
             {exerciseId && <span>已关联练习</span>}
           </div>
         )}
 
         <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <ChatMessageBubble
-                key={message.id}
-                message={message}
-                isStreaming={isStreaming}
-                onRetry={retryMessage}
-              />
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
+          {inGuidedView && guidedState ? (
+            <GuidedPanel
+              state={guidedState}
+              canAnswer={Boolean(canAnswer) && !isStreaming}
+              onAnswer={(answer) => void sendMessage(answer)}
+            />
+          ) : (
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <ChatMessageBubble
+                  key={message.id}
+                  message={message}
+                  isStreaming={isStreaming}
+                  onRetry={retryMessage}
+                />
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
         </div>
 
         <div className="bg-white p-3">
+          {/* 快捷按钮走的是自由问答通道，引导模式下点它们会被当成作答，所以整排隐藏 */}
+          {!inGuidedView && (
           <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
             {visibleQuickActions.map((action) => {
               const Icon = action.icon;
@@ -501,6 +478,26 @@ export default function Chat({
               );
             })}
           </div>
+          )}
+          {guidedChoice && !guidedEnded ? (
+            <p className="text-xs text-gray-500">
+              点上面的选项直接提交，答错会自动给提示。
+            </p>
+          ) : guidedEnded ? (
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => void beginGuidedLearning()}
+                disabled={isStreaming}
+                className="w-full border-2 border-black bg-yellow-300 px-3 py-2 text-sm font-black text-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-transform hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                重新开始一轮
+              </button>
+              <p className="text-xs text-gray-500">
+                想自由提问，点右上角「自由」。
+              </p>
+            </div>
+          ) : (
           <div className="border-2 border-black rounded-2xl bg-white overflow-hidden">
             <textarea
               value={input}
@@ -511,19 +508,30 @@ export default function Chat({
                   void sendMessage(input);
                 }
               }}
-              placeholder={exerciseId ? '询问当前练习或小节内容...' : '询问当前小节内容...'}
+              placeholder={
+                inGuidedView
+                  ? '输入你的答案...'
+                  : exerciseId
+                    ? '询问当前练习或小节内容...'
+                    : '询问当前小节内容...'
+              }
               maxLength={2000}
               rows={1}
               disabled={isStreaming}
               className="w-full resize-none px-4 pt-3 pb-1 text-sm outline-none disabled:bg-gray-50"
             />
-            <div className="flex items-center justify-between px-3 pb-2">
-              <span className="text-xs text-gray-400">Enter 发送，Shift + Enter 换行</span>
-              {isStreaming ? (
+            <div className="flex items-center justify-between gap-2 px-3 pb-2">
+              <span className="min-w-0 truncate text-xs text-gray-400">
+                {inGuidedView
+                  ? 'Enter 提交答案，答错会自动给提示'
+                  : 'Enter 发送，Shift + Enter 换行'}
+              </span>
+              {/* 引导模式没有流式响应可中断，只禁用提交，不给一个点了没反应的停止键 */}
+              {isStreaming && !inGuidedView ? (
                 <button
                   type="button"
                   onClick={stopGeneration}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
+                  className="w-8 h-8 flex flex-shrink-0 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
                 >
                   <FiSquare className="w-4 h-4" />
                 </button>
@@ -531,14 +539,15 @@ export default function Chat({
                 <button
                   type="button"
                   onClick={() => void sendMessage(input)}
-                  disabled={!input.trim()}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-300 disabled:text-gray-500"
+                  disabled={!input.trim() || isStreaming}
+                  className="w-8 h-8 flex flex-shrink-0 items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-300 disabled:text-gray-500"
                 >
                   <FiSend className="w-4 h-4" />
                 </button>
               )}
             </div>
           </div>
+          )}
         </div>
       </div>
       <AlertDialog

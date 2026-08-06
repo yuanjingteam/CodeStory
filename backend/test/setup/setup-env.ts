@@ -27,4 +27,8 @@ if (!process.env.JWT_SECRET && !process.env.JWT_ACCESS_SECRET) {
   process.env.JWT_REFRESH_SECRET = 'vitest-test-jwt-refresh-secret';
 }
 
+// 引导式学习路由在模块加载时按开关挂载，测试断言的是「默认关闭」这条基线。
+// 开发者本地为了手工验收把 .env.local 的 AI_GRAPH_ENABLED 打开时不应影响测试。
+process.env.AI_GRAPH_ENABLED = 'false';
+
 process.env.NODE_ENV = 'test';

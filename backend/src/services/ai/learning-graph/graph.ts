@@ -26,6 +26,7 @@ export const GuidedLearningState = Annotation.Root({
   exerciseId: Annotation<string | null>,
   exerciseContent: Annotation<string | null>,
   exerciseType: Annotation<string | null>,
+  exerciseOptions: Annotation<string[] | null>,
   hintLevel: Annotation<number>,
   hint: Annotation<string | null>,
   answer: Annotation<string | null>,
@@ -69,7 +70,7 @@ async function questionNode(
       is_delete: 0,
     },
     orderBy: [{ order: 'asc' }, { created_at: 'asc' }],
-    select: { id: true, content: true, type: true },
+    select: { id: true, content: true, type: true, metadata: true },
   });
   if (!exercise) {
     return {
@@ -77,14 +78,22 @@ async function questionNode(
       exerciseId: null,
       exerciseContent: null,
       exerciseType: null,
+      exerciseOptions: null,
       feedback: '当前小节暂无已审核题目。',
     };
   }
+  // 选择题按字母判分（exercise.service 用 charCodeAt(0)-65 取下标），
+  // 不把选项发给前端，学生就只能盲猜字母。
+  const options = (exercise.metadata as { options?: unknown } | null)
+    ?.options;
   return {
     phase: 'QUESTION',
     exerciseId: exercise.id,
     exerciseContent: exercise.content,
     exerciseType: exercise.type,
+    exerciseOptions: Array.isArray(options)
+      ? options.map((option) => String(option))
+      : null,
   };
 }
 
