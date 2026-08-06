@@ -193,6 +193,7 @@ export default function ExerciseCard({
               {exercise.type === 'single_choice' && (
                 <ChoiceOptionsConfig
                   metadata={exercise.metadata as ExerciseMetadata}
+                  answer={exercise.answer}
                   onChange={(metadata, answer) => handleUpdate({ metadata, answer })}
                 />
               )}
