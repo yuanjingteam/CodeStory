@@ -244,6 +244,39 @@ describe('阶段 2 · 学习端审核态隔离', () => {
     ).toBe('approved');
   });
 
+  it('直接采用不带编辑负载时仍复校选项，坏草稿被拒且保持 draft', async () => {
+    const broken = await prisma.exercises.create({
+      data: {
+        lesson_id: lessonId,
+        type: 'single_choice',
+        content: '选项配置坏掉的草稿',
+        answer: '',
+        analysis: '',
+        knowledge: '',
+        source: 'ai',
+        review_status: 'draft',
+        metadata: { options: ['甲', '乙'], correctAnswer: '' },
+        knowledge_index_policy: 'exclude',
+        order: 9,
+      },
+    });
+
+    await expect(
+      reviewManagedExercise(broken.id, 'approve')
+    ).rejects.toMatchObject<Partial<ExerciseManageError>>({
+      code: 'EXERCISE_ANSWER_INVALID',
+    });
+    expect(
+      (
+        await prisma.exercises.findUniqueOrThrow({ where: { id: broken.id } })
+      ).review_status
+    ).toBe('draft');
+
+    // 拒绝必须永远可用，否则垃圾草稿会卡死在队列里
+    const rejected = await reviewManagedExercise(broken.id, 'reject');
+    expect(rejected.exercise?.reviewStatus).toBe('rejected');
+  });
+
   it('管理员编辑所属小节后审核态与 gen_metadata 保留', async () => {
     const response = await request(app)
       .put(`/api/v1/admin/lessons/${uuidToShortId(lessonId)}`)

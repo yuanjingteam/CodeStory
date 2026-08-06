@@ -10,6 +10,10 @@ import {
   createExerciseContentFingerprint,
   lockLessonExerciseWrites,
 } from '../courses/exercise-write-guards';
+import {
+  findChoiceExerciseWriteIssue,
+  type ChoiceExerciseIssue,
+} from '../courses/choice-exercise-integrity';
 
 export type ExerciseReviewStatus = 'draft' | 'approved' | 'rejected';
 export type ExerciseType = 'single_choice' | 'code';
@@ -61,6 +65,34 @@ function normalizeText(value: unknown, field: string): string {
   return normalized;
 }
 
+// 规则统一由 choice-exercise-integrity 提供，这里只负责映射回既有错误码。
+function throwChoiceIssue(issue: ChoiceExerciseIssue): never {
+  if (issue === 'OPTIONS_MISSING') {
+    throw new ExerciseManageError(
+      'EXERCISE_OPTIONS_REQUIRED',
+      '选择题至少需要两个选项。'
+    );
+  }
+  if (issue === 'ANSWER_BLANK' || issue === 'ANSWER_NOT_IN_OPTIONS') {
+    throw new ExerciseManageError(
+      'EXERCISE_ANSWER_INVALID',
+      '选择题答案必须与一个选项完全一致。'
+    );
+  }
+  throw new ExerciseManageError(
+    'EXERCISE_OPTIONS_INVALID',
+    '选择题至少需要两个非空且不重复的选项。'
+  );
+}
+
+export function assertChoiceExerciseWritable(row: {
+  answer: string | null;
+  metadata: unknown;
+}): void {
+  const issue = findChoiceExerciseWriteIssue(row);
+  if (issue) throwChoiceIssue(issue);
+}
+
 export function validateExerciseManageInput(
   input: ExerciseManageWriteInput,
   options: { requireLessonId: boolean }
@@ -106,25 +138,11 @@ export function validateExerciseManageInput(
         '选择题至少需要两个选项。'
       );
     }
+    // 先 trim 再判定：存进去的就是 trim 后的值，与读取侧的不 trim 语义一致。
     const optionsList = optionsValue.map((option) =>
       String(option).trim()
     );
-    if (
-      optionsList.length < 2 ||
-      optionsList.some((option) => !option) ||
-      new Set(optionsList).size !== optionsList.length
-    ) {
-      throw new ExerciseManageError(
-        'EXERCISE_OPTIONS_INVALID',
-        '选择题至少需要两个非空且不重复的选项。'
-      );
-    }
-    if (!optionsList.includes(answer)) {
-      throw new ExerciseManageError(
-        'EXERCISE_ANSWER_INVALID',
-        '选择题答案必须与一个选项完全一致。'
-      );
-    }
+    assertChoiceExerciseWritable({ answer, metadata: { options: optionsList } });
   }
 
   return {
@@ -509,6 +527,15 @@ export async function reviewManagedExercise(
       );
       lessonId = await assertActiveLesson(input.lessonId!);
       editData = getWriteData(input);
+    } else if (
+      action === 'approve' &&
+      existing.type === 'single_choice'
+    ) {
+      // 「直接采用」不带编辑负载，此前 draft → approved 零校验。这里只复校
+      // 选项与答案：不整套重跑 validateExerciseManageInput，它还要求
+      // analysis/knowledge/source 非空，会因与「能不能答」无关的理由拒掉草稿。
+      // reject 保持不校验——必须永远能拒垃圾。
+      assertChoiceExerciseWritable(existing);
     }
 
     const updated = await tx.exercises.updateMany({

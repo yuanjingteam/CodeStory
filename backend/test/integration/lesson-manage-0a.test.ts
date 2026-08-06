@@ -314,4 +314,60 @@ describe('集成测试 ① · 前置项 A · 题目稳定 ID 与事务化', () =
       await prisma.lessons.count({ where: { title: `${MARKER}_invalid` } })
     ).toBe(0);
   });
+
+  it('A5 · createLesson 拒绝答案与选项对不上的选择题，且不落库', async () => {
+    const chapterId = (
+      await prisma.chapters.findFirstOrThrow({
+        where: { title: `${MARKER}_chapter` },
+      })
+    ).id;
+
+    const mismatched = await invoke(createLesson, {
+      body: {
+        chapterId,
+        lessonName: `${MARKER}_mismatch`,
+        exercises: [
+          {
+            id: 'exercise_mismatch',
+            type: 'single_choice',
+            exerciseContent: '答案不在选项内',
+            answer: 'C',
+            knowledge: '选择题',
+            analysis: '答案应当是选项之一',
+            source: 'static',
+            metadata: { options: ['A', 'B'] },
+          },
+        ],
+      },
+    });
+    expect(mismatched.code).toBe(400);
+
+    const duplicated = await invoke(createLesson, {
+      body: {
+        chapterId,
+        lessonName: `${MARKER}_duplicate`,
+        exercises: [
+          {
+            id: 'exercise_duplicate',
+            type: 'single_choice',
+            exerciseContent: '选项重复',
+            answer: 'A',
+            knowledge: '选择题',
+            analysis: '选项不应重复',
+            source: 'static',
+            metadata: { options: ['A', 'B', 'B'] },
+          },
+        ],
+      },
+    });
+    expect(duplicated.code).toBe(400);
+
+    expect(
+      await prisma.lessons.count({
+        where: {
+          title: { in: [`${MARKER}_mismatch`, `${MARKER}_duplicate`] },
+        },
+      })
+    ).toBe(0);
+  });
 });

@@ -18,6 +18,7 @@ import {
   createExerciseContentFingerprint,
   lockLessonExerciseWrites,
 } from '../courses/exercise-write-guards';
+import { findChoiceExerciseWriteIssue } from '../courses/choice-exercise-integrity';
 
 type TransactionClient = Prisma.TransactionClient;
 
@@ -84,6 +85,23 @@ function validateExercises(exercises: ManageExerciseInput[]): void {
     }
     if (!String(exercise.answer || '').trim()) {
       throw new LessonInputError(`${label}缺少答案`);
+    }
+    // 这里此前只查答案非空，从不看 options，而三个写入点都不设 review_status
+    // （schema 默认 approved），畸形选择题会直接进入学生可见状态。
+    if (exercise.type === 'single_choice') {
+      const issue = findChoiceExerciseWriteIssue({
+        answer: String(exercise.answer || ''),
+        metadata: exercise.metadata,
+      });
+      if (issue === 'OPTIONS_MISSING' || issue === 'OPTIONS_TOO_FEW') {
+        throw new LessonInputError(`${label}至少需要两个选项`);
+      }
+      if (issue === 'OPTION_BLANK' || issue === 'DUPLICATE_DISTRACTOR') {
+        throw new LessonInputError(`${label}的选项不能为空或重复`);
+      }
+      if (issue) {
+        throw new LessonInputError(`${label}的答案必须与一个选项完全一致`);
+      }
     }
 
     if (exercise.id) {
