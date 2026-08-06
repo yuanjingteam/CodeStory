@@ -17,6 +17,7 @@
     "check:langgraph": "ts-node --files -r tsconfig-paths/register scripts/check-langgraph-recovery.ts",
     "check:learning-graph-faults": "pnpm run test learning-graph-stage4 --testNamePattern \"故障注入\"",
     "check:learning-runs": "ts-node --files -r tsconfig-paths/register scripts/reconcile-learning-runs.ts",
+    "check:exercise-integrity": "ts-node --files -r tsconfig-paths/register scripts/check-exercise-integrity.ts",
     "rag:reindex": "ts-node --files -r tsconfig-paths/register scripts/reindex-knowledge.ts",
     "rag:repair": "ts-node --files -r tsconfig-paths/register scripts/repair-knowledge-index.ts",
     "content:cleanup": "ts-node --files -r tsconfig-paths/register scripts/cleanup-deleted-content.ts",
