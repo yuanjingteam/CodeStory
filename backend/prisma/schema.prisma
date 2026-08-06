@@ -27,8 +27,6 @@ model users {
   answers          answer[]
   courses_progress courses_progress[]
   lessons_progress lessons_progress[]
-  grading_reviews   ai_grading_reviews[] @relation("grading_review_user")
-  grading_reviews_reviewed ai_grading_reviews[] @relation("grading_review_reviewer")
   wechat_users     wechat_users[]
   ai_feedback_events ai_feedback_events[]
 
@@ -167,7 +165,6 @@ model exercises {
   knowledge_index_policy String       @default("auto") @db.VarChar(20)
   answers          answer[]
   code_submissions code_submissions[]
-  grading_reviews  ai_grading_reviews[]
   lessons          lessons            @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
 
   @@index([lesson_id])
@@ -201,39 +198,6 @@ model answer {
   @@index([user_id])
   @@index([exercise_id])
   @@index([is_delete])
-}
-
-model ai_grading_reviews {
-  id                     String            @id @default(uuid()) @db.Char(36)
-  trace_id               String?           @db.VarChar(128)
-  user_id                String            @db.Char(36)
-  exercise_id            String            @db.Char(36)
-  submission_type        String            @db.VarChar(20)
-  code_submission_id     String?           @db.Char(36)
-  submission_fingerprint String            @db.Char(64)
-  answer_version         Int
-  submitted_answer       String
-  hint_level_used        Int
-  exercise_snapshot      Json              @db.JsonB
-  trigger_reason         String            @db.VarChar(50)
-  ai_score               Int?
-  rule_score             Int?
-  status                 String            @default("pending") @db.VarChar(20)
-  reviewer_id            String?           @db.Char(36)
-  reviewed_result        String?           @db.VarChar(30)
-  appeal_reason          String?
-  review_note            String?
-  created_at             DateTime          @default(now()) @db.Timestamp(6)
-  reviewed_at            DateTime?         @db.Timestamp(6)
-  users                  users             @relation("grading_review_user", fields: [user_id], references: [id], onDelete: Cascade)
-  reviewer               users?            @relation("grading_review_reviewer", fields: [reviewer_id], references: [id], onDelete: SetNull)
-  exercises              exercises         @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
-  code_submission        code_submissions? @relation(fields: [code_submission_id], references: [id], onDelete: SetNull)
-
-  @@unique([user_id, exercise_id, submission_fingerprint, trigger_reason])
-  @@index([status, created_at])
-  @@index([user_id, exercise_id, created_at])
-  @@index([reviewer_id])
 }
 
 model ai_feedback_events {
@@ -379,7 +343,6 @@ model code_submissions {
   is_delete         Int       @default(0) @db.SmallInt
   user              users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   exercise          exercises @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
-  grading_reviews   ai_grading_reviews[]
 
   @@unique([user_id, exercise_id, submission_no])
   @@index([user_id])

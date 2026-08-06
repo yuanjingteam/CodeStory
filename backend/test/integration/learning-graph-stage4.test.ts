@@ -378,10 +378,6 @@ describe('阶段 4 · PostgreSQL checkpoint 恢复', () => {
     });
     // 人工复核已移除：本轮直接给出参考答案，不再建复核单
     expect(state.feedback).toContain('参考答案：A. 正确');
-    const reviewCount = await prisma.ai_grading_reviews.count({
-      where: { user_id: userId, exercise_id: exerciseId },
-    });
-    expect(reviewCount).toBe(0);
 
     const restarted = await startGuidedLearning(userId, lessonId);
     expect(restarted.runId).not.toBe(state.runId);
