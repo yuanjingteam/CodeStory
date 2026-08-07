@@ -149,7 +149,7 @@ V1.0 基础平台与 V1.1 AI 助手核心闭环**已完成主干**，但后台�
 - RAG 检索基础设施（pgvector + embedding + 统一检索层）。
 - 对话答疑 grounding、AI 出题 grounding、跨小节知识检索/推荐、错题与个性化复习 —— 四个 RAG 场景共用同一检索层，分优先级落地。
 - AI 出题（P0）与 `exercises-manage` 独立题目管理页（含审核流）。
-- 低置信度评分的人工复核闭环与申诉入口；代码题评分链重构为可复用形式（非代码题多维评分不在本期，见阶段 3）。
+- ~~低置信度评分的人工复核闭环与申诉入口；~~ **2026-08-05 移除**（见 3.6）。代码题评分链重构为可复用形式（非代码题多维评分不在本期，见阶段 3）。
 - **LangGraph 学习状态机**：以新增的"引导式学习"模式落地，与现有自由对话并存。
 - 任务级可观测性（调用链路、成本、成功率、降级原因）与离线/在线效果评估。
 - 任务状态、短期对话记忆、用户学习记忆、课程知识库的分层治理。
@@ -329,12 +329,12 @@ V2.0 不再用单一 `context` 字段承载所有信息。不同上下文按用�
 > **2026-08-05 修订**：人工复核队列已整体移除，本表原有的「人工复核改判为掌握 / 未掌握」两行随之删除。**掌握度不再有任何下降入口**。
 
 - **成绩单调不降已在 plan.7 修复**：此前只有代码题使用 `Math.max(existingAnswer.score, score)`；选择题答对时会用本次按提示扣分后的分数直接覆盖旧分，且扣分等级由客户端请求体提供。现改为提交接口只读取 `exercise-hint.service.ts` 已写入数据库的 `answer.hint_level_used`，并对两种题型统一保存 `Math.max(existingAnswer.score, score)`。客户端不再提交判分依据。
-- 红线真正约束的是上表最后两行那种**主动下调**，它们全部要求人工复核前置。
+- 红线原本约束的是「主动下调」这类事件，并要求人工复核前置。复核队列移除后表中已无任何下降入口，红线改由 `resolveMasteryLevel` 的实现直接保证：四个事件里提升取 `max(当前值, 候选值)`，答错与代码未通过一律返回当前值，函数没有下降分支。
 - **取值与公式（0A 定稿）**：
   - `mastery_level` 取整数 `0–100`；`0` 为未开始，`1–39` 入门，`40–59` 发展中，`60–79` 熟练，`80–100` 掌握。
   - 单题掌握值等于规范化后的最佳 `answer.score`。选择题和代码题在本次判分时已经按服务端保存的 `hint_level_used` 扣分，因此换算函数只校验提示等级合法性，**不得二次扣提示分**。
   - 小节候选掌握度为当前有效题目最佳得分之和除以有效题目总数；未作答题按 `0` 计，结果四舍五入并限制在 `0–100`。
-  - 自动提升事件取 `max(当前值, 候选值)`；答错、代码未通过、待复核事件保持当前值；只有带已复核标记的人工“未掌握”事件可以把值降到候选值。
+  - 自动提升事件（`choice_correct` / `code_passed_confident`）取 `max(当前值, 候选值)`；答错与代码未通过（`choice_incorrect` / `code_failed`）保持当前值。`MasteryEvent` 只有这四个值，`resolveMasteryLevel` 不再接收 `reviewed` 参数，**没有任何把值降到候选值的路径**。
   - 纯函数落在 `learning-progress.service.ts`，并已在 0A 纳入正式 vitest 单元测试（见 5.2）。
 
 ### 3.5 任务追踪与质量评估
@@ -440,16 +440,16 @@ V2.0 期间**不更换后端框架**。该决策与开发文档 V1.1 §5.2 的�
 | **新增字段** `ai_chat_sessions.current_run_id` | 状态机线程 | `char(36)`，可空且建唯一索引；当前学习运行的 UUID，即 LangGraph 的 `thread_id`。重新开始学习该小节时换发新值，旧 checkpoint 沉淀为历史（见 3.1.2）。**只定位线程，不承担并发控制。** |
 | **新增字段** `ai_chat_sessions.state_version` | 状态机并发 | `int`，默认 `0`；每次成功推进 +1。推进接口以 `WHERE current_run_id = ? AND state_version = ?` 条件更新，命中 0 行返回 409。这是"两个标签页同时推进只前进一步"的落库依据（见 3.1.2）。 |
 | **新增字段** `ai_chat_sessions.graph_version` | 图版本治理 | `varchar(32)`，引导式学习运行启动时固定；恢复 checkpoint 前按版本选择兼容图、迁移或 `restart_required`，不得静默套用不兼容的新图。 |
-| **新增字段** `answer.version` | 提交并发/复核版本 | `int`，默认 `0`；每次成功提交原子 `+1`。创建复核单时复制为 `ai_grading_reviews.answer_version`，应用复核结果前再次比较，避免旧提交的结论覆盖新状态。 |
+| **新增字段** `answer.version` | 提交并发 | `int`，默认 `0`；每次成功提交原子 `+1`，用于 `exercise.service.ts` 的乐观并发。**2026-08-06 修订**：原用途「创建复核单时复制为 `ai_grading_reviews.answer_version`」已随复核队列移除，本字段保留。 |
 | **新增表** `learning_run_effects` | 图副作用幂等/补偿 | `id, run_id, node_name, effect_type, effect_key, payload json, status(pending/applied/failed), error_code, created_at, applied_at`；`effect_key` 唯一，索引 `(status, created_at)`。业务副作用与 effect 状态在同一个 Prisma 事务内完成；对账脚本处理 checkpoint 与业务结果不一致。 |
-| **新增表** `ai_grading_reviews` | 评分复核 | `id, trace_id, user_id, exercise_id, submission_type, code_submission_id(可空), submission_fingerprint, answer_version, submitted_answer, hint_level_used, exercise_snapshot json, trigger_reason, ai_score, rule_score, status(pending/reviewed/stale), reviewer_id, reviewed_result, appeal_reason, created_at, reviewed_at`；统一承载代码题与非代码题的低置信度复核和申诉记录。唯一约束 `(user_id, exercise_id, submission_fingerprint, trigger_reason)`，索引 `(status, created_at)`；应用结论前比较 `answer_version`，旧快照只留审计、不覆盖新提交形成的状态。 |
+| ~~**新增表** `ai_grading_reviews`~~ | ~~评分复核~~ | **2026-08-06 删表**：复核队列代码路径于 2026-08-05 移除（`787844f`），该表随即成为孤儿，确认 0 行后由迁移 `20260806000000_drop_grading_review_workflow` 删除（`0b16d10`）。同批迁移引入的 `answer.version` 保留。 |
 | **新增表** `ai_call_logs`（P0） | 任务追踪 | `id, trace_id, graph_run_id, parent_call_id, scene, node, model, prompt_version, prompt_tokens, completion_tokens, estimated_cost, latency_ms, retry_count, fallback_type, status, error_code, metadata, created_at`；不默认保存原始 Prompt；索引 `trace_id` 与 `(scene, created_at)`。 |
-| **新增表** `ai_feedback_events`（P1） | 在线效果 | `id, trace_id, user_id, scene, event_type(accepted/rejected/edited/clicked/helpful/appealed/reviewed), target_type, target_id, metadata, created_at`；用于计算采用率、点击率、申诉率等业务指标。 |
+| **新增表** `ai_feedback_events`（P1） | 在线效果 | `id, trace_id, user_id, scene, event_type(accepted/rejected/edited/clicked/helpful), target_type, target_id, metadata, created_at`；用于计算采用率、点击率等业务指标。**2026-08-05 修订**：原枚举中的 `appealed` / `reviewed` 随复核队列移除，代码中已无产出方（`event_type` 本身是自由 `varchar(40)`，无需迁移）。 |
 | **新增表（由部署脚本创建）** LangGraph checkpoint 系列表 | 图状态持久化 | 表结构由 `@langchain/langgraph-checkpoint-postgres` 的 `PostgresSaver.setup()` 定义，**不纳入 Prisma schema**，不手工建模。**`setup()` 由独立部署脚本执行一次，不在应用实例启动时调用**（见下方运维口径）。保留窗口与清理策略见阶段 6。 |
 
 > `exercises.review_status` 的默认值需与**前置项 A**（稳定 ID 增量更新）配套：在全删重建的旧实现下，任何默认值都会出错——默认 `draft` 会让已审通过的题在管理员编辑小节后从前台消失，默认 `approved` 会让 AI 草稿被静默发布。必须先完成前置项 A，`review_status` 才有意义。
 
-> **为什么 `ai_grading_reviews` 存快照而不是外键**：`answer` 表是 `@@unique([user_id, exercise_id])`（`schema.prisma:178`），每次提交都会覆盖 `answer` / `feedback` / `score`（`exercise.service.ts:245-254`），**非代码题不存在可引用的历史提交记录**；只有 `code_submissions` 是按次不可变的（带 `submission_no`）。因此复核单必须在创建时保存提交快照，并以 `submission_fingerprint` 去重。`answer_version` 用于阻止旧复核覆盖新提交；代码题另用 `code_submission_id` 关联不可变记录。
+> **（2026-08-06 已失效，保留作设计记录）为什么 `ai_grading_reviews` 存快照而不是外键**：`answer` 表是 `@@unique([user_id, exercise_id])`（`schema.prisma:178`），每次提交都会覆盖 `answer` / `feedback` / `score`（`exercise.service.ts:245-254`），**非代码题不存在可引用的历史提交记录**；只有 `code_submissions` 是按次不可变的（带 `submission_no`）。因此复核单必须在创建时保存提交快照，并以 `submission_fingerprint` 去重。`answer_version` 用于阻止旧复核覆盖新提交；代码题另用 `code_submission_id` 关联不可变记录。
 >
 > 备选方案是新建不可变的 `exercise_submissions` 尝试记录表，但那要改动提交主路径与 `users.score` 聚合口径，代价明显超出复核功能本身的需要；如果将来要做提交历史面板（见第 8 节）再一并立项。
 
@@ -533,7 +533,7 @@ V2.0 期间**不更换后端框架**。该决策与开发文档 V1.1 §5.2 的�
 - **目标：** 在本地打通 pgvector 与 LangGraph checkpointer 的最小可运行环境，并落地 P0 依赖。
 - **范围：**
   - `docker-compose.dev.yml` 的 postgres 镜像换为 `pgvector/pgvector:0.8.2-pg16-bookworm`（原镜像不含该扩展）。
-  - 数据库启用 `vector` 扩展；新增 `knowledge_chunks`、带 `index_generation` 的 `knowledge_index_state`、`learning_run_effects` 表及必要约束/索引；`ai_chat_sessions` 加 `current_run_id`、`state_version` 与 `graph_version`；`answer.version` 和 `ai_grading_reviews` 的完整迁移随阶段 3 启用。
+  - 数据库启用 `vector` 扩展；新增 `knowledge_chunks`、带 `index_generation` 的 `knowledge_index_state`、`learning_run_effects` 表及必要约束/索引；`ai_chat_sessions` 加 `current_run_id`、`state_version` 与 `graph_version`；`answer.version` 的完整迁移随阶段 3 启用（同批的 `ai_grading_reviews` 已于 2026-08-06 删表）。
   - **新增 `backend/scripts/setup-checkpointer.ts`**：独立执行 `PostgresSaver.setup()`，不挂在应用启动路径上（理由见第 4 节末）。
   - 后端新增依赖 `@langchain/langgraph`、`@langchain/langgraph-checkpoint-postgres`；确认 `OpenAIEmbeddings` 可用，显式配置 batch size，并做真实端点冒烟确认。
   - `config/ai.ts` 扩展 embedding 配置（`AI_EMBEDDING_MODEL`、`AI_EMBEDDING_BATCH_SIZE` 等）。
@@ -652,7 +652,7 @@ V2.0 期间**不更换后端框架**。该决策与开发文档 V1.1 §5.2 的�
 - **题目列表**：按课程 / 章节 / 小节 / 题型 / 难度 / `source` / `review_status` 筛选，分页。
 - **AI 生成**：选定小节与知识点 → 调用出题接口 → 候选题预览。
 - **审核流**：采用 / 编辑后采用 / 拒绝，状态落 `exercises.review_status`；溯源面板展示 `gen_metadata`（模型、Prompt 版本、检索来源片段、自检结果）。
-- **待审队列视图**：跨小节汇总 `review_status='draft'` 的题目与等待时长（与 3.6「人工复核积压」呼应）。
+- **待审队列视图**：跨小节汇总 `review_status='draft'` 的题目与等待时长。注意这是**题目审核**队列，与已移除的评分复核队列无关。
 - **手工录入题目的增删改**：补齐 `knowledge` / `analysis` / `source` 输入项（与前置项 C 同源）。
 - 沿用现有 Neo-Brutalism 组件与后台页面布局，不新造视觉语言。
 
@@ -660,18 +660,18 @@ lessons-manage 小节表单内的题目编辑区**保留现状**，仅按前置�
 
 ### 阶段 3 — 评分复核闭环与掌握度落地（无 LangGraph）
 
-- **目标：** 建立低置信度评分的人工复核闭环，并让 `mastery_level` 真正被写入。本阶段是纯 service 层工作，同时服务普通做题路径与阶段 4 的状态机。
+- **目标：** ~~建立低置信度评分的人工复核闭环，并~~ 让 `mastery_level` 真正被写入。本阶段是纯 service 层工作，同时服务普通做题路径与阶段 4 的状态机。**2026-08-05 修订**：复核闭环已整体移除（见 3.6），本阶段实际交付收敛为掌握度写入与代码题评分链。
 - **范围：**
-  - **低置信度检测、`ai_grading_reviews` 复核队列（含提交快照、`submission_fingerprint`、`answer_version`）、管理员复核接口与用户申诉入口**；人工结论回写后再更新掌握度。这是本阶段的主体。
-  - **按前置项 D 定义的规则与 3.4.2 的事件矩阵，在评分完成后实际更新 `lessons_progress.mastery_level`**——这是掌握度写入的**唯一**上线点（plan.4 曾在前置项 D 与本阶段各写一次"实际写入"，重复且矛盾，plan.5 收敛到此处）。写入必须在复核闭环建成之后，确保任何下调路径都已有人工复核前置。
+  - ~~**低置信度检测、`ai_grading_reviews` 复核队列（含提交快照、`submission_fingerprint`、`answer_version`）、管理员复核接口与用户申诉入口**；人工结论回写后再更新掌握度。这是本阶段的主体。~~ **2026-08-05 撤回**：整套复核机制已移除（`787844f`），表已于 2026-08-06 删除（`0b16d10`）。本阶段实际主体收敛为下面两条。
+  - **按前置项 D 定义的规则与 3.4.2 的事件矩阵，在评分完成后实际更新 `lessons_progress.mastery_level`**——这是掌握度写入的**唯一**上线点（plan.4 曾在前置项 D 与本阶段各写一次"实际写入"，重复且矛盾，plan.5 收敛到此处）。~~写入必须在复核闭环建成之后，确保任何下调路径都已有人工复核前置。~~ **2026-08-05 修订**：复核队列移除后已无下调路径，写入不再有此前置。
   - 代码题评阅链改用 LCEL + zod schema 组装为可复用的**评分链**，供普通做题路径与阶段 4 状态机共用（见 3.1.3、3.8）。这是重构而非新能力。
   - 📌 **删除 plan.3 的"非代码题结构化多维评分"**：平台只有两种题型——`code` 已经有多维评分（`functionalScore` / `qualityScore` / `hintDeduction`），`single_choice` 的对错是规则判定、解释已由 `choice-explanation.service` 提供。给一道选择题打"多个维度分"没有可解释的含义，验收也验不出东西。等 `fill` / `judge` 题型落地（见第 8 节）再谈非代码题多维评分。
 - **关键改动：** `services/ai/evaluate/*`（新）、`services/courses/exercise.service.ts`、`services/courses/code-grading.service.ts`、`services/courses/learning-progress.service.ts`、`routes/exercises.ts`、新增复核路由。
 - **完成标准：**
   - 代码题提交后返回结构化多维评分，字段齐全；选择题按规则判定返回结果与解释，行为与 V1 一致。
-  - 在不少于 **30** 条人工标注的**代码题**提交上，AI 与人工"通过/不通过"结论一致率 `≥ 90%`，百分制平均绝对误差 `≤ 10`；规则与 AI 冲突的样本全部进入人工复核，不自动更新为未掌握。
-  - 可完整复现"低置信度触发→进入待审→管理员维持/改判→掌握度更新"以及"用户申诉→复核"的状态流转；同一提交重复触发只建一张复核单，重复审核请求不会覆盖已生效结论。
-  - **过期复核保护可验证**：提交 A 进入待审后，用户提交 B 并形成更新状态；随后处理 A 时将复核单标记为 `stale` 或仅保存审计结论，不得下调/覆盖 B 形成的当前掌握度。
+  - 在不少于 **30** 条人工标注的**代码题**提交上，AI 与人工"通过/不通过"结论一致率 `≥ 90%`，百分制平均绝对误差 `≤ 10`；~~规则与 AI 冲突的样本全部进入人工复核，~~ **2026-08-05 修订**：冲突样本只保留 AI 评语并记入错题集，任何情况下都不自动更新为未掌握。
+  - ~~可完整复现"低置信度触发→进入待审→管理员维持/改判→掌握度更新"以及"用户申诉→复核"的状态流转；同一提交重复触发只建一张复核单，重复审核请求不会覆盖已生效结论。~~ **2026-08-05 撤回**：复核机制已移除。
+  - ~~**过期复核保护可验证**：提交 A 进入待审后，用户提交 B 并形成更新状态；随后处理 A 时将复核单标记为 `stale` 或仅保存审计结论，不得下调/覆盖 B 形成的当前掌握度。~~ **2026-08-05 撤回**：无复核单，且掌握度已无下调入口，本条不再适用。
   - 评分合并逻辑与掌握度换算有 vitest 覆盖（纯函数）；**掌握度变更严格符合 3.4.2 事件矩阵，矩阵外的事件不产生任何写入**。
   - 现有做题主流程手工回归清单逐条通过（清单见验收文档）。
 - **风险：** 改动触及现网做题主路径 → 评分链失败时降级到现有静态初判 + AI 评阅路径，与 V1 行为一致。
@@ -725,7 +725,7 @@ lessons-manage 小节表单内的题目编辑区**保留现状**，仅按前置�
 - **目标：** 为 AI 增强能力补上可观测性、效果评估与运维项，产出可复现的验收结论。
 - **范围：**
   - `ai_call_logs` 落地：各 AI 场景记录 trace、节点、token、估算成本、耗时、重试、降级与成功失败。
-  - `ai_feedback_events` 落地：记录管理员采用/编辑/拒绝、推荐点击、用户反馈与申诉结果。
+  - `ai_feedback_events` 落地：记录管理员采用/编辑/拒绝、推荐点击与用户反馈（申诉已随复核队列移除）。
   - 完善阶段 1 已交付的索引重建/补偿脚本，增加定时调度、generation 冲突统计与告警；**限流扩面**——阶段 2 已给出题接口落地 `express-rate-limit` + `rate-limit-redis`，本阶段扩到 chat 等其余高成本接口并接上告警。
   - 埋点复用阶段 0B 建立的 `AsyncLocalStorage` 请求上下文与 pino 结构化日志，`ai_call_logs` 只负责落库，不再单独传递 `trace_id`。
   - **LangGraph checkpoint 保留窗口与清理脚本**：定义保留时长（如已完成会话保留 30 天），提供可重复运行的清理脚本，避免 checkpoint 表无限增长。**清理条件是"线程对应的学习运行已确认完成 且 超过保留期"两者同时满足**，只按时间删会误杀长期挂起但仍有效的会话。
@@ -752,12 +752,12 @@ lessons-manage 小节表单内的题目编辑区**保留现状**，仅按前置�
 | **答疑/RAG** | `Recall@5`；回答中的事实是否能被检索来源支持 | `Recall@5 ≥ 0.85`；证据支持准确率 `≥ 0.90` |
 | **AI 判分抽样** | 样本按「正确答案 / 明显错误 / 边界答案」三层分层抽样，每层不少于 10 条 | 见下方「AI 判分」行的一致率与误差门槛 |
 | **AI 出题** | 首次结构化成功率；修复后成功率；最终任务失败率；每有效候选平均模型调用次数；答案正确率；与现有题目的重复率；管理员采用率 | `≥ 90%`；`≥ 99%`；`≤ 1%`；`≤ 1.3`；`≥ 95%`；`≤ 5%`；采用率样本满 100 后目标 `≥ 60%` |
-| **AI 判分** | 与人工通过结论一致率；百分制平均绝对误差；进入人工复核后的漏自动处理数 | `≥ 90%`；`≤ 10`；`0` |
+| **AI 判分** | 与人工通过结论一致率；百分制平均绝对误差 | `≥ 90%`；`≤ 10` |
 | **推荐/复习** | 离线 `Precision@5`；线上点击率、复习完成率 | `Precision@5 ≥ 0.70`；线上指标报告样本量与置信区间，不设脱离基线的虚假硬目标 |
 | **任务可靠性** | AI 任务完成并返回可用结果的比例；未捕获失败率；降级率 | 成功率 `≥ 95%`；未捕获失败率 `≤ 1%`；降级率持续监控并按错误类型拆分 |
 | **状态机可恢复性** | 故障注入样本恢复到正确节点与 `hint_level` 的比例；超过补偿窗口仍未收敛的 checkpoint/effect/投影不一致数 | 固定故障样本恢复正确率 `100%`；超窗不一致数 `0` |
 | **性能与成本** | Chat 首 Token P95；引导式学习首 Token P95（单独计量）；非流式任务 P95；每场景单任务平均成本与当日总成本 | `≤ 3s`；阶段 4 实测后设定基线；`≤ 30s`；阶段 0B 设定人民币预算，达到日预算 `80%` 告警、`100%` 限制非必要高成本任务 |
-| **人机协同** | AI 题目未审发布数；低置信度评分绕过复核数；申诉处理情况 | 前两项均为 `0`；申诉记录可追溯并统计维持/改判结果 |
+| **人机协同** | AI 题目未审发布数 | `0`（2026-08-05 移除复核队列后，原「低置信度评分绕过复核数」与「申诉处理情况」两项失效） |
 
 **指标分母与标注口径**（plan.6 修订，避免指标可被"挑样本"或派生数据换代钻空子）：
 
@@ -846,16 +846,16 @@ plan.4 一律排除集成测试，但本计划**自己的验收标准里已经�
 | **状态机并发** | 多标签页/双击让状态跳转两级 | `state_version` 条件更新，命中 0 行返回 409；`run_id` 只定位线程不做并发控制（见 3.1.2） |
 | **状态机节点重放** | 恢复、interrupt 或故障重试造成重复扣提示、重复建单或重复改分 | `learning_run_effects.effect_key` 唯一约束 + 业务事务 + 故障注入验证；`state_version` 不承担此职责 |
 | **图版本不兼容** | 部署新节点/状态 Schema 后，旧 checkpoint 被新图错误恢复 | 每次运行固定 `graph_version`；发布前演练兼容、迁移或 `restart_required` 策略 |
-| **掌握度误判** | 复核闭环建成前就写入掌握度 | 前置项 D 只定义规则，写入推迟到阶段 3；变更严格限于 3.4.2 事件矩阵，唯一下降入口需人工复核前置 |
+| **掌握度误判** | 误把用户判成未掌握 | 前置项 D 只定义规则，写入推迟到阶段 3；变更严格限于 3.4.2 事件矩阵，且 `resolveMasteryLevel` 没有下降分支（2026-08-05 移除复核队列后已无任何下调入口） |
 | **短 ID 串改** | 管理写入路径经 5 位短 ID 解析，碰撞时静默命中错误记录 | 前置项 A2/A3：管理接口内部改用完整 UUID、更新时校验 `lesson_id` 归属、`:id` 只按 `lessons` 解析（URL 短 ID 不变，见 5.0.1） |
 | 依赖风险 | 向量维度与 embedding 模型不匹配；供应商批量限制变化 | 配置层固定维度与 batchSize，索引状态记录模型身份，切换模型需重建索引 |
 | 降级缺失 | RAG / 状态机失败阻塞主流程 | 每个新增环节强制回退到 V1 既有路径 |
 | 评测失真 | 小样本、挑选成功案例或修改样本迎合当前 Prompt | 固定版本化评测集，报告样本量和失败案例；修复后全量回归 |
 | 权限与并发 | 越权访问会话/审核接口，重复请求产生多份草稿或重复扣费 | 新增管理路由一律挂**已有的** `requireAdmin` + 资源归属校验 + 出题接口限流（阶段 2）+ 提交中禁用按钮 + 审核状态条件更新 |
 | 索引一致性崩溃窗口 | 业务事务提交后、embedding 返回前进程退出，索引状态丢失 | 事务内递增 generation 并置 `pending`，事务外调 embedding；阶段 1 补偿脚本捡回悬挂任务（见 3.6） |
-| 复核证据丢失或旧结论覆盖新状态 | 用户再次提交覆盖 `answer`，或管理员晚处理旧提交 | `ai_grading_reviews` 保存快照、`submission_fingerprint` 与 `answer_version`；旧版本复核只留审计、不覆盖新状态 |
+| ~~复核证据丢失或旧结论覆盖新状态~~ | ~~用户再次提交覆盖 `answer`，或管理员晚处理旧提交~~ | **2026-08-06 移除**：复核队列与 `ai_grading_reviews` 表均已删除，不再有旧结论覆盖新状态的路径；`answer.version` 保留用于提交侧乐观并发 |
 | 注入与数据泄露 | 检索文档携带恶意指令，日志或向量库写入敏感数据 | 检索内容按不可信数据隔离；敏感字段禁止入模，日志默认脱敏且不保存完整 Prompt |
-| 人工复核积压 | 低置信度提交长期停留在 `pending_review` | 管理端展示待审数量与等待时长；超时只影响自动掌握度更新，不自动按错误处理 |
+| ~~人工复核积压~~ | ~~低置信度提交长期停留在 `pending_review`~~ | **2026-08-05 移除**：复核队列已删除，低置信度提交不再入队，无积压面 |
 | 验证能力不足 | 自动化覆盖不足会让“回归无差异”类门槛无法持续验证 | 0A 已引入 vitest 与题目事务集成测试；0B/阶段 1 继续补纯函数和向量索引换代集成测试，其余场景使用具名手工回归清单（见 5.2） |
 
 ---
@@ -867,7 +867,7 @@ plan.4 一律排除集成测试，但本计划**自己的验收标准里已经�
 - **真沙箱运行判题**（容器隔离 + 测试用例执行），替代/补充无沙箱 AI 评阅。
 - **`fill` / `judge` 题型支持**：需先补齐 `submitExercise` 的判分分支、前端渲染组件与后台录入表单，之后 AI 出题才能扩展到这两类。开发文档 V1.1 需求表提到"判断题"、出题 Prompt 提到"填空"，但平台从未实现。
 - **V2.1 业务模块**：通知提醒、学习社群、测试系统、多端适配（见开发文档 V1.1 第 3.3 节）。
-- **不可变的提交尝试记录表（`exercise_submissions`）与提交历史面板**：当前 `answer` 是"用户 + 题目"唯一记录，每次提交覆盖答案与反馈（`schema.prisma:178`、`exercise.service.ts:245-254`），只有代码题有按次不可变的 `code_submissions`。V2.0 用 `ai_grading_reviews` 存快照绕开了这个限制（见第 4 节）；要做完整提交历史需新建尝试表并改动 `users.score` 聚合口径，单独立项。
+- **不可变的提交尝试记录表（`exercise_submissions`）与提交历史面板**：当前 `answer` 是"用户 + 题目"唯一记录，每次提交覆盖答案与反馈（`schema.prisma:178`、`exercise.service.ts:245-254`），只有代码题有按次不可变的 `code_submissions`。~~V2.0 用 `ai_grading_reviews` 存快照绕开了这个限制（见第 4 节）；~~ **2026-08-06 修订**：该表已删除，这个限制现在没有任何绕开手段。要做完整提交历史需新建尝试表并改动 `users.score` 聚合口径，单独立项。
 - **消息队列（BullMQ）** 化的异步索引与批量出题（届时批量出题再补 `idempotency_key` 与请求记录表，见 3.6）。
 - 系统化 Prompt Injection 测试集与更完整的可观测性/成本治理。
 - 完整集成测试与端到端测试体系（本计划只做纯函数 + 2 个指定集成测试，见 5.2）。
