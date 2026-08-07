@@ -37,8 +37,7 @@
 ## 发布级证据
 
 - Chrome 登录态中完成 `WAIT_ANSWER` 后端重启恢复：恢复同一 run、题目、
-  `state_version` 和 `hint_level`，截图见
-  `output/stage4-validation/screenshots/04-recovered-after-backend-restart.png`。
+  `state_version` 和 `hint_level`；恢复结果已纳入本报告的故障恢复验收记录。
 - 新增 `pnpm run check:learning-graph-faults`：在图 checkpoint 与答案/提示副作用
   完成后注入响应失败，恢复后旧版本请求返回 409，答案只增加一次，effect key
   只有 `evaluate:0` 与 `hint:1`。

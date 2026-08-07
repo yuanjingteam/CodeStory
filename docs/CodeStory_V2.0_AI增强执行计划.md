@@ -6,7 +6,7 @@
 >
 > **创建日期：** 2026-07-21
 >
-> **最后核对：** 2026-08-04
+> **最后核对：** 2026-08-07
 >
 > **适用范围：** `backend/src/services/ai/**`、`backend/src/services/courses/**`、`backend/src/services/course-manage/**`、`backend/src/services/rag/**`（新增）、`backend/src/middleware/**`、`backend/prisma/**`、`frontend/src/app/(admin)/exercises-manage/**`、`frontend/src/components/lessons/**`、`docker-compose*.yml`、`.env.production.example`、`docs/DEPLOY_DOCKER.md`
 >
@@ -84,7 +84,9 @@
 
 ---
 
-## 1. 背景与当前阶段判断
+## 1. 背景与执行前基线（历史）
+
+> 本节保留 V2.0 启动时的差距分析，用于解释后续阶段设计，不再代表当前实现状态。当前完成度与剩余门禁以 `CodeStory_V2.0_验收清单.md` 和 `v2-ai-agent-plans/README.md` 为准。
 
 ### 1.1 结合代码的现状盘点
 
