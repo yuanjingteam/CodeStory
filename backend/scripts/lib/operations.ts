@@ -35,6 +35,51 @@ export interface AiAlert {
   threshold: number;
 }
 
+export interface DailyCostCoverage {
+  calls: number;
+  costSamples: number;
+}
+
+export function assessMetricCoverage(
+  rows: AiMetricRow[],
+  daily: DailyCostCoverage,
+  sceneBaselines: Record<string, number>
+) {
+  const missingData = {
+    tokenUsageScenes: rows
+      .filter((row) => row.tokenSamples < row.calls)
+      .map((row) => ({
+        scene: row.scene,
+        covered: row.tokenSamples,
+        calls: row.calls,
+      })),
+    costScenes: rows
+      .filter((row) => row.costSamples < row.calls)
+      .map((row) => ({
+        scene: row.scene,
+        covered: row.costSamples,
+        calls: row.calls,
+      })),
+    dailyCostCoverage: {
+      covered: daily.costSamples,
+      calls: daily.calls,
+    },
+    sceneBaselines: rows
+      .filter((row) => sceneBaselines[row.scene] === undefined)
+      .map((row) => row.scene),
+  };
+  return {
+    missingData,
+    complete:
+      rows.length > 0 &&
+      missingData.tokenUsageScenes.length === 0 &&
+      missingData.costScenes.length === 0 &&
+      daily.costSamples === daily.calls &&
+      daily.calls > 0 &&
+      missingData.sceneBaselines.length === 0,
+  };
+}
+
 export function parsePositiveInteger(
   value: string | undefined,
   fallback: number,
@@ -118,8 +163,8 @@ export function operationalStatus(
   alerts: AiAlert[],
   dataComplete = true
 ): OperationalStatus {
-  if (calls < minimumCalls || !dataComplete) return 'INSUFFICIENT_DATA';
   if (alerts.some((alert) => alert.severity === 'critical')) return 'ALERT';
+  if (calls < minimumCalls || !dataComplete) return 'INSUFFICIENT_DATA';
   if (alerts.length > 0) return 'WARN';
   return 'OK';
 }

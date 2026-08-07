@@ -48,7 +48,7 @@
 > 1. **撤销 checkpoint 与 Prisma 业务写入“同一事务”的不可实现承诺**：官方 `PostgresSaver` 与 Prisma 各自管理数据库连接，改为 checkpoint 同步持久化 + 业务副作用幂等 + 对账补偿。详见 3.1.2、第 4 节、阶段 4。
 > 2. **区分请求并发与节点重放**：`state_version` 继续防双击/多标签页，新增 `learning_run_effects.effect_key` 防进程恢复、interrupt 或节点重试造成业务副作用重复执行。详见 3.1.2、3.6。
 > 3. **索引换代增加 generation CAS**：解决两个索引任务乱序完成时旧任务覆盖新内容的问题；最小补偿脚本由阶段 6 前移到阶段 1。详见 3.2、第 4 节、阶段 1。
-> 4. **复核单增加提交指纹与答案版本**：既防重复建单，也防旧复核结论覆盖用户后续提交形成的新状态。详见第 4 节、阶段 3。
+> 4. **2026-08-06 更新：复核单机制已移除**。`answer.version` 仍用于提交乐观并发，但不再创建复核单或执行人工改判；掌握度由只升不降规则保护。详见第 4 节、阶段 3。
 > 5. **增加图版本治理**：学习运行记录 `graph_version`，明确存量 checkpoint 的兼容、排空或重开策略。详见 3.1.2、第 4 节、阶段 4。
 > 6. **修正评测标签与可靠性门槛**：RAG 标注不再绑定重建后会变化的 chunk 行 ID；外部模型任务不再要求“修复后 100%、最终失败 0”，Schema 合规测试与线上可靠性 SLO 分开。详见 5.1。
 >
@@ -68,7 +68,7 @@
 >
 > 1. **撤销"新增 `requireAdmin`"前置项**：该中间件早在 2026-05-21（`cc80d44`）就已实现并挂载，plan.3 把一处本来正确的描述"修正"成了错误，并据此虚构出一项阻塞前置。阻塞前置由四项收敛为**三项（A/C/D）**。详见 1.1、3.6。
 > 2. **消解出题审核与状态机的互斥**：状态机 `QUESTION` 节点只从 `review_status='approved'` 的题库取题，不在用户请求中即时生成。详见 3.1.2、阶段 4。
-> 3. **收紧 2.4 的成绩约束措辞**：原"AI 不得直接覆盖用户成绩"把 V1 已上线的代码题 AI 评分也一并禁掉了，改为"不得在无人工复核的情况下下调成绩或判定为未掌握"。详见 2.4。
+> 3. **收紧 2.4 的成绩约束措辞**：原“AI 不得直接覆盖用户成绩”把 V1 已上线的代码题 AI 评分也一并禁掉了；当前规则进一步收敛为“任何 AI 路径都不得下调掌握度或判定为未掌握”，不再依赖已移除的人工复核。详见 2.4、3.6。
 > 4. **补齐幂等与一致性的落库形式**：`knowledge_chunks` / `knowledge_index_state` 补唯一约束；`ai_grading_reviews` 改存提交快照；索引状态先写 `pending` 再调 embedding。详见第 4 节、3.6。
 > 5. **`thread_id` 改绑一次"学习运行"**：`ai_chat_sessions` 新增 `current_run_id`，避免重学/多标签页落回旧 checkpoint。详见 3.1.2。
 > 6. **阶段 0 拆为 0A/0B/0C**，阶段 3 收缩为"评分复核闭环与掌握度落地"，限流从阶段 6 前移至阶段 2。详见第 5 节。
@@ -446,8 +446,9 @@ V2.0 期间**不更换后端框架**。该决策与开发文档 V1.1 §5.2 的�
 | **新增字段** `ai_chat_sessions.graph_version` | 图版本治理 | `varchar(32)`，引导式学习运行启动时固定；恢复 checkpoint 前按版本选择兼容图、迁移或 `restart_required`，不得静默套用不兼容的新图。 |
 | **新增字段** `answer.version` | 提交并发 | `int`，默认 `0`；每次成功提交原子 `+1`，用于 `exercise.service.ts` 的乐观并发。**2026-08-06 修订**：原用途「创建复核单时复制为 `ai_grading_reviews.answer_version`」已随复核队列移除，本字段保留。 |
 | **新增表** `learning_run_effects` | 图副作用幂等/补偿 | `id, run_id, node_name, effect_type, effect_key, payload json, status(pending/applied/failed), error_code, created_at, applied_at`；`effect_key` 唯一，索引 `(status, created_at)`。业务副作用与 effect 状态在同一个 Prisma 事务内完成；对账脚本处理 checkpoint 与业务结果不一致。 |
+| **新增表** `guided_learning_runs` | 学习 run 生命周期与 checkpoint 清理依据 | `run_id, session_id, graph_version, state, status(active/terminal/superseded), started_at, completed_at, checkpoint_deleted_at`；只清理已终态、已被新 run 替代且超保留期的 checkpoint。当前 run 与未确认终态 run 永不按时间删除。 |
 | ~~**新增表** `ai_grading_reviews`~~ | ~~评分复核~~ | **2026-08-06 删表**：复核队列代码路径于 2026-08-05 移除（`787844f`），该表随即成为孤儿，确认 0 行后由迁移 `20260806000000_drop_grading_review_workflow` 删除（`0b16d10`）。同批迁移引入的 `answer.version` 保留。 |
-| **新增表** `ai_call_logs`（P0） | 任务追踪 | `id, trace_id, graph_run_id, parent_call_id, scene, node, model, prompt_version, prompt_tokens, completion_tokens, estimated_cost, latency_ms, retry_count, fallback_type, status, error_code, metadata, created_at`；不默认保存原始 Prompt；索引 `trace_id` 与 `(scene, created_at)`。 |
+| **新增表** `ai_call_logs`（P0） | 任务追踪 | `id, trace_id, scene, node, model, prompt_version, input_tokens, output_tokens, total_tokens, estimated_cost_usd, duration_ms, retry_count, fallback_used, status, error_code, created_at`；不保存原始 Prompt；索引 `trace_id`、`(scene, status, created_at)` 与 `created_at`。 |
 | **新增表** `ai_feedback_events`（P1） | 在线效果 | `id, trace_id, user_id, scene, event_type(accepted/rejected/edited/clicked/helpful), target_type, target_id, metadata, created_at`；用于计算采用率、点击率等业务指标。**2026-08-05 修订**：原枚举中的 `appealed` / `reviewed` 随复核队列移除，代码中已无产出方（`event_type` 本身是自由 `varchar(40)`，无需迁移）。 |
 | **新增表（由部署脚本创建）** LangGraph checkpoint 系列表 | 图状态持久化 | 表结构由 `@langchain/langgraph-checkpoint-postgres` 的 `PostgresSaver.setup()` 定义，**不纳入 Prisma schema**，不手工建模。**`setup()` 由独立部署脚本执行一次，不在应用实例启动时调用**（见下方运维口径）。保留窗口与清理策略见阶段 6。 |
 
@@ -687,7 +688,7 @@ lessons-manage 小节表单内的题目编辑区**保留现状**，仅按前置�
   - 用 `StateGraph` 实现 3.1.2 的节点与边；`PostgresSaver` 做 checkpoint，**`thread_id = ai_chat_sessions.current_run_id`**（一次学习运行一个 UUID，重新开始学习换新值，见 3.1.2），关键节点使用同步持久化模式。
   - `QUESTION` 节点**从当前小节 `review_status='approved'` 的题库选题**（不调出题链，见 3.1.2）；`AI_EVALUATE` / `MERGE_RESULT` 节点复用阶段 3 评分链；`HINT` 节点复用 `exercise-hint.service`；`REVIEW` 节点展示参考答案与解析并结束，不下调掌握度。
   - 推进接口带 `run_id` + `expected_state_version`，服务端条件更新推进，命中 0 行返回 409 并回传当前状态（机制见 3.1.2，字段见第 4 节）。
-  - 写 `answer`、提示使用量、复核单、掌握度和业务投影的节点全部通过 `learning_run_effects.effect_key` 幂等执行；提供最小对账脚本，修复 checkpoint 与 effect/业务状态不一致。
+  - 写 `answer`、提示使用量、最终反馈、掌握度和业务投影的节点全部通过 `learning_run_effects.effect_key` 幂等执行；提供最小对账脚本，修复 checkpoint 与 effect/业务状态不一致。
   - 节点转移后同步 `ai_chat_sessions.state / hint_level / current_exercise_id` 投影；`hint_level` 按 3.4.1 规则写回 `answer.hint_level_used`。投影失败不伪装成 checkpoint 原子事务，而是留下可补偿的 effect 状态。
   - 启动运行时写入 `graph_version`；发布不兼容图版本前，必须用旧 checkpoint 样本验证所选的兼容、迁移或 `restart_required` 策略。
   - 新增状态机路由（启动 / 推进 / 恢复），流式协议按 3.1.4 扩展 `state` 事件。
@@ -848,7 +849,7 @@ plan.4 一律排除集成测试，但本计划**自己的验收标准里已经�
 | 成本风险 | embedding + 生成 + 检索抬高调用成本 | 索引增量 upsert、检索 top-k 限制、`ai_call_logs` 监控 |
 | 数据一致性 | 小节/题目更新后向量陈旧、新旧版本同时被召回，或旧索引任务晚返回覆盖新内容 | 落库处按 3.2 以 generation CAS + 整源事务替换；阶段 1 即交付补偿/全量重建脚本；集成测试 ②覆盖乱序完成 |
 | **状态机并发** | 多标签页/双击让状态跳转两级 | `state_version` 条件更新，命中 0 行返回 409；`run_id` 只定位线程不做并发控制（见 3.1.2） |
-| **状态机节点重放** | 恢复、interrupt 或故障重试造成重复扣提示、重复建单或重复改分 | `learning_run_effects.effect_key` 唯一约束 + 业务事务 + 故障注入验证；`state_version` 不承担此职责 |
+| **状态机节点重放** | 恢复、interrupt 或故障重试造成重复扣提示、重复写反馈或重复改分 | `learning_run_effects.effect_key` 唯一约束 + 业务事务 + 故障注入验证；`state_version` 不承担此职责 |
 | **图版本不兼容** | 部署新节点/状态 Schema 后，旧 checkpoint 被新图错误恢复 | 每次运行固定 `graph_version`；发布前演练兼容、迁移或 `restart_required` 策略 |
 | **掌握度误判** | 误把用户判成未掌握 | 前置项 D 只定义规则，写入推迟到阶段 3；变更严格限于 3.4.2 事件矩阵，且 `resolveMasteryLevel` 没有下降分支（2026-08-05 移除复核队列后已无任何下调入口） |
 | **短 ID 串改** | 管理写入路径经 5 位短 ID 解析，碰撞时静默命中错误记录 | 前置项 A2/A3：管理接口内部改用完整 UUID、更新时校验 `lesson_id` 归属、`:id` 只按 `lessons` 解析（URL 短 ID 不变，见 5.0.1） |

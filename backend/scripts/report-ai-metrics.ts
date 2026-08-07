@@ -3,6 +3,7 @@ import { Prisma } from '../src/generated/prisma';
 import prisma from '../src/config/prisma';
 import {
   evaluateAiAlerts,
+  assessMetricCoverage,
   operationalStatus,
   parsePositiveInteger,
   parsePositiveNumber,
@@ -68,7 +69,7 @@ async function main(): Promise<void> {
       COALESCE(SUM("retry_count"), 0)::int AS "retries",
       COUNT(*) FILTER (WHERE "fallback_used")::int AS "fallbacks"
       ,COUNT(*) FILTER (
-        WHERE "input_tokens" IS NOT NULL OR "output_tokens" IS NOT NULL
+        WHERE "input_tokens" IS NOT NULL AND "output_tokens" IS NOT NULL
       )::int AS "tokenSamples"
       ,COUNT(*) FILTER (WHERE "estimated_cost_usd" IS NOT NULL)::int
         AS "costSamples"
@@ -79,10 +80,12 @@ async function main(): Promise<void> {
     ORDER BY "scene"
   `);
   const [daily] = await prisma.$queryRaw<Array<{
+    calls: number;
     costUsd: number;
     costSamples: number;
   }>>(Prisma.sql`
-    SELECT COALESCE(SUM("estimated_cost_usd"), 0)::float8 AS "costUsd",
+    SELECT COUNT(*)::int AS "calls",
+      COALESCE(SUM("estimated_cost_usd"), 0)::float8 AS "costUsd",
       COUNT("estimated_cost_usd")::int AS "costSamples"
     FROM "ai_call_logs"
     WHERE "created_at" >= DATE_TRUNC('day', CURRENT_TIMESTAMP)
@@ -93,21 +96,13 @@ async function main(): Promise<void> {
     dailyBudgetUsd,
     budgetWarningRatio,
   }, parseBaselines(process.env.AI_ALERT_SCENE_P95_BASELINES_MS),
-  daily.costSamples > 0 ? daily.costUsd : undefined);
+  daily.calls > 0 && daily.costSamples === daily.calls
+    ? daily.costUsd
+    : undefined);
   const calls = rows.reduce((total, row) => total + row.calls, 0);
   const baselines = parseBaselines(process.env.AI_ALERT_SCENE_P95_BASELINES_MS);
-  const missingData = {
-    tokenUsage: rows.length > 0 && rows.every((row) => row.tokenSamples === 0),
-    cost: daily.costSamples === 0,
-    sceneBaselines: rows
-      .filter((row) => baselines[row.scene] === undefined)
-      .map((row) => row.scene),
-  };
-  const dataComplete =
-    !missingData.tokenUsage &&
-    !missingData.cost &&
-    missingData.sceneBaselines.length === 0;
-  const status = operationalStatus(calls, minimumCalls, alerts, dataComplete);
+  const coverage = assessMetricCoverage(rows, daily, baselines);
+  const status = operationalStatus(calls, minimumCalls, alerts, coverage.complete);
   const output = {
     event: 'ai_metrics_report',
     status,
@@ -115,7 +110,7 @@ async function main(): Promise<void> {
     windowMinutes,
     rows,
     dailyCostUsd: daily.costUsd,
-    missingData,
+    missingData: coverage.missingData,
     alerts,
   };
   process.stdout.write(`${JSON.stringify(output)}\n`);

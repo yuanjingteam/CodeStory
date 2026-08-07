@@ -28,13 +28,19 @@ async function main(): Promise<void> {
   const limit = parsePositiveInteger(argument('limit'), 100, 1_000);
   const terminalStates = [...TERMINAL_GUIDED_STATE_CODES];
   const candidates = await prisma.$queryRaw<Candidate[]>(Prisma.sql`
-    SELECT "id" AS "session_id", "current_run_id" AS "run_id", "state", "updated_at"
-    FROM "ai_chat_sessions"
-    WHERE "is_delete" = 0
-      AND "current_run_id" IS NOT NULL
-      AND "state" IN (${Prisma.join(terminalStates)})
-      AND "updated_at" <= CURRENT_TIMESTAMP - (${retentionDays} * INTERVAL '1 day')
-    ORDER BY "updated_at" ASC
+    SELECT runs."session_id", runs."run_id", runs."state",
+      runs."completed_at" AS "updated_at"
+    FROM "guided_learning_runs" runs
+    INNER JOIN "ai_chat_sessions" sessions ON sessions."id" = runs."session_id"
+    WHERE runs."status" = 'terminal'
+      AND runs."state" IN (${Prisma.join(terminalStates)})
+      AND runs."completed_at" IS NOT NULL
+      AND runs."checkpoint_deleted_at" IS NULL
+      AND runs."completed_at" <= CURRENT_TIMESTAMP -
+        (${retentionDays} * INTERVAL '1 day')
+      AND (sessions."current_run_id" IS NULL OR
+        sessions."current_run_id" <> runs."run_id")
+    ORDER BY runs."completed_at" ASC
     LIMIT ${limit}
   `);
   const audited: Array<Record<string, unknown>> = [];
@@ -48,14 +54,19 @@ async function main(): Promise<void> {
         // Recheck the business projection in the same transaction immediately before
         // deletion. A resumed/restarted run is therefore protected even after dry-run.
         const locked = await tx.$queryRaw<Candidate[]>(Prisma.sql`
-          SELECT "id" AS "session_id", "current_run_id" AS "run_id", "state", "updated_at"
-          FROM "ai_chat_sessions"
-          WHERE "id" = ${candidate.session_id}
-            AND "current_run_id" = ${candidate.run_id}
-            AND "is_delete" = 0
-            AND "state" IN (${Prisma.join(terminalStates)})
-            AND "updated_at" <= CURRENT_TIMESTAMP -
+          SELECT runs."session_id", runs."run_id", runs."state",
+            runs."completed_at" AS "updated_at"
+          FROM "guided_learning_runs" runs
+          INNER JOIN "ai_chat_sessions" sessions
+            ON sessions."id" = runs."session_id"
+          WHERE runs."run_id" = ${candidate.run_id}
+            AND runs."status" = 'terminal'
+            AND runs."state" IN (${Prisma.join(terminalStates)})
+            AND runs."checkpoint_deleted_at" IS NULL
+            AND runs."completed_at" <= CURRENT_TIMESTAMP -
               (${retentionDays} * INTERVAL '1 day')
+            AND (sessions."current_run_id" IS NULL OR
+              sessions."current_run_id" <> runs."run_id")
           FOR UPDATE
         `);
         if (locked.length !== 1) return { action: 'skipped_state_changed' };
@@ -68,11 +79,20 @@ async function main(): Promise<void> {
         const checkpoints = await tx.$executeRaw(Prisma.sql`
           DELETE FROM "checkpoints" WHERE "thread_id" = ${candidate.run_id}
         `);
-        await tx.ai_chat_sessions.update({
-          where: { id: candidate.session_id },
-          data: { current_run_id: null },
+        await tx.guided_learning_runs.update({
+          where: { run_id: candidate.run_id },
+          data: { checkpoint_deleted_at: new Date() },
         });
-        return { action: 'deleted', writes, blobs, checkpoints };
+        const retainedEffects = await tx.learning_run_effects.count({
+          where: { run_id: candidate.run_id },
+        });
+        return {
+          action: 'deleted',
+          writes,
+          blobs,
+          checkpoints,
+          retainedEffects,
+        };
       });
       audited.push({ ...candidate, ...result });
     } catch (error) {

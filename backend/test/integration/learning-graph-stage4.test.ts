@@ -378,9 +378,27 @@ describe('阶段 4 · PostgreSQL checkpoint 恢复', () => {
     });
     // 人工复核已移除：本轮直接给出参考答案，不再建复核单
     expect(state.feedback).toContain('参考答案：A. 正确');
+    const completedRun = await prisma.guided_learning_runs.findUniqueOrThrow({
+      where: { run_id: state.runId },
+    });
+    expect(completedRun).toMatchObject({
+      status: 'terminal',
+      state: GUIDED_PHASE_CODE.REVIEW,
+    });
+    expect(completedRun.completed_at).not.toBeNull();
 
     const restarted = await startGuidedLearning(userId, lessonId);
     expect(restarted.runId).not.toBe(state.runId);
+    const registeredRuns = await prisma.guided_learning_runs.findMany({
+      where: { session_id: completedRun.session_id },
+      orderBy: { started_at: 'asc' },
+    });
+    expect(registeredRuns.at(-2)?.run_id).toBe(state.runId);
+    expect(registeredRuns.at(-2)?.status).toBe('terminal');
+    expect(registeredRuns.at(-1)).toMatchObject({
+      run_id: restarted.runId,
+      status: 'active',
+    });
     await expect(
       resumeGuidedLearning(userId, lessonId, state.runId)
     ).rejects.toBeInstanceOf(GuidedLearningNotFoundError);

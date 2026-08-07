@@ -8,6 +8,10 @@ import {
   queueKnowledgeSource,
   type EmbeddingClient,
 } from '../../src/services/rag';
+import {
+  claimRagMaintenanceCandidate,
+  invalidateClaimedRagSource,
+} from '../../scripts/lib/rag-maintenance';
 import { getLessonAiContext } from '../../src/services/ai/lesson-context.service';
 import { getLessonChatMessages } from '../../src/services/ai/lesson-session.service';
 
@@ -487,5 +491,100 @@ describe('阶段 1 · 索引代次与授权检索', () => {
       true
     );
     expect(activeChunks).toBe(0);
+  });
+});
+
+describe('阶段 6 · RAG 补偿原子 claim', () => {
+  it('并发维护者只有一个能 claim 同一 generation', async () => {
+    const sourceId = randomUUID();
+    await prisma.knowledge_index_state.create({
+      data: {
+        source_type: 'doc',
+        source_id: sourceId,
+        source_updated_at: new Date(),
+        index_generation: 1n,
+        status: 'failed',
+      },
+    });
+    const candidate = {
+      source_type: 'doc' as const,
+      source_id: sourceId,
+      index_generation: 1n,
+      status: 'failed',
+      age_minutes: 60,
+    };
+    const claims = await Promise.all([
+      prisma.$transaction((tx) =>
+        claimRagMaintenanceCandidate(tx, candidate, 10)
+      ),
+      prisma.$transaction((tx) =>
+        claimRagMaintenanceCandidate(tx, candidate, 10)
+      ),
+    ]);
+    expect(claims.sort()).toEqual([false, true]);
+    await prisma.knowledge_index_state.delete({
+      where: {
+        source_type_source_id: {
+          source_type: 'doc',
+          source_id: sourceId,
+        },
+      },
+    });
+  });
+
+  it('source 缺失失效操作不能覆盖竞态产生的新 generation', async () => {
+    const sourceId = randomUUID();
+    await prisma.knowledge_index_state.create({
+      data: {
+        source_type: 'doc',
+        source_id: sourceId,
+        source_updated_at: new Date(),
+        index_generation: 1n,
+        status: 'failed',
+      },
+    });
+    const candidate = {
+      source_type: 'doc' as const,
+      source_id: sourceId,
+      index_generation: 1n,
+      status: 'failed',
+      age_minutes: 60,
+    };
+    await prisma.$transaction((tx) =>
+      claimRagMaintenanceCandidate(tx, candidate, 10)
+    );
+    await prisma.knowledge_index_state.update({
+      where: {
+        source_type_source_id: {
+          source_type: 'doc',
+          source_id: sourceId,
+        },
+      },
+      data: { index_generation: 2n, status: 'pending' },
+    });
+    const invalidated = await prisma.$transaction((tx) =>
+      invalidateClaimedRagSource(tx, candidate)
+    );
+    const current = await prisma.knowledge_index_state.findUniqueOrThrow({
+      where: {
+        source_type_source_id: {
+          source_type: 'doc',
+          source_id: sourceId,
+        },
+      },
+    });
+    expect(invalidated).toBe(false);
+    expect(current).toMatchObject({
+      index_generation: 2n,
+      status: 'pending',
+    });
+    await prisma.knowledge_index_state.delete({
+      where: {
+        source_type_source_id: {
+          source_type: 'doc',
+          source_id: sourceId,
+        },
+      },
+    });
   });
 });

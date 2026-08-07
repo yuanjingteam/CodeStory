@@ -3,20 +3,15 @@ import { Prisma } from '../src/generated/prisma';
 import prisma from '../src/config/prisma';
 import {
   completeKnowledgeIndex,
-  invalidateKnowledgeSource,
   loadKnowledgeSourceAssessment,
-  queueKnowledgeSource,
-  type KnowledgeSourceType,
 } from '../src/services/rag';
 import { parsePositiveInteger } from './lib/operations';
-
-interface Candidate {
-  source_type: KnowledgeSourceType;
-  source_id: string;
-  index_generation: bigint;
-  status: string;
-  age_minutes: number;
-}
+import {
+  claimRagMaintenanceCandidate,
+  invalidateClaimedRagSource,
+  queueClaimedRagSource,
+  type RagMaintenanceCandidate,
+} from './lib/rag-maintenance';
 
 function argument(name: string): string | undefined {
   const prefix = `--${name}=`;
@@ -27,13 +22,13 @@ async function main(): Promise<void> {
   const execute = process.argv.includes('--execute');
   const ageMinutes = parsePositiveInteger(argument('age-minutes'), 10, 43_200);
   const limit = parsePositiveInteger(argument('limit'), 100, 1_000);
-  const candidates = await prisma.$queryRaw<Candidate[]>(Prisma.sql`
+  const candidates = await prisma.$queryRaw<RagMaintenanceCandidate[]>(Prisma.sql`
     SELECT "source_type", "source_id", "index_generation", "status",
       FLOOR(EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - "updated_at")) / 60)::int
         AS "age_minutes"
     FROM "knowledge_index_state"
     WHERE "status" = 'failed'
-      OR ("status" = 'pending' AND "updated_at" <=
+      OR ("status" IN ('pending', 'repairing') AND "updated_at" <=
         CURRENT_TIMESTAMP - (${ageMinutes} * INTERVAL '1 minute'))
     ORDER BY "updated_at" ASC
     LIMIT ${limit}
@@ -41,6 +36,7 @@ async function main(): Promise<void> {
   const totals: Record<string, number> = {
     candidates: candidates.length,
     stalePending: candidates.filter((item) => item.status === 'pending').length,
+    staleRepairing: candidates.filter((item) => item.status === 'repairing').length,
     failedBeforeRun: candidates.filter((item) => item.status === 'failed').length,
     ready: 0,
     failed: 0,
@@ -54,20 +50,10 @@ async function main(): Promise<void> {
 
   if (execute) {
     for (const candidate of candidates) {
-      const current = await prisma.knowledge_index_state.findUnique({
-        where: {
-          source_type_source_id: {
-            source_type: candidate.source_type,
-            source_id: candidate.source_id,
-          },
-        },
-        select: { index_generation: true, status: true },
-      });
-      if (
-        !current ||
-        current.index_generation !== candidate.index_generation ||
-        !['failed', 'pending'].includes(current.status)
-      ) {
+      const claimed = await prisma.$transaction((tx) =>
+        claimRagMaintenanceCandidate(tx, candidate, ageMinutes)
+      );
+      if (!claimed) {
         totals.generationConflicts += 1;
         continue;
       }
@@ -76,25 +62,21 @@ async function main(): Promise<void> {
         candidate.source_id
       );
       if (!assessment.source) {
-        await prisma.$transaction((tx) =>
-          invalidateKnowledgeSource(
-            tx,
-            candidate.source_type,
-            candidate.source_id
-          )
+        const invalidated = await prisma.$transaction((tx) =>
+          invalidateClaimedRagSource(tx, candidate)
         );
-        totals.invalid += 1;
+        if (invalidated) totals.invalid += 1;
+        else totals.generationConflicts += 1;
         continue;
       }
       const source = assessment.source;
       const ticket = await prisma.$transaction((tx) =>
-        queueKnowledgeSource(
-          tx,
-          source.sourceType,
-          source.sourceId,
-          source.sourceVersion
-        )
+        queueClaimedRagSource(tx, candidate, source.sourceVersion)
       );
+      if (!ticket) {
+        totals.generationConflicts += 1;
+        continue;
+      }
       const result = await completeKnowledgeIndex(ticket);
       totals[result.status] += 1;
       if (result.status === 'stale') totals.generationConflicts += 1;

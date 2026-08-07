@@ -97,18 +97,44 @@ async function projectState(
   sessionId: string,
   state: GuidedLearningPublicState
 ): Promise<void> {
-  await prisma.ai_chat_sessions.updateMany({
-    where: {
-      id: sessionId,
-      current_run_id: state.runId,
-      state_version: state.stateVersion,
-    },
-    data: {
-      graph_version: state.graphVersion,
-      state: GUIDED_PHASE_CODE[state.phase],
-      current_exercise_id: state.exerciseId,
-      hint_level: state.hintLevel,
-    },
+  const stateCode = GUIDED_PHASE_CODE[state.phase];
+  const terminal = ['REVIEW', 'COMPLETE', 'EMPTY', 'RESTART_REQUIRED']
+    .includes(state.phase);
+  await prisma.$transaction(async (tx) => {
+    const projected = await tx.ai_chat_sessions.updateMany({
+      where: {
+        id: sessionId,
+        current_run_id: state.runId,
+        state_version: state.stateVersion,
+      },
+      data: {
+        graph_version: state.graphVersion,
+        state: stateCode,
+        current_exercise_id: state.exerciseId,
+        hint_level: state.hintLevel,
+      },
+    });
+    // A concurrent restart may replace current_run_id while an older invocation is
+    // finishing. Preserve a confirmed terminal lifecycle, but never revive a
+    // superseded non-terminal run back to active.
+    if (projected.count !== 1 && !terminal) return;
+    await tx.guided_learning_runs.upsert({
+      where: { run_id: state.runId },
+      create: {
+        run_id: state.runId,
+        session_id: sessionId,
+        graph_version: state.graphVersion,
+        state: stateCode,
+        status: terminal ? 'terminal' : 'active',
+        completed_at: terminal ? new Date() : null,
+      },
+      update: {
+        graph_version: state.graphVersion,
+        state: stateCode,
+        status: terminal ? 'terminal' : 'active',
+        ...(terminal && { completed_at: new Date() }),
+      },
+    });
   });
 }
 
@@ -150,19 +176,40 @@ export async function startGuidedLearning(
   );
   const runId = randomUUID();
   const graphVersion = getLearningGraphVersion();
-  const claimed = await prisma.ai_chat_sessions.updateMany({
-    where: {
-      id: session.id,
-      state_version: session.state_version,
-    },
-    data: {
-      current_run_id: runId,
-      state_version: { increment: 1 },
-      graph_version: graphVersion,
-      state: GUIDED_PHASE_CODE.INIT,
-      current_exercise_id: null,
-      hint_level: 0,
-    },
+  const claimed = await prisma.$transaction(async (tx) => {
+    const result = await tx.ai_chat_sessions.updateMany({
+      where: {
+        id: session.id,
+        state_version: session.state_version,
+      },
+      data: {
+        current_run_id: runId,
+        state_version: { increment: 1 },
+        graph_version: graphVersion,
+        state: GUIDED_PHASE_CODE.INIT,
+        current_exercise_id: null,
+        hint_level: 0,
+      },
+    });
+    if (result.count !== 1) return result;
+    if (session.current_run_id) {
+      await tx.guided_learning_runs.updateMany({
+        where: {
+          run_id: session.current_run_id,
+          status: 'active',
+        },
+        data: { status: 'superseded' },
+      });
+    }
+    await tx.guided_learning_runs.create({
+      data: {
+        run_id: runId,
+        session_id: session.id,
+        graph_version: graphVersion,
+        state: GUIDED_PHASE_CODE.INIT,
+      },
+    });
+    return result;
   });
   if (claimed.count !== 1) {
     const currentSession = await getOwnedSession(userId, lessonId);

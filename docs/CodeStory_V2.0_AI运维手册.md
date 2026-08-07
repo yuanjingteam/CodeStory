@@ -33,32 +33,43 @@
 - `OK`：样本充分且无门槛命中；
 - `WARN`：P95 超过对应基线两倍，或成本达到日预算 80%；
 - `ALERT`：成功率低于 95%，或成本达到日预算 100%；
-- `INSUFFICIENT_DATA`：窗口调用数低于 `--minimum-calls`，不能当作通过。
+- `INSUFFICIENT_DATA`：窗口调用数不足、任一场景 token/成本覆盖少于调用数、
+  当日成本覆盖不完整，或该场景没有实测 P95 基线；不能当作通过。流式响应若
+  provider 未在最终 chunk 返回 usage，也会明确落入此状态。
+
+`AI_INPUT_COST_USD_PER_MILLION_TOKENS` 与
+`AI_OUTPUT_COST_USD_PER_MILLION_TOKENS` 必须按当前供应商价目表填写；示例值不是
+价格承诺。基线变量必须使用日志中的精确 scene 名，例如 `lesson-chat`，不能用
+`chat` 或下划线别名代替。
 
 退出码和 JSON 日志由 cron/systemd 捕获即可形成最小告警闭环。日预算达到 100%
 时，值班人应保持或关闭非必要高成本能力开关；脚本不擅自改生产配置。
 
 ## 4. RAG 补偿
 
-`ops:rag-maintain` 只选择 `failed` 或超过阈值的 `pending` generation。执行前再次
-核对 generation；补偿仍调用业务层的整源换代与 CAS，不直接写 chunk。运行中
-generation 变化或完成时 CAS 返回 stale，计入 `generationConflicts`，旧任务不会
-覆盖新索引。dry-run 发现悬挂项返回 2，便于调度器报警。
+`ops:rag-maintain` 只选择 `failed` 或超过阈值的 `pending/repairing` generation。
+执行时以 expected generation、status 和 age 原子 claim 为 `repairing`；queue 前
+再锁行核验。source 缺失的失效写入也带 expected-generation CAS。运行中 generation
+变化时计入 `generationConflicts`，旧任务不会覆盖新索引；进程中断留下的 stale
+`repairing` 可被后续运行重新 claim。dry-run 发现悬挂项返回 2。
 
 ## 5. checkpoint 清理
 
-候选必须同时满足：session 未删除、有 `current_run_id`、投影处于
-`REVIEW/COMPLETE/EMPTY/RESTART_REQUIRED`、更新时间超过保留期。执行时在同一事务
-加锁并复核；进行中、已换 run、缺失投影或刚更新的线程均跳过。删除顺序为 writes、
-blobs、checkpoints，并在同一事务清空 `current_run_id`，保留终态投影供界面展示，
-避免 session 悬挂引用；任一步失败整批回滚。重复执行没有候选，不会扩大删除范围。
+`guided_learning_runs` 是可审计生命周期注册表。候选必须同时满足：状态为
+`terminal`、终态为 `REVIEW/COMPLETE/EMPTY/RESTART_REQUIRED`、完成时间超过保留期、
+尚未清理 checkpoint，且 run 已被新 run 替代，不是 session 的 `current_run_id`。
+执行时在同一事务锁定 run 并复核；当前 run、进行中、superseded 但未确认终态或
+缺失注册记录的线程均跳过。删除 writes、blobs、checkpoints 后写入
+`checkpoint_deleted_at`；任一步失败整批回滚，重复执行不会扩大范围。
 
 当前依赖版本未提供可复用且可与 Prisma 业务行复核共享事务的 `deleteThread` API，
 因此脚本按 PostgresSaver 当前三张线程表显式删除；升级 LangGraph 依赖时必须先核对
 表结构与官方 API，再运行 execute。
 
-当前模型没有历史 run 生命周期表，因此被新 run 替换后且缺失投影的孤儿线程不做
-推断性清理。若产品需要清理这类线程，应先增加可审计的运行历史，不得仅按时间删。
+`learning_run_effects` 不随 checkpoint 删除：它既是业务幂等凭据也是故障审计记录。
+当前版本长期保留并由数据库备份覆盖；未来若要增加保留期，必须另建只选择
+`checkpoint_deleted_at` 非空且超过独立审计保留期的清理命令，不得复用 checkpoint
+的 30 天窗口。
 
 ## 6. 发布与回滚
 

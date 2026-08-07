@@ -3,6 +3,9 @@
 > 状态：核心状态机、发布级证据与工程门禁已补齐，提交审核
 >
 > 日期：2026-08-05
+>
+> 数据口径说明：下方“14 条迁移 / 21 个测试文件 / 170 个用例”是 2026-08-05
+> 首次交接的历史快照，不代表当前分支最新门禁；当前结果以阶段 6 总验收记录为准。
 
 ## 已实现
 
@@ -19,6 +22,8 @@
   也不自动下调掌握度。
 - checkpoint 是事实源，session 只保存投影；`check:learning-runs` 可从 checkpoint
   重建 session 投影并报告缺失 checkpoint 或 pending effect。
+- `guided_learning_runs` 记录每个 run 的 active/terminal/superseded 生命周期；
+  重学后旧终态 run 可审计并在保留期后清理 checkpoint，当前 run 不清理。
 - 运行固定 `AI_GRAPH_VERSION`；版本不一致返回 `RESTART_REQUIRED`，不会静默
   套用新图。
 - `AI_GRAPH_ENABLED=false` 时不注册 `/ai/guided/*` 路由，历史接口下发
@@ -26,13 +31,21 @@
 - AI 面板已增加模式切换和状态条；自由问答 NDJSON 新增向后兼容的 `state`
   事件，未知事件仍可被旧客户端忽略。
 
-## 自动化结果
+## 自动化结果（2026-08-05 历史快照）
 
 - 后端：14 条迁移从空临时库通过，21 个测试文件 / 170 个用例全过。
 - 阶段四专项 6 条：关闭路径、状态投影、真实 PostgreSQL checkpoint 跨实例恢复、
   CAS 单胜与 effect 幂等、响应故障注入、三级提示后结束/重学/旧 run/图版本升级。
 - 后端 `pnpm run build` 通过。
 - 前端 `pnpm run check` 与 `pnpm run build` 通过。
+
+## 2026-08-07 第二轮治理复验
+
+- 新增 run 生命周期迁移后，17 条 migration 从空测试库全部通过。
+- 后端完整测试为 22 个文件 / 178 个用例全过；包含 run 注册、重学保留旧终态
+  记录、RAG 双维护者 claim 单胜和 generation 竞态保护。
+- 后端 `pnpm run build`、scripts TypeScript 检查和运维纯逻辑 4 个用例通过。
+- 本节是当前分支口径；上方 2026-08-05 数字仅保留为历史证据。
 
 ## 发布级证据
 
@@ -62,4 +75,5 @@ pnpm run check
 pnpm run build
 ```
 
-阶段四现提交审核；按照任务书约定，由审核者给出通过、条件通过或退回结论。
+阶段四核心功能已完成；第二轮治理新增 run 生命周期注册与安全清理依据。最终审核
+结论、最新迁移数和测试计数统一记录到 V2.0 总验收报告，避免沿用本历史快照。

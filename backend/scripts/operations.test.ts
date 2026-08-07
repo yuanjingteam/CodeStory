@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   evaluateAiAlerts,
+  assessMetricCoverage,
   operationalStatus,
   parsePositiveInteger,
   TERMINAL_GUIDED_STATE_CODES,
@@ -59,8 +60,35 @@ describe('阶段 6 运维脚本纯逻辑', () => {
     expect(alerts).toEqual([]);
     expect(operationalStatus(2, 5, alerts)).toBe('INSUFFICIENT_DATA');
     expect(operationalStatus(20, 5, [], false)).toBe('INSUFFICIENT_DATA');
+    expect(operationalStatus(20, 5, [{
+      type: 'success_rate',
+      severity: 'critical',
+      actual: 0.5,
+      threshold: 0.95,
+    }], false)).toBe('ALERT');
     expect(TERMINAL_GUIDED_STATE_CODES).toEqual([6, 7, 8, 9]);
     expect(TERMINAL_GUIDED_STATE_CODES).not.toContain(3);
+  });
+
+  it('按场景与调用数检查 token、成本和实测基线覆盖', () => {
+    const incomplete = assessMetricCoverage([
+      { ...baseRow, scene: 'lesson-chat', tokenSamples: 19 },
+      { ...baseRow, scene: 'code-grading', costSamples: 0 },
+    ], { calls: 40, costSamples: 39 }, {
+      'lesson-chat': 3_000,
+    });
+    expect(incomplete.complete).toBe(false);
+    expect(incomplete.missingData.tokenUsageScenes).toEqual([{
+      scene: 'lesson-chat', covered: 19, calls: 20,
+    }]);
+    expect(incomplete.missingData.costScenes[0].scene).toBe('code-grading');
+    expect(incomplete.missingData.sceneBaselines).toEqual(['code-grading']);
+
+    const complete = assessMetricCoverage([baseRow], {
+      calls: 20,
+      costSamples: 20,
+    }, { chat: 1_000 });
+    expect(complete.complete).toBe(true);
   });
 });
 
