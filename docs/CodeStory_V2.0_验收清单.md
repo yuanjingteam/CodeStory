@@ -281,6 +281,49 @@
 
 ---
 
+## 选择题完整性闸门（2026-08-07）
+
+跨阶段的工程闸门，不属于任何单一阶段。起因是阶段四验收时发现一道题的 A、B 选项完全相同，顺线审计全库后确认：不变量此前只活在写入边界上、四份实现互不一致，读取侧完全没有校验，闸门（`46aa8cd`，2026-08-01）上线前的存量坏题一直送到学生面前。
+
+### 不变量与判定
+
+单一来源 `backend/src/services/courses/choice-exercise-integrity.ts`。选项须为数组、≥2 项、无空白项；答案非空且在选项中恰好匹配一次；答案唯一时干扰项之间的重复只记警告。写入侧严格（警告也算错），读取侧宽松且不 trim（判分比的是原值），详见执行计划 §2.4。
+
+| 验收点 | 输入 / 操作 | 预期 | 实测 |
+| --- | --- | --- | --- |
+| 小节编辑器写入校验 | `createLesson` 提交答案不在选项内 / 选项重复的单选 | 返回 400，且不写入任何 `exercises` 行 | ✅ `lesson-manage-0a.test.ts` A5；旧代码上先验证为红（expected 200 to be 400） |
+| 「直接采用」复校 | 对选项坏掉的草稿无负载 `approve` | 抛 `EXERCISE_ANSWER_INVALID`，行保持 `draft`；`reject` 仍可用 | ✅ `exercise-review-stage2.test.ts` |
+| 判分拦截不留痕 | 对坏题调用 `submitExercise` | 抛 `ChoiceExerciseUnusableError`，不写 `answer` 行、不动分数与掌握度 | ✅ 集成测试；活体实测 `updated_at` 提交前后均为 `2026-08-07 00:56:40.471`、`submission_count` 均为 `6`，未变 |
+| 详情返回可用标志 | 取坏题与好题详情 | `usable` 分别为 `false` / `true`（不改 404——`request.ts:44-47` 对任何 200 直接返回 body，错误码在前端静音） | ✅ 集成测试；活体实测 `detail.code=200, data.usable=false` |
+| 引导出题跳过坏题 | `order` 靠前放坏题、靠后放好题 | 返回后一道；全部不可用时回落既有 `EMPTY` 相位，不新增相位 | ✅ `learning-graph-stage4.test.ts`；旧代码上先验证为红 |
+| 前端不可作答提示 | 打开坏题 | 题干仍显示 + 红色提示，无提交入口；SQL NULL `metadata` 不再崩溃 | ✅ 活体实测 `POST /exercises/submit` 返回 400「本题选项配置有误，暂时无法作答」 |
+
+### 存量修复（走题目管理接口，非直连 SQL）
+
+| id | 症状 | 处置 |
+| --- | --- | --- |
+| `03dc8475` | `answer=''`，`metadata.correctAnswer=''`，永远做不对 | 答案定为「LIMIT 1,3 代表从第2条数据开始，查询3条数据」，补解析与知识点 |
+| `fcbfd70f` | 同上 | 答案定为「GROUP BY 用于对相同数据进行分组」，补解析与知识点 |
+| `baf9fea3` | A、B 选项字符串相同（答案 C 唯一，仍可答对，属内容质量缺陷） | B 改写为「可以让多个用户同时访问而互不干扰」，补解析与知识点 |
+
+三行的 `template` / `correctAnswer` 幽灵键随 `getWriteData` 重写一并清除。前端 `ChoiceOptionsConfig` 已改为只认 `answer`，不再写第二真相源——这正是上述坏形状的产地。
+
+### 自动化门禁
+
+| 命令 | 实测结果 |
+| --- | --- |
+| `pnpm run check:exercise-integrity` | ✅ `{"scanned":8,"usable":8,"blocked":0,"warned":0,"garbled":0,"failed":0}`，退出码 0 |
+| 后端 `pnpm run build` | ✅ 通过 |
+| 后端 `npx tsc -p scripts/tsconfig.json --noEmit` | ✅ 通过（`scripts/` 不在 `pnpm run build` 的 include 内，这步不能省） |
+| 后端 `pnpm run test` | ✅ 20 个测试文件 / 170 个用例全过（阶段四收尾时为 19 / 152） |
+| 前端 `pnpm run check` / `pnpm run build` | ✅ 均通过 |
+
+审计脚本另含 U+FFFD 乱码检查：结构不变量看不出内容被编码毁掉——修复过程中曾因 Windows 上 Python 的 cp936 stdout 把 GBK 字节当 UTF-8 发出，写入过一次乱码而审计仍为绿。乱码与 `blocked` 分开计数，读取侧不拦但必须让检查变红。该命令依赖实时数据库，与 `check:learning-runs` 一样**不进 `check` 链**。
+
+**当前状态：** 🟢 闸门、存量修复与回归证据齐备。
+
+---
+
 ## 测试基础设施
 
 ### vitest + 临时 PostgreSQL 夹具
