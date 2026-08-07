@@ -79,6 +79,7 @@ export default function ExerciseCard({
           <button
             type="button"
             onClick={e => { e.stopPropagation(); onDelete(); }}
+            aria-label={`删除题目 ${index + 1}`}
             className="flex items-center gap-1 px-2 py-1 text-red-500 text-sm hover:bg-red-50 rounded transition-colors"
           >
             <FiTrash2 className="w-4 h-4" />
@@ -129,11 +130,70 @@ export default function ExerciseCard({
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-bold mb-1">知识点</label>
+            <input
+              type="text"
+              value={exercise.knowledge}
+              onChange={e => handleUpdate({ knowledge: e.target.value })}
+              placeholder="例如：变量声明、条件判断"
+              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold mb-1">题目解析</label>
+            <textarea
+              value={exercise.analysis}
+              onChange={e => handleUpdate({ analysis: e.target.value })}
+              placeholder="说明正确答案、解题思路和常见错误"
+              rows={3}
+              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400 resize-y"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold mb-1">来源</label>
+            <input
+              type="text"
+              value={exercise.source === 'ai' ? 'AI 生成' : '手工录入'}
+              readOnly
+              aria-readonly="true"
+              className="w-full px-3 py-2 border-2 border-black bg-gray-100 text-gray-600 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-bold mb-1">
+              AI 知识库策略
+            </label>
+            <select
+              value={exercise.knowledgeIndexPolicy || 'auto'}
+              onChange={e =>
+                handleUpdate({
+                  knowledgeIndexPolicy: e.target.value as
+                    | 'auto'
+                    | 'include'
+                    | 'exclude',
+                })
+              }
+              className="w-full border-2 border-black bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+            >
+              <option value="auto">自动判断</option>
+              <option value="include">人工确认纳入</option>
+              <option value="exclude">排除出 AI 知识库</option>
+            </select>
+            <p className="mt-1 text-xs text-gray-600">
+              人工纳入只能覆盖短内容，空题目仍不会建立索引。
+            </p>
+          </div>
+
           {exercise.type && (
             <>
               {exercise.type === 'single_choice' && (
                 <ChoiceOptionsConfig
                   metadata={exercise.metadata as ExerciseMetadata}
+                  answer={exercise.answer}
                   onChange={(metadata, answer) => handleUpdate({ metadata, answer })}
                 />
               )}

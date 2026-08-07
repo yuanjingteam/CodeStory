@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import type { HintConfig } from '@/types/exercise';
 import { BsLightbulb } from 'react-icons/bs';
+import { FiCheckCircle } from 'react-icons/fi';
 import { exerciseApi } from '@/app/api/courses/exercise';
+import Button from '@/components/ui/Button';
+import Dialog from '@/components/ui/Dialog';
+import { getAiErrorMessage } from './chat/chatErrors';
 
 interface HintModalProps {
   exerciseId: string;
@@ -23,6 +26,7 @@ export default function HintModal({
 }: HintModalProps) {
   const [loading, setLoading] = useState(false);
   const [loadingHints, setLoadingHints] = useState(true);
+  const [hintError, setHintError] = useState('');
   const [acquiredHints, setAcquiredHints] = useState<Array<{ level: number; content: string }>>([]);
   const maxLevel = hints?._meta.max_level || 3;
 
@@ -55,6 +59,7 @@ export default function HintModal({
     if (currentLevel >= maxLevel || loading) return;
 
     setLoading(true);
+    setHintError('');
     
     try {
       const nextLevel = currentLevel + 1;
@@ -66,6 +71,7 @@ export default function HintModal({
       }
     } catch (error) {
       console.error('获取提示失败:', error);
+      setHintError(getAiErrorMessage(error).message);
     } finally {
       setLoading(false);
     }
@@ -73,28 +79,75 @@ export default function HintModal({
 
   const totalDeduction = SCORE_DEDUCTION[currentLevel] || 0;
 
-  const modal = (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
-      <div className="flex max-h-[calc(100vh-2rem)] w-full max-w-lg min-w-0 flex-col overflow-hidden border-2 border-black bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
-        <div className="flex flex-shrink-0 items-center justify-between gap-3 border-b-2 border-black bg-white p-4">
-          <h3 className="flex min-w-0 items-center gap-2 text-xl font-bold">
-            <BsLightbulb className="w-5 h-5" />
-            <span className="truncate">学习助手</span>
-          </h3>
-          <button 
-            onClick={onClose}
-            className="flex h-8 w-8 flex-shrink-0 items-center justify-center border-2 border-black text-2xl font-bold leading-none hover:bg-red-50 hover:text-red-500"
-            aria-label="关闭提示"
-          >
-            ✕
-          </button>
-        </div>
+  return (
+    <Dialog
+      open
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) {
+          onClose();
+        }
+      }}
+      title={
+        <span className="flex min-w-0 items-center gap-2">
+          <BsLightbulb className="size-5" aria-hidden="true" />
+          <span className="truncate">学习助手</span>
+        </span>
+      }
+      closeLabel="关闭提示"
+      bodyClassName="p-4"
+      footer={
+        <div className="w-full">
+          {remainingHints > 0 ? (
+            <Button
+              variant="success"
+              fullWidth
+              onClick={handleGetHint}
+              loading={loading}
+              loadingText="获取中..."
+            >
+              获取下一个提示（剩余 {remainingHints} 次）
+            </Button>
+          ) : currentLevel > 0 ? (
+            <div
+              className="border-2 border-zinc-950 bg-yellow-50 p-3 text-center"
+              role="status"
+            >
+              <div className="flex items-center justify-center gap-2 font-bold text-zinc-800">
+                <FiCheckCircle className="size-5" aria-hidden="true" />
+                已获取所有提示（{currentLevel}/{maxLevel}）
+              </div>
+              <p className="mt-1 text-sm font-bold leading-6 text-zinc-600">
+                可以先尝试作答；如果仍然卡住，把你的当前思路发给右侧 AI 助手。
+              </p>
+            </div>
+          ) : null}
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+          <Button onClick={onClose} fullWidth className="mt-3">
+            关闭
+          </Button>
+        </div>
+      }
+    >
+          {hintError && (
+            <div
+              className="mb-4 border-2 border-black bg-red-50 p-3 text-sm font-bold text-red-700"
+              role="alert"
+            >
+              {hintError}
+            </div>
+          )}
           {loadingHints ? (
-            <div className="mb-4 text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-              <p className="mt-2 text-gray-600">加载中...</p>
+            <div
+              className="mb-4 grid gap-3 py-4"
+              role="status"
+              aria-label="正在加载提示"
+            >
+              {[0, 1].map((item) => (
+                <div
+                  key={item}
+                  className="h-20 animate-pulse border-2 border-zinc-200 bg-zinc-100"
+                />
+              ))}
             </div>
           ) : acquiredHints.length > 0 ? (
             <div className="mb-4 space-y-3">
@@ -118,7 +171,7 @@ export default function HintModal({
             </div>
           ) : null}
 
-          <div className="mb-4 border-2 border-black bg-purple-50 p-3">
+          <div className="mb-4 border-2 border-zinc-950 bg-yellow-50 p-3">
             <div className="flex flex-wrap justify-between gap-2 text-sm font-bold">
               <span>已使用提示：{currentLevel} / {maxLevel}</span>
               <span className="text-orange-600">
@@ -126,46 +179,6 @@ export default function HintModal({
               </span>
             </div>
           </div>
-        </div>
-
-        <div className="flex-shrink-0 border-t-2 border-black bg-white p-4">
-          {remainingHints > 0 ? (
-            <button
-              onClick={handleGetHint}
-              disabled={loading}
-              className={`w-full py-3 bg-green-500 text-white border-2 border-black font-bold shadow-[2px_2px_0_#000] hover:bg-green-600 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all ${
-                loading ? 'opacity-70 cursor-not-allowed' : ''
-              }`}
-            >
-              {loading ? (
-                <>⏳ 获取中...</>
-              ) : (
-                <>👉 获取下一个提示 (剩余 {remainingHints} 次)</>
-              )}
-            </button>
-          ) : currentLevel > 0 ? (
-            <div className="border-2 border-black bg-yellow-50 p-3 text-center">
-              <div className="font-bold text-gray-800">
-                ✅ 已获取所有提示 ({currentLevel}/{maxLevel})
-              </div>
-              <p className="mt-1 text-sm font-bold leading-6 text-gray-600">
-                可以先尝试作答；如果仍然卡住，把你的当前思路发给右侧 AI 助手。
-              </p>
-            </div>
-          ) : null}
-
-          <button
-            onClick={onClose}
-            className="w-full mt-3 py-2 bg-yellow-400 border-2 border-black font-bold shadow-[2px_2px_0_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
-          >
-            关闭
-          </button>
-        </div>
-      </div>
-    </div>
+    </Dialog>
   );
-
-  if (typeof document === 'undefined') return null;
-
-  return createPortal(modal, document.body);
 }

@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { logger } from '../config/logger';
 
 export interface AppError extends Error {
   statusCode?: number;
@@ -12,7 +13,10 @@ const errorHandler = (
 ) => {
   const statusCode = err.statusCode || 500;
 
-  console.error(err.stack);
+  logger.error(
+    { err, method: req.method, path: req.path },
+    'Unhandled request error'
+  );
 
   res.status(statusCode).json({
     success: false,

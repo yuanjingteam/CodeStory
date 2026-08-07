@@ -51,11 +51,11 @@ export const exerciseApi = {
     }).then(res => res.data);
   },
 
-  submit: (exerciseId: string | number, answer: string, hintLevelUsed: number = 0) => {
+  submit: (exerciseId: string | number, answer: string, recommendationToken?: string) => {
     return request.post<ExerciseSubmitResponse>('exercises/submit', {
       exercise_id: exerciseId,
       answer,
-      hint_level_used: hintLevelUsed
+      ...(recommendationToken ? { recommendationToken } : {})
     }).then(res => res.data);
   },
 

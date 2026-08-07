@@ -4,6 +4,12 @@
 
 **文档用途：**全栈开发、测试、验收标准依据
 
+> **✅ 状态：当前有效**
+>
+> **最后核对：2026-07-21**
+>
+> **后续规划：** 第 3.3 节定义 V2.1 迭代模块（通知提醒、学习社群、测试、多端适配）。
+
 # 1. 产品概述
 
 ## 1.1 产品定位
@@ -578,7 +584,7 @@ LLM评估
 | 鉴权 | JWT | Session | JWT 无状态，适合前后端分离和扩展（Session依赖服务端存储） |
 | AI服务 | OpenAI API / LLM接口 | 本地模型 | 云模型效果稳定、成本可控，适合 MVP（本地部署复杂） |
 | 队列（可选） | BullMQ | RabbitMQ / Kafka | BullMQ 基于 Redis，轻量，适合 Node 项目（Kafka过重） |
-| 日志 | Winston | console.log / Pino | Winston 功能完整（分级、持久化），适合后期扩展（console过弱） |
+| 日志 | Pino + pino-http | console.log / Winston | 已在 V2.0 阶段 0B 落地结构化日志、请求 trace_id 与敏感字段脱敏 |
 
 ## 5.3 系统架构图
 

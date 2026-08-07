@@ -1,10 +1,5 @@
-import React from 'react';
+import ExerciseManage from '@/components/manage/ExerciseManage';
 
 export default function ExercisesManagePage() {
-  return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">题目管理</h2>
-      <p>题目管理页面开发中...</p>
-    </div>
-  );
+  return <ExerciseManage />;
 }

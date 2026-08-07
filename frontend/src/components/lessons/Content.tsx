@@ -34,7 +34,6 @@ export default memo(function Content({ data, onLessonClick }: ContentProps) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(
     getInitialExpandedChapters
   );
-
   useEffect(() => {
     localStorage.setItem(EXPANDED_CHAPTERS_STORAGE_KEY, JSON.stringify([...expandedChapters]));
   }, [expandedChapters]);

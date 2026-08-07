@@ -1,0 +1,1413 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "promptVersion": "grounded-v3",
+  "promptRevision": "grounded-v3.1-boundary",
+  "generatedAt": "2026-07-31T12:38:14.907Z",
+  "reviewRequired": true,
+  "expectedAnswers": 40,
+  "completedAnswers": 40,
+  "status": "complete",
+  "results": [
+    {
+      "id": "lesson-100000000000000000000000000000000014-1",
+      "question": "“语义化标签”主要讲解什么？",
+      "answer": "根据课程证据，该小节主要讲解了语义化标签，例如 header、footer、article 等 [1]。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 243.22160000000076,
+      "modelTimeToFirstTokenMs": 5107.714,
+      "timeToFirstTokenMs": 5350.943900000002,
+      "generationDurationMs": 5452.416999999998,
+      "totalDurationMs": 5695.6469,
+      "outputCharacters": 52,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "title": "语义化标签",
+          "chunkIndex": 0,
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## 布局与语义化\n\n### 语义化标签\n\nheader、footer、article等"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-1",
+      "question": "“什么是数据库”主要讲解什么？",
+      "answer": "根据课程证据[1]，“什么是数据库”主要讲解**数据库基础概念**。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 229.02969999999914,
+      "modelTimeToFirstTokenMs": 6059.632799999999,
+      "timeToFirstTokenMs": 6288.8355999999985,
+      "generationDurationMs": 6271.6669,
+      "totalDurationMs": 6500.869699999999,
+      "outputCharacters": 34,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000061",
+          "title": "什么是数据库",
+          "chunkIndex": 0,
+          "contentHash": "1cea8e9ce11d33d991291cacf4b2a3bbcc2e6e33d0179973504e1fbe90cbd662",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000061",
+          "contentHash": "1cea8e9ce11d33d991291cacf4b2a3bbcc2e6e33d0179973504e1fbe90cbd662",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库入门\n\n## 数据库概念\n\n### 什么是数据库\n\n数据库基础概念"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "question": "“1.1数据类型、运算符与流程控制”主要讲解什么？",
+      "answer": "根据课程证据，1.1 小节的主题是 **数据类型、运算符与流程控制** [1]。但证据中仅包含标题，没有更详细的内容，因此无法进一步说明具体讲解了哪些知识点。如果你有关于数据类型、运算符或流程控制的具体问题，可以提出来，我会依据现有证据引导你思考。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 78.08759999999893,
+      "modelTimeToFirstTokenMs": 10888.392,
+      "timeToFirstTokenMs": 10966.770699999997,
+      "generationDurationMs": 11704.7543,
+      "totalDurationMs": 11783.132999999998,
+      "outputCharacters": 124,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "8bcec1e1-3c9a-413d-b9e2-9595ae93dd47",
+          "title": "1.1数据类型、运算符与流程控制",
+          "chunkIndex": 0,
+          "contentHash": "f2e94e4ae799b7c5bd771409c415d41db689ed0622ddc0906c28275a29318b33",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "8bcec1e1-3c9a-413d-b9e2-9595ae93dd47",
+          "contentHash": "f2e94e4ae799b7c5bd771409c415d41db689ed0622ddc0906c28275a29318b33",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# Java入门学习\n\n## 章节一：Java语言基础与核心语法\n\n### 1.1数据类型、运算符与流程控制\n\n数据类型、运算符与流程控制"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-1",
+      "question": "“1.1 认识数据库：数据管理的起点”主要讲解什么？",
+      "answer": "“1.1 认识数据库：数据管理的起点”主要讲解了以下内容：\n\n- **什么是数据库**：专门用来存储和管理数据的仓库，能永久保存、快速查找、支持多人同时使用、保证数据安全、方便数据分析。[1]\n- **数据库与 Excel 的对比**：数据库适合大型、复杂、多人共享的数据管理，而 Excel 适合小型、简单、个人使用的场景。[1]\n- **关系型数据库的基本概念**：数据以表格形式存储，介绍了表（Table）、列（Column）、行（Row）三个核心概念。[1]\n- **SQL 语言**：与数据库沟通的标准语言，简单易学、功能强大，分为 DQL、DML、DDL、DCL 四大类。[1]\n- **基础 SELECT 语句**：通过 `SELECT * FROM 表名` 查询所有列，`SELECT 列名 FROM 表名` 查询指定列，以及使用 `WHERE` 子句进行条件查询。[1]\n\n以上内容均来自课程证据 [1]。",
+      "answerScope": "course",
+      "evidenceQuality": "strong",
+      "contextDurationMs": 63.480600000002596,
+      "modelTimeToFirstTokenMs": 9484.822399999997,
+      "timeToFirstTokenMs": 9548.331999999999,
+      "generationDurationMs": 12132.671199999997,
+      "totalDurationMs": 12196.180799999998,
+      "outputCharacters": 412,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "title": "1.1 认识数据库：数据管理的起点",
+          "chunkIndex": 0,
+          "contentHash": "dfb259645a2dd36126e301ee49d6bd16f0e7857eb2ec238199fe44b37ce5cc68",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "dfb259645a2dd36126e301ee49d6bd16f0e7857eb2ec238199fe44b37ce5cc68",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库基础学习教程\n\n## 第一章：数据库基础概念\n\n### 1.1 认识数据库：数据管理的起点\n\n欢迎大家来到数据库的世界！在开始我们的学习之旅之前，让我们先思考一个问题：你平时是怎么管理数据的？可能是用 Excel 表格记录班级同学的信息，用记事本保存待办事项，或者用手机通讯录存储联系人。这些都是数据管理的方式，但当数据量变大、操作变复杂时，我们就需要一个更强大的工具 —— 这就是数据库。\n\n什么是数据库？\n\n简单来说，数据库就是一个专门用来存储和管理数据的仓库。就像现实生活中的仓库用来存放货物一样，数据库用来存放各种各样的数据。但数据库不仅仅是简单地 \"存放\" 数据，它还能让我们快速地查找、修改、删除和分析数据。\n\n想象一下，你手机里的通讯录就是一个小型数据库：它存储了成百上千个联系人的姓名、电话、邮箱等信息，你可以快速搜索某个人，添加新联系人，或者修改已有的信息。淘宝、微信、QQ 这些我们每天使用的应用，背后都有庞大的数据库在支撑，存储着亿万用户的信息。\n\n数据库能帮我们做什么？\n\n数据库的核心作用可以总结为以下几点：\n\n 1. 永久保存数据：数据一旦存入数据库，就会被安全地保存下来，不会因为关闭程序或重启电脑而丢失\n\n 2. 快速查找数据：即使有几百万条数据，数据库也能在几毫秒内找到你想要的信息\n\n 3. 多人同时使用：多个用户可以同时访问和操作数据库中的数据，互不干扰\n\n 4. 保证数据安全：可以设置不同的权限，防止数据被随意修改或泄露\n\n 5. 方便数据分析：可以轻松地对数据进行统计、汇总和分析\n\n----------------------------------------\n\n数据库 VS EXCEL：有什么不一样？\n\n很多同学会问：\"我用 Excel 也能存数据，为什么还要学数据库呢？\" 这是一个非常好的问题。让我们来对比一下：\n\n对比维度\n\nExcel\n\n数据库\n\n数据量\n\n一般几万行就会卡\n\n轻松处理百万、千万甚至上亿行数据\n\n并发访问\n\n只能一个人编辑\n\n支持成千上万人同时操作\n\n数据安全\n\n容易误删、误改\n\n有完善的权限控制和备份机制\n\n数据关联\n\n跨表关联很麻烦\n\n可以轻松建立表与表之间的关系\n\n程序调用\n\n很难被程序自动读取\n\n可以被各种程序方便地调用\n\n举个例子：如果学校要管理 10000 名学生的信息，包括基本信息、选课记录、考试成绩。用 Excel 的话，可能需要建几十个表格，查找某个学生的所有信息会非常麻烦。但用数据库，我们可以轻松地把这些信息关联起来，一秒钟就能查到某个学生的全部数据。\n\n记住：Excel 适合做小型、简单、个人使用的数据管理；数据库适合大型、复杂、多人共享的数据管理。\n\n请完成练习\n\n关系型数据库的基本概念\n\n现在主流的数据库大多是关系型数据库。什么是 \"关系型\" 呢？简单理解就是：数据以 \"表格\" 的形式存储，表与表之间可以建立关联关系。\n\n让我们来认识三个最基本的概念：\n\n1. 表（TABLE）\n\n表是数据库中存储数据的基本单位，就像 Excel 里的一个工作表。每个表都有一个名字，用来描述它存储什么数据。比如：\n\n * students 表：存储学生信息\n\n * courses 表：存储课程信息\n\n * scores 表：存储考试成绩\n\n2. 列（COLUMN）\n\n也叫 \"字段\"，是表中的每一列，描述数据的某一个属性。比如在students表中，我们可能有这些列：\n\n * id：学生编号\n\n * name：学生姓名\n\n * age：年龄\n\n * gender：性别\n\n * class：班级\n\n3. 行（ROW）\n\n也叫 \"记录\"，是表中的每一行，代表一条完整的数据。比如students表中的一行，就代表一个具体学生的全部信息。\n\n举个例子：一个学生表长这样：\n\nid（列）\n\nname（列）\n\nage（列）\n\ngender（列）\n\n1（行）\n\n张三\n\n18\n\n男\n\n2（行）\n\n李四\n\n19\n\n女\n\n3（行）\n\n王五\n\n18\n\n男\n\n在这个表中：\n\n * 有 4 个列：id, name, age, gender\n\n * 有 3 个行：3 个学生的数据\n\n * 整个这张表就是一个表\n\n请完成练习\n\nSQL 语言是什么？\n\n现在你可能会问：我们怎么和数据库 \"对话\" 呢？答案就是 ——SQL 语言。\n\nSQL 的全称是 Structured Query Language（结构化查询语言），它是专门用来和数据库沟通的语言。几乎所有的关系型数据库（MySQL、Oracle、SQL Server、PostgreSQL 等）都支持 SQL 语言。\n\nSQL 语言有几个非常棒的特点：\n\n * 简单易学：语法接近英语，关键字都是常见的英文单词\n\n * 功能强大：可以完成几乎所有的数据操作\n\n * 通用性强：学会了 SQL，就能操作各种数据库\n\n * 非过程化：你只需要说 \"要什么\"，不需要说 \"怎么做到\"\n\nSQL 语言主要分为四大类：\n\n 1. 查询（DQL）：从数据库中获取数据（我们最先学习）\n\n 2. 增删改（DML）：插入、修改、删除数据\n\n 3. 定义（DDL）：创建、修改数据库和表结构\n\n 4. 控制（DCL）：管理用户权限和事务\n\n最基础的 SELECT 语句入门\n\nSELECT 是 SQL 中最常用、最基础的语句，用来从数据库中查询数据。它的基本语法非常简单：\n\nSELECT 列名1, 列名2, ... FROM 表名;\n\n让我们通过几个例子来理解：\n\n例 1：查询所有列\n\nSELECT * FROM students;\n\n这里的 * 表示 \"所有列\"，这条语句会返回 students 表中所有学生的全部信息。\n\n例 2：查询指定列\n\nSELECT name, age FROM students;\n\n这条语句只会返回学生的姓名和年龄，其他列不会显示。\n\n例 3：带条件的查询\n\nSELECT name, age FROM students WHERE age > 18;\n\n加上 WHERE 子句后，就可以只查询满足条件的数据。这条语句会返回所有年龄大于 18 岁的学生。\n\n小技巧：\n\n * SQL 关键字不区分大小写：select 和 SELECT 效果一样\n\n * 多条 SQL 语句用分号 ; 分隔\n\n * 用 -- 可以写单行注释，帮助你理解代码\n\n请完成练习\n\n📚 小节总结\n\n恭喜你完成了数据库入门的第一小节学习！让我们来回顾一下今天学到的核心知识：\n\n 1. 什么是数据库：专门存储和管理数据的仓库，支持海量数据和并发访问\n\n 2. 数据库 vs Excel：数据库适合大型、复杂、多人共享的数据管理场景\n\n 3. 三个基本概念：\n\n    1. 表（Table）：存储数据的容器\n\n    2. 列（Column）：描述数据的属性（字段）\n\n    3. 行（Row）：一条完整的数据记录\n\n 4. SQL 语言：和数据库沟通的标准语言，简单易学、功能强大\n\n 5. 基础 SELECT 语句：\n\n    1. SELECT * FROM 表名 查询所有数据\n\n    2. SELECT 列名 FROM 表名 查询指定列\n\n    3. SELECT ... FROM ... WHERE 条件 带条件查询\n\n这只是数据库学习的起点，接下来我们会深入学习更多 SQL 语句，掌握更复杂的数据操作。记住：多练习、多动手，SQL 是一门越用越熟练的技能！\n\n下节预告：下一节课我们将学习如何创建数据库和表，以及如何插入、修改和删除数据。"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000014-2",
+      "question": "在实际编程中，应该如何应用“语义化标签”中的核心知识？",
+      "answer": "### 课程内结论\n课程在“语义化标签”部分提到了 `header`、`footer`、`article` 等标签名称 [1]。由此可以看出，课程介绍了这些用于描述页面结构的语义化标签，但未进一步说明具体应用方式。\n\n### 通用补充（非课程原文）\n在实际编程中，应用语义化标签的核心思路是**用标签的含义而非样式来组织内容**。例如：\n- `<header>` 通常用于页面或区块的头部，包含标题、导航等。\n- `<footer>` 用于底部，包含版权、联系信息等。\n- `<article>` 用于独立的内容单元，如博客文章、新闻条目。\n- 其他常见标签还包括 `<nav>`（导航）、`<section>`（主题分组）、`<aside>`（侧边栏或补充内容）等。\n\n这样做的好处是：提高代码可读性、方便搜索引擎理解页面结构、辅助屏幕阅读器等无障碍工具。实践中，只需将原本用 `<div>` 包裹的区域替换为对应的语义标签即可，无需额外样式。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 14.548399999999674,
+      "modelTimeToFirstTokenMs": 8976.8583,
+      "timeToFirstTokenMs": 8991.413200000003,
+      "generationDurationMs": 11770.884699999995,
+      "totalDurationMs": 11785.439599999998,
+      "outputCharacters": 423,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "title": "语义化标签",
+          "chunkIndex": 0,
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## 布局与语义化\n\n### 语义化标签\n\nheader、footer、article等"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-2",
+      "question": "在实际编程中，应该如何应用“什么是数据库”中的核心知识？",
+      "answer": "### 课程内结论\n课程证据仅包含标题“什么是数据库”和描述“数据库基础概念”[1]，由此可以看出该小节旨在介绍数据库的基本定义和核心思想，但证据未给出具体的定义、属性或应用方法。\n\n### 通用补充（非课程原文）\n在实际编程中，“什么是数据库”的核心知识通常指理解数据库作为结构化数据存储与管理系统的角色。应用时需关注：\n- **选择数据库类型**：根据数据模型选择关系型（如MySQL、PostgreSQL）或非关系型（如MongoDB、Redis）。\n- **设计表结构**：合理定义表、字段、主键和外键，确保数据一致性和查询效率。\n- **使用SQL**：掌握增删改查（CRUD）语句，以及过滤、排序、聚合等操作。\n- **理解事务与索引**：事务保证数据完整性，索引加速查询，但需权衡写入性能。\n- **连接与驱动**：在编程语言中使用对应驱动（如Python的`psycopg2`、Java的JDBC）建立连接并执行操作。\n\n这些是数据库应用的基础，具体实现需结合项目需求和最佳实践。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 16.543499999999767,
+      "modelTimeToFirstTokenMs": 10488.847100000003,
+      "timeToFirstTokenMs": 10505.3992,
+      "generationDurationMs": 13726.445199999998,
+      "totalDurationMs": 13742.997299999995,
+      "outputCharacters": 448,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000061",
+          "title": "什么是数据库",
+          "chunkIndex": 0,
+          "contentHash": "1cea8e9ce11d33d991291cacf4b2a3bbcc2e6e33d0179973504e1fbe90cbd662",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000061",
+          "contentHash": "1cea8e9ce11d33d991291cacf4b2a3bbcc2e6e33d0179973504e1fbe90cbd662",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库入门\n\n## 数据库概念\n\n### 什么是数据库\n\n数据库基础概念"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "question": "在实际编程中，应该如何应用“1.1数据类型、运算符与流程控制”中的核心知识？",
+      "answer": "### 课程内结论\n课程证据仅提供了本节标题“数据类型、运算符与流程控制”[1]。由此可以看出，本节核心知识围绕Java的数据类型、运算符以及流程控制结构展开[1]。\n\n### 通用补充（非课程原文）\n在实际编程中，这三部分知识是构建程序逻辑的基础：\n- **数据类型**：用于定义变量能存储的数据种类（如整数、浮点数、布尔值等），确保内存使用和操作的正确性。例如，存储年龄用 `int`，存储价格用 `double`。\n- **运算符**：对数据进行运算（算术、比较、逻辑、赋值等）。例如，用 `+` 拼接字符串或计算总和，用 `==` 判断条件是否成立。\n- **流程控制**：决定代码的执行路径。`if-else` 用于条件分支，`for`/`while` 用于重复执行某段逻辑（如遍历数组或处理用户输入）。\n\n实际应用时，通常先根据业务需求选择合适的数据类型，然后用运算符处理数据，最后用流程控制组织代码的执行顺序，三者配合完成具体功能。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 14.374700000000303,
+      "modelTimeToFirstTokenMs": 9965.806899999996,
+      "timeToFirstTokenMs": 9980.186699999998,
+      "generationDurationMs": 13203.890399999997,
+      "totalDurationMs": 13218.270199999999,
+      "outputCharacters": 423,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "8bcec1e1-3c9a-413d-b9e2-9595ae93dd47",
+          "title": "1.1数据类型、运算符与流程控制",
+          "chunkIndex": 0,
+          "contentHash": "f2e94e4ae799b7c5bd771409c415d41db689ed0622ddc0906c28275a29318b33",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "8bcec1e1-3c9a-413d-b9e2-9595ae93dd47",
+          "contentHash": "f2e94e4ae799b7c5bd771409c415d41db689ed0622ddc0906c28275a29318b33",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# Java入门学习\n\n## 章节一：Java语言基础与核心语法\n\n### 1.1数据类型、运算符与流程控制\n\n数据类型、运算符与流程控制"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "question": "在实际编程中，应该如何应用“1.1 认识数据库：数据管理的起点”中的核心知识？",
+      "answer": "### 课程内结论\n- 数据库是专门用来存储和管理数据的仓库，能永久保存数据、快速查找、支持多人同时使用、保证数据安全、方便数据分析 [1]。\n- 数据库与 Excel 的对比：数据库适合大型、复杂、多人共享的数据管理；Excel 适合小型、简单、个人使用的场景 [1]。\n- 关系型数据库以“表格”形式存储数据，基本概念包括表（Table，存储数据的容器）、列（Column，描述数据的属性/字段）、行（Row，一条完整的数据记录）[1]。\n- SQL（结构化查询语言）是专门和数据库沟通的语言，简单易学、功能强大、通用性强、非过程化（只需说明“要什么”，不需说明“怎么做到”）[1]。\n- 基础 SELECT 语句语法：`SELECT 列名 FROM 表名`；使用 `*` 查询所有列；使用 `WHERE` 子句添加条件 [1]。\n\n### 通用补充（非课程原文）\n在实际编程中，应用这些核心知识通常包括：\n- **设计表结构**：根据业务需求定义表名、列名及数据类型（如整数、字符串、日期等），确定主键和表间关联。\n- **编写 SQL 语句**：使用 SELECT 查询数据，INSERT 插入新记录，UPDATE 修改已有数据，DELETE 删除数据；通过 WHERE 条件精确操作。\n- **连接数据库**：在应用程序（Java、Python、Node.js 等）中通过数据库驱动（如 JDBC、psycopg2、mysql2）或 ORM 框架（如 Hibernate、SQLAlchemy）建立连接并执行 SQL。\n- **管理并发与安全**：利用数据库的事务（保证多步操作原子性）和权限控制（限制用户访问范围）确保数据一致性和安全性。\n- **选择数据库系统**：根据数据量、并发需求、团队技术栈选用 MySQL、PostgreSQL、Oracle 等关系型数据库，并熟悉其特有功能。",
+      "answerScope": "extended",
+      "evidenceQuality": "strong",
+      "contextDurationMs": 46.44919999999547,
+      "modelTimeToFirstTokenMs": 13173.491600000001,
+      "timeToFirstTokenMs": 13219.948499999999,
+      "generationDurationMs": 19578.8013,
+      "totalDurationMs": 19625.258199999997,
+      "outputCharacters": 800,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "title": "1.1 认识数据库：数据管理的起点",
+          "chunkIndex": 0,
+          "contentHash": "dfb259645a2dd36126e301ee49d6bd16f0e7857eb2ec238199fe44b37ce5cc68",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "dfb259645a2dd36126e301ee49d6bd16f0e7857eb2ec238199fe44b37ce5cc68",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库基础学习教程\n\n## 第一章：数据库基础概念\n\n### 1.1 认识数据库：数据管理的起点\n\n欢迎大家来到数据库的世界！在开始我们的学习之旅之前，让我们先思考一个问题：你平时是怎么管理数据的？可能是用 Excel 表格记录班级同学的信息，用记事本保存待办事项，或者用手机通讯录存储联系人。这些都是数据管理的方式，但当数据量变大、操作变复杂时，我们就需要一个更强大的工具 —— 这就是数据库。\n\n什么是数据库？\n\n简单来说，数据库就是一个专门用来存储和管理数据的仓库。就像现实生活中的仓库用来存放货物一样，数据库用来存放各种各样的数据。但数据库不仅仅是简单地 \"存放\" 数据，它还能让我们快速地查找、修改、删除和分析数据。\n\n想象一下，你手机里的通讯录就是一个小型数据库：它存储了成百上千个联系人的姓名、电话、邮箱等信息，你可以快速搜索某个人，添加新联系人，或者修改已有的信息。淘宝、微信、QQ 这些我们每天使用的应用，背后都有庞大的数据库在支撑，存储着亿万用户的信息。\n\n数据库能帮我们做什么？\n\n数据库的核心作用可以总结为以下几点：\n\n 1. 永久保存数据：数据一旦存入数据库，就会被安全地保存下来，不会因为关闭程序或重启电脑而丢失\n\n 2. 快速查找数据：即使有几百万条数据，数据库也能在几毫秒内找到你想要的信息\n\n 3. 多人同时使用：多个用户可以同时访问和操作数据库中的数据，互不干扰\n\n 4. 保证数据安全：可以设置不同的权限，防止数据被随意修改或泄露\n\n 5. 方便数据分析：可以轻松地对数据进行统计、汇总和分析\n\n----------------------------------------\n\n数据库 VS EXCEL：有什么不一样？\n\n很多同学会问：\"我用 Excel 也能存数据，为什么还要学数据库呢？\" 这是一个非常好的问题。让我们来对比一下：\n\n对比维度\n\nExcel\n\n数据库\n\n数据量\n\n一般几万行就会卡\n\n轻松处理百万、千万甚至上亿行数据\n\n并发访问\n\n只能一个人编辑\n\n支持成千上万人同时操作\n\n数据安全\n\n容易误删、误改\n\n有完善的权限控制和备份机制\n\n数据关联\n\n跨表关联很麻烦\n\n可以轻松建立表与表之间的关系\n\n程序调用\n\n很难被程序自动读取\n\n可以被各种程序方便地调用\n\n举个例子：如果学校要管理 10000 名学生的信息，包括基本信息、选课记录、考试成绩。用 Excel 的话，可能需要建几十个表格，查找某个学生的所有信息会非常麻烦。但用数据库，我们可以轻松地把这些信息关联起来，一秒钟就能查到某个学生的全部数据。\n\n记住：Excel 适合做小型、简单、个人使用的数据管理；数据库适合大型、复杂、多人共享的数据管理。\n\n请完成练习\n\n关系型数据库的基本概念\n\n现在主流的数据库大多是关系型数据库。什么是 \"关系型\" 呢？简单理解就是：数据以 \"表格\" 的形式存储，表与表之间可以建立关联关系。\n\n让我们来认识三个最基本的概念：\n\n1. 表（TABLE）\n\n表是数据库中存储数据的基本单位，就像 Excel 里的一个工作表。每个表都有一个名字，用来描述它存储什么数据。比如：\n\n * students 表：存储学生信息\n\n * courses 表：存储课程信息\n\n * scores 表：存储考试成绩\n\n2. 列（COLUMN）\n\n也叫 \"字段\"，是表中的每一列，描述数据的某一个属性。比如在students表中，我们可能有这些列：\n\n * id：学生编号\n\n * name：学生姓名\n\n * age：年龄\n\n * gender：性别\n\n * class：班级\n\n3. 行（ROW）\n\n也叫 \"记录\"，是表中的每一行，代表一条完整的数据。比如students表中的一行，就代表一个具体学生的全部信息。\n\n举个例子：一个学生表长这样：\n\nid（列）\n\nname（列）\n\nage（列）\n\ngender（列）\n\n1（行）\n\n张三\n\n18\n\n男\n\n2（行）\n\n李四\n\n19\n\n女\n\n3（行）\n\n王五\n\n18\n\n男\n\n在这个表中：\n\n * 有 4 个列：id, name, age, gender\n\n * 有 3 个行：3 个学生的数据\n\n * 整个这张表就是一个表\n\n请完成练习\n\nSQL 语言是什么？\n\n现在你可能会问：我们怎么和数据库 \"对话\" 呢？答案就是 ——SQL 语言。\n\nSQL 的全称是 Structured Query Language（结构化查询语言），它是专门用来和数据库沟通的语言。几乎所有的关系型数据库（MySQL、Oracle、SQL Server、PostgreSQL 等）都支持 SQL 语言。\n\nSQL 语言有几个非常棒的特点：\n\n * 简单易学：语法接近英语，关键字都是常见的英文单词\n\n * 功能强大：可以完成几乎所有的数据操作\n\n * 通用性强：学会了 SQL，就能操作各种数据库\n\n * 非过程化：你只需要说 \"要什么\"，不需要说 \"怎么做到\"\n\nSQL 语言主要分为四大类：\n\n 1. 查询（DQL）：从数据库中获取数据（我们最先学习）\n\n 2. 增删改（DML）：插入、修改、删除数据\n\n 3. 定义（DDL）：创建、修改数据库和表结构\n\n 4. 控制（DCL）：管理用户权限和事务\n\n最基础的 SELECT 语句入门\n\nSELECT 是 SQL 中最常用、最基础的语句，用来从数据库中查询数据。它的基本语法非常简单：\n\nSELECT 列名1, 列名2, ... FROM 表名;\n\n让我们通过几个例子来理解：\n\n例 1：查询所有列\n\nSELECT * FROM students;\n\n这里的 * 表示 \"所有列\"，这条语句会返回 students 表中所有学生的全部信息。\n\n例 2：查询指定列\n\nSELECT name, age FROM students;\n\n这条语句只会返回学生的姓名和年龄，其他列不会显示。\n\n例 3：带条件的查询\n\nSELECT name, age FROM students WHERE age > 18;\n\n加上 WHERE 子句后，就可以只查询满足条件的数据。这条语句会返回所有年龄大于 18 岁的学生。\n\n小技巧：\n\n * SQL 关键字不区分大小写：select 和 SELECT 效果一样\n\n * 多条 SQL 语句用分号 ; 分隔\n\n * 用 -- 可以写单行注释，帮助你理解代码\n\n请完成练习\n\n📚 小节总结\n\n恭喜你完成了数据库入门的第一小节学习！让我们来回顾一下今天学到的核心知识：\n\n 1. 什么是数据库：专门存储和管理数据的仓库，支持海量数据和并发访问\n\n 2. 数据库 vs Excel：数据库适合大型、复杂、多人共享的数据管理场景\n\n 3. 三个基本概念：\n\n    1. 表（Table）：存储数据的容器\n\n    2. 列（Column）：描述数据的属性（字段）\n\n    3. 行（Row）：一条完整的数据记录\n\n 4. SQL 语言：和数据库沟通的标准语言，简单易学、功能强大\n\n 5. 基础 SELECT 语句：\n\n    1. SELECT * FROM 表名 查询所有数据\n\n    2. SELECT 列名 FROM 表名 查询指定列\n\n    3. SELECT ... FROM ... WHERE 条件 带条件查询\n\n这只是数据库学习的起点，接下来我们会深入学习更多 SQL 语句，掌握更复杂的数据操作。记住：多练习、多动手，SQL 是一门越用越熟练的技能！\n\n下节预告：下一节课我们将学习如何创建数据库和表，以及如何插入、修改和删除数据。"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-1",
+      "question": "“div与span”主要讲解什么？",
+      "answer": "根据课程证据，**“div与span”** 小节主要讲解 **div** 和 **span** 这两个 HTML 元素，并介绍它们分别作为 **区块元素** 与 **行内元素** 的基本概念 [1]。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 15.802999999999884,
+      "modelTimeToFirstTokenMs": 5027.820099999997,
+      "timeToFirstTokenMs": 5043.631399999998,
+      "generationDurationMs": 5680.017,
+      "totalDurationMs": 5695.828300000001,
+      "outputCharacters": 100,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "title": "div与span",
+          "chunkIndex": 0,
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## 布局与语义化\n\n### div与span\n\n区块与行内元素"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-1",
+      "question": "“为什么使用数据库”主要讲解什么？",
+      "answer": "“为什么使用数据库”主要讲解**数据存储与管理优势**[1]。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 14.035100000000966,
+      "modelTimeToFirstTokenMs": 2196.958399999996,
+      "timeToFirstTokenMs": 2211.0032999999967,
+      "generationDurationMs": 2382.6973,
+      "totalDurationMs": 2396.7422000000006,
+      "outputCharacters": 31,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000062",
+          "title": "为什么使用数据库",
+          "chunkIndex": 0,
+          "contentHash": "0438a3d1eb2518a66123b55e4365132e35fa83d5370f7f9563f002bec425a87b",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000062",
+          "contentHash": "0438a3d1eb2518a66123b55e4365132e35fa83d5370f7f9563f002bec425a87b",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库入门\n\n## 数据库概念\n\n### 为什么使用数据库\n\n数据存储与管理优势"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-1",
+      "question": "“1.3判断闰年”主要讲解什么？",
+      "answer": "根据课程证据，小节“1.3判断闰年”主要讲解如何编写一个判断闰年的方法，规则是：能被4整除但不能被100整除，或者能被400整除。[1]",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 13.100299999998242,
+      "modelTimeToFirstTokenMs": 28806.816400000003,
+      "timeToFirstTokenMs": 28819.921400000007,
+      "generationDurationMs": 29284.41079999999,
+      "totalDurationMs": 29297.515799999994,
+      "outputCharacters": 68,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "e747215f-ca4a-465b-bb66-495071e803d4",
+          "title": "1.3判断闰年",
+          "chunkIndex": 0,
+          "contentHash": "881d518a9fef886253646221788424d68c283b4c6579b12d9657d47f58992895",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "e747215f-ca4a-465b-bb66-495071e803d4",
+          "contentHash": "881d518a9fef886253646221788424d68c283b4c6579b12d9657d47f58992895",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# Java入门学习\n\n## 章节一：Java语言基础与核心语法\n\n### 1.3判断闰年\n\n请编写一个方法 isLeapYear(int year)，判断某一年是否为闰年。规则： 能被4整除但不能被100整除，或者能被400整除。"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-1",
+      "question": "“1.2 数据库与数据表创建、数据增删改”主要讲解什么？",
+      "answer": "“1.2 数据库与数据表创建、数据增删改”主要讲解了数据库最核心的基础操作，包括三大部分：\n\n1. **数据库的创建与删除**：使用 `CREATE DATABASE` 创建数据库，`USE` 切换数据库，`DROP DATABASE` 删除数据库，并强调编码设置（如 `utf8mb4`）和 `IF NOT EXISTS` 的规范写法。\n2. **数据表的创建与基础规则**：掌握 `INT`、`VARCHAR`、`DATE` 三种核心数据类型，使用 `CREATE TABLE` 定义表结构，并指定字符集。\n3. **数据增删改（DML）**：使用 `INSERT INTO` 新增数据，`UPDATE SET` 配合 `WHERE` 修改数据，`DELETE FROM` 配合 `WHERE` 删除数据，并强调必须加 `WHERE` 条件以避免全表操作。\n\n以上内容是该小节的核心知识点，是后续所有复杂数据库操作的基础 [1]。",
+      "answerScope": "course",
+      "evidenceQuality": "strong",
+      "contextDurationMs": 38.701700000005076,
+      "modelTimeToFirstTokenMs": 18026.09689999999,
+      "timeToFirstTokenMs": 18064.805199999995,
+      "generationDurationMs": 23029.155899999998,
+      "totalDurationMs": 23067.864200000004,
+      "outputCharacters": 417,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "title": "1.2 数据库与数据表创建、数据增删改",
+          "chunkIndex": 0,
+          "contentHash": "ad329c1df6f0603070205de5da5bc6e82f4aec698fe99baeae2285d311c984aa",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "ad329c1df6f0603070205de5da5bc6e82f4aec698fe99baeae2285d311c984aa",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库基础学习教程\n\n## 第一章：数据库基础概念\n\n### 1.2 数据库与数据表创建、数据增删改\n\n在上一小节中，我们学会了数据库基础概念、区分了数据库与Excel的差异，同时掌握了基础的SELECT查询语句，能够从数据表中查询数据。但想要熟练使用数据库，只会查询远远不够。\n\n本节课我们将从零开始，学习数据库的核心基础操作：手动创建数据库、创建数据表，以及对数据进行新增、修改、删除操作。这四类操作是数据库最核心的基础能力，也是后续所有复杂数据库操作的前提，是每位学习者必须熟练掌握的重点内容。\n\n一、数据库的创建与删除\n\n1. 数据库基本操作概述\n\n数据库就像一个文件夹，而我们后续创建的数据表、存储的数据，都存放在这个文件夹中。想要使用数据表，第一步必须先创建对应的数据库。所有关系型数据库的数据库操作语法基本统一，简单易懂。\n\n2. 创建数据库\n\n我们使用 CREATE DATABASE 语句创建数据库，这是DDL（数据定义语言）的核心语句之一，用于定义数据库结构。\n\n基础语法：\n\nCREATE DATABASE 数据库名;\n\n标准规范语法（推荐使用）：\n\nCREATE DATABASE IF NOT EXISTS 数据库名 DEFAULT CHARSET utf8mb4;\n\n语法解析：\n\n * IF NOT EXISTS：判断数据库是否不存在，不存在则创建，避免重复创建报错，是实操必备写法\n\n * DEFAULT CHARSET utf8mb4：设置数据库默认编码为utf8mb4，支持所有中文、特殊符号和表情符号，彻底解决中文乱码问题\n\n示例：创建一个名为school的学校数据库\n\nCREATE DATABASE IF NOT EXISTS school DEFAULT CHARSET utf8mb4;\n\n3. 查看与使用数据库\n\n创建数据库后，需要切换到对应数据库，才能在其中创建数据表、操作数据。\n\n查看所有数据库：\n\nSHOW DATABASES;\n\n切换/使用指定数据库：\n\nUSE 数据库名;\n\n示例：切换到school数据库\n\nUSE school;\n\n4. 删除数据库\n\n对于无用的数据库，可使用 DROP DATABASE 语句删除，删除后数据库及内部所有数据、数据表会被清空，不可恢复，操作需谨慎。\n\n基础语法：\n\nDROP DATABASE IF EXISTS 数据库名;\n\n请完成练习\n\n二、数据表的创建与基础规则\n\n数据库创建完成后，核心操作就是创建数据表。数据表是存储数据的最小单元，创建数据表时，必须定义表名、列名、数据类型，也就是定义每一列存储什么类型的数据。\n\n1. 常用基础数据类型\n\n零基础入门只需掌握三种核心数据类型，满足90%基础场景：\n\n * INT：整型，用于存储数字（年龄、编号、分数等）\n\n * VARCHAR(长度)：字符串类型，用于存储文字（姓名、班级、性别等），括号内指定最大字符长度\n\n * DATE：日期类型，用于存储年月日（入学时间、生日等）\n\n2. 创建数据表语法\n\n使用 CREATE TABLE 语句创建数据表，属于DDL语句。\n\n基础语法：\n\nCREATE TABLE IF NOT EXISTS 表名 (\n    列名1 数据类型,\n    列名2 数据类型,\n    列名3 数据类型\n) DEFAULT CHARSET utf8mb4;\n\n实操示例：在school数据库中创建学生表students\n\nCREATE TABLE IF NOT EXISTS students (\n    id INT,\n    name VARCHAR(20),\n    age INT,\n    gender VARCHAR(10),\n    class VARCHAR(20)\n) DEFAULT CHARSET utf8mb4;\n\n该语句创建的学生表，包含id（学生编号）、name（姓名）、age（年龄）、gender（性别）、class（班级）五个字段，和上节课练习的表结构完全对应。\n\n请完成练习\n\n三、数据增删改核心操作（DML）\n\n创建好数据库和数据表后，我们就可以对表内数据进行操作。数据新增、修改、删除、查询是数据库四大核心操作，其中增删改属于DML数据操作语言。\n\n1. 新增数据（INSERT）\n\n使用 INSERT INTO 语句向数据表中添加新数据。\n\n语法1：指定字段新增（推荐，灵活稳定）\n\nINSERT INTO 表名(字段1,字段2,字段3) VALUES(值1,值2,值3);\n\n语法2：全字段新增\n\nINSERT INTO 表名 VALUES(所有字段值);\n\n示例：向students表新增一条学生数据\n\nINSERT INTO students(id,name,age,gender,class) VALUES(1,'张三',18,'男','一班');\n\n2. 修改数据（UPDATE）\n\n使用 UPDATE 语句修改表中已存在的数据，必须搭配WHERE条件，否则会修改全表数据。\n\n基础语法：\n\nUPDATE 表名 SET 字段1=新值,字段2=新值 WHERE 筛选条件;\n\n示例：将张三的年龄修改为19岁\n\nUPDATE students SET age=19 WHERE name='张三';\n\n3. 删除数据（DELETE）\n\n使用 DELETE FROM 语句删除表中数据，同样需要搭配WHERE条件，否则会清空全表数据。\n\n基础语法：\n\nDELETE FROM 表名 WHERE 筛选条件;\n\n示例：删除姓名为张三的学生数据\n\nDELETE FROM students WHERE name='张三';\n\n重点注意事项\n\n1. UPDATE、DELETE 语句必须加WHERE条件，否则会操作全表数据，造成数据丢失\n2. 字符串类型的值必须用单引号包裹，数字无需引号\n3. 所有SQL语句关键字建议大写，语句以分号结尾\n\n请完成练习\n\n📚 小节总结\n\n本节课我们完成了数据库入门的核心实操学习，掌握了从零搭建数据库、数据表，以及数据增删改的全部基础操作，核心知识点总结如下：\n\n 1. 数据库操作：使用CREATE创建数据库、USE切换数据库、DROP删除数据库，掌握编码设置规范\n\n 2. 数据表操作：掌握INT、VARCHAR、DATE核心数据类型，熟练使用CREATE TABLE创建自定义数据表\n\n 3. 数据增删改：\n\n    1. 新增：INSERT INTO 插入单条数据\n\n    2. 修改：UPDATE SET 精准修改数据，必加WHERE条件\n\n    3. 删除：DELETE FROM 删除指定数据，谨慎操作\n\n本节课的所有操作都是数据库实操的基础，后续所有复杂查询、多表关联、高级功能都建立在本节课内容之上，需要多动手实操、熟练掌握语法规范。\n\n----------------------------------------\n\n下节预告：下一节课我们将学习SQL高级查询，掌握模糊查询、排序查询、限制查询条数的核心语法，实现更精准、多样化的数据筛选。"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-2",
+      "question": "在实际编程中，应该如何应用“div与span”中的核心知识？",
+      "answer": "### 课程内结论\n- 课程在“布局与语义化”章节下介绍了 `div` 与 `span`，并指出它们分别对应“区块与行内元素”[1]。由此可以看出，课程将 `div` 归类为区块元素，`span` 归类为行内元素。\n\n### 通用补充（非课程原文）\n- **`div`（区块元素）**：常用于搭建页面布局的容器，例如将导航栏、内容区、页脚等划分为独立的区块。它默认占据一整行，可设置宽高、内外边距等盒模型属性。\n- **`span`（行内元素）**：常用于包裹文本中的一小段内容，以便单独应用样式（如改变颜色、字体、背景）。它不会打断文本流，只占据内容所需的宽度，且无法直接设置宽高。\n- **实际应用示例**：\n  ```html\n  <!-- 使用 div 划分页面区域 -->\n  <div class=\"header\">网站标题</div>\n  <div class=\"content\">\n    <p>这是一段文字，其中<span class=\"highlight\">这部分需要高亮</span>。</p>\n  </div>\n  ```\n- **注意**：`div` 和 `span` 本身没有语义，仅用于样式和布局。现代 HTML 推荐优先使用语义化标签（如 `<header>`、`<nav>`、`<article>`），仅在无合适语义标签时才使用 `div` 或 `span`。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 12.831700000002456,
+      "modelTimeToFirstTokenMs": 27897.392199999995,
+      "timeToFirstTokenMs": 27910.229999999996,
+      "generationDurationMs": 33059.2131,
+      "totalDurationMs": 33072.0509,
+      "outputCharacters": 597,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "title": "div与span",
+          "chunkIndex": 0,
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## 布局与语义化\n\n### div与span\n\n区块与行内元素"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-2",
+      "question": "在实际编程中，应该如何应用“为什么使用数据库”中的核心知识？",
+      "answer": "### 课程内结论\n- 课程指出数据库用于数据存储与管理，并具有优势 [1]。  \n  证据仅包含标题与“数据存储与管理优势”这一概括性描述，未列出具体优势或应用细节，因此无法进一步推导。\n\n### 通用补充（非课程原文）\n在实际编程中，“为什么使用数据库”的核心在于利用数据库提供的持久化、并发控制、数据一致性、高效查询等能力，替代简单的文件存储或内存数据结构。常见应用包括：\n\n- **持久化存储**：将程序运行产生的数据写入数据库，确保进程重启后数据不丢失。\n- **并发访问**：数据库内置锁和事务机制，可安全处理多用户同时读写。\n- **数据一致性**：通过约束、事务（ACID）保证数据完整，避免脏写或部分更新。\n- **高效查询**：使用索引、SQL 语句快速检索和聚合数据，无需手动遍历文件。\n- **扩展性**：关系型数据库支持规范化设计减少冗余；非关系型数据库适合高并发、灵活模式场景。\n\n实际编程中，应根据业务需求选择数据库类型（如 MySQL、PostgreSQL、MongoDB），设计合理的表结构或文档模式，并利用 ORM 框架（如 SQLAlchemy、Prisma）简化操作，同时注意索引优化和事务边界。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 13.877500000002328,
+      "modelTimeToFirstTokenMs": 14386.394400000005,
+      "timeToFirstTokenMs": 14400.277100000007,
+      "generationDurationMs": 18232.588799999998,
+      "totalDurationMs": 18246.4715,
+      "outputCharacters": 518,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000062",
+          "title": "为什么使用数据库",
+          "chunkIndex": 0,
+          "contentHash": "0438a3d1eb2518a66123b55e4365132e35fa83d5370f7f9563f002bec425a87b",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000062",
+          "contentHash": "0438a3d1eb2518a66123b55e4365132e35fa83d5370f7f9563f002bec425a87b",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库入门\n\n## 数据库概念\n\n### 为什么使用数据库\n\n数据存储与管理优势"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-2",
+      "question": "在实际编程中，应该如何应用“1.3判断闰年”中的核心知识？",
+      "answer": "### 课程内结论\n- 课程要求编写一个方法 `isLeapYear(int year)`，判断某一年是否为闰年 [1]。\n- 判断规则为：**能被4整除但不能被100整除，或者能被400整除** [1]。\n\n### 通用补充（非课程原文）\n在实际编程中，闰年判断最常见的应用场景是**日期处理**：\n- 计算某个月份的天数（如2月是28天还是29天）。\n- 验证用户输入的日期是否合法（如2月29日只在闰年有效）。\n- 计算两个日期之间的天数差，或推算某天之后/之前的日期。\n\nJava标准库已提供现成方法（如 `java.time.Year.isLeap()`），但理解底层规则有助于：\n- 在没有标准库的旧系统或自定义日期类中自行实现。\n- 避免因规则理解错误（如误用“能被4整除就是闰年”）导致日期计算偏差。\n\n如果需要自己实现，可直接将规则翻译为条件语句：\n```java\npublic static boolean isLeapYear(int year) {\n    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);\n}\n```\n注意：该规则适用于**公历（格里高利历）**，部分历史年份或特殊历法可能不同，但绝大多数现代编程场景均采用此规则。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 11.71360000000277,
+      "modelTimeToFirstTokenMs": 5109.985099999991,
+      "timeToFirstTokenMs": 5121.705000000002,
+      "generationDurationMs": 12104.122399999993,
+      "totalDurationMs": 12115.842300000004,
+      "outputCharacters": 568,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "e747215f-ca4a-465b-bb66-495071e803d4",
+          "title": "1.3判断闰年",
+          "chunkIndex": 0,
+          "contentHash": "881d518a9fef886253646221788424d68c283b4c6579b12d9657d47f58992895",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "e747215f-ca4a-465b-bb66-495071e803d4",
+          "contentHash": "881d518a9fef886253646221788424d68c283b4c6579b12d9657d47f58992895",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# Java入门学习\n\n## 章节一：Java语言基础与核心语法\n\n### 1.3判断闰年\n\n请编写一个方法 isLeapYear(int year)，判断某一年是否为闰年。规则： 能被4整除但不能被100整除，或者能被400整除。"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-2",
+      "question": "在实际编程中，应该如何应用“1.2 数据库与数据表创建、数据增删改”中的核心知识？",
+      "answer": "### 课程内结论\n根据课程证据，1.2 小节的核心知识包括：\n\n- **数据库创建与删除**：使用 `CREATE DATABASE IF NOT EXISTS 数据库名 DEFAULT CHARSET utf8mb4` 创建数据库；使用 `USE 数据库名` 切换数据库；使用 `DROP DATABASE IF EXISTS 数据库名` 删除数据库 [1]。\n- **数据表创建**：使用 `CREATE TABLE IF NOT EXISTS 表名 (列名 数据类型, ...) DEFAULT CHARSET utf8mb4` 创建数据表，需掌握 `INT`、`VARCHAR(长度)`、`DATE` 三种核心数据类型 [1]。\n- **数据增删改（DML）**：\n  - 新增：`INSERT INTO 表名(字段1,字段2,...) VALUES(值1,值2,...)`（推荐指定字段）[1]。\n  - 修改：`UPDATE 表名 SET 字段=新值 WHERE 条件`（必须加 WHERE）[1]。\n  - 删除：`DELETE FROM 表名 WHERE 条件`（必须加 WHERE）[1]。\n- **注意事项**：字符串值用单引号，数字不用；SQL 关键字建议大写，语句以分号结尾 [1]。\n\n由此可以看出，这些操作是数据库实操的基础，后续复杂查询、多表关联等都建立在此之上 [1]。\n\n### 通用补充（非课程原文）\n在实际编程中，上述知识通常通过以下方式应用：\n\n1. **连接数据库**：应用程序（如 Python、Java、Node.js）使用数据库驱动（如 `mysql-connector-python`、`JDBC`）连接到已创建的数据库，然后执行 SQL 语句。\n2. **参数化查询**：执行增删改时，使用参数化查询（如 `?` 占位符）防止 SQL 注入，而不是直接拼接字符串。\n3. **事务管理**：多条增删改操作常放在事务中（`BEGIN` / `COMMIT` / `ROLLBACK`），保证数据一致性。\n4. **ORM 框架**：许多项目使用 ORM（如 SQLAlchemy、Hibernate、Prisma）将数据表映射为对象，自动生成 SQL，但底层仍依赖本节的基本语法。\n5. **备份与谨慎操作**：`DROP` 和 `DELETE` 在生产环境需格外小心，通常先备份或使用软删除（添加 `is_deleted` 字段）代替物理删除。\n\n这些实践并非课程原文，而是行业通用做法，可帮助你在真实项目中安全、高效地运用本节知识。",
+      "answerScope": "extended",
+      "evidenceQuality": "strong",
+      "contextDurationMs": 28.5625,
+      "modelTimeToFirstTokenMs": 5572.2822000000015,
+      "timeToFirstTokenMs": 5600.849799999996,
+      "generationDurationMs": 12796.029500000004,
+      "totalDurationMs": 12824.597099999999,
+      "outputCharacters": 1094,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "title": "1.2 数据库与数据表创建、数据增删改",
+          "chunkIndex": 0,
+          "contentHash": "ad329c1df6f0603070205de5da5bc6e82f4aec698fe99baeae2285d311c984aa",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "ad329c1df6f0603070205de5da5bc6e82f4aec698fe99baeae2285d311c984aa",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库基础学习教程\n\n## 第一章：数据库基础概念\n\n### 1.2 数据库与数据表创建、数据增删改\n\n在上一小节中，我们学会了数据库基础概念、区分了数据库与Excel的差异，同时掌握了基础的SELECT查询语句，能够从数据表中查询数据。但想要熟练使用数据库，只会查询远远不够。\n\n本节课我们将从零开始，学习数据库的核心基础操作：手动创建数据库、创建数据表，以及对数据进行新增、修改、删除操作。这四类操作是数据库最核心的基础能力，也是后续所有复杂数据库操作的前提，是每位学习者必须熟练掌握的重点内容。\n\n一、数据库的创建与删除\n\n1. 数据库基本操作概述\n\n数据库就像一个文件夹，而我们后续创建的数据表、存储的数据，都存放在这个文件夹中。想要使用数据表，第一步必须先创建对应的数据库。所有关系型数据库的数据库操作语法基本统一，简单易懂。\n\n2. 创建数据库\n\n我们使用 CREATE DATABASE 语句创建数据库，这是DDL（数据定义语言）的核心语句之一，用于定义数据库结构。\n\n基础语法：\n\nCREATE DATABASE 数据库名;\n\n标准规范语法（推荐使用）：\n\nCREATE DATABASE IF NOT EXISTS 数据库名 DEFAULT CHARSET utf8mb4;\n\n语法解析：\n\n * IF NOT EXISTS：判断数据库是否不存在，不存在则创建，避免重复创建报错，是实操必备写法\n\n * DEFAULT CHARSET utf8mb4：设置数据库默认编码为utf8mb4，支持所有中文、特殊符号和表情符号，彻底解决中文乱码问题\n\n示例：创建一个名为school的学校数据库\n\nCREATE DATABASE IF NOT EXISTS school DEFAULT CHARSET utf8mb4;\n\n3. 查看与使用数据库\n\n创建数据库后，需要切换到对应数据库，才能在其中创建数据表、操作数据。\n\n查看所有数据库：\n\nSHOW DATABASES;\n\n切换/使用指定数据库：\n\nUSE 数据库名;\n\n示例：切换到school数据库\n\nUSE school;\n\n4. 删除数据库\n\n对于无用的数据库，可使用 DROP DATABASE 语句删除，删除后数据库及内部所有数据、数据表会被清空，不可恢复，操作需谨慎。\n\n基础语法：\n\nDROP DATABASE IF EXISTS 数据库名;\n\n请完成练习\n\n二、数据表的创建与基础规则\n\n数据库创建完成后，核心操作就是创建数据表。数据表是存储数据的最小单元，创建数据表时，必须定义表名、列名、数据类型，也就是定义每一列存储什么类型的数据。\n\n1. 常用基础数据类型\n\n零基础入门只需掌握三种核心数据类型，满足90%基础场景：\n\n * INT：整型，用于存储数字（年龄、编号、分数等）\n\n * VARCHAR(长度)：字符串类型，用于存储文字（姓名、班级、性别等），括号内指定最大字符长度\n\n * DATE：日期类型，用于存储年月日（入学时间、生日等）\n\n2. 创建数据表语法\n\n使用 CREATE TABLE 语句创建数据表，属于DDL语句。\n\n基础语法：\n\nCREATE TABLE IF NOT EXISTS 表名 (\n    列名1 数据类型,\n    列名2 数据类型,\n    列名3 数据类型\n) DEFAULT CHARSET utf8mb4;\n\n实操示例：在school数据库中创建学生表students\n\nCREATE TABLE IF NOT EXISTS students (\n    id INT,\n    name VARCHAR(20),\n    age INT,\n    gender VARCHAR(10),\n    class VARCHAR(20)\n) DEFAULT CHARSET utf8mb4;\n\n该语句创建的学生表，包含id（学生编号）、name（姓名）、age（年龄）、gender（性别）、class（班级）五个字段，和上节课练习的表结构完全对应。\n\n请完成练习\n\n三、数据增删改核心操作（DML）\n\n创建好数据库和数据表后，我们就可以对表内数据进行操作。数据新增、修改、删除、查询是数据库四大核心操作，其中增删改属于DML数据操作语言。\n\n1. 新增数据（INSERT）\n\n使用 INSERT INTO 语句向数据表中添加新数据。\n\n语法1：指定字段新增（推荐，灵活稳定）\n\nINSERT INTO 表名(字段1,字段2,字段3) VALUES(值1,值2,值3);\n\n语法2：全字段新增\n\nINSERT INTO 表名 VALUES(所有字段值);\n\n示例：向students表新增一条学生数据\n\nINSERT INTO students(id,name,age,gender,class) VALUES(1,'张三',18,'男','一班');\n\n2. 修改数据（UPDATE）\n\n使用 UPDATE 语句修改表中已存在的数据，必须搭配WHERE条件，否则会修改全表数据。\n\n基础语法：\n\nUPDATE 表名 SET 字段1=新值,字段2=新值 WHERE 筛选条件;\n\n示例：将张三的年龄修改为19岁\n\nUPDATE students SET age=19 WHERE name='张三';\n\n3. 删除数据（DELETE）\n\n使用 DELETE FROM 语句删除表中数据，同样需要搭配WHERE条件，否则会清空全表数据。\n\n基础语法：\n\nDELETE FROM 表名 WHERE 筛选条件;\n\n示例：删除姓名为张三的学生数据\n\nDELETE FROM students WHERE name='张三';\n\n重点注意事项\n\n1. UPDATE、DELETE 语句必须加WHERE条件，否则会操作全表数据，造成数据丢失\n2. 字符串类型的值必须用单引号包裹，数字无需引号\n3. 所有SQL语句关键字建议大写，语句以分号结尾\n\n请完成练习\n\n📚 小节总结\n\n本节课我们完成了数据库入门的核心实操学习，掌握了从零搭建数据库、数据表，以及数据增删改的全部基础操作，核心知识点总结如下：\n\n 1. 数据库操作：使用CREATE创建数据库、USE切换数据库、DROP删除数据库，掌握编码设置规范\n\n 2. 数据表操作：掌握INT、VARCHAR、DATE核心数据类型，熟练使用CREATE TABLE创建自定义数据表\n\n 3. 数据增删改：\n\n    1. 新增：INSERT INTO 插入单条数据\n\n    2. 修改：UPDATE SET 精准修改数据，必加WHERE条件\n\n    3. 删除：DELETE FROM 删除指定数据，谨慎操作\n\n本节课的所有操作都是数据库实操的基础，后续所有复杂查询、多表关联、高级功能都建立在本节课内容之上，需要多动手实操、熟练掌握语法规范。\n\n----------------------------------------\n\n下节预告：下一节课我们将学习SQL高级查询，掌握模糊查询、排序查询、限制查询条数的核心语法，实现更精准、多样化的数据筛选。"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-1",
+      "question": "“什么是HTML”主要讲解什么？",
+      "answer": "根据课程证据[1]，“什么是HTML”主要讲解 **HTML 是网页结构的基础标记语言**。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 13.23859999999695,
+      "modelTimeToFirstTokenMs": 4058.5573000000004,
+      "timeToFirstTokenMs": 4071.8015999999916,
+      "generationDurationMs": 4300.787700000001,
+      "totalDurationMs": 4314.031999999992,
+      "outputCharacters": 46,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000001",
+          "title": "什么是HTML",
+          "chunkIndex": 0,
+          "contentHash": "001092861685869f547a464478e25e073ed626fa4ad5e440fb6715ced344b74d",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000001",
+          "contentHash": "001092861685869f547a464478e25e073ed626fa4ad5e440fb6715ced344b74d",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## HTML基础入门\n\n### 什么是HTML\n\nHTML是网页结构的基础标记语言"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000063-1",
+      "question": "“数据库应用场景”主要讲解什么？",
+      "answer": "根据课程证据[1]，该小节标题为“常见数据库使用场景”，但证据中未提供具体讲解内容，因此无法详细说明主要讲解什么。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 12.69419999999809,
+      "modelTimeToFirstTokenMs": 12417.163499999995,
+      "timeToFirstTokenMs": 12429.862399999998,
+      "generationDurationMs": 12797.432799999995,
+      "totalDurationMs": 12810.131699999998,
+      "outputCharacters": 57,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000063",
+          "title": "数据库应用场景",
+          "chunkIndex": 0,
+          "contentHash": "7ef434f7cab7c645e4e248bf4c30ad75a608db51f57ba9c57899794f606766ad",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000063",
+          "contentHash": "7ef434f7cab7c645e4e248bf4c30ad75a608db51f57ba9c57899794f606766ad",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库入门\n\n## 数据库概念\n\n### 数据库应用场景\n\n常见数据库使用场景"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-04bc001d-df88-41ed-a275-d6b3774f21d4-1",
+      "question": "“1.3 SQL高级查询（模糊查询、排序、分页）”主要讲解什么？",
+      "answer": "“1.3 SQL高级查询（模糊查询、排序、分页）”主要讲解了三大高频查询语法：**模糊查询（LIKE）**、**排序查询（ORDER BY）** 和 **分页查询（LIMIT）**。具体包括：\n\n- 模糊查询使用 `LIKE` 搭配通配符 `%`（匹配任意多个字符）和 `_`（匹配单个字符），实现包含、开头、结尾等匹配场景。\n- 排序查询使用 `ORDER BY` 配合 `ASC`（升序，默认）或 `DESC`（降序），支持单字段和多字段排序。\n- 分页查询使用 `LIMIT 起始索引, 查询条数` 限制返回的数据条数，索引从 0 开始。\n- 同时强调了查询语句的执行顺序：`WHERE` 筛选 → `ORDER BY` 排序 → `LIMIT` 分页，以及通配符匹配内容需用单引号包裹等注意事项 [1]。",
+      "answerScope": "course",
+      "evidenceQuality": "strong",
+      "contextDurationMs": 21.627600000007078,
+      "modelTimeToFirstTokenMs": 7253.819999999992,
+      "timeToFirstTokenMs": 7275.452600000004,
+      "generationDurationMs": 10060.073599999989,
+      "totalDurationMs": 10081.7062,
+      "outputCharacters": 356,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "title": "1.3 SQL高级查询（模糊查询、排序、分页）",
+          "chunkIndex": 0,
+          "contentHash": "550be508b1f8962171b962cd8741c36d6d8fd32fbec36fea9f66d0d4d28c78a6",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "contentHash": "550be508b1f8962171b962cd8741c36d6d8fd32fbec36fea9f66d0d4d28c78a6",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库基础学习教程\n\n## 第一章：数据库基础概念\n\n### 1.3 SQL高级查询（模糊查询、排序、分页）\n\n上一节我们掌握了数据增删改基础操作和基础SELECT查询。在实际开发中，我们很少查询全部数据，更多是根据模糊条件、数据顺序、数据条数精准筛选数据。本节课将学习日常开发使用率最高的三大高级查询：模糊查询、排序查询、分页查询，是数据库查询核心重点。\n\n----------------------------------------\n\n一、模糊查询（LIKE）\n\n精准查询（WHERE 字段=值）只能匹配完全一致的数据，而模糊查询可以实现包含、开头、结尾匹配，核心关键字为 LIKE，搭配两个通配符使用。\n\n1. 两大核心通配符\n\n * %：匹配任意多个字符（0个、1个或多个）\n\n * _：匹配单个任意字符\n\n2. 常用语法场景\n\n语法格式：\n\nSELECT 字段 FROM 表名 WHERE 字段 LIKE '匹配规则';\n\n实操示例（基于students学生表）：\n\n * 查询姓名中包含“李”的学生：LIKE '%李%'\n\n * 查询姓名以“张”开头的学生：LIKE '张%'\n\n * 查询姓名为两个字、且第一个字是王的学生：LIKE '王_'\n\n-- 查询所有含“李”字的学生\nSELECT * FROM students WHERE name LIKE '%李%';\n\n----------------------------------------\n\n二、排序查询（ORDER BY）\n\n数据库默认查询数据顺序为数据存储顺序，杂乱无章。通过 ORDER BY 可以对查询结果进行升序或降序排序。\n\n1. 排序规则\n\n * ASC：升序（从小到大），默认规则，可省略\n\n * DESC：降序（从大到小），必须手动声明\n\n2. 语法与示例\n\n-- 单字段排序：按年龄升序\nSELECT * FROM students ORDER BY age ASC;\n\n-- 单字段排序：按年龄降序\nSELECT * FROM students ORDER BY age DESC;\n\n多字段排序规则：先按第一个字段排序，第一个字段数据相同时，再按第二个字段排序。\n\n----------------------------------------\n\n三、分页查询（LIMIT）\n\n实际项目中数据表数据动辄上万条，一次性查询所有数据会造成卡顿、资源浪费。LIMIT 分页查询可以限制查询数据条数，是项目必备语法。\n\n1. 标准语法\n\nSELECT 字段 FROM 表名 LIMIT 起始索引, 查询条数;\n\n核心规则：数据索引从 0 开始计数\n\n2. 实操示例\n\n-- 查询前3条学生数据（索引0开始，取3条）\nSELECT * FROM students LIMIT 0,3;\n\n-- 查询第4-6条数据\nSELECT * FROM students LIMIT 3,3;\n\n重点注意事项\n\n1. 查询语句执行顺序：WHERE筛选 → ORDER BY排序 → LIMIT分页\n2. 通配符匹配内容必须用单引号包裹\n3. LIMIT只作用于查询结果，不会修改原表数据顺序\n\n----------------------------------------\n\n请完成练习\n\n📚 小节总结\n\n本节掌握三大高频查询语法：模糊查询LIKE、排序ORDER BY、分页LIMIT，可实现绝大部分精准数据筛选场景，是项目开发、考试面试必考核心。\n\n请完成练习"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-2",
+      "question": "在实际编程中，应该如何应用“什么是HTML”中的核心知识？",
+      "answer": "### 课程内结论\nHTML是网页结构的基础标记语言 [1]。由此可以看出，HTML的核心作用是定义和组织网页的内容结构，而不是控制样式或行为。\n\n### 通用补充（非课程原文）\n在实际编程中，应用HTML核心知识包括：\n- 使用标签（如 `<h1>`、`<p>`、`<a>`、`<img>` 等）来标记不同类型的网页内容。\n- 遵循HTML文档的基本结构：`<!DOCTYPE html>`、`<html>`、`<head>`（包含元数据）、`<body>`（包含可见内容）。\n- 通过嵌套标签构建层次化的内容结构。\n- 结合CSS进行样式设计，结合JavaScript实现交互功能。\n- 注意语义化标签（如 `<header>`、`<nav>`、`<main>`、`<footer>`）的使用，以提高可访问性和SEO。\n\n这些是HTML作为结构标记语言在实际开发中的典型应用方式。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 13.339899999991758,
+      "modelTimeToFirstTokenMs": 11074.113800000021,
+      "timeToFirstTokenMs": 11087.459300000017,
+      "generationDurationMs": 14472.06270000001,
+      "totalDurationMs": 14485.408200000005,
+      "outputCharacters": 392,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000001",
+          "title": "什么是HTML",
+          "chunkIndex": 0,
+          "contentHash": "001092861685869f547a464478e25e073ed626fa4ad5e440fb6715ced344b74d",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000001",
+          "contentHash": "001092861685869f547a464478e25e073ed626fa4ad5e440fb6715ced344b74d",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## HTML基础入门\n\n### 什么是HTML\n\nHTML是网页结构的基础标记语言"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000063-2",
+      "question": "在实际编程中，应该如何应用“数据库应用场景”中的核心知识？",
+      "answer": "### 课程内结论\n课程仅列出了“常见数据库使用场景”这一标题，未给出具体场景、属性或应用方法 [1]。由此可以看出，当前小节正文没有提供可直接用于编程的详细知识。\n\n### 通用补充（非课程原文）\n在实际编程中，常见的数据库应用场景包括：\n- **用户与权限管理**：存储用户账号、角色、权限，支持登录验证与授权。\n- **订单与交易系统**：记录订单、支付流水，保证数据一致性和事务完整性。\n- **内容管理**：保存文章、评论、分类，支持高效检索与分页。\n- **日志与监控**：存储操作日志、性能指标，常结合时间序列数据库或分表策略。\n- **物联网与传感器**：高频写入设备数据，需考虑写入吞吐和存储压缩。\n\n应用时需根据场景选择数据库类型（关系型如 MySQL/PostgreSQL，或 NoSQL 如 Redis/MongoDB），并设计合理的表结构、索引和查询方式。若课程后续展开具体案例，可结合那些内容进一步实践。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 10.952699999994365,
+      "modelTimeToFirstTokenMs": 9352.183300000004,
+      "timeToFirstTokenMs": 9363.140899999999,
+      "generationDurationMs": 12274.295299999998,
+      "totalDurationMs": 12285.252899999992,
+      "outputCharacters": 416,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000063",
+          "title": "数据库应用场景",
+          "chunkIndex": 0,
+          "contentHash": "7ef434f7cab7c645e4e248bf4c30ad75a608db51f57ba9c57899794f606766ad",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000063",
+          "contentHash": "7ef434f7cab7c645e4e248bf4c30ad75a608db51f57ba9c57899794f606766ad",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库入门\n\n## 数据库概念\n\n### 数据库应用场景\n\n常见数据库使用场景"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-04bc001d-df88-41ed-a275-d6b3774f21d4-2",
+      "question": "在实际编程中，应该如何应用“1.3 SQL高级查询（模糊查询、排序、分页）”中的核心知识？",
+      "answer": "### 课程内结论\n- 模糊查询使用 `LIKE` 关键字，搭配通配符 `%`（匹配任意多个字符）和 `_`（匹配单个任意字符），可实现包含、开头、结尾等匹配规则 [1]。\n- 排序查询使用 `ORDER BY`，`ASC` 表示升序（默认，可省略），`DESC` 表示降序（必须手动声明）；多字段排序时先按第一个字段排序，相同再按第二个字段排序 [1]。\n- 分页查询使用 `LIMIT 起始索引, 查询条数`，数据索引从 0 开始计数，例如 `LIMIT 0,3` 查询前 3 条 [1]。\n- 查询语句的执行顺序为：`WHERE` 筛选 → `ORDER BY` 排序 → `LIMIT` 分页 [1]。\n- 通配符匹配内容必须用单引号包裹 [1]。\n- `LIMIT` 只作用于查询结果，不会修改原表数据顺序 [1]。\n\n### 通用补充（非课程原文）\n在实际编程中，这三类查询通常组合使用，常见场景如下：\n- **模糊查询**：用于搜索功能，如用户输入关键词查找姓名、标题等。注意 `%` 开头会导致索引失效，性能敏感时可考虑全文索引或搜索引擎。\n- **排序查询**：用于按时间、价格、评分等字段展示列表，常与分页配合。多字段排序时注意字段顺序，例如 `ORDER BY create_time DESC, id ASC` 确保时间相同时按 id 稳定排序。\n- **分页查询**：用于列表页、瀑布流等场景，避免一次性加载大量数据。前端传入页码和每页条数，后端计算起始索引：`起始索引 = (页码 - 1) * 每页条数`。注意 `LIMIT` 放在 `WHERE` 和 `ORDER BY` 之后，否则结果可能不符合预期。\n\n示例（伪代码）：\n```sql\n-- 搜索姓“张”的用户，按年龄降序，每页10条，取第2页\nSELECT * FROM users \nWHERE name LIKE '张%' \nORDER BY age DESC \nLIMIT 10, 10;\n```\n实际开发中还需考虑 SQL 注入（模糊查询参数应使用预编译或转义）、分页深度过大时的性能优化（如使用游标或覆盖索引）。",
+      "answerScope": "extended",
+      "evidenceQuality": "strong",
+      "contextDurationMs": 19.482199999998556,
+      "modelTimeToFirstTokenMs": 7508.9663,
+      "timeToFirstTokenMs": 7528.454799999992,
+      "generationDurationMs": 15154.879400000005,
+      "totalDurationMs": 15174.367899999997,
+      "outputCharacters": 905,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "title": "1.3 SQL高级查询（模糊查询、排序、分页）",
+          "chunkIndex": 0,
+          "contentHash": "550be508b1f8962171b962cd8741c36d6d8fd32fbec36fea9f66d0d4d28c78a6",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "contentHash": "550be508b1f8962171b962cd8741c36d6d8fd32fbec36fea9f66d0d4d28c78a6",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库基础学习教程\n\n## 第一章：数据库基础概念\n\n### 1.3 SQL高级查询（模糊查询、排序、分页）\n\n上一节我们掌握了数据增删改基础操作和基础SELECT查询。在实际开发中，我们很少查询全部数据，更多是根据模糊条件、数据顺序、数据条数精准筛选数据。本节课将学习日常开发使用率最高的三大高级查询：模糊查询、排序查询、分页查询，是数据库查询核心重点。\n\n----------------------------------------\n\n一、模糊查询（LIKE）\n\n精准查询（WHERE 字段=值）只能匹配完全一致的数据，而模糊查询可以实现包含、开头、结尾匹配，核心关键字为 LIKE，搭配两个通配符使用。\n\n1. 两大核心通配符\n\n * %：匹配任意多个字符（0个、1个或多个）\n\n * _：匹配单个任意字符\n\n2. 常用语法场景\n\n语法格式：\n\nSELECT 字段 FROM 表名 WHERE 字段 LIKE '匹配规则';\n\n实操示例（基于students学生表）：\n\n * 查询姓名中包含“李”的学生：LIKE '%李%'\n\n * 查询姓名以“张”开头的学生：LIKE '张%'\n\n * 查询姓名为两个字、且第一个字是王的学生：LIKE '王_'\n\n-- 查询所有含“李”字的学生\nSELECT * FROM students WHERE name LIKE '%李%';\n\n----------------------------------------\n\n二、排序查询（ORDER BY）\n\n数据库默认查询数据顺序为数据存储顺序，杂乱无章。通过 ORDER BY 可以对查询结果进行升序或降序排序。\n\n1. 排序规则\n\n * ASC：升序（从小到大），默认规则，可省略\n\n * DESC：降序（从大到小），必须手动声明\n\n2. 语法与示例\n\n-- 单字段排序：按年龄升序\nSELECT * FROM students ORDER BY age ASC;\n\n-- 单字段排序：按年龄降序\nSELECT * FROM students ORDER BY age DESC;\n\n多字段排序规则：先按第一个字段排序，第一个字段数据相同时，再按第二个字段排序。\n\n----------------------------------------\n\n三、分页查询（LIMIT）\n\n实际项目中数据表数据动辄上万条，一次性查询所有数据会造成卡顿、资源浪费。LIMIT 分页查询可以限制查询数据条数，是项目必备语法。\n\n1. 标准语法\n\nSELECT 字段 FROM 表名 LIMIT 起始索引, 查询条数;\n\n核心规则：数据索引从 0 开始计数\n\n2. 实操示例\n\n-- 查询前3条学生数据（索引0开始，取3条）\nSELECT * FROM students LIMIT 0,3;\n\n-- 查询第4-6条数据\nSELECT * FROM students LIMIT 3,3;\n\n重点注意事项\n\n1. 查询语句执行顺序：WHERE筛选 → ORDER BY排序 → LIMIT分页\n2. 通配符匹配内容必须用单引号包裹\n3. LIMIT只作用于查询结果，不会修改原表数据顺序\n\n----------------------------------------\n\n请完成练习\n\n📚 小节总结\n\n本节掌握三大高频查询语法：模糊查询LIKE、排序ORDER BY、分页LIMIT，可实现绝大部分精准数据筛选场景，是项目开发、考试面试必考核心。\n\n请完成练习"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000002-1",
+      "question": "“HTML文档结构”主要讲解什么？",
+      "answer": "根据课程证据，“HTML文档结构”小节主要讲解**标准HTML页面结构详解** [1]。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 14.498400000011316,
+      "modelTimeToFirstTokenMs": 4103.0962,
+      "timeToFirstTokenMs": 4117.598700000002,
+      "generationDurationMs": 4340.909500000009,
+      "totalDurationMs": 4355.412000000011,
+      "outputCharacters": 44,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000002",
+          "title": "HTML文档结构",
+          "chunkIndex": 0,
+          "contentHash": "891450f70748724ecad2db8ba4d5166962131d62cb56f79b5036894e95d82a6c",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000002",
+          "contentHash": "891450f70748724ecad2db8ba4d5166962131d62cb56f79b5036894e95d82a6c",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## HTML基础入门\n\n### HTML文档结构\n\n标准HTML页面结构详解"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-33810ea6-d130-4c42-93db-3741d29cc401-1",
+      "question": "“2.1 聚合函数（统计查询）”主要讲解什么？",
+      "answer": "根据课程证据，“2.1 聚合函数（统计查询）”主要讲解以下内容 [1]：\n\n- **五大核心聚合函数**：`COUNT()`（统计条数）、`MAX()`（最大值）、`MIN()`（最小值）、`SUM()`（总和）、`AVG()`（平均值），用于对整表或分组数据进行统计计算。\n- **分组查询 `GROUP BY`**：将相同字段的数据分为一组，结合聚合函数实现分组统计（如按班级统计人数、按性别统计平均年龄）。\n- **筛选过滤 `HAVING`**：用于分组后筛选数据，与分组前筛选的 `WHERE` 区分。\n\n课程通过示例演示了 `COUNT(*)`、`AVG(age)`、`MAX(age)` 等基本用法，并给出了 `GROUP BY` 的语法格式。",
+      "answerScope": "course",
+      "evidenceQuality": "strong",
+      "contextDurationMs": 19.307800000009593,
+      "modelTimeToFirstTokenMs": 4340.45640000001,
+      "timeToFirstTokenMs": 4359.76920000001,
+      "generationDurationMs": 6531.547500000001,
+      "totalDurationMs": 6550.8603,
+      "outputCharacters": 329,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "33810ea6-d130-4c42-93db-3741d29cc401",
+          "title": "2.1 聚合函数（统计查询）",
+          "chunkIndex": 0,
+          "contentHash": "7e0923d75650d45c8ced491ba871272704906f54a14235e2c417369482651544",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "33810ea6-d130-4c42-93db-3741d29cc401",
+          "contentHash": "7e0923d75650d45c8ced491ba871272704906f54a14235e2c417369482651544",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库基础学习教程\n\n## 第二章：聚合函数与分组查询\n\n### 2.1 聚合函数（统计查询）\n\n数据库不仅可以查询数据，还可以统计数据。聚合函数用于对整表或分组数据进行统计计算，常用于统计总数、最大值、最小值、平均值、总和。\n\n一、五大核心聚合函数\n\n * COUNT()：统计数据条数\n\n * MAX()：查询最大值\n\n * MIN()：查询最小值\n\n * SUM()：计算字段总和\n\n * AVG()：计算字段平均值\n\n实操示例：\n\n-- 统计学生总人数\nSELECT COUNT(*) FROM students;\n-- 统计学生平均年龄\nSELECT AVG(age) FROM students;\n-- 查询最大年龄\nSELECT MAX(age) FROM students;\n\n----------------------------------------\n\n二、分组查询 GROUP BY\n\nGROUP BY 可以将相同字段数据分为一组，结合聚合函数实现分组统计，例如：按班级统计人数、按性别统计平均年龄。\n\n语法格式：\n\nSELECT 分组字段,聚合函数 FROM 表名 GROUP BY 分组字段;\n\n筛选过滤 HAVING：分组后筛选数据，WHERE是分组前筛选，HAVING是分组后筛选。\n\n----------------------------------------\n\n请完成练习"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000002-2",
+      "question": "在实际编程中，应该如何应用“HTML文档结构”中的核心知识？",
+      "answer": "### 课程内结论\n根据课程证据，本节内容是对标准HTML页面结构的详细讲解 [1]。由此可以看出，课程的核心是介绍构成一个标准HTML文档所必需的基本框架和组成部分。\n\n### 通用补充（非课程原文）\n在实际编程中，应用HTML文档结构的核心知识主要包括：\n- 始终以 `<!DOCTYPE html>` 声明文档类型，确保浏览器以标准模式渲染。\n- 使用 `<html>` 作为根元素，并设置 `lang` 属性（如 `lang=\"zh-CN\"`）以指定页面语言。\n- 在 `<head>` 部分包含必要的元数据，如 `<meta charset=\"UTF-8\">`、`<title>` 标题，以及 CSS 和 JavaScript 的引用。\n- 在 `<body>` 部分放置所有可见内容，并合理使用语义化标签（如 `<header>`、`<nav>`、`<main>`、`<footer>`）来构建页面结构。\n- 保持结构清晰、嵌套正确，避免遗漏闭合标签，这有助于提升可访问性和 SEO。\n\n这些实践确保了网页在不同浏览器和设备上的兼容性与可维护性。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 11.893599999995786,
+      "modelTimeToFirstTokenMs": 12207.654800000004,
+      "timeToFirstTokenMs": 12219.553100000005,
+      "generationDurationMs": 15006.577799999985,
+      "totalDurationMs": 15018.476099999985,
+      "outputCharacters": 479,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000002",
+          "title": "HTML文档结构",
+          "chunkIndex": 0,
+          "contentHash": "891450f70748724ecad2db8ba4d5166962131d62cb56f79b5036894e95d82a6c",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000002",
+          "contentHash": "891450f70748724ecad2db8ba4d5166962131d62cb56f79b5036894e95d82a6c",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## HTML基础入门\n\n### HTML文档结构\n\n标准HTML页面结构详解"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-33810ea6-d130-4c42-93db-3741d29cc401-2",
+      "question": "在实际编程中，应该如何应用“2.1 聚合函数（统计查询）”中的核心知识？",
+      "answer": "### 课程内结论\n- 聚合函数用于对整表或分组数据进行统计计算，常用于统计总数、最大值、最小值、平均值、总和。[1]\n- 五大核心聚合函数：`COUNT()` 统计数据条数，`MAX()` 查询最大值，`MIN()` 查询最小值，`SUM()` 计算字段总和，`AVG()` 计算字段平均值。[1]\n- 分组查询 `GROUP BY` 可以将相同字段数据分为一组，结合聚合函数实现分组统计，语法格式为 `SELECT 分组字段,聚合函数 FROM 表名 GROUP BY 分组字段;`。[1]\n- 分组后筛选使用 `HAVING`，而 `WHERE` 是分组前筛选。[1]\n- 证据中给出了实操示例：统计学生总人数 `SELECT COUNT(*) FROM students;`、平均年龄 `SELECT AVG(age) FROM students;`、最大年龄 `SELECT MAX(age) FROM students;`。[1]\n\n### 通用补充（非课程原文）\n- 在实际编程中，聚合函数常用于生成统计报表，例如统计订单总数、计算商品平均价格、找出最高销售额等。\n- `GROUP BY` 常用于按类别汇总，如按部门统计员工人数、按月份统计销售额。\n- `HAVING` 用于对分组结果进行过滤，例如只显示平均年龄大于30的班级。\n- 使用聚合函数时，`SELECT` 中的非聚合字段通常需要出现在 `GROUP BY` 中，否则在某些数据库系统中会报错或产生不确定结果。\n- 示例：`SELECT department, COUNT(*) FROM employees GROUP BY department HAVING COUNT(*) > 10;`",
+      "answerScope": "extended",
+      "evidenceQuality": "strong",
+      "contextDurationMs": 16.10250000000815,
+      "modelTimeToFirstTokenMs": 13896.894300000014,
+      "timeToFirstTokenMs": 13913.001800000013,
+      "generationDurationMs": 18969.87110000002,
+      "totalDurationMs": 18985.978600000017,
+      "outputCharacters": 736,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "33810ea6-d130-4c42-93db-3741d29cc401",
+          "title": "2.1 聚合函数（统计查询）",
+          "chunkIndex": 0,
+          "contentHash": "7e0923d75650d45c8ced491ba871272704906f54a14235e2c417369482651544",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "33810ea6-d130-4c42-93db-3741d29cc401",
+          "contentHash": "7e0923d75650d45c8ced491ba871272704906f54a14235e2c417369482651544",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# 数据库基础学习教程\n\n## 第二章：聚合函数与分组查询\n\n### 2.1 聚合函数（统计查询）\n\n数据库不仅可以查询数据，还可以统计数据。聚合函数用于对整表或分组数据进行统计计算，常用于统计总数、最大值、最小值、平均值、总和。\n\n一、五大核心聚合函数\n\n * COUNT()：统计数据条数\n\n * MAX()：查询最大值\n\n * MIN()：查询最小值\n\n * SUM()：计算字段总和\n\n * AVG()：计算字段平均值\n\n实操示例：\n\n-- 统计学生总人数\nSELECT COUNT(*) FROM students;\n-- 统计学生平均年龄\nSELECT AVG(age) FROM students;\n-- 查询最大年龄\nSELECT MAX(age) FROM students;\n\n----------------------------------------\n\n二、分组查询 GROUP BY\n\nGROUP BY 可以将相同字段数据分为一组，结合聚合函数实现分组统计，例如：按班级统计人数、按性别统计平均年龄。\n\n语法格式：\n\nSELECT 分组字段,聚合函数 FROM 表名 GROUP BY 分组字段;\n\n筛选过滤 HAVING：分组后筛选数据，WHERE是分组前筛选，HAVING是分组后筛选。\n\n----------------------------------------\n\n请完成练习"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000003-1",
+      "question": "“第一个HTML页面”主要讲解什么？",
+      "answer": "根据课程证据，“第一个HTML页面”小节主要讲解如何编写并运行第一个HTML页面 [1]。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 11.60319999998319,
+      "modelTimeToFirstTokenMs": 3315.1368000000075,
+      "timeToFirstTokenMs": 3326.745900000009,
+      "generationDurationMs": 3525.8795999999857,
+      "totalDurationMs": 3537.488699999987,
+      "outputCharacters": 45,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000003",
+          "title": "第一个HTML页面",
+          "chunkIndex": 0,
+          "contentHash": "714d35d6fad09830e85139427bb8f16ea51cf4efb0d640d0f50084ee5ad4e2c4",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000003",
+          "contentHash": "714d35d6fad09830e85139427bb8f16ea51cf4efb0d640d0f50084ee5ad4e2c4",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## HTML基础入门\n\n### 第一个HTML页面\n\n编写并运行第一个HTML页面"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000003-2",
+      "question": "在实际编程中，应该如何应用“第一个HTML页面”中的核心知识？",
+      "answer": "### 课程内结论\n课程的核心知识是学习如何编写并运行第一个HTML页面[1]。由此可以看出，本节的重点在于动手实践，创建并查看一个基础的HTML文件。\n\n### 通用补充（非课程原文）\n在实际编程中，应用“第一个HTML页面”的知识通常包括：\n- 使用文本编辑器（如VS Code、Notepad++）创建一个新文件，保存为 `.html` 扩展名。\n- 编写基本的HTML结构，例如 `<!DOCTYPE html>`、`<html>`、`<head>`、`<body>` 等标签。\n- 在浏览器中打开该HTML文件以查看渲染效果。\n- 这是后续所有网页开发的基础，理解文件结构、标签语法和浏览器渲染流程至关重要。\n\n注意：以上补充是基于通用编程实践，并非课程原文内容。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 13.074799999973038,
+      "modelTimeToFirstTokenMs": 13193.381800000003,
+      "timeToFirstTokenMs": 13206.461099999986,
+      "generationDurationMs": 15264.606999999989,
+      "totalDurationMs": 15277.686299999972,
+      "outputCharacters": 337,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000003",
+          "title": "第一个HTML页面",
+          "chunkIndex": 0,
+          "contentHash": "714d35d6fad09830e85139427bb8f16ea51cf4efb0d640d0f50084ee5ad4e2c4",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000003",
+          "contentHash": "714d35d6fad09830e85139427bb8f16ea51cf4efb0d640d0f50084ee5ad4e2c4",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## HTML基础入门\n\n### 第一个HTML页面\n\n编写并运行第一个HTML页面"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000004-1",
+      "question": "“标题标签h1-h6”主要讲解什么？",
+      "answer": "根据课程证据，“标题标签h1-h6”主要讲解标题标签的使用与优先级 [1]。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 12.969600000011269,
+      "modelTimeToFirstTokenMs": 3197.064800000022,
+      "timeToFirstTokenMs": 3210.041900000011,
+      "generationDurationMs": 3426.933100000024,
+      "totalDurationMs": 3439.910200000013,
+      "outputCharacters": 38,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "title": "标题标签h1-h6",
+          "chunkIndex": 0,
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## HTML常用标签\n\n### 标题标签h1-h6\n\n标题标签的使用与优先级"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000004-2",
+      "question": "在实际编程中，应该如何应用“标题标签h1-h6”中的核心知识？",
+      "answer": "### 课程内结论\n- 课程小节标题为“标题标签h1-h6”，内容涉及标题标签的使用与优先级 [1]。\n\n### 通用补充（非课程原文）\n在实际编程中，标题标签（h1~h6）主要用于构建页面的内容层级和语义结构。常见应用建议：\n- **h1**：每个页面只使用一个，作为主标题或页面主题。\n- **h2~h6**：按内容层次依次使用，h2 表示主要章节，h3 表示子章节，依此类推，不要跳级（如从 h2 直接到 h4）。\n- **语义优先**：标题标签的意义在于结构化内容，而非单纯控制字号；默认样式可通过 CSS 调整。\n- **SEO 与可访问性**：合理的标题层级有助于搜索引擎理解页面重点，也方便屏幕阅读器用户导航。\n- **避免滥用**：不要为了加粗或放大文字而使用标题标签，应使用 CSS 实现视觉效果。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 13.950099999987287,
+      "modelTimeToFirstTokenMs": 11213.481299999985,
+      "timeToFirstTokenMs": 11227.436699999991,
+      "generationDurationMs": 13973.69769999999,
+      "totalDurationMs": 13987.653099999996,
+      "outputCharacters": 358,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "title": "标题标签h1-h6",
+          "chunkIndex": 0,
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## HTML常用标签\n\n### 标题标签h1-h6\n\n标题标签的使用与优先级"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000005-1",
+      "question": "“段落与换行标签”主要讲解什么？",
+      "answer": "根据课程证据，“段落与换行标签”主要讲解p标签与br标签的使用 [1]。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 13.301499999972293,
+      "modelTimeToFirstTokenMs": 7925.7850000000035,
+      "timeToFirstTokenMs": 7939.090799999976,
+      "generationDurationMs": 8180.544200000004,
+      "totalDurationMs": 8193.849999999977,
+      "outputCharacters": 36,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "title": "段落与换行标签",
+          "chunkIndex": 0,
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## HTML常用标签\n\n### 段落与换行标签\n\np标签与br标签使用"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000005-2",
+      "question": "在实际编程中，应该如何应用“段落与换行标签”中的核心知识？",
+      "answer": "### 课程内结论\n根据课程证据，本小节介绍了段落与换行标签，具体涉及 `p` 标签与 `br` 标签的使用 [1]。由此可以看出，课程内容聚焦于这两个标签的基本用法。\n\n### 通用补充（非课程原文）\n在实际编程中，`p` 标签用于定义段落，浏览器会自动在段落前后添加间距，适合组织文本块。`br` 标签用于在文本中强制换行，通常用于地址、诗歌等需要精确控制换行的场景。使用时注意：\n- `p` 是块级元素，会占据整行，不要嵌套其他块级元素。\n- `br` 是空元素，只需写 `<br>` 或 `<br/>`，不要滥用 `br` 来制造段落间距，应使用 CSS 的 `margin` 或 `padding`。\n\n示例：\n```html\n<p>这是第一段内容。</p>\n<p>这是第二段内容。</p>\n<p>地址：123 Main St.<br>City, State 12345</p>\n```\n\n这样既语义化又便于维护。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 12.200599999981932,
+      "modelTimeToFirstTokenMs": 20538.637099999993,
+      "timeToFirstTokenMs": 20550.842999999993,
+      "generationDurationMs": 24169.454100000003,
+      "totalDurationMs": 24181.660000000003,
+      "outputCharacters": 412,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "title": "段落与换行标签",
+          "chunkIndex": 0,
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## HTML常用标签\n\n### 段落与换行标签\n\np标签与br标签使用"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000006-1",
+      "question": "“文本格式化标签”主要讲解什么？",
+      "answer": "根据课程证据，该小节主要讲解**加粗、斜体、删除线**等文本格式化标签 [1]。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 12.644599999999627,
+      "modelTimeToFirstTokenMs": 7212.168799999985,
+      "timeToFirstTokenMs": 7224.819500000012,
+      "generationDurationMs": 7843.8425999999745,
+      "totalDurationMs": 7856.493300000002,
+      "outputCharacters": 40,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "title": "文本格式化标签",
+          "chunkIndex": 0,
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## HTML常用标签\n\n### 文本格式化标签\n\n加粗、斜体、删除线等"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000006-2",
+      "question": "在实际编程中，应该如何应用“文本格式化标签”中的核心知识？",
+      "answer": "### 课程内结论\n- 文本格式化标签用于实现加粗、斜体、删除线等效果。[1]  \n- 证据未明确给出具体标签名称、属性、使用场景或工程实践，因此无法推导更多细节。\n\n### 通用补充（非课程原文）\n- 实际编程中，常用的文本格式化标签包括 `<b>`（加粗）、`<i>`（斜体）、`<s>`（删除线）、`<u>`（下划线）。但为了语义化和可访问性，推荐使用 `<strong>`（重要内容，默认加粗）、`<em>`（强调内容，默认斜体）、`<del>`（已删除文本，默认删除线）、`<ins>`（插入文本，默认下划线）。\n- 示例：\n  ```html\n  <p>这是<strong>重要</strong>内容，这是<em>强调</em>内容，这是<del>已删除</del>内容。</p>\n  ```\n- 注意：文本格式化标签仅用于改变文本样式，不应替代结构化标签（如标题、段落）。现代开发中，样式通常由 CSS 控制，但语义标签仍有助于 SEO 和屏幕阅读器理解内容。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 11.869200000015553,
+      "modelTimeToFirstTokenMs": 10459.5956,
+      "timeToFirstTokenMs": 10471.468900000007,
+      "generationDurationMs": 13629.51879999999,
+      "totalDurationMs": 13641.392099999997,
+      "outputCharacters": 437,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "title": "文本格式化标签",
+          "chunkIndex": 0,
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## HTML常用标签\n\n### 文本格式化标签\n\n加粗、斜体、删除线等"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000007-1",
+      "question": "“form表单基础”主要讲解什么？",
+      "answer": "根据课程证据，“form表单基础”主要讲解**表单标签与属性详解** [1]。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 10.987499999988358,
+      "modelTimeToFirstTokenMs": 5161.075199999992,
+      "timeToFirstTokenMs": 5172.0674,
+      "generationDurationMs": 5436.64009999999,
+      "totalDurationMs": 5447.6322999999975,
+      "outputCharacters": 39,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "title": "form表单基础",
+          "chunkIndex": 0,
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## 表单与多媒体\n\n### form表单基础\n\n表单标签与属性详解"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000007-2",
+      "question": "在实际编程中，应该如何应用“form表单基础”中的核心知识？",
+      "answer": "### 课程内结论\n当前课程证据仅包含标题“表单标签与属性详解”[1]，未提供具体属性、用法或示例。因此，无法从课程原文中提取关于如何在实际编程中应用 form 表单的具体知识。\n\n### 通用补充（非课程原文）\n在实际编程中，form 表单用于收集用户输入并提交到服务器。核心应用包括：\n- 使用 `<form>` 标签，通过 `action` 属性指定数据提交的 URL，`method` 属性指定 HTTP 方法（通常为 `GET` 或 `POST`）。\n- 内部放置 `<input>`、`<textarea>`、`<select>` 等控件，通过 `name` 属性定义字段名，提交时数据以键值对形式发送。\n- 常用 `<input type=\"submit\">` 或 `<button type=\"submit\">` 触发提交，也可用 JavaScript 控制提交行为。\n- 注意表单验证：HTML5 提供了 `required`、`pattern`、`type`（如 `email`）等属性实现前端基础验证，但后端仍需独立校验。\n\n这些是通用的表单实践，并非课程原文内容。如需更具体的用法，建议查阅 HTML 标准文档或参考完整教程。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 11.5394999999844,
+      "modelTimeToFirstTokenMs": 17607.1924,
+      "timeToFirstTokenMs": 17618.737399999984,
+      "generationDurationMs": 21051.839000000007,
+      "totalDurationMs": 21063.38399999999,
+      "outputCharacters": 525,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "title": "form表单基础",
+          "chunkIndex": 0,
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## 表单与多媒体\n\n### form表单基础\n\n表单标签与属性详解"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000008-1",
+      "question": "“input标签类型”主要讲解什么？",
+      "answer": "根据课程内容，“input标签类型”主要讲解 input 标签的不同类型，包括**输入框、单选、多选、按钮**等 [1]。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 14.469000000011874,
+      "modelTimeToFirstTokenMs": 3496.6520999999775,
+      "timeToFirstTokenMs": 3511.1263000000035,
+      "generationDurationMs": 3919.0378999999957,
+      "totalDurationMs": 3933.5121000000217,
+      "outputCharacters": 61,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "title": "input标签类型",
+          "chunkIndex": 0,
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## 表单与多媒体\n\n### input标签类型\n\n输入框、单选、多选、按钮"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000008-2",
+      "question": "在实际编程中，应该如何应用“input标签类型”中的核心知识？",
+      "answer": "### 课程内结论\n课程指出 input 标签的类型包括输入框、单选、多选、按钮 [1]。这是该小节对 input 标签类型的直接介绍，未进一步说明各类型的具体属性或用法。\n\n### 通用补充（非课程原文）\n在实际编程中，input 标签通过 `type` 属性指定具体控件类型，例如：\n- `type=\"text\"` 创建单行输入框，用于收集文本；\n- `type=\"radio\"` 创建单选按钮，同一组内只能选择一个；\n- `type=\"checkbox\"` 创建多选按钮，可同时选择多个；\n- `type=\"button\"` 创建普通按钮，常与 JavaScript 配合执行自定义操作。\n\n此外，还有 `password`（密码框）、`email`（邮箱输入）、`submit`（提交按钮）等常用类型。使用时需注意为每个 input 设置合适的 `name` 属性，以便表单数据正确提交。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 12.096499999985099,
+      "modelTimeToFirstTokenMs": 11517.710500000016,
+      "timeToFirstTokenMs": 11529.8229,
+      "generationDurationMs": 13978.416400000016,
+      "totalDurationMs": 13990.5288,
+      "outputCharacters": 398,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "title": "input标签类型",
+          "chunkIndex": 0,
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## 表单与多媒体\n\n### input标签类型\n\n输入框、单选、多选、按钮"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000009-1",
+      "question": "“音频与视频标签”主要讲解什么？",
+      "answer": "根据课程证据，“音频与视频标签”主要讲解 **audio 和 video 标签的使用** [1]。",
+      "answerScope": "course",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 12.58660000000964,
+      "modelTimeToFirstTokenMs": 3565.7035000000033,
+      "timeToFirstTokenMs": 3578.2974000000104,
+      "generationDurationMs": 3798.9560000000056,
+      "totalDurationMs": 3811.5499000000127,
+      "outputCharacters": 49,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "title": "音频与视频标签",
+          "chunkIndex": 0,
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## 表单与多媒体\n\n### 音频与视频标签\n\naudio和video标签使用"
+        }
+      ],
+      "claims": []
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000009-2",
+      "question": "在实际编程中，应该如何应用“音频与视频标签”中的核心知识？",
+      "answer": "### 课程内结论\n- 课程介绍了audio和video标签的使用 [1]。\n\n### 通用补充（非课程原文）\n在实际编程中，使用`<audio>`和`<video>`标签时，通常需要：\n- 添加`controls`属性以显示播放控件。\n- 使用`<source>`元素提供多种格式的媒体文件（如MP4、WebM、Ogg），确保浏览器兼容性。\n- 对`<video>`设置`width`和`height`控制显示尺寸。\n- 利用`preload`属性（`none`/`metadata`/`auto`）优化加载行为。\n- 通过JavaScript API（`play()`、`pause()`、`currentTime`等）实现自定义控制。\n- 注意自动播放策略：`autoplay`通常需要配合`muted`或用户交互才能生效。\n- 提供备选内容（如文字说明或下载链接）以增强可访问性。",
+      "answerScope": "extended",
+      "evidenceQuality": "thin",
+      "contextDurationMs": 11.417699999990873,
+      "modelTimeToFirstTokenMs": 8257.534400000004,
+      "timeToFirstTokenMs": 8268.957599999994,
+      "generationDurationMs": 12131.998800000001,
+      "totalDurationMs": 12143.421999999991,
+      "outputCharacters": 394,
+      "sources": [
+        {
+          "index": 1,
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "title": "音频与视频标签",
+          "chunkIndex": 0,
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f",
+          "score": 1
+        }
+      ],
+      "evidence": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f",
+          "chunkIndex": 0,
+          "score": 1,
+          "content": "# HTML基础入门\n\n## 表单与多媒体\n\n### 音频与视频标签\n\naudio和video标签使用"
+        }
+      ],
+      "claims": []
+    }
+  ]
+}

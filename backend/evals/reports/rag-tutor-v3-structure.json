@@ -1,0 +1,51 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "promptVersion": "grounded-v3",
+  "promptRevision": "grounded-v3.1-boundary",
+  "evaluatedAt": "2026-07-31T12:38:38.621Z",
+  "metrics": {
+    "answers": 40,
+    "scopeRoutingAccuracy": 1,
+    "expectedSourceInclusion": 1,
+    "irrelevantSources": 0,
+    "citations": 66,
+    "citationCoverage": 1,
+    "citationValidity": 1,
+    "extendedAnswers": 20,
+    "extensionLabelAccuracy": 1,
+    "latencyMs": {
+      "context": {
+        "p50": 13.339899999991758,
+        "p95": 78.08759999999893,
+        "average": 29.55521499999786
+      },
+      "modelTimeToFirstToken": {
+        "p50": 8976.8583,
+        "p95": 20538.637099999993,
+        "average": 9851.083400000001
+      },
+      "timeToFirstToken": {
+        "p50": 8991.413200000003,
+        "p95": 20550.842999999993,
+        "average": 9880.656605
+      },
+      "generation": {
+        "p50": 12132.671199999997,
+        "p95": 24169.454100000003,
+        "average": 12366.239212499997
+      },
+      "total": {
+        "p50": 12196.180799999998,
+        "p95": 24181.660000000003,
+        "average": 12395.812417500001
+      }
+    },
+    "outputCharacters": {
+      "p50": 358,
+      "p95": 800,
+      "average": 325.95
+    }
+  },
+  "passed": true
+}

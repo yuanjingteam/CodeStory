@@ -11,6 +11,7 @@ import type {
 import ChoiceQuestion from './ChoiceQuestion'
 import CodeQuestion from './CodeQuestion'
 import TiptapViewer from '@/components/tiptap/TiptapViewer'
+import { getAiErrorMessage } from './chat/chatErrors'
 
 interface ExerciseModalProps {
   isOpen: boolean
@@ -18,6 +19,7 @@ interface ExerciseModalProps {
   onClose: () => void
   onComplete: (exerciseId: string) => void
   onCodeChange?: (code: string | null) => void
+  recommendationToken?: string | null
 }
 
 function ReviewList({ title, items }: { title: string; items: string[] }) {
@@ -89,6 +91,7 @@ export default function ExerciseModal({
   onClose,
   onComplete,
   onCodeChange,
+  recommendationToken,
 }: ExerciseModalProps) {
   const [exerciseData, setExerciseData] = useState<ExerciseDetailData | null>(null)
   const [loading, setLoading] = useState(false)
@@ -160,7 +163,7 @@ export default function ExerciseModal({
     if (!exerciseData?.id) return false
 
     try {
-      const response = await exerciseApi.submit(exerciseData.id, answer, currentHintLevelUsed)
+      const response = await exerciseApi.submit(exerciseData.id, answer, recommendationToken || undefined)
       setSubmitResult({
         correct: response.correct,
         score: response.score,
@@ -204,7 +207,7 @@ export default function ExerciseModal({
       setChoiceExplanation(response)
     } catch (error) {
       console.error('解释答案失败:', error)
-      setChoiceExplanationError('AI 解释暂时不可用，请稍后再试。')
+      setChoiceExplanationError(getAiErrorMessage(error).message)
     } finally {
       setChoiceExplanationLoading(false)
     }
@@ -341,7 +344,12 @@ export default function ExerciseModal({
               <TiptapViewer content={exerciseData.content} />
             </div>
 
-            {exerciseData.type === 'single_choice' ? (
+            {exerciseData.usable === false ? (
+              // 题干仍然显示，学生能看到坏的是哪道题，而不是一片空白
+              <div className="border-2 border-black bg-red-50 p-3 text-sm font-bold text-red-700">
+                本题选项配置有误，暂时无法作答，请联系课程管理员。
+              </div>
+            ) : exerciseData.type === 'single_choice' ? (
               <ChoiceQuestion
                 key={exerciseData.id}
                 exercise={exerciseData}

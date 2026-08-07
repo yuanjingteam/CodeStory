@@ -6,10 +6,11 @@ import type {
   UpdateChapterRequest,
   UpdateChapterResponse,
   DeleteChapterResponse,
+  RestoreChapterResponse,
 } from '@/types/chapter-manage';
 
 export const chapterManageApi = {
-  getList: (params?: { courseId?: string; keyword?: string; page?: number; size?: number }) => {
+  getList: (params?: { courseId?: string; keyword?: string; status?: 'active' | 'deleted'; page?: number; size?: number }) => {
     return request.get<ChapterListResponse>('admin/chapter/list', { params }).then(res => res.data);
   },
 
@@ -23,6 +24,12 @@ export const chapterManageApi = {
 
   delete: (id: string | number) => {
     return request.delete<DeleteChapterResponse>(`admin/chapter/${id}`).then(res => res.data);
+  },
+
+  restore: (id: string | number) => {
+    return request
+      .put<RestoreChapterResponse>(`admin/chapter/${id}/restore`)
+      .then(res => res.data);
   },
 };
 

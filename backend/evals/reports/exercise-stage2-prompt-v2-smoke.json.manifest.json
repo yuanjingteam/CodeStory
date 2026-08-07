@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "datasetHash": "526270cc87ae0fe17026837e42ceced9220162075a8af8727164c71318f705fe",
+  "sampleCount": 20,
+  "concurrency": 3,
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "baseUrl": "https://api.siliconflow.cn/v1",
+  "runtime": {
+    "promptVersion": "exercise-gen-v2",
+    "temperature": 0.1,
+    "maxTokens": 1400,
+    "timeoutMs": 120000,
+    "transportRetries": 1,
+    "structureRepairs": 1
+  }
+}

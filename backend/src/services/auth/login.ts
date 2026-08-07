@@ -5,7 +5,6 @@ import type { AuthSession } from '@/types/auth-session';
 import { captchaService } from '@/services/auth/captcha';
 import { createAuthSession } from '@/services/auth/session';
 import { createAuthSessionTimes } from '@/config/auth-session';
-import { deleteCache } from '@/utils/cache';
 import {
   validateEmail,
   validatePassword,
@@ -80,7 +79,6 @@ class LoginService {
       revokedAt: null,
     };
 
-    await deleteCache(`emailCode:${captchaId}`);
     await createAuthSession(authSession);
 
     return {

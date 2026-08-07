@@ -1,6 +1,7 @@
 'use client';
-import React from 'react';
 import { IoArrowBack, IoArrowForward } from 'react-icons/io5';
+import Button from '@/components/ui/Button';
+import NativeSelect from '@/components/ui/NativeSelect';
 
 interface PaginationProps {
   currentPage: number;
@@ -12,6 +13,7 @@ interface PaginationProps {
   showPageNumbers?: boolean;
   maxPageNumbers?: number;
   pageSizeOptions?: number[];
+  compactOnMobile?: boolean;
 }
 
 export default function Pagination({
@@ -24,6 +26,7 @@ export default function Pagination({
   showPageNumbers = true,
   maxPageNumbers = 5,
   pageSizeOptions = [10, 20, 50, 100],
+  compactOnMobile = false,
 }: PaginationProps) {
   // 计算需要显示的页码范围
   const getPageNumbers = () => {
@@ -54,69 +57,66 @@ export default function Pagination({
       {/* 左侧：每页条数选择 */}
       <div className="flex items-center gap-2">
         <span className="text-sm text-gray-600 font-bold">每页显示：</span>
-        <select
+        <NativeSelect
+          aria-label="每页显示条数"
           value={pageSize}
           onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          className="border-2 border-gray-300 py-1 font-bold bg-white rounded-md transition-all"
+          className="w-auto py-1.5"
         >
           {pageSizeOptions.map((size) => (
             <option key={size} value={size}>
               {size} 条
             </option>
           ))}
-        </select>
+        </NativeSelect>
         <span className="text-sm text-gray-600 font-bold">
           共 {totalItems} 条记录
         </span>
       </div>
 
       {/* 右侧：分页导航 */}
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex min-w-0 items-center justify-center gap-2">
         <span className="text-sm text-gray-600 font-bold">
           当前第 {currentPage}/{totalPages} 页
         </span>
 
         {/* 上一页 */}
-        <button
+        <Button
           onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className={`w-8 h-8 py-1 border-2 flex items-center justify-center rounded-md border-gray-300 font-bold transition-all ${
-            currentPage === 1
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-white  hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
-          }`}
+          disabled={currentPage <= 1}
+          size="icon"
+          aria-label="上一页"
         >
-          <IoArrowBack className="w-4 h-4" />
-        </button>
+          <IoArrowBack className="size-4" aria-hidden="true" />
+        </Button>
 
         {/* 页码 */}
-        {showPageNumbers &&
-          getPageNumbers().map((page) => (
-            <button
-              key={page}
-              onClick={() => onPageChange(page)}
-              className={`w-8 h-8 rounded-md border-2 border-gray-500 font-bold transition-all ${
-                currentPage === page
-                  ? 'bg-purple-500 text-white shadow-none'
-                  : 'bg-white  hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
-              }`}
-            >
-              {page}
-            </button>
-          ))}
+        {showPageNumbers ? (
+          <div className={compactOnMobile ? 'hidden items-center gap-2 sm:flex' : 'flex items-center gap-2'}>
+            {getPageNumbers().map((page) => (
+              <Button
+                key={page}
+                onClick={() => onPageChange(page)}
+                variant={currentPage === page ? 'primary' : 'secondary'}
+                size="icon"
+                aria-label={`第 ${page} 页`}
+                aria-current={currentPage === page ? 'page' : undefined}
+              >
+                {page}
+              </Button>
+            ))}
+          </div>
+        ) : null}
 
         {/* 下一页 */}
-        <button
+        <Button
           onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className={`w-8 h-8 py-1 border-2 flex items-center justify-center rounded-md border-gray-300 font-bold transition-all ${
-            currentPage === totalPages
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-white  hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
-          }`}
+          disabled={totalPages === 0 || currentPage >= totalPages}
+          size="icon"
+          aria-label="下一页"
         >
-          <IoArrowForward className="w-4 h-4" />
-        </button>
+          <IoArrowForward className="size-4" aria-hidden="true" />
+        </Button>
       </div>
     </div>
   );

@@ -1,0 +1,194 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "reviewerModel": "codex-manual",
+  "rubricVersion": "rag-claim-support-v2",
+  "reviewMethod": "manual agent audit",
+  "reviewedAnswers": 20,
+  "reviewedClaims": 68,
+  "supportedClaims": 32,
+  "supportAccuracy": 0.47058823529411764,
+  "passed": false,
+  "unsupportedClaims": [
+    {
+      "answerId": "lesson-100000000000000000000000000000000014-1",
+      "claim": "语义化标签能提升可读性、可维护性、SEO 和屏幕阅读器理解。",
+      "reviewerNote": "证据未说明这些收益"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "claim": "该小节讲解 int、double、boolean、char 及类和数组等具体数据类型。",
+      "reviewerNote": "证据只有小节标题"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "claim": "该小节讲解算术、关系、逻辑、赋值和自增自减等具体运算符。",
+      "reviewerNote": "证据未列具体运算符"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "claim": "该小节讲解顺序、if、switch、for、while 和 do-while 等流程结构。",
+      "reviewerNote": "证据未列具体流程结构"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "claim": "后续判断闰年练习会使用这些具体知识。",
+      "reviewerNote": "证据2只给规则和方法要求"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000014-2",
+      "claim": "header、nav、article、section、aside、footer 分别适用于回答所列页面区域。",
+      "reviewerNote": "证据只列三个标签名"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000014-2",
+      "claim": "div 用于纯样式容器，span 用于行内局部修饰。",
+      "reviewerNote": "证据只有区块与行内标题"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000014-2",
+      "claim": "article、section 和 header 应按回答所述规则嵌套并避免滥用。",
+      "reviewerNote": "证据未给嵌套规则"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000061-2",
+      "claim": "数据库应用包含关系型或非关系型数据建模及字段、类型和约束设计。",
+      "reviewerNote": "短标题未说明建模方法"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000061-2",
+      "claim": "实际程序使用 SQL 或 API 完成增删改查。",
+      "reviewerNote": "证据未给 SQL 操作"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000061-2",
+      "claim": "程序可用 sqlite3、JDBC、SQLAlchemy、Hibernate 等驱动或 ORM 连接数据库。",
+      "reviewerNote": "技术栈未出现在证据"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000061-2",
+      "claim": "事务机制用于保证原子性和一致性并处理并发。",
+      "reviewerNote": "证据未说明事务"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "claim": "年龄、价格、真假分别适合用 int、double、boolean。",
+      "reviewerNote": "证据未给类型用例"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "claim": "回答所列算术、比较和逻辑运算符用于计算与组合条件。",
+      "reviewerNote": "证据未列具体运算符"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "claim": "if-else、for 和 while 分别用于条件分支和重复执行。",
+      "reviewerNote": "证据未给语法用途"
+    },
+    {
+      "answerId": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "claim": "判断闰年可用取模和逻辑运算符实现所列条件。",
+      "reviewerNote": "证据给规则但未给实现方式"
+    },
+    {
+      "answerId": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "claim": "程序通过数据库驱动发送 SQL 并取得结果。",
+      "reviewerNote": "证据未说明驱动调用"
+    },
+    {
+      "answerId": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "claim": "表、列、行分别映射为类或集合、属性、对象或字典，并形成 ORM。",
+      "reviewerNote": "映射和 ORM 未出现"
+    },
+    {
+      "answerId": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "claim": "事务和锁可保证多用户操作不出错，程序无需自行实现并发控制。",
+      "reviewerNote": "事务和锁未出现"
+    },
+    {
+      "answerId": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "claim": "数据量大、多人协作和频繁查询时必须使用 MySQL、PostgreSQL 等数据库。",
+      "reviewerNote": "选型结论和产品名超出证据"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000013-1",
+      "claim": "div 独占一行且可设宽高，span 不换行且宽度由内容决定，两者均无语义并配合 CSS。",
+      "reviewerNote": "具体显示行为未说明"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000062-1",
+      "claim": "优势具体包括数据组织、查询效率、一致性、安全性和并发控制。",
+      "reviewerNote": "证据未列具体优势"
+    },
+    {
+      "answerId": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-1",
+      "claim": "课程明确要求使用 if-else 或三元运算符、逻辑运算符和 boolean 返回值。",
+      "reviewerNote": "证据未给这些具体实现"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000013-2",
+      "claim": "div 默认独占一行并用于页面骨架，span 不换行并用于局部文本样式。",
+      "reviewerNote": "用途和行为未说明"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000013-2",
+      "claim": "div 可配合 width、margin、float 或 Flexbox 布局，span 常调整字体和颜色。",
+      "reviewerNote": "CSS 用法未出现"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000062-2",
+      "claim": "数据库优势具体包括持久化、减少冗余、一致性、并发和安全性。",
+      "reviewerNote": "短标题未列具体优势"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000062-2",
+      "claim": "第三范式和外键用于避免冗余和更新异常。",
+      "reviewerNote": "范式和外键未出现"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000062-2",
+      "claim": "ACID 事务可使资金或库存操作全部成功或全部回滚。",
+      "reviewerNote": "事务内容未出现"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000062-2",
+      "claim": "锁和隔离级别可处理并发，程序无需自行实现复杂控制。",
+      "reviewerNote": "锁和隔离级别未出现"
+    },
+    {
+      "answerId": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-2",
+      "claim": "闰年判断用于年天数、二月天数和日期合法性等场景。",
+      "reviewerNote": "应用场景未出现在证据"
+    },
+    {
+      "answerId": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-2",
+      "claim": "程序应通过 pymysql、JDBC 等驱动执行 SQL，并用 BEGIN、COMMIT、ROLLBACK 管理事务。",
+      "reviewerNote": "驱动和事务未出现"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000001-1",
+      "claim": "HTML 标签定义标题、段落、图片和链接，并告诉浏览器内容及其结构。",
+      "reviewerNote": "具体标签作用未在证据中"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000063-1",
+      "claim": "数据库具体用于电商、银行、社交网络和物流系统中的回答所列数据。",
+      "reviewerNote": "具体场景未出现在证据"
+    },
+    {
+      "answerId": "lesson-300000000000000000000000000000000063-1",
+      "claim": "这些场景体现数据库的持久化、高效查询和并发控制优势。",
+      "reviewerNote": "证据未列这些具体优势"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000001-2",
+      "claim": "h1-h6、p、a、img、ul 和 ol 分别具有回答所述语义。",
+      "reviewerNote": "证据未给具体标签语义"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000001-2",
+      "claim": "标准页面由 html、head、body 构成并按回答示例嵌套。",
+      "reviewerNote": "证据仅有文档结构标题"
+    }
+  ]
+}

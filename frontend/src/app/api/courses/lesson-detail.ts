@@ -10,4 +10,14 @@ export const lessonDetailApi = {
       .get<LessonDetailResponse>(`chapter/lesson/${lessonId}`, { params })
       .then(res => res.data);
   },
+  startById: (
+    lessonId: string | number,
+    params?: { courseId?: string; chapterId?: string }
+  ) => {
+    return request
+      .post<LessonDetailResponse>(`chapter/lesson/${lessonId}/start`, null, {
+        params,
+      })
+      .then(res => res.data);
+  },
 };

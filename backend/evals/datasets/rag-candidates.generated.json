@@ -1,0 +1,707 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "generatedAt": "2026-07-31T01:30:11.257Z",
+  "reviewRequired": true,
+  "cases": [
+    {
+      "id": "lesson-100000000000000000000000000000000014-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000014",
+      "question": "“语义化标签”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000014-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000014",
+      "question": "在实际编程中，应该如何应用“语义化标签”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000013",
+      "question": "“div与span”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000013",
+      "question": "在实际编程中，应该如何应用“div与span”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-1",
+      "courseId": "f07875de-87e5-4a47-83f2-1c4c3a554ad7",
+      "lessonId": "300000000000000000000000000000000061",
+      "question": "“什么是数据库”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000061",
+          "contentHash": "1cea8e9ce11d33d991291cacf4b2a3bbcc2e6e33d0179973504e1fbe90cbd662"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-2",
+      "courseId": "f07875de-87e5-4a47-83f2-1c4c3a554ad7",
+      "lessonId": "300000000000000000000000000000000061",
+      "question": "在实际编程中，应该如何应用“什么是数据库”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000061",
+          "contentHash": "1cea8e9ce11d33d991291cacf4b2a3bbcc2e6e33d0179973504e1fbe90cbd662"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-1",
+      "courseId": "f07875de-87e5-4a47-83f2-1c4c3a554ad7",
+      "lessonId": "300000000000000000000000000000000062",
+      "question": "“为什么使用数据库”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000062",
+          "contentHash": "0438a3d1eb2518a66123b55e4365132e35fa83d5370f7f9563f002bec425a87b"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-2",
+      "courseId": "f07875de-87e5-4a47-83f2-1c4c3a554ad7",
+      "lessonId": "300000000000000000000000000000000062",
+      "question": "在实际编程中，应该如何应用“为什么使用数据库”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000062",
+          "contentHash": "0438a3d1eb2518a66123b55e4365132e35fa83d5370f7f9563f002bec425a87b"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000001",
+      "question": "“什么是HTML”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000001",
+          "contentHash": "001092861685869f547a464478e25e073ed626fa4ad5e440fb6715ced344b74d"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000001",
+      "question": "在实际编程中，应该如何应用“什么是HTML”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000001",
+          "contentHash": "001092861685869f547a464478e25e073ed626fa4ad5e440fb6715ced344b74d"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000002-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000002",
+      "question": "“HTML文档结构”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000002",
+          "contentHash": "891450f70748724ecad2db8ba4d5166962131d62cb56f79b5036894e95d82a6c"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000002-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000002",
+      "question": "在实际编程中，应该如何应用“HTML文档结构”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000002",
+          "contentHash": "891450f70748724ecad2db8ba4d5166962131d62cb56f79b5036894e95d82a6c"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000003-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000003",
+      "question": "“第一个HTML页面”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000003",
+          "contentHash": "714d35d6fad09830e85139427bb8f16ea51cf4efb0d640d0f50084ee5ad4e2c4"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000003-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000003",
+      "question": "在实际编程中，应该如何应用“第一个HTML页面”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000003",
+          "contentHash": "714d35d6fad09830e85139427bb8f16ea51cf4efb0d640d0f50084ee5ad4e2c4"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000004-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000004",
+      "question": "“标题标签h1-h6”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000004-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000004",
+      "question": "在实际编程中，应该如何应用“标题标签h1-h6”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000005-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000005",
+      "question": "“段落与换行标签”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000005-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000005",
+      "question": "在实际编程中，应该如何应用“段落与换行标签”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000006-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000006",
+      "question": "“文本格式化标签”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000006-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000006",
+      "question": "在实际编程中，应该如何应用“文本格式化标签”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000007-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000007",
+      "question": "“form表单基础”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000007-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000007",
+      "question": "在实际编程中，应该如何应用“form表单基础”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000008-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000008",
+      "question": "“input标签类型”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000008-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000008",
+      "question": "在实际编程中，应该如何应用“input标签类型”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000009-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000009",
+      "question": "“音频与视频标签”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000009-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000009",
+      "question": "在实际编程中，应该如何应用“音频与视频标签”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000010-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000010",
+      "question": "“无序列表”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000010",
+          "contentHash": "3f4fc56fee7fd76ec1b37323d8a2f954788ca4cba6e8003400f563739d275e88"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000010-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000010",
+      "question": "在实际编程中，应该如何应用“无序列表”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000010",
+          "contentHash": "3f4fc56fee7fd76ec1b37323d8a2f954788ca4cba6e8003400f563739d275e88"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000015-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000015",
+      "question": "“布局实战”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000015",
+          "contentHash": "5ffe273eec61f8a5fbc15dc7179b7538378bbea213c3be14a40c8df8f3f1d22c"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000015-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000015",
+      "question": "在实际编程中，应该如何应用“布局实战”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000015",
+          "contentHash": "5ffe273eec61f8a5fbc15dc7179b7538378bbea213c3be14a40c8df8f3f1d22c"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000063-1",
+      "courseId": "f07875de-87e5-4a47-83f2-1c4c3a554ad7",
+      "lessonId": "300000000000000000000000000000000063",
+      "question": "“数据库应用场景”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000063",
+          "contentHash": "7ef434f7cab7c645e4e248bf4c30ad75a608db51f57ba9c57899794f606766ad"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000063-2",
+      "courseId": "f07875de-87e5-4a47-83f2-1c4c3a554ad7",
+      "lessonId": "300000000000000000000000000000000063",
+      "question": "在实际编程中，应该如何应用“数据库应用场景”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000063",
+          "contentHash": "7ef434f7cab7c645e4e248bf4c30ad75a608db51f57ba9c57899794f606766ad"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000011-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000011",
+      "question": "“有序列表”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000011-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000011",
+      "question": "在实际编程中，应该如何应用“有序列表”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000012-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000012",
+      "question": "“表格基础”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000012",
+          "contentHash": "f11ae144a94334ec0d8da7c96ff3bc000119e3f25ccd5386754b96603f6dd85f"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000012-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000012",
+      "question": "在实际编程中，应该如何应用“表格基础”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000012",
+          "contentHash": "f11ae144a94334ec0d8da7c96ff3bc000119e3f25ccd5386754b96603f6dd85f"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "courseId": "fc4dbcc6-a2e0-4de9-b248-e19e7aef509c",
+      "lessonId": "8bcec1e1-3c9a-413d-b9e2-9595ae93dd47",
+      "question": "“1.1数据类型、运算符与流程控制”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "8bcec1e1-3c9a-413d-b9e2-9595ae93dd47",
+          "contentHash": "f2e94e4ae799b7c5bd771409c415d41db689ed0622ddc0906c28275a29318b33"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "courseId": "fc4dbcc6-a2e0-4de9-b248-e19e7aef509c",
+      "lessonId": "8bcec1e1-3c9a-413d-b9e2-9595ae93dd47",
+      "question": "在实际编程中，应该如何应用“1.1数据类型、运算符与流程控制”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "8bcec1e1-3c9a-413d-b9e2-9595ae93dd47",
+          "contentHash": "f2e94e4ae799b7c5bd771409c415d41db689ed0622ddc0906c28275a29318b33"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-1",
+      "courseId": "fc4dbcc6-a2e0-4de9-b248-e19e7aef509c",
+      "lessonId": "e747215f-ca4a-465b-bb66-495071e803d4",
+      "question": "“1.3判断闰年”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "e747215f-ca4a-465b-bb66-495071e803d4",
+          "contentHash": "881d518a9fef886253646221788424d68c283b4c6579b12d9657d47f58992895"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-2",
+      "courseId": "fc4dbcc6-a2e0-4de9-b248-e19e7aef509c",
+      "lessonId": "e747215f-ca4a-465b-bb66-495071e803d4",
+      "question": "在实际编程中，应该如何应用“1.3判断闰年”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "e747215f-ca4a-465b-bb66-495071e803d4",
+          "contentHash": "881d518a9fef886253646221788424d68c283b4c6579b12d9657d47f58992895"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-1",
+      "courseId": "ae6bb3d9-972c-4fca-ae5d-76829fcf2126",
+      "lessonId": "94a61463-e055-4467-8894-fe3fb99f0056",
+      "question": "“1.1 认识数据库：数据管理的起点”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "dfb259645a2dd36126e301ee49d6bd16f0e7857eb2ec238199fe44b37ce5cc68"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "courseId": "ae6bb3d9-972c-4fca-ae5d-76829fcf2126",
+      "lessonId": "94a61463-e055-4467-8894-fe3fb99f0056",
+      "question": "在实际编程中，应该如何应用“1.1 认识数据库：数据管理的起点”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "dfb259645a2dd36126e301ee49d6bd16f0e7857eb2ec238199fe44b37ce5cc68"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-1",
+      "courseId": "ae6bb3d9-972c-4fca-ae5d-76829fcf2126",
+      "lessonId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+      "question": "“1.2 数据库与数据表创建、数据增删改”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "ad329c1df6f0603070205de5da5bc6e82f4aec698fe99baeae2285d311c984aa"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-2",
+      "courseId": "ae6bb3d9-972c-4fca-ae5d-76829fcf2126",
+      "lessonId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+      "question": "在实际编程中，应该如何应用“1.2 数据库与数据表创建、数据增删改”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "ad329c1df6f0603070205de5da5bc6e82f4aec698fe99baeae2285d311c984aa"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-04bc001d-df88-41ed-a275-d6b3774f21d4-1",
+      "courseId": "ae6bb3d9-972c-4fca-ae5d-76829fcf2126",
+      "lessonId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+      "question": "“1.3 SQL高级查询（模糊查询、排序、分页）”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "contentHash": "550be508b1f8962171b962cd8741c36d6d8fd32fbec36fea9f66d0d4d28c78a6"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-04bc001d-df88-41ed-a275-d6b3774f21d4-2",
+      "courseId": "ae6bb3d9-972c-4fca-ae5d-76829fcf2126",
+      "lessonId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+      "question": "在实际编程中，应该如何应用“1.3 SQL高级查询（模糊查询、排序、分页）”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "contentHash": "550be508b1f8962171b962cd8741c36d6d8fd32fbec36fea9f66d0d4d28c78a6"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-33810ea6-d130-4c42-93db-3741d29cc401-1",
+      "courseId": "ae6bb3d9-972c-4fca-ae5d-76829fcf2126",
+      "lessonId": "33810ea6-d130-4c42-93db-3741d29cc401",
+      "question": "“2.1 聚合函数（统计查询）”主要讲解什么？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "33810ea6-d130-4c42-93db-3741d29cc401",
+          "contentHash": "7e0923d75650d45c8ced491ba871272704906f54a14235e2c417369482651544"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "lesson-33810ea6-d130-4c42-93db-3741d29cc401-2",
+      "courseId": "ae6bb3d9-972c-4fca-ae5d-76829fcf2126",
+      "lessonId": "33810ea6-d130-4c42-93db-3741d29cc401",
+      "question": "在实际编程中，应该如何应用“2.1 聚合函数（统计查询）”中的核心知识？",
+      "expectedSources": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "33810ea6-d130-4c42-93db-3741d29cc401",
+          "contentHash": "7e0923d75650d45c8ced491ba871272704906f54a14235e2c417369482651544"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "exercise-e00000000000000000000000000000000021-1",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000002",
+      "question": "这道关于“超链接”的题目主要考查什么？",
+      "expectedSources": [
+        {
+          "sourceType": "exercise",
+          "sourceId": "e00000000000000000000000000000000021",
+          "contentHash": "5e39d1b70699e03f40ad0b81b5f628fb2db55ae6708637542a2f82f920536b6a"
+        }
+      ],
+      "reviewStatus": "approved"
+    },
+    {
+      "id": "exercise-e00000000000000000000000000000000021-2",
+      "courseId": "7445333a-35a1-4b06-80d2-3d851bec8935",
+      "lessonId": "100000000000000000000000000000000002",
+      "question": "解决这道关于“超链接”的题目时应采用什么思路？",
+      "expectedSources": [
+        {
+          "sourceType": "exercise",
+          "sourceId": "e00000000000000000000000000000000021",
+          "contentHash": "5e39d1b70699e03f40ad0b81b5f628fb2db55ae6708637542a2f82f920536b6a"
+        }
+      ],
+      "reviewStatus": "approved"
+    }
+  ]
+}

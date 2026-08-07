@@ -3,6 +3,9 @@ import {
   createChatModel,
   getMessageText,
 } from './_shared/model';
+import { observeAiCall } from './_shared/ai-call-observability.service';
+
+const EXERCISE_HINT_PROMPT_VERSION = 'exercise-hint-v1';
 
 export interface ExerciseHintInput {
   hintLevel: number;
@@ -46,17 +49,25 @@ export async function generateExerciseHint(input: ExerciseHintInput): Promise<st
   const chain = exerciseHintPrompt.pipe(
     createChatModel({ temperature: 0.2, maxTokens: 300 })
   );
-  const response = await chain.invoke({
-    hintLevel: input.hintLevel,
-    exerciseType: input.exerciseType,
-    knowledge: input.knowledge || '未标注',
-    content: input.content,
-    lessonContent: input.lessonContent || '暂无小节正文',
-    adminHints:
-      input.adminHints.length > 0
-        ? input.adminHints.map((hint, index) => `提示${index + 1}：${hint}`).join('\n')
-        : '无管理员提示，请使用兜底提示模式。',
-  });
+  const response = await observeAiCall(
+    {
+      scene: 'exercise-hint',
+      node: 'generate',
+      promptVersion: EXERCISE_HINT_PROMPT_VERSION,
+      fallbackUsed: input.adminHints.length === 0,
+    },
+    () => chain.invoke({
+      hintLevel: input.hintLevel,
+      exerciseType: input.exerciseType,
+      knowledge: input.knowledge || '未标注',
+      content: input.content,
+      lessonContent: input.lessonContent || '暂无小节正文',
+      adminHints:
+        input.adminHints.length > 0
+          ? input.adminHints.map((hint, index) => `提示${index + 1}：${hint}`).join('\n')
+          : '无管理员提示，请使用兜底提示模式。',
+    })
+  );
 
   return getMessageText(response.content).trim();
 }

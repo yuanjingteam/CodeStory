@@ -1,7 +1,12 @@
 'use client';
 
+import { useId } from 'react';
 import { LuEye, LuEyeClosed } from 'react-icons/lu';
 import { IoCheckmark, IoClose } from 'react-icons/io5';
+import Button from '@/components/ui/Button';
+import Field from '@/components/ui/Field';
+import Input from '@/components/ui/Input';
+
 interface FormInputProps {
   label: string;
   type?: string;
@@ -31,76 +36,62 @@ export default function FormInput({
   onChange,
   onBlur,
 }: FormInputProps) {
+  const inputId = useId();
+  const visibleError = touched ? error : undefined;
+
   return (
-    <div>
-      {/* label */}
-      <div className="flex items-center justify-between mb-1">
-        <label className="text-sm font-black text-gray-700">{label}</label>
-
-        {touched && error && (
-          <span className="text-xs font-bold text-red-500">{error}</span>
-        )}
-      </div>
-
-      {/* input */}
+    <Field
+      label={label}
+      htmlFor={inputId}
+      error={visibleError}
+    >
       <div className="relative">
-        <input
+        <Input
+          id={inputId}
           type={
             showPasswordToggle ? (showPassword ? 'text' : 'password') : type
           }
           value={value}
           placeholder={placeholder}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(event) => onChange(event.target.value)}
           onBlur={onBlur}
-          className={`
-            w-full px-4 py-3
-            ${showPasswordToggle ? 'pr-24' : 'pr-16'}
-            border-2 
-            rounded-sm
-            border-gray-500
-            bg-white
-            font-bold
-            outline-none
-            transition-all 
-            duration-200
-            ${error ? 'border-red-500' : ''}
-            ${success ? 'border-green-500' : ''}
-          `}
+          invalid={Boolean(visibleError)}
+          aria-describedby={visibleError ? `${inputId}-error` : undefined}
+          className={showPasswordToggle ? 'pr-20' : 'pr-11'}
         />
 
-        {/* 密码显示切换 */}
-        {showPasswordToggle && (
-          <button
+        {showPasswordToggle ? (
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onTogglePassword}
-            className="
-              absolute right-12 top-1/2
-              -translate-y-1/2
-              text-gray-500
-              hover:text-black
-              transition-colors
-            "
+            aria-label={showPassword ? '隐藏密码' : '显示密码'}
+            className="absolute right-9 top-1/2 size-8 min-h-0 -translate-y-1/2 border-0"
           >
             {showPassword ? (
-              <LuEye className="w-5 h-5" />
+              <LuEye className="size-5" aria-hidden="true" />
             ) : (
-              <LuEyeClosed className="w-5 h-5" />
+              <LuEyeClosed className="size-5" aria-hidden="true" />
             )}
-          </button>
-        )}
-        <div className="absolute right-4 top-1/2 -translate-y-1/2">
-          {touched && success && (
-            <span className="text-green-500 font-black text-lg">
-              <IoCheckmark className="w-5 h-5" />
-            </span>
-          )}
-          {touched && error && (
-            <span className="text-red-500 font-black text-lg">
-              <IoClose className="w-5 h-5" />
-            </span>
-          )}
-        </div>
+          </Button>
+        ) : null}
+
+        {touched && (success || error) ? (
+          <span
+            className={`absolute right-3 top-1/2 -translate-y-1/2 ${
+              error ? 'text-red-600' : 'text-green-600'
+            }`}
+            aria-hidden="true"
+          >
+            {error ? (
+              <IoClose className="size-5" />
+            ) : (
+              <IoCheckmark className="size-5" />
+            )}
+          </span>
+        ) : null}
       </div>
-    </div>
+    </Field>
   );
 }

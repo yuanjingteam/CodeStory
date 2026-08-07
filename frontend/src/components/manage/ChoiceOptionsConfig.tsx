@@ -3,27 +3,27 @@ import type { ExerciseMetadata } from '@/types/lesson-manage';
 
 interface ChoiceOptionsConfigProps {
   metadata: ExerciseMetadata | null;
+  answer: string;
   onChange: (metadata: ExerciseMetadata, answer: string) => void;
 }
 
-export default function ChoiceOptionsConfig({ metadata, onChange }: ChoiceOptionsConfigProps) {
+// 正确答案只认题目自身的 answer 字段。此前这里另写一个 metadata.correctAnswer，
+// 后端没有任何读取方，两者一旦漂移就会产出「答案为空但选项齐全」的坏题。
+export default function ChoiceOptionsConfig({ metadata, answer, onChange }: ChoiceOptionsConfigProps) {
   const options = (metadata && Array.isArray(metadata.options)) ? metadata.options : ['', '', '', ''];
-  const correctAnswer = (metadata as Record<string, unknown> | null)?.correctAnswer as string || '';
 
-  const updateOptions = (newOpts: string[], newCorrectAnswer: string) => {
-    onChange({ options: newOpts, correctAnswer: newCorrectAnswer } as ExerciseMetadata, newCorrectAnswer);
+  const updateOptions = (newOpts: string[], newAnswer: string) => {
+    onChange({ options: newOpts }, newAnswer);
   };
 
   const handleSelectCorrect = (optIdx: number) => {
-    const newCorrectAnswer = options[optIdx] || '';
-    updateOptions([...options], newCorrectAnswer);
+    updateOptions([...options], options[optIdx] || '');
   };
 
   const handleOptionChange = (optIdx: number, value: string) => {
     const newOpts = [...options];
     newOpts[optIdx] = value;
-    const newCorrectAnswer = newOpts.includes(correctAnswer) ? correctAnswer : '';
-    updateOptions(newOpts, newCorrectAnswer);
+    updateOptions(newOpts, newOpts.includes(answer) ? answer : '');
   };
 
   return (
@@ -34,7 +34,7 @@ export default function ChoiceOptionsConfig({ metadata, onChange }: ChoiceOption
       </p>
       <div className="space-y-2">
         {options.map((option: string, optIdx: number) => {
-          const isCorrect = correctAnswer === option && option !== '';
+          const isCorrect = answer === option && option !== '';
           return (
             <div key={optIdx} className="flex items-center gap-2">
               <button

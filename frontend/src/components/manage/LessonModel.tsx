@@ -1,7 +1,10 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { FiX } from 'react-icons/fi';
-import type { CreateLessonRequest, UpdateLessonRequest } from '@/types/lesson-manage';
+import type {
+  CreateLessonRequest,
+  DeletedExerciseItem,
+  UpdateLessonRequest,
+} from '@/types/lesson-manage';
 import chapterManageApi from '@/app/api/manage/chapter-manage';
 import { SearchableSelect } from '@/components/common';
 import type { ChapterItem } from '@/types/chapter-manage';
@@ -11,11 +14,17 @@ import { generateExerciseId } from '@/utils/exerciseHelpers';
 import { validateExercise } from '@/utils/exerciseValidation';
 import { clearLessonDraft, loadLessonDraft, saveLessonDraft } from '@/utils/lessonDraft';
 import ExerciseList from './ExerciseList';
+import Button from '@/components/ui/Button';
+import Dialog from '@/components/ui/Dialog';
+import Field from '@/components/ui/Field';
+import Input from '@/components/ui/Input';
+import NativeSelect from '@/components/ui/NativeSelect';
 
 interface LessonModelProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: (CreateLessonRequest | UpdateLessonRequest) & { id?: string }) => Promise<void>;
+  onRestoreExercise?: (exerciseId: string) => Promise<void>;
   initialData?: {
     id: string;
     chapterId: string;
@@ -24,9 +33,24 @@ interface LessonModelProps {
     difficulty: number;
     sortOrder: number;
     estimatedTime?: number;
+    knowledgeIndexPolicy?: 'auto' | 'include' | 'exclude';
     exercises?: ExerciseItem[];
+    deletedExercises?: DeletedExerciseItem[];
   };
 }
+
+const normalizeExercise = (exercise: Partial<ExerciseItem>): ExerciseItem => ({
+  id: exercise.id || generateExerciseId(),
+  type: exercise.type || '',
+  exerciseContent: exercise.exerciseContent || '',
+  answer: exercise.answer || '',
+  knowledge: exercise.knowledge || '',
+  analysis: exercise.analysis || '',
+  source: exercise.source || 'static',
+  metadata: exercise.metadata || null,
+  hints: exercise.hints || null,
+  knowledgeIndexPolicy: exercise.knowledgeIndexPolicy || 'auto',
+});
 
 const getInitialFormData = (initialData?: LessonModelProps['initialData']) => ({
   chapterId: initialData?.chapterId || '',
@@ -35,27 +59,43 @@ const getInitialFormData = (initialData?: LessonModelProps['initialData']) => ({
   difficulty: initialData?.difficulty ?? 0,
   sortOrder: initialData?.sortOrder ?? 0,
   estimatedTime: initialData?.estimatedTime ?? 0,
+  knowledgeIndexPolicy: initialData?.knowledgeIndexPolicy || 'auto',
   exercises: initialData?.exercises && initialData.exercises.length > 0
-    ? initialData.exercises.map(ex => ({
-        id: ex.id || generateExerciseId(),
-        type: ex.type || '',
-        exerciseContent: ex.exerciseContent || '',
-        answer: ex.answer || '',
-        metadata: ex.metadata || null,
-        hints: ex.hints || null,
-      }))
+    ? initialData.exercises.map(normalizeExercise)
     : [],
 });
 
 type LessonFormData = ReturnType<typeof getInitialFormData>;
 
-export default function LessonModel({ open, onClose, onSubmit, initialData }: LessonModelProps) {
+const normalizeDraftFormData = (draft: Partial<LessonFormData>): LessonFormData => ({
+  chapterId: draft.chapterId || '',
+  lessonName: draft.lessonName || '',
+  content: draft.content || '',
+  difficulty: draft.difficulty ?? 0,
+  sortOrder: draft.sortOrder ?? 0,
+  estimatedTime: draft.estimatedTime ?? 0,
+  knowledgeIndexPolicy: draft.knowledgeIndexPolicy || 'auto',
+  exercises: Array.isArray(draft.exercises)
+    ? draft.exercises.map(normalizeExercise)
+    : [],
+});
+
+export default function LessonModel({
+  open,
+  onClose,
+  onSubmit,
+  onRestoreExercise,
+  initialData,
+}: LessonModelProps) {
   const isEdit = !!initialData?.id;
 
   const [formData, setFormData] = useState<LessonFormData>(() => getInitialFormData(initialData));
   const [submitting, setSubmitting] = useState(false);
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
   const [loadingChapters, setLoadingChapters] = useState(false);
+  const [restoringExerciseId, setRestoringExerciseId] = useState<
+    string | null
+  >(null);
   const [draftReady, setDraftReady] = useState(isEdit);
   const [initialSnapshot] = useState(() => JSON.stringify(getInitialFormData(initialData)));
   const submittedRef = useRef(false);
@@ -102,7 +142,7 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
         const shouldRestore = window.confirm(`检测到 ${savedAt} 保存的未提交小节草稿，是否恢复？`);
 
         if (shouldRestore) {
-          setFormData(draft.data);
+          setFormData(normalizeDraftFormData(draft.data));
         } else {
           clearLessonDraft();
         }
@@ -197,27 +237,48 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => {
-      if (window.getSelection()?.toString()) return
-      requestClose()
-    }}>
-      <div
-        className="bg-white border-3 border-black shadow-[6px_6px_0_0_rgba(0,0,0,1)] w-full max-w-4xl flex flex-col max-h-[85vh]"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between p-4 border-b-2 border-black flex-shrink-0">
-          <h2 className="text-xl font-bold">{isEdit ? '编辑小节' : '新建小节'}</h2>
-          <button
-            onClick={() => requestClose()}
-            className="w-8 h-8 flex items-center justify-center border-2 border-black hover:bg-gray-100 font-bold"
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen && !submitting) {
+          requestClose();
+        }
+      }}
+      title={isEdit ? '编辑小节' : '新建小节'}
+      size="xl"
+      closeDisabled={submitting}
+      bodyClassName="space-y-4"
+      footer={
+        <>
+          {!isEdit && isDirty ? (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => requestClose({ discard: true })}
+              disabled={submitting}
+              className="mr-auto text-red-600 hover:bg-red-50 hover:text-red-700"
+            >
+              放弃草稿
+            </Button>
+          ) : null}
+          <Button
+            onClick={() => requestClose({ skipConfirm: !isEdit })}
+            disabled={submitting}
           >
-            <FiX className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="p-6 space-y-4 overflow-y-auto flex-1">
-          <div>
-            <label className="block text-sm font-bold mb-1">所属章节 *</label>
+            {isEdit ? '取消' : '暂存并关闭'}
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSubmit}
+            loading={submitting}
+            loadingText="提交中..."
+          >
+            {isEdit ? '保存修改' : '确认创建'}
+          </Button>
+        </>
+      }
+    >
+          <Field label="所属章节" required>
             <SearchableSelect
               options={chapters.map(chapter => ({
                 label: `${chapter.courseName} - ${chapter.chapterName}`,
@@ -230,22 +291,21 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
               disabled={isEdit}
               loading={loadingChapters}
               emptyText="无匹配章节"
+              ariaLabel="所属章节"
             />
-          </div>
+          </Field>
 
-          <div>
-            <label className="block text-sm font-bold mb-1">小节名称 *</label>
-            <input
+          <Field label="小节名称" htmlFor="lesson-name" required>
+            <Input
+              id="lesson-name"
               type="text"
               value={formData.lessonName}
               onChange={e => setFormData(prev => ({ ...prev, lessonName: e.target.value }))}
               placeholder="请输入小节名称，例如：1.1 变量的声明与赋值"
-              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
-          </div>
+          </Field>
 
-          <div>
-            <label className="block text-sm font-bold mb-1">小节内容</label>
+          <Field label="小节内容">
             <TiptapEditor
               content={formData.content}
               onChange={(content) => setFormData(prev => ({ ...prev, content }))}
@@ -255,75 +315,103 @@ export default function LessonModel({ open, onClose, onSubmit, initialData }: Le
                 type: ex.type,
               }))}
             />
-          </div>
+          </Field>
 
-          <div>
-            <label className="block text-sm font-bold mb-1">难度</label>
-            <select
+          <Field
+            label="AI 知识库策略"
+            htmlFor="lesson-index-policy"
+            helperText="自动模式会阻止空白内容，并将过短内容标记为待审核。"
+          >
+            <NativeSelect
+              id="lesson-index-policy"
+              value={formData.knowledgeIndexPolicy}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  knowledgeIndexPolicy: e.target.value as
+                    | 'auto'
+                    | 'include'
+                    | 'exclude',
+                }))
+              }
+            >
+              <option value="auto">自动判断</option>
+              <option value="include">人工确认纳入</option>
+              <option value="exclude">排除出 AI 知识库</option>
+            </NativeSelect>
+          </Field>
+
+          <Field label="难度" htmlFor="lesson-difficulty">
+            <NativeSelect
+              id="lesson-difficulty"
               value={formData.difficulty}
               onChange={e => setFormData(prev => ({ ...prev, difficulty: Number(e.target.value) }))}
-              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
             >
               <option value={0}>简单</option>
               <option value={1}>中等</option>
               <option value={2}>困难</option>
-            </select>
-          </div>
+            </NativeSelect>
+          </Field>
 
-          <div>
-            <label className="block text-sm font-bold mb-1">预估时长（分钟）</label>
-            <input
+          <Field label="预估时长（分钟）" htmlFor="lesson-duration">
+            <Input
+              id="lesson-duration"
               type="number"
               min={0}
               value={formData.estimatedTime || ''}
               onChange={e => setFormData(prev => ({ ...prev, estimatedTime: Number(e.target.value) || 0 }))}
               placeholder="请输入预估学习时长，例如：15"
-              className="w-full px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
-          </div>
+          </Field>
 
           <ExerciseList
             exercises={formData.exercises}
             onChange={exercises => setFormData(prev => ({ ...prev, exercises }))}
           />
-        </div>
-
-        <div className="flex gap-3 p-4 border-t-2 border-black items-center justify-end flex-shrink-0">
-          {!isEdit && isDirty && (
-            <button
-              type="button"
-              onClick={() => requestClose({ discard: true })}
-              disabled={submitting}
-              className="mr-auto px-2 py-2 text-sm font-bold text-red-500 hover:text-red-700 disabled:opacity-50"
-            >
-              放弃草稿
-            </button>
-          )}
-          <button
-            onClick={() => requestClose({ skipConfirm: !isEdit })}
-            disabled={submitting}
-            className="px-5 py-2 border-2 border-black font-bold hover:bg-gray-100 transition-colors disabled:opacity-50"
-          >
-            {isEdit ? '取消' : '暂存并关闭'}
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="px-5 py-2 bg-purple-500 text-white font-bold border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-none transition-all disabled:opacity-50 flex items-center gap-2"
-          >
-            {submitting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                提交中...
-              </>
-            ) : isEdit ? (
-              '保存修改'
-            ) : (
-              '确认创建'
+          {initialData?.deletedExercises &&
+            initialData.deletedExercises.length > 0 && (
+              <section className="border-2 border-black bg-zinc-100 p-4">
+                <h3 className="font-black text-zinc-950">
+                  已删除题目
+                </h3>
+                <p className="mt-1 text-sm text-zinc-600">
+                  删除后保留 30 天。恢复时会关闭当前窗口，避免旧表单再次删除该题目。
+                </p>
+                <div className="mt-3 space-y-2">
+                  {initialData.deletedExercises.map((exercise) => (
+                    <div
+                      key={exercise.id}
+                      className="flex items-center justify-between gap-3 border-2 border-black bg-white px-3 py-2"
+                    >
+                      <span className="min-w-0 truncate text-sm font-bold">
+                        {exercise.exerciseContent || '未命名题目'}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={
+                          !onRestoreExercise ||
+                          restoringExerciseId === exercise.id
+                        }
+                        onClick={async () => {
+                          if (!onRestoreExercise) return;
+                          setRestoringExerciseId(exercise.id);
+                          try {
+                            await onRestoreExercise(exercise.id);
+                          } finally {
+                            setRestoringExerciseId(null);
+                          }
+                        }}
+                        className="shrink-0 border-2 border-black bg-green-300 px-3 py-1 text-xs font-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:cursor-wait disabled:opacity-60"
+                      >
+                        {restoringExerciseId === exercise.id
+                          ? '恢复中'
+                          : '恢复'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
             )}
-          </button>
-        </div>
-      </div>
-    </div>
+    </Dialog>
   );
 }

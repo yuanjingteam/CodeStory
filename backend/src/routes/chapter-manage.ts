@@ -4,7 +4,8 @@ import {
   getChapterList,
   createChapter,
   updateChapter,
-  deleteChapter
+  deleteChapter,
+  restoreChapter,
 } from '../services/course-manage/chapter-manage';
 
 const router = Router();
@@ -27,6 +28,11 @@ router.put('/:id',
 router.delete('/:id',
   authMiddleware,
   deleteChapter
+);
+
+router.put('/:id/restore',
+  authMiddleware,
+  restoreChapter
 );
 
 export default router;

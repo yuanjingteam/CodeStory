@@ -5,12 +5,18 @@ import {
   submitExercise,
   formatExerciseResponse,
 } from '../services/courses/exercise.service';
+import { ChoiceExerciseUnusableError } from '../services/courses/choice-exercise-integrity';
 import {
   getAcquiredHints,
   getExerciseHint,
 } from '../services/courses/exercise-hint.service';
+import { sendAiErrorResponse } from '../services/ai/ai-chat-error.service';
 import { badRequest, notFound, serverError } from '../utils/response';
 import { authMiddleware } from '../middleware/auth';
+import {
+  codeSubmissionRateLimit,
+  exerciseAssistanceRateLimit,
+} from '../middleware/ai-rate-limit';
 
 const router = Router();
 
@@ -38,31 +44,38 @@ router.get('/detail', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/submit', authMiddleware, async (req, res) => {
+router.post('/submit', authMiddleware, codeSubmissionRateLimit, async (req, res) => {
   try {
-    const { exercise_id, answer, hint_level_used } = req.body;
+    const { exercise_id, answer, recommendationToken } = req.body;
     const userId = req.user!.id;
 
     if (!exercise_id || !answer) {
       return badRequest(res, '缺少 exercise_id 或 answer 参数');
     }
 
-    const result = await submitExercise(exercise_id, answer, userId, hint_level_used || 0);
+    const result = await submitExercise(exercise_id, answer, userId);
     if (!result) {
       return notFound(res, '题目不存在');
     }
 
+    if (recommendationToken) {
+      const { recordRecommendationEvent } = await import('../services/recommendations/service');
+      await recordRecommendationEvent({ userId, token: recommendationToken, eventType: 'review_completed' }).catch(() => undefined);
+    }
     return res.json({
       code: 200,
       message: 'success',
       data: result,
     });
   } catch (error) {
+    if (error instanceof ChoiceExerciseUnusableError) {
+      return badRequest(res, '本题选项配置有误，暂时无法作答');
+    }
     return serverError(res, error);
   }
 });
 
-router.post('/choice-explanation', authMiddleware, async (req, res) => {
+router.post('/choice-explanation', authMiddleware, exerciseAssistanceRateLimit, async (req, res) => {
   try {
     const { exercise_id, answer } = req.body;
     const userId = req.user!.id;
@@ -82,11 +95,11 @@ router.post('/choice-explanation', authMiddleware, async (req, res) => {
       data: result,
     });
   } catch (error) {
-    return serverError(res, error);
+    return sendAiErrorResponse(res, 'choice-explanation', error);
   }
 });
 
-router.get('/hint', authMiddleware, async (req, res) => {
+router.get('/hint', authMiddleware, exerciseAssistanceRateLimit, async (req, res) => {
   try {
     const exerciseId = req.query.exercise_id as string;
     const hintLevel = parseInt(req.query.level as string);
@@ -107,7 +120,7 @@ router.get('/hint', authMiddleware, async (req, res) => {
       data: result,
     });
   } catch (error) {
-    return serverError(res, error);
+    return sendAiErrorResponse(res, 'exercise-hint', error);
   }
 });
 
@@ -131,7 +144,7 @@ router.get('/hints', authMiddleware, async (req, res) => {
       data: result,
     });
   } catch (error) {
-    return serverError(res, error);
+    return sendAiErrorResponse(res, 'acquired-exercise-hints', error);
   }
 });
 

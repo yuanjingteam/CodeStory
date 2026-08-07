@@ -1,0 +1,2163 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "answerModel": "deepseek-ai/DeepSeek-V4-Flash",
+  "promptVersion": "grounded-v3",
+  "promptRevision": "grounded-v3.1-boundary",
+  "answerGeneratedAt": "2026-07-31T12:38:14.907Z",
+  "reviewerModel": "deepseek-ai/DeepSeek-V4-Flash",
+  "rubricVersion": "rag-claim-support-v3",
+  "pipelineVersion": "claim-candidates-v1",
+  "reviewedAt": "2026-07-31T12:48:30.421Z",
+  "reviewMethod": "hybrid-model-assisted, agent-audited",
+  "expectedAnswers": 40,
+  "completedAnswers": 40,
+  "status": "complete",
+  "results": [
+    {
+      "id": "lesson-100000000000000000000000000000000014-1",
+      "answerHash": "975aa6245dd209a893a657d5bde0a99c5541a09ce83d17c46ac62730d2e301e3",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，该小节主要讲解了语义化标签，例如 header、footer、article 等 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-1",
+      "answerHash": "a7f05858d1c08b0cbcea57a57602d522f330b79da9f5b1355d5f6c7fb7e3eae3",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据[1]，“什么是数据库”主要讲解**数据库基础概念**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "answerHash": "c68d13f7a2138c8cf6a4b252fba244c34ca522cfd59e7bd68006190f39ae848e",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，1.1 小节的主题是 **数据类型、运算符与流程控制** [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接支持"
+        },
+        {
+          "text": "但证据中仅包含标题，没有更详细的内容，因此无法进一步说明具体讲解了哪些知识点。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅标题"
+        }
+      ]
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-1",
+      "answerHash": "eef1c25f09ef8e29a8557a46a1d862795468a04831c13ed16f59c230fce585c6",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "**什么是数据库**：专门用来存储和管理数据的仓库，能永久保存、快速查找、支持多人同时使用、保证数据安全、方便数据分析。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "**数据库与 Excel 的对比**：数据库适合大型、复杂、多人共享的数据管理，而 Excel 适合小型、简单、个人使用的场景。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "**关系型数据库的基本概念**：数据以表格形式存储，介绍了表（Table）、列（Column）、行（Row）三个核心概念。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "**SQL 语言**：与数据库沟通的标准语言，简单易学、功能强大，分为 DQL、DML、DDL、DCL 四大类。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "**基础 SELECT 语句**：通过 `SELECT * FROM 表名` 查询所有列，`SELECT 列名 FROM 表名` 查询指定列，以及使用 `WHERE` 子句进行条件查询。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "以上内容均来自课程证据 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "人工复核：该句是对前述逐项引用内容的来源汇总，证据 [1] 完整覆盖"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000014-2",
+      "answerHash": "0d6c1c8c3641113535ea10a0a8d8e3195fedc5868bceef3200e0e23c191895ad",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "课程在“语义化标签”部分提到了 `header`、`footer`、`article` 等标签名称 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "由此可以看出，课程介绍了这些用于描述页面结构的语义化标签，但未进一步说明具体应用方式。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "在实际编程中，应用语义化标签的核心思路是**用标签的含义而非样式来组织内容**。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "`<header>` 通常用于页面或区块的头部，包含标题、导航等。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "`<footer>` 用于底部，包含版权、联系信息等。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "`<article>` 用于独立的内容单元，如博客文章、新闻条目。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "其他常见标签还包括 `<nav>`（导航）、`<section>`（主题分组）、`<aside>`（侧边栏或补充内容）等。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "这样做的好处是：提高代码可读性、方便搜索引擎理解页面结构、辅助屏幕阅读器等无障碍工具。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "实践中，只需将原本用 `<div>` 包裹的区域替换为对应的语义标签即可，无需额外样式。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "基本正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-2",
+      "answerHash": "530aca23654d0afece1b004ae3fe5042703d1972c25d00dfb2821ae7197fe15f",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "课程证据仅包含标题“什么是数据库”和描述“数据库基础概念”[1]，由此可以看出该小节旨在介绍数据库的基本定义和核心思想，但证据未给出具体的定义、属性或应用方法。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "描述证据内容"
+        },
+        {
+          "text": "在实际编程中，“什么是数据库”的核心知识通常指理解数据库作为结构化数据存储与管理系统的角色。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "answerHash": "d6f1a61c89ad53e52f649c35194558f8939eace270e652e19c85853ae60c6f1f",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "课程证据仅提供了本节标题“数据类型、运算符与流程控制”[1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "由此可以看出，本节核心知识围绕Java的数据类型、运算符以及流程控制结构展开[1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "标题推断"
+        },
+        {
+          "text": "在实际编程中，这三部分知识是构建程序逻辑的基础：",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "**数据类型**：用于定义变量能存储的数据种类（如整数、浮点数、布尔值等），确保内存使用和操作的正确性。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "例如，存储年龄用 `int`，存储价格用 `double`。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "**运算符**：对数据进行运算（算术、比较、逻辑、赋值等）。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "例如，用 `+` 拼接字符串或计算总和，用 `==` 判断条件是否成立。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "**流程控制**：决定代码的执行路径。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "`if-else` 用于条件分支，`for`/`while` 用于重复执行某段逻辑（如遍历数组或处理用户输入）。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确描述控制流用途"
+        },
+        {
+          "text": "实际应用时，通常先根据业务需求选择合适的数据类型，然后用运算符处理数据，最后用流程控制组织代码的执行顺序，三者配合完成具体功能。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "合理描述应用步骤"
+        }
+      ]
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "answerHash": "c1c94ba98193416f5add04568c15d93a7f2a523bd5bc3393af6bbc40b76c0755",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "数据库是专门用来存储和管理数据的仓库，能永久保存数据、快速查找、支持多人同时使用、保证数据安全、方便数据分析 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "数据库与 Excel 的对比：数据库适合大型、复杂、多人共享的数据管理；",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "Excel 适合小型、简单、个人使用的场景 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "关系型数据库以“表格”形式存储数据，基本概念包括表（Table，存储数据的容器）、列（Column，描述数据的属性/字段）、行（Row，一条完整的数据记录）[1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "SQL（结构化查询语言）是专门和数据库沟通的语言，简单易学、功能强大、通用性强、非过程化（只需说明“要什么”，不需说明“怎么做到”）[1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "基础 SELECT 语句语法：`SELECT 列名 FROM 表名`；",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "使用 `*` 查询所有列；",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "使用 `WHERE` 子句添加条件 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-1",
+      "answerHash": "050bc579176a77a469e18dd664596be840f3224499fcf3ed2f06043de71b58ff",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，**“div与span”** 小节主要讲解 **div** 和 **span** 这两个 HTML 元素，并介绍它们分别作为 **区块元素** 与 **行内元素** 的基本概念 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "标题直接对应"
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-1",
+      "answerHash": "b125141f7630f3d4f32fc42cc34ea359dca3b033dbe23270cf87c5ef6e57245a",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "“为什么使用数据库”主要讲解**数据存储与管理优势**[1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-1",
+      "answerHash": "7692e66c9a5e9bd75b5b0ea11a4faabc00a0057c8826a69d5cdc7781262eadcc",
+      "claims": [
+        {
+          "text": "根据课程证据 [1]，该小节标题为“1.3判断闰年”，内容要求编写一个方法 `isLeapYear(int year)` 来判断某一年是否为闰年，并给出了判断规则：**能被4整除但不能被100整除，或者能被400整除**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接引用证据"
+        },
+        {
+          "text": "由此可以看出，该小节主要讲解闰年的判断规则以及如何用 Java 方法实现这一判断。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "由证据必然推出"
+        }
+      ],
+      "evidenceCount": 1
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-1",
+      "answerHash": "c439d845e05356bb2020989f7b652cb7fbfa4554484ebfa91e98e621080b969d",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "“1.2 数据库与数据表创建、数据增删改”主要讲解了数据库最核心的基础操作，包括三大部分：",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "**数据库的创建与删除**：使用 `CREATE DATABASE` 创建数据库，`USE` 切换数据库，`DROP DATABASE` 删除数据库，并强调编码设置（如 `utf8mb4`）和 `IF NOT EXISTS` 的规范写法。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据完全覆盖"
+        },
+        {
+          "text": "**数据表的创建与基础规则**：掌握 `INT`、`VARCHAR`、`DATE` 三种核心数据类型，使用 `CREATE TABLE` 定义表结构，并指定字符集。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据完全覆盖"
+        },
+        {
+          "text": "**数据增删改（DML）**：使用 `INSERT INTO` 新增数据，`UPDATE SET` 配合 `WHERE` 修改数据，`DELETE FROM` 配合 `WHERE` 删除数据，并强调必须加 `WHERE` 条件以避免全表操作。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据完全覆盖"
+        },
+        {
+          "text": "以上内容是该小节的核心知识点，是后续所有复杂数据库操作的基础 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-2",
+      "answerHash": "53c942efc86aaefcce9d520e501fd7a74e3b64932f95e7b1288ff70f4106c907",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "课程在“布局与语义化”章节下介绍了 `div` 与 `span`，并指出它们分别对应“区块与行内元素”[1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "由此可以看出，课程将 `div` 归类为区块元素，`span` 归类为行内元素。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "必然推出"
+        },
+        {
+          "text": "**`div`（区块元素）**：常用于搭建页面布局的容器，例如将导航栏、内容区、页脚等划分为独立的区块。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "它默认占据一整行，可设置宽高、内外边距等盒模型属性。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确"
+        },
+        {
+          "text": "**`span`（行内元素）**：常用于包裹文本中的一小段内容，以便单独应用样式（如改变颜色、字体、背景）。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确"
+        },
+        {
+          "text": "它不会打断文本流，只占据内容所需的宽度，且无法直接设置宽高。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确"
+        },
+        {
+          "text": "```html\n  <!-- 使用 div 划分页面区域 -->\n  <div class=\"header\">网站标题</div>\n  <div class=\"content\">\n    <p>这是一段文字，其中<span class=\"highlight\">这部分需要高亮</span>。</p>\n  </div>\n  ```",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "代码正确"
+        },
+        {
+          "text": "**注意**：`div` 和 `span` 本身没有语义，仅用于样式和布局。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "无语义容器正确"
+        },
+        {
+          "text": "现代 HTML 推荐优先使用语义化标签（如 `<header>`、`<nav>`、`<article>`），仅在无合适语义标签时才使用 `div` 或 `span`。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "语义化推荐正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-2",
+      "answerHash": "8003ac0dbc4de30f3798fad8566393d0295bd85d55b915f285c0724f17296dc5",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "课程指出数据库用于数据存储与管理，并具有优势 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "证据仅包含标题与“数据存储与管理优势”这一概括性描述，未列出具体优势或应用细节，因此无法进一步推导。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据内容相符"
+        },
+        {
+          "text": "在实际编程中，“为什么使用数据库”的核心在于利用数据库提供的持久化、并发控制、数据一致性、高效查询等能力，替代简单的文件存储或内存数据结构。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "**持久化存储**：将程序运行产生的数据写入数据库，确保进程重启后数据不丢失。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "**并发访问**：数据库内置锁和事务机制，可安全处理多用户同时读写。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "**数据一致性**：通过约束、事务（ACID）保证数据完整，避免脏写或部分更新。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "**高效查询**：使用索引、SQL 语句快速检索和聚合数据，无需手动遍历文件。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "**扩展性**：关系型数据库支持规范化设计减少冗余；",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "非关系型数据库适合高并发、灵活模式场景。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-2",
+      "answerHash": "d3ea7ec168f8f277e3c35e8082e211c11cc279689041444fc8a1224bf7c9e022",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "课程要求编写一个方法 `isLeapYear(int year)`，判断某一年是否为闰年 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "课程原文支持"
+        },
+        {
+          "text": "判断规则为：**能被4整除但不能被100整除，或者能被400整除** [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "课程原文支持"
+        },
+        {
+          "text": "在实际编程中，闰年判断最常见的应用场景是**日期处理**：",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "计算某个月份的天数（如2月是28天还是29天）。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "验证用户输入的日期是否合法（如2月29日只在闰年有效）。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "计算两个日期之间的天数差，或推算某天之后/之前的日期。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "Java标准库已提供现成方法（如 `java.time.Year.isLeap()`），但理解底层规则有助于：",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "在没有标准库的旧系统或自定义日期类中自行实现。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "```java\npublic static boolean isLeapYear(int year) {\n    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);\n}\n```",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "代码正确"
+        },
+        {
+          "text": "注意：该规则适用于**公历（格里高利历）**，部分历史年份或特殊历法可能不同，但绝大多数现代编程场景均采用此规则。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确说明"
+        }
+      ]
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-2",
+      "answerHash": "759af8e646b35660910d40486e3e0b8a6b6595b54e971095fe6c9e58a570b3fe",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，1.2 小节的核心知识包括：",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "**数据库创建与删除**：使用 `CREATE DATABASE IF NOT EXISTS 数据库名 DEFAULT CHARSET utf8mb4` 创建数据库；",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "使用 `USE 数据库名` 切换数据库；",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "使用 `DROP DATABASE IF EXISTS 数据库名` 删除数据库 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "**数据表创建**：使用 `CREATE TABLE IF NOT EXISTS 表名 (列名 数据类型, ...) DEFAULT CHARSET utf8mb4` 创建数据表，需掌握 `INT`、`VARCHAR(长度)`、`DATE` 三种核心数据类型 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "**数据增删改（DML）**：\n  - 新增：`INSERT INTO 表名(字段1,字段2,...) VALUES(值1,值2,...)`（推荐指定字段）[1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "修改：`UPDATE 表名 SET 字段=新值 WHERE 条件`（必须加 WHERE）[1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "删除：`DELETE FROM 表名 WHERE 条件`（必须加 WHERE）[1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "**注意事项**：字符串值用单引号，数字不用；",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据明确说明"
+        },
+        {
+          "text": "SQL 关键字建议大写，语句以分号结尾 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据明确说明"
+        },
+        {
+          "text": "由此可以看出，这些操作是数据库实操的基础，后续复杂查询、多表关联等都建立在此之上 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据总结一致"
+        },
+        {
+          "text": "**连接数据库**：应用程序（如 Python、Java、Node.js）使用数据库驱动（如 `mysql-connector-python`、`JDBC`）连接到已创建的数据库，然后执行 SQL 语句。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        },
+        {
+          "text": "**参数化查询**：执行增删改时，使用参数化查询（如 `?` 占位符）防止 SQL 注入，而不是直接拼接字符串。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用实践正确"
+        },
+        {
+          "text": "**事务管理**：多条增删改操作常放在事务中（`BEGIN` / `COMMIT` / `ROLLBACK`），保证数据一致性。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        },
+        {
+          "text": "**ORM 框架**：许多项目使用 ORM（如 SQLAlchemy、Hibernate、Prisma）将数据表映射为对象，自动生成 SQL，但底层仍依赖本节的基本语法。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        },
+        {
+          "text": "这些实践并非课程原文，而是行业通用做法，可帮助你在真实项目中安全、高效地运用本节知识。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "陈述正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-1",
+      "answerHash": "0169945f367a8b26b805f35139abd1c9b1467c0a127e8760870ad065babd0f0d",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据[1]，“什么是HTML”主要讲解 **HTML 是网页结构的基础标记语言**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接引用证据"
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000063-1",
+      "answerHash": "6db048e7147424b43cf085825603d758edb6d3d661df5b58e9bff0ff29f20971",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据[1]，该小节标题为“常见数据库使用场景”，但证据中未提供具体讲解内容，因此无法详细说明主要讲解什么。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅含标题"
+        }
+      ]
+    },
+    {
+      "id": "lesson-04bc001d-df88-41ed-a275-d6b3774f21d4-1",
+      "answerHash": "e22baa9fcb9310da68c6be928004fec72bc5aa825af797796fb3895e5053cf95",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "“1.3 SQL高级查询（模糊查询、排序、分页）”主要讲解了三大高频查询语法：**模糊查询（LIKE）**、**排序查询（ORDER BY）** 和 **分页查询（LIMIT）**。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "模糊查询使用 `LIKE` 搭配通配符 `%`（匹配任意多个字符）和 `_`（匹配单个字符），实现包含、开头、结尾等匹配场景。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "排序查询使用 `ORDER BY` 配合 `ASC`（升序，默认）或 `DESC`（降序），支持单字段和多字段排序。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "分页查询使用 `LIMIT 起始索引, 查询条数` 限制返回的数据条数，索引从 0 开始。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "同时强调了查询语句的执行顺序：`WHERE` 筛选 → `ORDER BY` 排序 → `LIMIT` 分页，以及通配符匹配内容需用单引号包裹等注意事项 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-2",
+      "answerHash": "db7fa122b99292c1739f02dd9feb2a235860bd0d7cac8dc75a95c8c5a4e7c8a3",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "HTML是网页结构的基础标记语言 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "由此可以看出，HTML的核心作用是定义和组织网页的内容结构，而不是控制样式或行为。",
+          "claimScope": "course",
+          "supportReview": "unsupported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [],
+          "reviewerNote": "证据未完全支持"
+        },
+        {
+          "text": "使用标签（如 `<h1>`、`<p>`、`<a>`、`<img>` 等）来标记不同类型的网页内容。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "遵循HTML文档的基本结构：`<!DOCTYPE html>`、`<html>`、`<head>`（包含元数据）、`<body>`（包含可见内容）。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "通过嵌套标签构建层次化的内容结构。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "结合CSS进行样式设计，结合JavaScript实现交互功能。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "注意语义化标签（如 `<header>`、`<nav>`、`<main>`、`<footer>`）的使用，以提高可访问性和SEO。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000063-2",
+      "answerHash": "d544416b6d72b11c4b5488e3c714b5a27a03f15a1650d16876623e066d2519d3",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "课程仅列出了“常见数据库使用场景”这一标题，未给出具体场景、属性或应用方法 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "仅列出标题"
+        },
+        {
+          "text": "由此可以看出，当前小节正文没有提供可直接用于编程的详细知识。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "无详细知识"
+        },
+        {
+          "text": "**用户与权限管理**：存储用户账号、角色、权限，支持登录验证与授权。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        },
+        {
+          "text": "**订单与交易系统**：记录订单、支付流水，保证数据一致性和事务完整性。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        },
+        {
+          "text": "**内容管理**：保存文章、评论、分类，支持高效检索与分页。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        },
+        {
+          "text": "**日志与监控**：存储操作日志、性能指标，常结合时间序列数据库或分表策略。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        },
+        {
+          "text": "**物联网与传感器**：高频写入设备数据，需考虑写入吞吐和存储压缩。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-04bc001d-df88-41ed-a275-d6b3774f21d4-2",
+      "answerHash": "731861b2e5e89bd7ab31931c5cc57cca973bb7c91c4f96792175a4091f81d4ae",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "模糊查询使用 `LIKE` 关键字，搭配通配符 `%`（匹配任意多个字符）和 `_`（匹配单个任意字符），可实现包含、开头、结尾等匹配规则 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "排序查询使用 `ORDER BY`，`ASC` 表示升序（默认，可省略），`DESC` 表示降序（必须手动声明）；",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "多字段排序时先按第一个字段排序，相同再按第二个字段排序 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "分页查询使用 `LIMIT 起始索引, 查询条数`，数据索引从 0 开始计数，例如 `LIMIT 0,3` 查询前 3 条 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "查询语句的执行顺序为：`WHERE` 筛选 → `ORDER BY` 排序 → `LIMIT` 分页 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "通配符匹配内容必须用单引号包裹 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "`LIMIT` 只作用于查询结果，不会修改原表数据顺序 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "在实际编程中，这三类查询通常组合使用，常见场景如下：",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "**模糊查询**：用于搜索功能，如用户输入关键词查找姓名、标题等。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "模糊查询用途正确"
+        },
+        {
+          "text": "注意 `%` 开头会导致索引失效，性能敏感时可考虑全文索引或搜索引擎。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "%开头索引失效正确"
+        },
+        {
+          "text": "**排序查询**：用于按时间、价格、评分等字段展示列表，常与分页配合。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "排序查询用途正确"
+        },
+        {
+          "text": "多字段排序时注意字段顺序，例如 `ORDER BY create_time DESC, id ASC` 确保时间相同时按 id 稳定排序。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "多字段排序顺序正确"
+        },
+        {
+          "text": "**分页查询**：用于列表页、瀑布流等场景，避免一次性加载大量数据。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "分页查询用途正确"
+        },
+        {
+          "text": "前端传入页码和每页条数，后端计算起始索引：`起始索引 = (页码 - 1) * 每页条数`。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "分页索引计算正确"
+        },
+        {
+          "text": "注意 `LIMIT` 放在 `WHERE` 和 `ORDER BY` 之后，否则结果可能不符合预期。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "LIMIT位置正确"
+        },
+        {
+          "text": "```sql\n-- 搜索姓“张”的用户，按年龄降序，每页10条，取第2页\nSELECT * FROM users \nWHERE name LIKE '张%' \nORDER BY age DESC \nLIMIT 10, 10;\n```",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "SQL写法正确"
+        },
+        {
+          "text": "实际开发中还需考虑 SQL 注入（模糊查询参数应使用预编译或转义）、分页深度过大时的性能优化（如使用游标或覆盖索引）。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "注意事项正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000002-1",
+      "answerHash": "bcefbcf3215a45ca2be5767f5ab431ad24229f37a55271c9d02f65cc770a7fd1",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，“HTML文档结构”小节主要讲解**标准HTML页面结构详解** [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接匹配证据"
+        }
+      ]
+    },
+    {
+      "id": "lesson-33810ea6-d130-4c42-93db-3741d29cc401-1",
+      "answerHash": "a807bdbde367837b5de42d099358074273272c504c323fa4ca48460ae237f70e",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，“2.1 聚合函数（统计查询）”主要讲解以下内容 [1]：",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据有对应章节"
+        },
+        {
+          "text": "**五大核心聚合函数**：`COUNT()`（统计条数）、`MAX()`（最大值）、`MIN()`（最小值）、`SUM()`（总和）、`AVG()`（平均值），用于对整表或分组数据进行统计计算。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据有五大函数"
+        },
+        {
+          "text": "**分组查询 `GROUP BY`**：将相同字段的数据分为一组，结合聚合函数实现分组统计（如按班级统计人数、按性别统计平均年龄）。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据有分组查询"
+        },
+        {
+          "text": "**筛选过滤 `HAVING`**：用于分组后筛选数据，与分组前筛选的 `WHERE` 区分。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据有筛选过滤"
+        },
+        {
+          "text": "课程通过示例演示了 `COUNT(*)`、`AVG(age)`、`MAX(age)` 等基本用法，并给出了 `GROUP BY` 的语法格式。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据有示例语法"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000002-2",
+      "answerHash": "e6a419ee2ad9e497a1be68ef3c3635b20a54bffc249827bd20d664bac2e6a335",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，本节内容是对标准HTML页面结构的详细讲解 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "由此可以看出，课程的核心是介绍构成一个标准HTML文档所必需的基本框架和组成部分。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据表明核心"
+        },
+        {
+          "text": "始终以 `<!DOCTYPE html>` 声明文档类型，确保浏览器以标准模式渲染。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确实践"
+        },
+        {
+          "text": "使用 `<html>` 作为根元素，并设置 `lang` 属性（如 `lang=\"zh-CN\"`）以指定页面语言。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确实践"
+        },
+        {
+          "text": "在 `<head>` 部分包含必要的元数据，如 `<meta charset=\"UTF-8\">`、`<title>` 标题，以及 CSS 和 JavaScript 的引用。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确实践"
+        },
+        {
+          "text": "在 `<body>` 部分放置所有可见内容，并合理使用语义化标签（如 `<header>`、`<nav>`、`<main>`、`<footer>`）来构建页面结构。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确实践"
+        },
+        {
+          "text": "保持结构清晰、嵌套正确，避免遗漏闭合标签，这有助于提升可访问性和 SEO。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确实践"
+        },
+        {
+          "text": "这些实践确保了网页在不同浏览器和设备上的兼容性与可维护性。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-33810ea6-d130-4c42-93db-3741d29cc401-2",
+      "answerHash": "112458f9d5d0912ed07b8781685cde8a2f809d9843b8b6418fd2f41022e6f0fc",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "聚合函数用于对整表或分组数据进行统计计算，常用于统计总数、最大值、最小值、平均值、总和。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "五大核心聚合函数：`COUNT()` 统计数据条数，`MAX()` 查询最大值，`MIN()` 查询最小值，`SUM()` 计算字段总和，`AVG()` 计算字段平均值。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据列出"
+        },
+        {
+          "text": "分组查询 `GROUP BY` 可以将相同字段数据分为一组，结合聚合函数实现分组统计，语法格式为 `SELECT 分组字段,聚合函数 FROM 表名 GROUP BY 分组字段;`。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "分组后筛选使用 `HAVING`，而 `WHERE` 是分组前筛选。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据明确说明"
+        },
+        {
+          "text": "证据中给出了实操示例：统计学生总人数 `SELECT COUNT(*) FROM students;`、平均年龄 `SELECT AVG(age) FROM students;`、最大年龄 `SELECT MAX(age) FROM students;`。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据包含示例"
+        },
+        {
+          "text": "在实际编程中，聚合函数常用于生成统计报表，例如统计订单总数、计算商品平均价格、找出最高销售额等。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "`GROUP BY` 常用于按类别汇总，如按部门统计员工人数、按月份统计销售额。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "`HAVING` 用于对分组结果进行过滤，例如只显示平均年龄大于30的班级。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "分组后过滤正确"
+        },
+        {
+          "text": "使用聚合函数时，`SELECT` 中的非聚合字段通常需要出现在 `GROUP BY` 中，否则在某些数据库系统中会报错或产生不确定结果。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "语法规则正确"
+        },
+        {
+          "text": "示例：`SELECT department, COUNT(*) FROM employees GROUP BY department HAVING COUNT(*) > 10;`",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "示例正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000003-1",
+      "answerHash": "d4779bc22ec73817a720e17afd3a4da0e52292f18f4b5739781c4f6b4dbbb4fe",
+      "claims": [
+        {
+          "text": "根据课程证据，“第一个HTML页面”主要讲解如何编写并运行第一个HTML页面 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        }
+      ],
+      "evidenceCount": 1
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000003-2",
+      "answerHash": "cd13ecc5d69c601675324214875712f2465a2f91efcd2c5d2a30606c2064037b",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "课程的核心知识是学习如何编写并运行第一个HTML页面[1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接对应证据"
+        },
+        {
+          "text": "由此可以看出，本节的重点在于动手实践，创建并查看一个基础的HTML文件。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "由证据必然推出"
+        },
+        {
+          "text": "使用文本编辑器（如VS Code、Notepad++）创建一个新文件，保存为 `.html` 扩展名。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用实践正确"
+        },
+        {
+          "text": "编写基本的HTML结构，例如 `<!DOCTYPE html>`、`<html>`、`<head>`、`<body>` 等标签。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "基本结构正确"
+        },
+        {
+          "text": "在浏览器中打开该HTML文件以查看渲染效果。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常见操作正确"
+        },
+        {
+          "text": "这是后续所有网页开发的基础，理解文件结构、标签语法和浏览器渲染流程至关重要。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "基础性正确"
+        },
+        {
+          "text": "注意：以上补充是基于通用编程实践，并非课程原文内容。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "声明正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000004-1",
+      "answerHash": "2444be6ff74bfed1572b0393e6bb7a0f73addf833e32fc24772cf56dc177ee3c",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，“标题标签h1-h6”主要讲解标题标签的使用与优先级 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接匹配"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000004-2",
+      "answerHash": "57abaa10f0214b825577654542fd068a7950c15b92350916dca995f1abd366ff",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "课程小节标题为“标题标签h1-h6”，内容涉及标题标签的使用与优先级 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "与证据一致"
+        },
+        {
+          "text": "在实际编程中，标题标签（h1~h6）主要用于构建页面的内容层级和语义结构。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "**h1**：每个页面只使用一个，作为主标题或页面主题。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "**h2~h6**：按内容层次依次使用，h2 表示主要章节，h3 表示子章节，依此类推，不要跳级（如从 h2 直接到 h4）。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "**语义优先**：标题标签的意义在于结构化内容，而非单纯控制字号；",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "默认样式可通过 CSS 调整。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "**SEO 与可访问性**：合理的标题层级有助于搜索引擎理解页面重点，也方便屏幕阅读器用户导航。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000005-1",
+      "answerHash": "bd80a8706413dcebca1606a59102362d37627c6f9a6f7748fb68c2ac60025514",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，“段落与换行标签”主要讲解p标签与br标签的使用 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000005-2",
+      "answerHash": "7ec81e7f94e6d19aec4126516211972bc6069af203e74c51280bfbdcb6ea087a",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，本小节介绍了段落与换行标签，具体涉及 `p` 标签与 `br` 标签的使用 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "由此可以看出，课程内容聚焦于这两个标签的基本用法。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "人工复核：证据原文为“p标签与br标签使用”，该句是直接概括"
+        },
+        {
+          "text": "在实际编程中，`p` 标签用于定义段落，浏览器会自动在段落前后添加间距，适合组织文本块。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "`br` 标签用于在文本中强制换行，通常用于地址、诗歌等需要精确控制换行的场景。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "`p` 是块级元素，会占据整行，不要嵌套其他块级元素。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "`br` 是空元素，只需写 `<br>` 或 `<br/>`，不要滥用 `br` 来制造段落间距，应使用 CSS 的 `margin` 或 `padding`。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "```html\n<p>这是第一段内容。</p>\n<p>这是第二段内容。</p>\n<p>地址：123 Main St.<br>City, State 12345</p>\n```",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "代码示例正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000006-1",
+      "answerHash": "532d9a6c586bb80a2483d32e2f1b8ca550c5fe84f32c24d2532d5248dcc196bf",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，该小节主要讲解**加粗、斜体、删除线**等文本格式化标签 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000006-2",
+      "answerHash": "538645601e6e744326af8163c79f9826c5a2aa5c6a1f0d8cbc14db1c1670fd0a",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "文本格式化标签用于实现加粗、斜体、删除线等效果。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        },
+        {
+          "text": "实际编程中，常用的文本格式化标签包括 `<b>`（加粗）、`<i>`（斜体）、`<s>`（删除线）、`<u>`（下划线）。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "但为了语义化和可访问性，推荐使用 `<strong>`（重要内容，默认加粗）、`<em>`（强调内容，默认斜体）、`<del>`（已删除文本，默认删除线）、`<ins>`（插入文本，默认下划线）。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "语义化推荐正确"
+        },
+        {
+          "text": "现代开发中，样式通常由 CSS 控制，但语义标签仍有助于 SEO 和屏幕阅读器理解内容。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000007-1",
+      "answerHash": "5d4989c5b01f09541838250b66d766540b64743eb8e743870baa9439c01531c4",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，“form表单基础”主要讲解**表单标签与属性详解** [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000007-2",
+      "answerHash": "3834b98810235d0e64a9707362bee83af6f482dcbf8d969c8c8d06e9876c72e6",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "当前课程证据仅包含标题“表单标签与属性详解”[1]，未提供具体属性、用法或示例。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据仅含标题"
+        },
+        {
+          "text": "因此，无法从课程原文中提取关于如何在实际编程中应用 form 表单的具体知识。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "必然结论"
+        },
+        {
+          "text": "在实际编程中，form 表单用于收集用户输入并提交到服务器。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        },
+        {
+          "text": "使用 `<form>` 标签，通过 `action` 属性指定数据提交的 URL，`method` 属性指定 HTTP 方法（通常为 `GET` 或 `POST`）。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        },
+        {
+          "text": "内部放置 `<input>`、`<textarea>`、`<select>` 等控件，通过 `name` 属性定义字段名，提交时数据以键值对形式发送。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        },
+        {
+          "text": "常用 `<input type=\"submit\">` 或 `<button type=\"submit\">` 触发提交，也可用 JavaScript 控制提交行为。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        },
+        {
+          "text": "注意表单验证：HTML5 提供了 `required`、`pattern`、`type`（如 `email`）等属性实现前端基础验证，但后端仍需独立校验。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "通用知识正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000008-1",
+      "answerHash": "d42fb7ce6bb1865149c03c9c88198cb29648676b7d3db53c2f163b0cf73d85c8",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程内容，“input标签类型”主要讲解 input 标签的不同类型，包括**输入框、单选、多选、按钮**等 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000008-2",
+      "answerHash": "c0dae5dc0a969eaafd31ff58fbef383bcca83ca722d679feb329e1d1c4230504",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "课程指出 input 标签的类型包括输入框、单选、多选、按钮 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "直接对应证据"
+        },
+        {
+          "text": "这是该小节对 input 标签类型的直接介绍，未进一步说明各类型的具体属性或用法。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据未提供更多"
+        },
+        {
+          "text": "在实际编程中，input 标签通过 `type` 属性指定具体控件类型，例如：",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "`type=\"text\"` 创建单行输入框，用于收集文本；",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "`type=\"radio\"` 创建单选按钮，同一组内只能选择一个；",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "`type=\"checkbox\"` 创建多选按钮，可同时选择多个；",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "`type=\"button\"` 创建普通按钮，常与 JavaScript 配合执行自定义操作。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "此外，还有 `password`（密码框）、`email`（邮箱输入）、`submit`（提交按钮）等常用类型。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        },
+        {
+          "text": "使用时需注意为每个 input 设置合适的 `name` 属性，以便表单数据正确提交。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "常识正确"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000009-1",
+      "answerHash": "53a1fb6dc3b4c8531a01b6992300e125c6f1fce7a7bb524cf1ac6904295fb844",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "根据课程证据，“音频与视频标签”主要讲解 **audio 和 video 标签的使用** [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据直接支持"
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000009-2",
+      "answerHash": "3ece4f7f40e23596dac8665608b0f8e48c7739c8caf3956621f0db58fe9c7dbc",
+      "evidenceCount": 1,
+      "claims": [
+        {
+          "text": "课程介绍了audio和video标签的使用 [1]。",
+          "claimScope": "course",
+          "supportReview": "supported",
+          "correctnessReview": "not_applicable",
+          "evidenceIndexes": [
+            1
+          ],
+          "reviewerNote": "证据支持"
+        },
+        {
+          "text": "添加`controls`属性以显示播放控件。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确做法"
+        },
+        {
+          "text": "使用`<source>`元素提供多种格式的媒体文件（如MP4、WebM、Ogg），确保浏览器兼容性。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确做法"
+        },
+        {
+          "text": "对`<video>`设置`width`和`height`控制显示尺寸。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确做法"
+        },
+        {
+          "text": "利用`preload`属性（`none`/`metadata`/`auto`）优化加载行为。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确做法"
+        },
+        {
+          "text": "通过JavaScript API（`play()`、`pause()`、`currentTime`等）实现自定义控制。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确做法"
+        },
+        {
+          "text": "注意自动播放策略：`autoplay`通常需要配合`muted`或用户交互才能生效。",
+          "claimScope": "supplement",
+          "supportReview": "unsupported",
+          "correctnessReview": "correct",
+          "evidenceIndexes": [],
+          "reviewerNote": "正确做法"
+        }
+      ]
+    }
+  ]
+}

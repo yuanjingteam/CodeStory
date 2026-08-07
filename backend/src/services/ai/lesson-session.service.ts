@@ -1,6 +1,13 @@
 import prisma from '../../config/prisma';
 import type { Prisma } from '../../generated/prisma';
 import type { LessonAiContext } from './lesson-context.service';
+import type {
+  LessonAnswerScope,
+  LessonChatSourceReference,
+  LessonEvidenceQuality,
+  LessonTutorPromptRevision,
+  LessonTutorPromptVersion,
+} from './lesson-chat.types';
 
 export type LessonChatRole = 'user' | 'assistant';
 export type LessonChatMessageType = 'chat' | 'hint' | 'code_analysis' | 'system';
@@ -14,6 +21,11 @@ export interface LessonChatHistoryMessage {
 export interface LessonChatStoredMessage extends LessonChatHistoryMessage {
   id: string;
   createdAt: string;
+  answerScope?: LessonAnswerScope;
+  promptVersion?: LessonTutorPromptVersion;
+  promptRevision?: LessonTutorPromptRevision;
+  evidenceQuality?: LessonEvidenceQuality;
+  sources?: LessonChatSourceReference[];
 }
 
 const DEFAULT_STORED_MESSAGES_LIMIT = 50;
@@ -54,6 +66,64 @@ function getMetadataExerciseId(metadata: unknown): string | null {
 
   const value = (metadata as { exerciseId?: unknown }).exerciseId;
   return typeof value === 'string' && value.trim() ? value : null;
+}
+
+function getStoredResponseMetadata(metadata: unknown): Pick<
+  LessonChatStoredMessage,
+  'answerScope' | 'promptVersion' | 'promptRevision' | 'evidenceQuality' | 'sources'
+> {
+  if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
+    return {};
+  }
+
+  const value = metadata as Record<string, unknown>;
+  const answerScope =
+    value.answerScope === 'course' ||
+    value.answerScope === 'extended'
+      ? value.answerScope
+      : undefined;
+  const promptVersion =
+    value.promptVersion === 'grounded-v2' ||
+    value.promptVersion === 'grounded-v3'
+      ? value.promptVersion
+      : undefined;
+  const promptRevision =
+    value.promptRevision === 'grounded-v2.0' ||
+    value.promptRevision === 'grounded-v3.1-boundary'
+      ? value.promptRevision
+      : undefined;
+  const evidenceQuality =
+    value.evidenceQuality === 'strong' ||
+    value.evidenceQuality === 'thin' ||
+    value.evidenceQuality === 'empty'
+      ? value.evidenceQuality
+      : undefined;
+  const sources = Array.isArray(value.sources)
+    ? value.sources.filter(
+        (source): source is LessonChatSourceReference =>
+          Boolean(
+            source &&
+              typeof source === 'object' &&
+              !Array.isArray(source) &&
+              typeof source.index === 'number' &&
+              ['lesson', 'exercise', 'doc'].includes(
+                String(source.sourceType)
+              ) &&
+              typeof source.sourceId === 'string' &&
+              typeof source.title === 'string' &&
+              typeof source.chunkIndex === 'number' &&
+              typeof source.contentHash === 'string'
+          )
+      )
+    : undefined;
+
+  return {
+    ...(answerScope ? { answerScope } : {}),
+    ...(promptVersion ? { promptVersion } : {}),
+    ...(promptRevision ? { promptRevision } : {}),
+    ...(evidenceQuality ? { evidenceQuality } : {}),
+    ...(sources?.length ? { sources } : {}),
+  };
 }
 
 function trimHistoryContent(content: string): string {
@@ -98,6 +168,10 @@ export async function getOrCreateLessonChatSession(
     },
     select: {
       id: true,
+      lesson_id: true,
+      current_run_id: true,
+      state_version: true,
+      graph_version: true,
       state: true,
       current_exercise_id: true,
       hint_level: true,
@@ -208,6 +282,7 @@ export async function getLessonChatMessages(
       role: true,
       message_type: true,
       content: true,
+      metadata: true,
       created_at: true,
     },
   });
@@ -218,31 +293,82 @@ export async function getLessonChatMessages(
     messageType: normalizeMessageType(message.message_type),
     content: message.content,
     createdAt: message.created_at.toISOString(),
+    ...getStoredResponseMetadata(message.metadata),
   }));
 }
 
-// 追加对话消息
-export async function appendLessonChatMessage(
+// 成对追加用户问题和助手回答，避免失败请求留下孤立消息
+export async function appendLessonChatExchange(
   sessionId: string,
-  role: LessonChatRole,
-  content: string,
-  metadata?: Prisma.InputJsonValue,
+  userContent: string,
+  assistantContent: string,
+  userMetadata?: Prisma.InputJsonValue,
+  assistantMetadata?: Prisma.InputJsonValue,
   messageType: LessonChatMessageType = 'chat'
 ) {
-  const trimmedContent = content.trim();
-  if (!trimmedContent) return null;
+  const trimmedUserContent = userContent.trim();
+  const trimmedAssistantContent = assistantContent.trim();
+  if (!trimmedUserContent || !trimmedAssistantContent) return null;
 
-  return prisma.ai_chat_messages.create({
-    data: {
-      session_id: sessionId,
-      role,
-      message_type: messageType,
-      content: trimmedContent,
-      metadata,
+  return prisma.$transaction(async (tx) => {
+    const userMessage = await tx.ai_chat_messages.create({
+      data: {
+        session_id: sessionId,
+        role: 'user',
+        message_type: messageType,
+        content: trimmedUserContent,
+        metadata: userMetadata,
+      },
+      select: {
+        id: true,
+        created_at: true,
+      },
+    });
+
+    const assistantMessage = await tx.ai_chat_messages.create({
+      data: {
+        session_id: sessionId,
+        role: 'assistant',
+        message_type: messageType,
+        content: trimmedAssistantContent,
+        metadata: assistantMetadata,
+      },
+      select: {
+        id: true,
+        created_at: true,
+      },
+    });
+
+    return { userMessage, assistantMessage };
+  });
+}
+
+export async function clearLessonChatMessages(
+  userId: string,
+  lessonId: string
+): Promise<number> {
+  const session = await prisma.ai_chat_sessions.findUnique({
+    where: {
+      user_id_lesson_id: {
+        user_id: userId,
+        lesson_id: lessonId,
+      },
     },
-    select: {
-      id: true,
-      created_at: true,
+    select: { id: true },
+  });
+
+  if (!session) return 0;
+
+  const result = await prisma.ai_chat_messages.updateMany({
+    where: {
+      session_id: session.id,
+      is_delete: 0,
+    },
+    data: {
+      is_delete: 1,
+      deleted_at: new Date(),
     },
   });
+
+  return result.count;
 }

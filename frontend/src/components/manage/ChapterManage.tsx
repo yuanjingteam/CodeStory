@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiEdit, FiRotateCcw, FiTrash2 } from 'react-icons/fi';
 import { showToast } from '@/utils/toast';
+import { showKnowledgeIndexResult } from '@/utils/knowledgeIndex';
 import {
   SearchFilter,
   DataTable,
@@ -22,6 +23,7 @@ import ChapterModel from './ChapterModel';
 interface ChapterQuery {
   courseId?: string;
   keyword?: string;
+  status: 'active' | 'deleted';
   page: number;
   size: number;
 }
@@ -30,9 +32,23 @@ export default function ChapterManage() {
   const [chapters, setChapters] = useState<ChapterItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const [query, setQuery] = useState<ChapterQuery>({ page: 1, size: 10 });
+  const [query, setQuery] = useState<ChapterQuery>({
+    status: 'active',
+    page: 1,
+    size: 10,
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<FilterField[]>([
+    {
+      id: 'status',
+      label: '数据状态',
+      type: 'select',
+      value: 'active',
+      options: [
+        { label: '有效内容', value: 'active' },
+        { label: '回收站', value: 'deleted' },
+      ],
+    },
     {
       id: 'course',
       label: '课程',
@@ -42,6 +58,7 @@ export default function ChapterManage() {
     },
   ]);
   const [deleteTarget, setDeleteTarget] = useState<ChapterItem | null>(null);
+  const [restoringId, setRestoringId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingChapter, setEditingChapter] = useState<
     ChapterItem | undefined
@@ -137,8 +154,14 @@ export default function ChapterManage() {
     data: (CreateChapterRequest | UpdateChapterRequest) & { id?: string }
   ) => {
     if (data.id) {
-      await chapterManageApi.update(data.id, data as UpdateChapterRequest);
-      showToast.success('章节更新成功');
+      const response = await chapterManageApi.update(
+        data.id,
+        data as UpdateChapterRequest
+      );
+      showKnowledgeIndexResult(
+        '章节更新成功',
+        response.indexSummary
+      );
     } else {
       await chapterManageApi.create(data as CreateChapterRequest);
       showToast.success('章节创建成功');
@@ -160,6 +183,20 @@ export default function ChapterManage() {
         console.error('删除章节失败:', error);
       }
       setDeleteTarget(null);
+    }
+  };
+
+  const handleRestore = async (item: ChapterItem) => {
+    setRestoringId(item.id);
+    try {
+      await chapterManageApi.restore(item.id);
+      showToast.success(`章节「${item.chapterName}」已恢复`);
+      await refreshChapters();
+    } catch (error) {
+      console.error('恢复章节失败:', error);
+      showToast.error('恢复失败，请确认所属课程已恢复');
+    } finally {
+      setRestoringId(null);
     }
   };
 
@@ -221,6 +258,17 @@ export default function ChapterManage() {
       align: 'center',
       render: (_, item) => (
         <div className="flex items-center gap-2">
+          {query.status === 'deleted' ? (
+            <button
+              onClick={() => handleRestore(item)}
+              disabled={restoringId === item.id}
+              className="flex items-center gap-1 border-2 border-black bg-green-300 px-3 py-1 text-xs font-bold text-zinc-950 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:cursor-wait disabled:opacity-60"
+            >
+              <FiRotateCcw className="h-3 w-3" />
+              {restoringId === item.id ? '恢复中' : '恢复'}
+            </button>
+          ) : (
+            <>
           <button
             onClick={() => handleOpenEdit(item)}
             className="px-3 py-1 bg-blue-400 text-white text-xs font-bold border-2 border-black rounded-md shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
@@ -235,6 +283,8 @@ export default function ChapterManage() {
             <FiTrash2 className="w-3 h-3" />
             删除
           </button>
+            </>
+          )}
         </div>
       ),
     },
@@ -252,6 +302,9 @@ export default function ChapterManage() {
           const courseIdValue = filters.find(
             (filter) => filter.id === 'course'
           )?.value;
+          const statusValue = filters.find(
+            (filter) => filter.id === 'status'
+          )?.value;
           setLoading(true);
           setQuery((current) => ({
             courseId:
@@ -259,6 +312,8 @@ export default function ChapterManage() {
                 ? String(courseIdValue)
                 : undefined,
             keyword: searchTerm || undefined,
+            status:
+              statusValue === 'deleted' ? 'deleted' : 'active',
             page: 1,
             size: current.size,
           }));
@@ -266,7 +321,8 @@ export default function ChapterManage() {
         actionSlot={
           <button
             onClick={handleOpenCreate}
-            className="px-6 py-2 rounded-sm bg-purple-500 text-white font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
+            disabled={query.status === 'deleted'}
+            className="px-6 py-2 rounded-sm bg-purple-500 text-white font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:shadow-none"
           >
             + 新建章节
           </button>
@@ -297,7 +353,7 @@ export default function ChapterManage() {
       <ConfirmDialog
         open={!!deleteTarget}
         title="删除章节"
-        message={`确定删除「${deleteTarget?.chapterName}」吗？删除后不可恢复。`}
+        message={`确定删除「${deleteTarget?.chapterName}」吗？删除后保留 30 天，可在回收站恢复。`}
         confirmText="确认"
         cancelText="取消"
         variant="danger"

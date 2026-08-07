@@ -1,5 +1,4 @@
 import type { Prisma } from '../../generated/prisma';
-import prisma from '../../config/prisma';
 import type { AiCodeReviewResult } from '../ai/code-review.service';
 
 const SCORE_DEDUCTION = [0, 10, 20, 30];
@@ -208,12 +207,13 @@ export function gradeCodeExercise(params: GradeCodeExerciseParams): CodeGradeRes
 }
 
 export async function recordCodeSubmission(params: {
+  tx: Prisma.TransactionClient;
   userId: string;
   exerciseId: string;
   code: string;
   grade: CodeGradeResult;
 }) {
-  const latestSubmission = await prisma.code_submissions.aggregate({
+  const latestSubmission = await params.tx.code_submissions.aggregate({
     where: {
       user_id: params.userId,
       exercise_id: params.exerciseId,
@@ -226,7 +226,7 @@ export async function recordCodeSubmission(params: {
 
   const submissionNo = (latestSubmission._max.submission_no || 0) + 1;
 
-  return prisma.code_submissions.create({
+  return params.tx.code_submissions.create({
     data: {
       user_id: params.userId,
       exercise_id: params.exerciseId,
@@ -260,13 +260,14 @@ export function calculateAiReviewedFinalScore(
 }
 
 export async function applyAiCodeReviewToSubmission(params: {
+  tx: Prisma.TransactionClient;
   submissionId: string;
   review: AiCodeReviewResult;
   hintDeduction: number;
 }) {
   const finalScore = calculateAiReviewedFinalScore(params.review, params.hintDeduction);
 
-  return prisma.code_submissions.update({
+  return params.tx.code_submissions.update({
     where: { id: params.submissionId },
     data: {
       status: params.review.review.isLikelyCorrect ? 'passed' : 'failed',
@@ -286,17 +287,22 @@ export async function applyAiCodeReviewToSubmission(params: {
 }
 
 export async function markCodeReviewFailed(params: {
+  tx: Prisma.TransactionClient;
   submissionId: string;
-  error: unknown;
+  error: {
+    code: string;
+    message: string;
+    status: number;
+  };
 }) {
-  const message = params.error instanceof Error ? params.error.message : 'AI_CODE_REVIEW_FAILED';
-
-  return prisma.code_submissions.update({
+  return params.tx.code_submissions.update({
     where: { id: params.submissionId },
     data: {
       ai_review_status: 'failed',
       ai_review: {
-        error: message,
+        errorCode: params.error.code,
+        errorMessage: params.error.message,
+        errorStatus: params.error.status,
         fallback: 'static_grade',
         failedAt: new Date().toISOString(),
       },

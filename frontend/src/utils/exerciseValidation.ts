@@ -35,6 +35,10 @@ export function validateExercise(exercise: ExerciseItem): string[] {
     if (filledOptions.length < 2) {
       errors.push('选择题至少需要填写两个选项')
     }
+    // 与服务端 choice-exercise-integrity 的规则对齐，避免表单说没问题而保存被拒
+    if (new Set(filledOptions).size !== filledOptions.length) {
+      errors.push('选择题的选项不能重复')
+    }
     if (exercise.answer.trim() && !filledOptions.includes(exercise.answer.trim())) {
       errors.push('请选择一个有效选项作为正确答案')
     }

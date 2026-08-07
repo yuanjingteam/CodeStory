@@ -1,12 +1,23 @@
+import type {
+  KnowledgeIndexStatus,
+  KnowledgeIndexSummary,
+} from './knowledge-index';
+
 export interface ChapterItem {
   id: string;
+  uuid?: string;
   courseId: string;
+  courseUuid?: string;
   courseName: string;
   chapterName: string;
   sectionCount: number;
   sortOrder: number;
   createdAt: string;
   updateAt: string;
+  deletedAt?: string | null;
+  purgeAt?: string | null;
+  indexStatus?: KnowledgeIndexStatus;
+  indexSummary?: KnowledgeIndexSummary;
 }
 
 export interface ChapterListResponse {
@@ -45,4 +56,13 @@ export interface DeleteChapterResponse {
   code: number;
   msg: string;
   data: null;
+}
+
+export interface RestoreChapterResponse {
+  code: number;
+  msg: string;
+  data: {
+    id: string;
+    restoredLessons: number;
+  };
 }

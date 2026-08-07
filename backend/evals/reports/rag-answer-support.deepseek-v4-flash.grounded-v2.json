@@ -1,0 +1,39 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "reviewerModel": "codex-manual",
+  "rubricVersion": "rag-claim-support-v2",
+  "reviewMethod": "manual agent audit",
+  "reviewedAnswers": 20,
+  "reviewedClaims": 53,
+  "supportedClaims": 48,
+  "supportAccuracy": 0.9056603773584906,
+  "passed": true,
+  "unsupportedClaims": [
+    {
+      "answerId": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "claim": "实际编程通常通过数据库驱动执行嵌入代码的 SQL。",
+      "reviewerNote": "驱动和代码执行未出现"
+    },
+    {
+      "answerId": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "claim": "理解表、列、行有助于设计数据模型和数据持久化。",
+      "reviewerNote": "设计与持久化结论未说明"
+    },
+    {
+      "answerId": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-1",
+      "claim": "该小节可能涉及条件判断、逻辑运算符和取模运算。",
+      "reviewerNote": "具体实现方式未说明"
+    },
+    {
+      "answerId": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-2",
+      "claim": "实现时主要使用取模、&& 和 || 组合条件。",
+      "reviewerNote": "证据未给具体实现"
+    },
+    {
+      "answerId": "lesson-100000000000000000000000000000000001-2",
+      "claim": "HTML 定义标题、正文、导航、段落和列表等具体区域。",
+      "reviewerNote": "具体元素用途未在证据中"
+    }
+  ]
+}

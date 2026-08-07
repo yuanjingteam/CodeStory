@@ -1,0 +1,81 @@
+{
+  "generatedAt": "2026-08-04T12:15:29.842Z",
+  "metric": "Precision@5",
+  "sampleSize": 10,
+  "macroPrecisionAtK": 0.7999999999999999,
+  "threshold": 0.7,
+  "passed": true,
+  "labelProvenance": "spec-derived-review",
+  "cases": [
+    {
+      "id": "review-low-score-01",
+      "scene": "review",
+      "precisionAtK": 0.8,
+      "labelProvenance": "spec-derived-review",
+      "notes": "错题、薄弱小节和同课程后继内容应优先。"
+    },
+    {
+      "id": "review-low-score-02",
+      "scene": "review",
+      "precisionAtK": 0.8,
+      "labelProvenance": "spec-derived-review",
+      "notes": "多道低分题按分数升序进入复习队列。"
+    },
+    {
+      "id": "review-mastery-01",
+      "scene": "review",
+      "precisionAtK": 0.8,
+      "labelProvenance": "spec-derived-review",
+      "notes": "无错题时按掌握度和课程顺序推荐。"
+    },
+    {
+      "id": "review-cold-start-01",
+      "scene": "review",
+      "precisionAtK": 0.8,
+      "labelProvenance": "spec-derived-review",
+      "notes": "冷启动优先基础难度和课程前序小节。"
+    },
+    {
+      "id": "review-cold-start-02",
+      "scene": "review",
+      "precisionAtK": 0.8,
+      "labelProvenance": "spec-derived-review",
+      "notes": "无学习记录时不得引用其他用户的错题。"
+    },
+    {
+      "id": "lesson-related-01",
+      "scene": "lesson",
+      "precisionAtK": 0.8,
+      "labelProvenance": "spec-derived-review",
+      "notes": "同课程语义相关小节保持检索顺序。"
+    },
+    {
+      "id": "lesson-related-02",
+      "scene": "lesson",
+      "precisionAtK": 0.8,
+      "labelProvenance": "spec-derived-review",
+      "notes": "当前小节不得出现在推荐结果中。"
+    },
+    {
+      "id": "lesson-rag-fallback-01",
+      "scene": "lesson",
+      "precisionAtK": 0.8,
+      "labelProvenance": "spec-derived-review",
+      "notes": "RAG 失败时按同课程顺序降级。"
+    },
+    {
+      "id": "lesson-partial-rag-01",
+      "scene": "lesson",
+      "precisionAtK": 0.8,
+      "labelProvenance": "spec-derived-review",
+      "notes": "相关结果不足五条时用课程顺序补齐。"
+    },
+    {
+      "id": "review-approved-only-01",
+      "scene": "review",
+      "precisionAtK": 0.8,
+      "labelProvenance": "spec-derived-review",
+      "notes": "复习题必须处于 approved 状态且属于当前课程。"
+    }
+  ]
+}

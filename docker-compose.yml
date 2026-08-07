@@ -1,20 +1,48 @@
 services:
+  postgres:
+    image: pgvector/pgvector:0.8.2-pg16-bookworm
+    container_name: codestory-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_APP_USER: ${POSTGRES_APP_USER}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+      - ./docker/postgres/init-app-user.sh:/docker-entrypoint-initdb.d/10-init-app-user.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - codestory-data-network
+
   redis:
     image: redis:7-alpine
     container_name: codestory-redis
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
     restart: unless-stopped
     networks:
-      - codestory-network
+      - codestory-data-network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: codestory-backend
-    expose:
-      - '4001'
+    ports:
+      - '127.0.0.1:4001:4001'
     dns:
       - 223.5.5.5
       - 8.8.8.8
@@ -26,11 +54,43 @@ services:
       REDIS_URL: ${REDIS_URL}
       EMAIL_USER: ${EMAIL_USER}
       EMAIL_PASS: ${EMAIL_PASS}
-      QWEN_API_KEY: ${QWEN_API_KEY}
+      AI_API_KEY: ${AI_API_KEY}
       AI_MODEL: ${AI_MODEL}
       AI_BASE_URL: ${AI_BASE_URL}
       AI_TIMEOUT_MS: ${AI_TIMEOUT_MS}
       AI_MAX_TOKENS: ${AI_MAX_TOKENS}
+      AI_TUTOR_PROMPT_VERSION: ${AI_TUTOR_PROMPT_VERSION:-grounded-v3}
+      AI_EMBEDDING_MODEL: ${AI_EMBEDDING_MODEL}
+      AI_EMBEDDING_BATCH_SIZE: ${AI_EMBEDDING_BATCH_SIZE}
+      AI_EMBEDDING_DIMENSIONS: ${AI_EMBEDDING_DIMENSIONS}
+      AI_EMBEDDING_BASE_URL: ${AI_EMBEDDING_BASE_URL}
+      AI_RAG_ENABLED: ${AI_RAG_ENABLED:-false}
+      AI_GRAPH_ENABLED: ${AI_GRAPH_ENABLED:-false}
+      AI_GRAPH_VERSION: ${AI_GRAPH_VERSION:-guided-learning-v1}
+      AI_ALERT_MIN_SUCCESS_RATE: ${AI_ALERT_MIN_SUCCESS_RATE:-0.95}
+      AI_ALERT_SCENE_P95_BASELINES_MS: ${AI_ALERT_SCENE_P95_BASELINES_MS}
+      AI_INPUT_COST_USD_PER_MILLION_TOKENS: ${AI_INPUT_COST_USD_PER_MILLION_TOKENS}
+      AI_OUTPUT_COST_USD_PER_MILLION_TOKENS: ${AI_OUTPUT_COST_USD_PER_MILLION_TOKENS}
+      AI_DAILY_BUDGET_USD: ${AI_DAILY_BUDGET_USD:-10}
+      AI_BUDGET_WARNING_RATIO: ${AI_BUDGET_WARNING_RATIO:-0.8}
+      AI_CHECKPOINT_RETENTION_DAYS: ${AI_CHECKPOINT_RETENTION_DAYS:-30}
+      AI_CALL_LOG_RETENTION_DAYS: ${AI_CALL_LOG_RETENTION_DAYS:-90}
+      AI_EXERCISE_GENERATION_RATE_LIMIT: ${AI_EXERCISE_GENERATION_RATE_LIMIT:-5}
+      AI_EXERCISE_GENERATION_RATE_WINDOW_MS: ${AI_EXERCISE_GENERATION_RATE_WINDOW_MS:-600000}
+      AI_CHAT_RATE_LIMIT: ${AI_CHAT_RATE_LIMIT:-20}
+      AI_CHAT_RATE_WINDOW_MS: ${AI_CHAT_RATE_WINDOW_MS:-600000}
+      AI_GUIDED_LEARNING_RATE_LIMIT: ${AI_GUIDED_LEARNING_RATE_LIMIT:-30}
+      AI_GUIDED_LEARNING_RATE_WINDOW_MS: ${AI_GUIDED_LEARNING_RATE_WINDOW_MS:-600000}
+      AI_EXERCISE_ASSISTANCE_RATE_LIMIT: ${AI_EXERCISE_ASSISTANCE_RATE_LIMIT:-20}
+      AI_EXERCISE_ASSISTANCE_RATE_WINDOW_MS: ${AI_EXERCISE_ASSISTANCE_RATE_WINDOW_MS:-600000}
+      AI_CODE_GRADING_RATE_LIMIT: ${AI_CODE_GRADING_RATE_LIMIT:-20}
+      AI_CODE_GRADING_RATE_WINDOW_MS: ${AI_CODE_GRADING_RATE_WINDOW_MS:-600000}
+      AI_EXERCISE_GENERATION_MAX_TOKENS: ${AI_EXERCISE_GENERATION_MAX_TOKENS:-3500}
+      AI_EXERCISE_GENERATION_TIMEOUT_MS: ${AI_EXERCISE_GENERATION_TIMEOUT_MS:-180000}
+      RECOMMENDATION_TOKEN_SECRET: ${RECOMMENDATION_TOKEN_SECRET}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      CONTENT_RETENTION_DAYS: ${CONTENT_RETENTION_DAYS:-30}
+      CONTENT_PURGE_ENABLED: ${CONTENT_PURGE_ENABLED:-true}
       JWT_SECRET: ${JWT_SECRET}
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
@@ -38,14 +98,17 @@ services:
       OSS_ACCESS_KEY_ID: ${OSS_ACCESS_KEY_ID}
       OSS_ACCESS_KEY_SECRET: ${OSS_ACCESS_KEY_SECRET}
       OSS_BUCKET: ${OSS_BUCKET}
-      OSS_DOMAIN: ${OSS_DOMAIN}
     depends_on:
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./backend/uploads:/app/uploads
     restart: unless-stopped
     networks:
-      - codestory-network
+      - codestory-edge-network
+      - codestory-data-network
 
   frontend:
     build:
@@ -55,8 +118,8 @@ services:
         NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
         NEXT_PUBLIC_UPLOAD_PROXY_URL: ${NEXT_PUBLIC_UPLOAD_PROXY_URL}
     container_name: codestory-frontend
-    expose:
-      - '3001'
+    ports:
+      - '127.0.0.1:3001:3001'
     dns:
       - 223.5.5.5
       - 8.8.8.8
@@ -69,26 +132,17 @@ services:
       - backend
     restart: unless-stopped
     networks:
-      - codestory-network
-
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: codestory-nginx
-    ports:
-      - '18080:80'
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./backend/uploads:/app/uploads:ro
-    depends_on:
-      - frontend
-      - backend
-    restart: unless-stopped
-    networks:
-      - codestory-network
+      - codestory-edge-network
 
 volumes:
+  postgres_data:
+    external: true
+    name: codestory_postgres_data
   redis_data:
 
 networks:
-  codestory-network:
+  codestory-edge-network:
     driver: bridge
+  codestory-data-network:
+    driver: bridge
+    internal: true

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "runId": "76eb1f18-8a61-4b37-853f-a0255c85dcc3",
+  "createdAt": "2026-08-04T12:43:29.212Z",
+  "datasetHash": "dc3a22c9c39b76a70f212065701e89b44c879dc5b1da2ebbb5b47472a2daf780",
+  "promptSourceHash": "1006df24cb6fa09e198cb0de7ebc19654213b6ff5ba4afbf5e8b180f5934c9df",
+  "rubricHash": "b6da039f07675a548669f0f1f1091611913de7b4bf7d498e0f5a75cce2087728",
+  "codeStatus": "de9d28976e4b74f1532ee98c4748a6e4ed20321c-modified-b02259c0af0a",
+  "sampleCount": 30,
+  "concurrency": 3
+}

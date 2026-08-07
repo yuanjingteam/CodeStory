@@ -28,7 +28,7 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
     const hasPreviousScore = (exercise.userAnswer?.score ?? 0) > 0;
     const initialCode =
       exercise.userAnswer?.answer ||
-      (exercise.metadata as CodeMetadata).codeTemplate ||
+      (exercise.metadata as CodeMetadata | null)?.codeTemplate ||
       '';
     const maxHintLevel = exercise.hints?._meta.max_level || 3;
     const {

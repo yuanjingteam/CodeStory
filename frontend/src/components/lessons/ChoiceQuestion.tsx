@@ -43,7 +43,7 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
     getSelectedAnswer: () => selectedOption,
   }), [selectedOption]);
 
-  const options = (exercise.metadata as ChoiceMetadata).options || [];
+  const options = (exercise.metadata as ChoiceMetadata | null)?.options || [];
   const maxHintLevel = exercise.hints?._meta.max_level || 3;
   const handleSelect = (option: string) => {
     setSelectedOption(option);

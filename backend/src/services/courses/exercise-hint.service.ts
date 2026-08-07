@@ -1,19 +1,98 @@
+import { randomUUID } from 'node:crypto';
 import prisma from '../../config/prisma';
 import { resolveShortId } from '../../utils/idTransform';
 import { generateExerciseHint } from '../ai/exercise-hint.service';
+import { logAiError } from '../ai/ai-chat-error.service';
+import type { Prisma } from '../../generated/prisma';
+import {
+  getAppliedLearningEffect,
+  getAppliedLearningEffectInTransaction,
+  markLearningEffectApplied,
+  type LearningRunEffectContext,
+} from '../ai/learning-graph/effects';
 
 const DEFAULT_AI_HINT_MAX_LEVEL = 3;
+
+export async function recordHintLevel(
+  exerciseId: string,
+  userId: string,
+  hintLevel: number
+): Promise<void> {
+  await prisma.$executeRaw`
+    INSERT INTO "answer" (
+      "id", "user_id", "exercise_id", "answer", "submission_count",
+      "feedback", "score", "hint_level_used", "is_delete", "created_at", "updated_at"
+    ) VALUES (
+      ${randomUUID()}, ${userId}, ${exerciseId}, '', 0, '', 0, ${hintLevel}, 0,
+      CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    )
+    ON CONFLICT ("user_id", "exercise_id") DO UPDATE SET
+      "hint_level_used" = GREATEST("answer"."hint_level_used", EXCLUDED."hint_level_used"),
+      "is_delete" = 0,
+      "updated_at" = CURRENT_TIMESTAMP
+  `;
+}
+
+async function recordHintLevelInTransaction(
+  tx: Prisma.TransactionClient,
+  exerciseId: string,
+  userId: string,
+  hintLevel: number
+): Promise<void> {
+  await tx.$executeRaw`
+    INSERT INTO "answer" (
+      "id", "user_id", "exercise_id", "answer", "submission_count",
+      "feedback", "score", "hint_level_used", "is_delete", "created_at", "updated_at"
+    ) VALUES (
+      ${randomUUID()}, ${userId}, ${exerciseId}, '', 0, '', 0, ${hintLevel}, 0,
+      CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    )
+    ON CONFLICT ("user_id", "exercise_id") DO UPDATE SET
+      "hint_level_used" = GREATEST("answer"."hint_level_used", EXCLUDED."hint_level_used"),
+      "is_delete" = 0,
+      "updated_at" = CURRENT_TIMESTAMP
+  `;
+}
+
+function resolveMaxHintLevel(hints: any): number {
+  const configuredMaxLevel = hints?._meta?.max_level;
+  if (!Number.isInteger(configuredMaxLevel)) {
+    return DEFAULT_AI_HINT_MAX_LEVEL;
+  }
+
+  return Math.min(
+    DEFAULT_AI_HINT_MAX_LEVEL,
+    Math.max(1, configuredMaxLevel)
+  );
+}
 
 export async function getExerciseHint(
   exerciseId: string,
   hintLevel: number,
-  userId: string
+  userId: string,
+  effect?: LearningRunEffectContext
 ): Promise<{ content: string; level: number; maxLevel: number } | null> {
+  if (effect) {
+    const applied = await getAppliedLearningEffect<{
+      content: string;
+      level: number;
+      maxLevel: number;
+    }>(effect.effectKey);
+    if (applied) return applied;
+  }
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
-  const exercise = await prisma.exercises.findUnique({
-    where: { id: resolvedId, is_delete: 0 },
+  const exercise = await prisma.exercises.findFirst({
+    where: {
+      id: resolvedId,
+      is_delete: 0,
+      review_status: 'approved',
+      lessons: {
+        is_delete: 0,
+        chapters: { is_delete: 0, courses: { is_delete: 0 } },
+      },
+    },
     include: {
       lessons: {
         select: {
@@ -26,7 +105,7 @@ export async function getExerciseHint(
   if (!exercise) return null;
 
   const hints = exercise.hints as any;
-  const maxLevel = hints?._meta?.max_level || DEFAULT_AI_HINT_MAX_LEVEL;
+  const maxLevel = resolveMaxHintLevel(hints);
 
   if (hintLevel < 1 || hintLevel > maxLevel) {
     return null;
@@ -52,45 +131,34 @@ export async function getExerciseHint(
     });
   } catch (error) {
     if (adminHints.length === 0) throw error;
+    logAiError('exercise-hint-admin-fallback', error);
     hintContent = adminHints[adminHints.length - 1];
   }
 
-  const existingAnswer = await prisma.answer.findUnique({
-    where: {
-      user_id_exercise_id: {
-        user_id: userId,
-        exercise_id: resolvedId,
-      },
-      is_delete: 0,
-    },
-  });
-
-  if (existingAnswer) {
-    await prisma.answer.update({
-      where: { id: existingAnswer.id },
-      data: {
-        hint_level_used: Math.max(existingAnswer.hint_level_used, hintLevel),
-      },
-    });
-  } else {
-    await prisma.answer.create({
-      data: {
-        user_id: userId,
-        exercise_id: resolvedId,
-        answer: '',
-        submission_count: 0,
-        feedback: '',
-        score: 0,
-        hint_level_used: hintLevel,
-      },
-    });
-  }
-
-  return {
+  const result = {
     content: hintContent,
     level: hintLevel,
     maxLevel,
   };
+  if (!effect) {
+    await recordHintLevel(resolvedId, userId, hintLevel);
+    return result;
+  }
+  return prisma.$transaction(async (tx) => {
+    const applied =
+      await getAppliedLearningEffectInTransaction<
+        typeof result
+      >(tx, effect.effectKey);
+    if (applied) return applied;
+    await recordHintLevelInTransaction(
+      tx,
+      resolvedId,
+      userId,
+      hintLevel
+    );
+    await markLearningEffectApplied(tx, effect, result);
+    return result;
+  });
 }
 
 export async function getExerciseHintProgress(
@@ -100,8 +168,16 @@ export async function getExerciseHintProgress(
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
-  const exercise = await prisma.exercises.findUnique({
-    where: { id: resolvedId, is_delete: 0 },
+  const exercise = await prisma.exercises.findFirst({
+    where: {
+      id: resolvedId,
+      is_delete: 0,
+      review_status: 'approved',
+      lessons: {
+        is_delete: 0,
+        chapters: { is_delete: 0, courses: { is_delete: 0 } },
+      },
+    },
     select: {
       hints: true,
     },
@@ -125,7 +201,7 @@ export async function getExerciseHintProgress(
   const hints = exercise.hints as any;
   return {
     currentLevel: userAnswer?.hint_level_used || 0,
-    maxLevel: hints?._meta?.max_level || DEFAULT_AI_HINT_MAX_LEVEL,
+    maxLevel: resolveMaxHintLevel(hints),
   };
 }
 
@@ -140,8 +216,16 @@ export async function getAcquiredHints(
   const resolvedId = await resolveShortId('exercises', exerciseId);
   if (!resolvedId) return null;
 
-  const exercise = await prisma.exercises.findUnique({
-    where: { id: resolvedId, is_delete: 0 },
+  const exercise = await prisma.exercises.findFirst({
+    where: {
+      id: resolvedId,
+      is_delete: 0,
+      review_status: 'approved',
+      lessons: {
+        is_delete: 0,
+        chapters: { is_delete: 0, courses: { is_delete: 0 } },
+      },
+    },
     include: {
       lessons: {
         select: {
@@ -165,7 +249,7 @@ export async function getAcquiredHints(
 
   const currentLevel = userAnswer?.hint_level_used || 0;
   const hints = exercise.hints as any;
-  const maxLevel = hints?._meta?.max_level || DEFAULT_AI_HINT_MAX_LEVEL;
+  const maxLevel = resolveMaxHintLevel(hints);
   const acquiredHints = [];
 
   for (let i = 1; i <= currentLevel && i <= maxLevel; i++) {

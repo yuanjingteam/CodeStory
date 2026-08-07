@@ -1,9 +1,11 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts';
+import { z } from 'zod';
 import {
   createChatModel,
-  extractJsonObject,
-  getMessageText,
 } from './_shared/model';
+import { observeAiCall } from './_shared/ai-call-observability.service';
+
+const CHOICE_EXPLANATION_PROMPT_VERSION = 'choice-explanation-v1';
 
 export interface ChoiceOptionExplanation {
   label: string;
@@ -80,37 +82,27 @@ const choiceExplanationPrompt = ChatPromptTemplate.fromMessages([
   ],
 ]);
 
-function toText(value: unknown, fallback: string): string {
-  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
-}
+const nonEmptyText = z.string().trim().min(1);
 
-function validateExplanation(value: unknown): ChoiceExplanation {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new Error('CHOICE_EXPLANATION_INVALID_OBJECT');
-  }
-
-  const data = value as Record<string, unknown>;
-  const optionExplanations = Array.isArray(data.optionExplanations)
-    ? data.optionExplanations
-        .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object' && !Array.isArray(item))
-        .map((item) => ({
-          label: toText(item.label, ''),
-          explanation: toText(item.explanation, ''),
-          isCorrect: Boolean(item.isCorrect),
-        }))
-        .filter((item) => item.label && item.explanation)
-    : [];
-
-  return {
-    summary: toText(data.summary, '这道题主要考查当前知识点的理解。'),
-    correctOption: toText(data.correctOption, ''),
-    selectedOption: toText(data.selectedOption, ''),
-    correctExplanation: toText(data.correctExplanation, '正确选项符合题目要求。'),
-    selectedExplanation: toText(data.selectedExplanation, '请对照正确选项和题目要求理解差异。'),
-    optionExplanations,
-    studyTip: toText(data.studyTip, '建议回到题目要求，逐项核对每个选项。'),
-  };
-}
+export const choiceExplanationSchema = z
+  .object({
+    summary: nonEmptyText,
+    correctOption: nonEmptyText,
+    selectedOption: nonEmptyText,
+    correctExplanation: nonEmptyText,
+    selectedExplanation: nonEmptyText,
+    optionExplanations: z.array(
+      z
+        .object({
+          label: nonEmptyText,
+          explanation: nonEmptyText,
+          isCorrect: z.boolean(),
+        })
+        .strict()
+    ),
+    studyTip: nonEmptyText,
+  })
+  .strict();
 
 function formatOptions(input: ChoiceExplanationInput): string {
   return input.options
@@ -128,19 +120,29 @@ export async function generateChoiceExplanation(
   input: ChoiceExplanationInput
 ): Promise<ChoiceExplanation> {
   const chain = choiceExplanationPrompt.pipe(
-    createChatModel({ temperature: 0.2, maxTokens: 800 })
+    createChatModel({
+      temperature: 0.2,
+      maxTokens: 800,
+    }).withStructuredOutput(choiceExplanationSchema, {
+      name: 'choice_explanation',
+      method: 'jsonMode',
+    })
   );
-  const response = await chain.invoke({
-    exerciseContent: input.exerciseContent,
-    knowledge: input.knowledge || '未标注',
-    options: formatOptions(input),
-    correctOption: input.correctOption,
-    selectedOption: input.selectedOption,
-    analysis: input.analysis || '暂无解析',
-  });
+  const response = await observeAiCall(
+    {
+      scene: 'choice-explanation',
+      node: 'generate',
+      promptVersion: CHOICE_EXPLANATION_PROMPT_VERSION,
+    },
+    () => chain.invoke({
+      exerciseContent: input.exerciseContent,
+      knowledge: input.knowledge || '未标注',
+      options: formatOptions(input),
+      correctOption: input.correctOption,
+      selectedOption: input.selectedOption,
+      analysis: input.analysis || '暂无解析',
+    })
+  );
 
-  const rawContent = getMessageText(response.content).trim();
-  return validateExplanation(
-    extractJsonObject(rawContent, 'CHOICE_EXPLANATION_JSON_NOT_FOUND')
-  );
+  return response;
 }

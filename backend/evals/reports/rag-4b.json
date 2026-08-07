@@ -1,0 +1,1999 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "reviewed": true,
+  "model": "Qwen/Qwen3-Embedding-4B",
+  "dimensions": 1024,
+  "indexingDurationSeconds": 44.65,
+  "caseCount": 50,
+  "recallAt5": 1,
+  "mrrAt5": 0.9866666666666666,
+  "latencyMs": {
+    "p50": 186.88950000000023,
+    "p95": 550.3320000000003
+  },
+  "passed": true,
+  "results": [
+    {
+      "id": "lesson-100000000000000000000000000000000014-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 598.2750999999998,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 0.7325533947284943
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "chunkIndex": 0,
+          "score": 0.6512059777256275
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000015",
+          "contentHash": "5ffe273eec61f8a5fbc15dc7179b7538378bbea213c3be14a40c8df8f3f1d22c",
+          "chunkIndex": 0,
+          "score": 0.6094017624855085
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.5865951077228656
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.5750779509544414
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000014-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 488.60369999999966,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 0.620583295822148
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000015",
+          "contentHash": "5ffe273eec61f8a5fbc15dc7179b7538378bbea213c3be14a40c8df8f3f1d22c",
+          "chunkIndex": 0,
+          "score": 0.5223244455247457
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "chunkIndex": 0,
+          "score": 0.5135335632284629
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.49473690986633656
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.48918589820693703
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 158.64580000000024,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "chunkIndex": 0,
+          "score": 0.7743779420852661
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 0.5694843191215812
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.5605121850967407
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.5599892473214426
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000015",
+          "contentHash": "5ffe273eec61f8a5fbc15dc7179b7538378bbea213c3be14a40c8df8f3f1d22c",
+          "chunkIndex": 0,
+          "score": 0.5562031004549931
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 229.90599999999995,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "chunkIndex": 0,
+          "score": 0.654056707266374
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.477478680310092
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000015",
+          "contentHash": "5ffe273eec61f8a5fbc15dc7179b7538378bbea213c3be14a40c8df8f3f1d22c",
+          "chunkIndex": 0,
+          "score": 0.4773633453087026
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 0.47612160444259977
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.44296478545245943
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 150.1211000000003,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000061",
+          "contentHash": "1cea8e9ce11d33d991291cacf4b2a3bbcc2e6e33d0179973504e1fbe90cbd662",
+          "chunkIndex": 0,
+          "score": 0.6784238815307617
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000062",
+          "contentHash": "0438a3d1eb2518a66123b55e4365132e35fa83d5370f7f9563f002bec425a87b",
+          "chunkIndex": 0,
+          "score": 0.6591212356614342
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000063",
+          "contentHash": "7ef434f7cab7c645e4e248bf4c30ad75a608db51f57ba9c57899794f606766ad",
+          "chunkIndex": 0,
+          "score": 0.6333810091018677
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-2",
+      "recalledAt5": true,
+      "rank": 3,
+      "latencyMs": 340.9201000000003,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000063",
+          "contentHash": "7ef434f7cab7c645e4e248bf4c30ad75a608db51f57ba9c57899794f606766ad",
+          "chunkIndex": 0,
+          "score": 0.5916130542755127
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000062",
+          "contentHash": "0438a3d1eb2518a66123b55e4365132e35fa83d5370f7f9563f002bec425a87b",
+          "chunkIndex": 0,
+          "score": 0.577097143107824
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000061",
+          "contentHash": "1cea8e9ce11d33d991291cacf4b2a3bbcc2e6e33d0179973504e1fbe90cbd662",
+          "chunkIndex": 0,
+          "score": 0.5574804544448853
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 166.82380000000012,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000062",
+          "contentHash": "0438a3d1eb2518a66123b55e4365132e35fa83d5370f7f9563f002bec425a87b",
+          "chunkIndex": 0,
+          "score": 0.7568703583633473
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000063",
+          "contentHash": "7ef434f7cab7c645e4e248bf4c30ad75a608db51f57ba9c57899794f606766ad",
+          "chunkIndex": 0,
+          "score": 0.6414492940038875
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000061",
+          "contentHash": "1cea8e9ce11d33d991291cacf4b2a3bbcc2e6e33d0179973504e1fbe90cbd662",
+          "chunkIndex": 0,
+          "score": 0.58963038983164
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 150.0652,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000062",
+          "contentHash": "0438a3d1eb2518a66123b55e4365132e35fa83d5370f7f9563f002bec425a87b",
+          "chunkIndex": 0,
+          "score": 0.6396177029837559
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000063",
+          "contentHash": "7ef434f7cab7c645e4e248bf4c30ad75a608db51f57ba9c57899794f606766ad",
+          "chunkIndex": 0,
+          "score": 0.5826392769813538
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000061",
+          "contentHash": "1cea8e9ce11d33d991291cacf4b2a3bbcc2e6e33d0179973504e1fbe90cbd662",
+          "chunkIndex": 0,
+          "score": 0.4848046898841858
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 186.88950000000023,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000001",
+          "contentHash": "001092861685869f547a464478e25e073ed626fa4ad5e440fb6715ced344b74d",
+          "chunkIndex": 0,
+          "score": 0.6919361169300149
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000002",
+          "contentHash": "891450f70748724ecad2db8ba4d5166962131d62cb56f79b5036894e95d82a6c",
+          "chunkIndex": 0,
+          "score": 0.6436190200930545
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "chunkIndex": 0,
+          "score": 0.6365076493176121
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf",
+          "chunkIndex": 0,
+          "score": 0.6264390536081512
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000003",
+          "contentHash": "714d35d6fad09830e85139427bb8f16ea51cf4efb0d640d0f50084ee5ad4e2c4",
+          "chunkIndex": 0,
+          "score": 0.6135988784073784
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 168.80220000000008,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000001",
+          "contentHash": "001092861685869f547a464478e25e073ed626fa4ad5e440fb6715ced344b74d",
+          "chunkIndex": 0,
+          "score": 0.5646530817552505
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "chunkIndex": 0,
+          "score": 0.5622573159779728
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 0.5588961173419813
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000015",
+          "contentHash": "5ffe273eec61f8a5fbc15dc7179b7538378bbea213c3be14a40c8df8f3f1d22c",
+          "chunkIndex": 0,
+          "score": 0.5529860854148904
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000002",
+          "contentHash": "891450f70748724ecad2db8ba4d5166962131d62cb56f79b5036894e95d82a6c",
+          "chunkIndex": 0,
+          "score": 0.552917983954074
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000002-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 170.70919999999933,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000002",
+          "contentHash": "891450f70748724ecad2db8ba4d5166962131d62cb56f79b5036894e95d82a6c",
+          "chunkIndex": 0,
+          "score": 0.7604112482316059
+        },
+        {
+          "sourceType": "exercise",
+          "sourceId": "e00000000000000000000000000000000021",
+          "contentHash": "5e39d1b70699e03f40ad0b81b5f628fb2db55ae6708637542a2f82f920536b6a",
+          "chunkIndex": 0,
+          "score": 0.6871395520651086
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000001",
+          "contentHash": "001092861685869f547a464478e25e073ed626fa4ad5e440fb6715ced344b74d",
+          "chunkIndex": 0,
+          "score": 0.6518431292632043
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "chunkIndex": 0,
+          "score": 0.6231237425281859
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 0.6145486831665082
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000002-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 198.5025000000005,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000002",
+          "contentHash": "891450f70748724ecad2db8ba4d5166962131d62cb56f79b5036894e95d82a6c",
+          "chunkIndex": 0,
+          "score": 0.6580174769152727
+        },
+        {
+          "sourceType": "exercise",
+          "sourceId": "e00000000000000000000000000000000021",
+          "contentHash": "5e39d1b70699e03f40ad0b81b5f628fb2db55ae6708637542a2f82f920536b6a",
+          "chunkIndex": 0,
+          "score": 0.6014490365118373
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 0.5516501603543568
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "chunkIndex": 0,
+          "score": 0.5417785917652502
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000001",
+          "contentHash": "001092861685869f547a464478e25e073ed626fa4ad5e440fb6715ced344b74d",
+          "chunkIndex": 0,
+          "score": 0.5373188097083945
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000003-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 160.59430000000066,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000003",
+          "contentHash": "714d35d6fad09830e85139427bb8f16ea51cf4efb0d640d0f50084ee5ad4e2c4",
+          "chunkIndex": 0,
+          "score": 0.77650222498205
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000002",
+          "contentHash": "891450f70748724ecad2db8ba4d5166962131d62cb56f79b5036894e95d82a6c",
+          "chunkIndex": 0,
+          "score": 0.6836946418103375
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000001",
+          "contentHash": "001092861685869f547a464478e25e073ed626fa4ad5e440fb6715ced344b74d",
+          "chunkIndex": 0,
+          "score": 0.6434732058769354
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000015",
+          "contentHash": "5ffe273eec61f8a5fbc15dc7179b7538378bbea213c3be14a40c8df8f3f1d22c",
+          "chunkIndex": 0,
+          "score": 0.6363117261304528
+        },
+        {
+          "sourceType": "exercise",
+          "sourceId": "e00000000000000000000000000000000021",
+          "contentHash": "5e39d1b70699e03f40ad0b81b5f628fb2db55ae6708637542a2f82f920536b6a",
+          "chunkIndex": 0,
+          "score": 0.6278882400922929
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000003-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 178.2533999999996,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000003",
+          "contentHash": "714d35d6fad09830e85139427bb8f16ea51cf4efb0d640d0f50084ee5ad4e2c4",
+          "chunkIndex": 0,
+          "score": 0.679174501945119
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000002",
+          "contentHash": "891450f70748724ecad2db8ba4d5166962131d62cb56f79b5036894e95d82a6c",
+          "chunkIndex": 0,
+          "score": 0.5768160132389094
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000015",
+          "contentHash": "5ffe273eec61f8a5fbc15dc7179b7538378bbea213c3be14a40c8df8f3f1d22c",
+          "chunkIndex": 0,
+          "score": 0.5505107313090215
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.5442732248143507
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000010",
+          "contentHash": "3f4fc56fee7fd76ec1b37323d8a2f954788ca4cba6e8003400f563739d275e88",
+          "chunkIndex": 0,
+          "score": 0.5264484537038001
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000004-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 150.03509999999915,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.7926480297656056
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 0.639340958634559
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b",
+          "chunkIndex": 0,
+          "score": 0.6391319036483765
+        },
+        {
+          "sourceType": "exercise",
+          "sourceId": "e00000000000000000000000000000000021",
+          "contentHash": "5e39d1b70699e03f40ad0b81b5f628fb2db55ae6708637542a2f82f920536b6a",
+          "chunkIndex": 0,
+          "score": 0.624839723110199
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.6213633192398154
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000004-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 179.98390000000109,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.6974316419701801
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 0.5279756469741087
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b",
+          "chunkIndex": 0,
+          "score": 0.5186479687690735
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.5112678117315667
+        },
+        {
+          "sourceType": "exercise",
+          "sourceId": "e00000000000000000000000000000000021",
+          "contentHash": "5e39d1b70699e03f40ad0b81b5f628fb2db55ae6708637542a2f82f920536b6a",
+          "chunkIndex": 0,
+          "score": 0.490709125995636
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000005-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 359.8571000000011,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.770640180745137
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b",
+          "chunkIndex": 0,
+          "score": 0.5991984009742737
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 0.5841831812749407
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "chunkIndex": 0,
+          "score": 0.576125979423523
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.566999528825256
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000005-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 151.0668999999998,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.6356942219369676
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b",
+          "chunkIndex": 0,
+          "score": 0.4781143354245633
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.45227015018463457
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.4500398874330387
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 0.4404670596122773
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000006-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 171.6854000000003,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b",
+          "chunkIndex": 0,
+          "score": 0.7140464186668396
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.5728590233837986
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.5447241339251925
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.5316550731658936
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f",
+          "chunkIndex": 0,
+          "score": 0.5290504693984985
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000006-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 189.7523999999994,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b",
+          "chunkIndex": 0,
+          "score": 0.5733042105021613
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.427917501678169
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.4137197136878996
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.3875493273197803
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.3712209982407695
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000007-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 208.64260000000104,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf",
+          "chunkIndex": 0,
+          "score": 0.7398008328616871
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.6779147588585248
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f",
+          "chunkIndex": 0,
+          "score": 0.6406264496036309
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000012",
+          "contentHash": "f11ae144a94334ec0d8da7c96ff3bc000119e3f25ccd5386754b96603f6dd85f",
+          "chunkIndex": 0,
+          "score": 0.6278979591161646
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.5949072177625198
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000007-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 321.46429999999964,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf",
+          "chunkIndex": 0,
+          "score": 0.6254462786151853
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.5695551803575513
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f",
+          "chunkIndex": 0,
+          "score": 0.5257440962119133
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000012",
+          "contentHash": "f11ae144a94334ec0d8da7c96ff3bc000119e3f25ccd5386754b96603f6dd85f",
+          "chunkIndex": 0,
+          "score": 0.5181345785220114
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.5137767059007324
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000008-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 179.97580000000016,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.7450993061065674
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f",
+          "chunkIndex": 0,
+          "score": 0.5694150924682617
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf",
+          "chunkIndex": 0,
+          "score": 0.5580418109893799
+        },
+        {
+          "sourceType": "exercise",
+          "sourceId": "e00000000000000000000000000000000021",
+          "contentHash": "5e39d1b70699e03f40ad0b81b5f628fb2db55ae6708637542a2f82f920536b6a",
+          "chunkIndex": 0,
+          "score": 0.5470867156982422
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b",
+          "chunkIndex": 0,
+          "score": 0.5439867973327637
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000008-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 256.96730000000025,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.6408019065856934
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000006",
+          "contentHash": "d17921eb0b536f5ee184f332dd2ad5bb7a47ce112fc26415f76694b18685996b",
+          "chunkIndex": 0,
+          "score": 0.4745217561721802
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.4728199525368193
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.4677166660000889
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f",
+          "chunkIndex": 0,
+          "score": 0.4676750898361206
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000009-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 550.3320000000003,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f",
+          "chunkIndex": 0,
+          "score": 0.7910340677459216
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.617214844558858
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf",
+          "chunkIndex": 0,
+          "score": 0.5974337342460515
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.5372287862487827
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.5368467249365698
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000009-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 272.2466000000004,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f",
+          "chunkIndex": 0,
+          "score": 0.6764642000198364
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.511552631855011
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf",
+          "chunkIndex": 0,
+          "score": 0.49300992488861084
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.4615707122343362
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.45801934349652274
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000010-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 167.24309999999969,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000010",
+          "contentHash": "3f4fc56fee7fd76ec1b37323d8a2f954788ca4cba6e8003400f563739d275e88",
+          "chunkIndex": 0,
+          "score": 0.7476641908984157
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.7116346995503935
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000012",
+          "contentHash": "f11ae144a94334ec0d8da7c96ff3bc000119e3f25ccd5386754b96603f6dd85f",
+          "chunkIndex": 0,
+          "score": 0.5912357988585317
+        },
+        {
+          "sourceType": "exercise",
+          "sourceId": "e00000000000000000000000000000000021",
+          "contentHash": "5e39d1b70699e03f40ad0b81b5f628fb2db55ae6708637542a2f82f920536b6a",
+          "chunkIndex": 0,
+          "score": 0.5226223624534121
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.5170782958590479
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000010-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 173.85950000000048,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000010",
+          "contentHash": "3f4fc56fee7fd76ec1b37323d8a2f954788ca4cba6e8003400f563739d275e88",
+          "chunkIndex": 0,
+          "score": 0.578317386558136
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.5567404529518296
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000012",
+          "contentHash": "f11ae144a94334ec0d8da7c96ff3bc000119e3f25ccd5386754b96603f6dd85f",
+          "chunkIndex": 0,
+          "score": 0.4233156316484339
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.3550191243009978
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.34842093740639424
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000015-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 476.52930000000015,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000015",
+          "contentHash": "5ffe273eec61f8a5fbc15dc7179b7538378bbea213c3be14a40c8df8f3f1d22c",
+          "chunkIndex": 0,
+          "score": 0.6128289834057072
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "chunkIndex": 0,
+          "score": 0.4674199800145622
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 0.45125725865364397
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.3730722292108679
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000002",
+          "contentHash": "891450f70748724ecad2db8ba4d5166962131d62cb56f79b5036894e95d82a6c",
+          "chunkIndex": 0,
+          "score": 0.3726586921607675
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000015-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 369.0707999999995,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000015",
+          "contentHash": "5ffe273eec61f8a5fbc15dc7179b7538378bbea213c3be14a40c8df8f3f1d22c",
+          "chunkIndex": 0,
+          "score": 0.5177858780494865
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000013",
+          "contentHash": "70c950a2188ede7daa2d9cf6c32f2db66a5c3a19718605b2c0d35a7a1152356c",
+          "chunkIndex": 0,
+          "score": 0.40394967794418335
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000014",
+          "contentHash": "6e9a9104b1c0be0018bdfeae664d0dfdabc5d142f9926d97b88e1f7fa4e6d0d1",
+          "chunkIndex": 0,
+          "score": 0.4021920322065342
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.31788249718442607
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.31666780610872525
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000063-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 147.65220000000045,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000063",
+          "contentHash": "7ef434f7cab7c645e4e248bf4c30ad75a608db51f57ba9c57899794f606766ad",
+          "chunkIndex": 0,
+          "score": 0.797573447227478
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000062",
+          "contentHash": "0438a3d1eb2518a66123b55e4365132e35fa83d5370f7f9563f002bec425a87b",
+          "chunkIndex": 0,
+          "score": 0.6237945780876542
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000061",
+          "contentHash": "1cea8e9ce11d33d991291cacf4b2a3bbcc2e6e33d0179973504e1fbe90cbd662",
+          "chunkIndex": 0,
+          "score": 0.5638524293899536
+        }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000063-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 229.35580000000118,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000063",
+          "contentHash": "7ef434f7cab7c645e4e248bf4c30ad75a608db51f57ba9c57899794f606766ad",
+          "chunkIndex": 0,
+          "score": 0.673856039413451
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000062",
+          "contentHash": "0438a3d1eb2518a66123b55e4365132e35fa83d5370f7f9563f002bec425a87b",
+          "chunkIndex": 0,
+          "score": 0.523407456468647
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "300000000000000000000000000000000061",
+          "contentHash": "1cea8e9ce11d33d991291cacf4b2a3bbcc2e6e33d0179973504e1fbe90cbd662",
+          "chunkIndex": 0,
+          "score": 0.4595441544327652
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000011-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 164.4971999999998,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.72077110061301
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000010",
+          "contentHash": "3f4fc56fee7fd76ec1b37323d8a2f954788ca4cba6e8003400f563739d275e88",
+          "chunkIndex": 0,
+          "score": 0.6678695082664537
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000012",
+          "contentHash": "f11ae144a94334ec0d8da7c96ff3bc000119e3f25ccd5386754b96603f6dd85f",
+          "chunkIndex": 0,
+          "score": 0.5581263303756754
+        },
+        {
+          "sourceType": "exercise",
+          "sourceId": "e00000000000000000000000000000000021",
+          "contentHash": "5e39d1b70699e03f40ad0b81b5f628fb2db55ae6708637542a2f82f920536b6a",
+          "chunkIndex": 0,
+          "score": 0.4834106554633778
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.47295364576301924
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000011-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 170.76159999999982,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.5528521867306354
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000010",
+          "contentHash": "3f4fc56fee7fd76ec1b37323d8a2f954788ca4cba6e8003400f563739d275e88",
+          "chunkIndex": 0,
+          "score": 0.4890991157830298
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000012",
+          "contentHash": "f11ae144a94334ec0d8da7c96ff3bc000119e3f25ccd5386754b96603f6dd85f",
+          "chunkIndex": 0,
+          "score": 0.39261213585066057
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.33894137508026567
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000005",
+          "contentHash": "450a8e5602ce2f8914baad0a05e99e858518130cc292e224236ab3b8692f1849",
+          "chunkIndex": 0,
+          "score": 0.32553293261128324
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000012-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 308.7350000000006,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000012",
+          "contentHash": "f11ae144a94334ec0d8da7c96ff3bc000119e3f25ccd5386754b96603f6dd85f",
+          "chunkIndex": 0,
+          "score": 0.7231003046035818
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000010",
+          "contentHash": "3f4fc56fee7fd76ec1b37323d8a2f954788ca4cba6e8003400f563739d275e88",
+          "chunkIndex": 0,
+          "score": 0.6481464505195663
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.6441613011552454
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf",
+          "chunkIndex": 0,
+          "score": 0.6147373089037733
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000001",
+          "contentHash": "001092861685869f547a464478e25e073ed626fa4ad5e440fb6715ced344b74d",
+          "chunkIndex": 0,
+          "score": 0.5619419123478456
+        }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000012-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 198.71359999999913,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000012",
+          "contentHash": "f11ae144a94334ec0d8da7c96ff3bc000119e3f25ccd5386754b96603f6dd85f",
+          "chunkIndex": 0,
+          "score": 0.6078645820698402
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.5574688051622404
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000010",
+          "contentHash": "3f4fc56fee7fd76ec1b37323d8a2f954788ca4cba6e8003400f563739d275e88",
+          "chunkIndex": 0,
+          "score": 0.5510681539137281
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf",
+          "chunkIndex": 0,
+          "score": 0.4721488058567047
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.42089158768108037
+        }
+      ]
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 157.3225999999995,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "8bcec1e1-3c9a-413d-b9e2-9595ae93dd47",
+          "contentHash": "f2e94e4ae799b7c5bd771409c415d41db689ed0622ddc0906c28275a29318b33",
+          "chunkIndex": 0,
+          "score": 0.6528662054022439
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e747215f-ca4a-465b-bb66-495071e803d4",
+          "contentHash": "881d518a9fef886253646221788424d68c283b4c6579b12d9657d47f58992895",
+          "chunkIndex": 0,
+          "score": 0.4481215476989746
+        }
+      ]
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 169.12389999999868,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "8bcec1e1-3c9a-413d-b9e2-9595ae93dd47",
+          "contentHash": "f2e94e4ae799b7c5bd771409c415d41db689ed0622ddc0906c28275a29318b33",
+          "chunkIndex": 0,
+          "score": 0.5856810459088666
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e747215f-ca4a-465b-bb66-495071e803d4",
+          "contentHash": "881d518a9fef886253646221788424d68c283b4c6579b12d9657d47f58992895",
+          "chunkIndex": 0,
+          "score": 0.41387325525283813
+        }
+      ]
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 570.4003999999986,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "e747215f-ca4a-465b-bb66-495071e803d4",
+          "contentHash": "881d518a9fef886253646221788424d68c283b4c6579b12d9657d47f58992895",
+          "chunkIndex": 0,
+          "score": 0.7669695019721985
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "8bcec1e1-3c9a-413d-b9e2-9595ae93dd47",
+          "contentHash": "f2e94e4ae799b7c5bd771409c415d41db689ed0622ddc0906c28275a29318b33",
+          "chunkIndex": 0,
+          "score": 0.5285181684185175
+        }
+      ]
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 160.96210000000065,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "e747215f-ca4a-465b-bb66-495071e803d4",
+          "contentHash": "881d518a9fef886253646221788424d68c283b4c6579b12d9657d47f58992895",
+          "chunkIndex": 0,
+          "score": 0.7266513705253601
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "8bcec1e1-3c9a-413d-b9e2-9595ae93dd47",
+          "contentHash": "f2e94e4ae799b7c5bd771409c415d41db689ed0622ddc0906c28275a29318b33",
+          "chunkIndex": 0,
+          "score": 0.4813067626174242
+        }
+      ]
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 203.0015999999996,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "2f410bb5b2dbaf43fb7ef0493d3a293132f292ed7da27028d56003a35913d9d8",
+          "chunkIndex": 2,
+          "score": 0.8173559416916419
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "161d566b4d10ee2701952898542833e18ccc2ff5a787857f0080cbdcb0e7acf5",
+          "chunkIndex": 1,
+          "score": 0.7128667831420898
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "3fb8b769ccd1640b4aebd80acc71513cc786d18cc70203fdeb28dfd4ec85ceff",
+          "chunkIndex": 6,
+          "score": 0.7124844022085919
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "161d566b4d10ee2701952898542833e18ccc2ff5a787857f0080cbdcb0e7acf5",
+          "chunkIndex": 1,
+          "score": 0.7122901082038879
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "contentHash": "161d566b4d10ee2701952898542833e18ccc2ff5a787857f0080cbdcb0e7acf5",
+          "chunkIndex": 1,
+          "score": 0.7116881608963013
+        }
+      ]
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 189.8096000000005,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "2f410bb5b2dbaf43fb7ef0493d3a293132f292ed7da27028d56003a35913d9d8",
+          "chunkIndex": 2,
+          "score": 0.7261208891868642
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "3fb8b769ccd1640b4aebd80acc71513cc786d18cc70203fdeb28dfd4ec85ceff",
+          "chunkIndex": 6,
+          "score": 0.6392029689792358
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "161d566b4d10ee2701952898542833e18ccc2ff5a787857f0080cbdcb0e7acf5",
+          "chunkIndex": 1,
+          "score": 0.6198446524050636
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "161d566b4d10ee2701952898542833e18ccc2ff5a787857f0080cbdcb0e7acf5",
+          "chunkIndex": 1,
+          "score": 0.6193594705676728
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "contentHash": "161d566b4d10ee2701952898542833e18ccc2ff5a787857f0080cbdcb0e7acf5",
+          "chunkIndex": 1,
+          "score": 0.6185244094445961
+        }
+      ]
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 201.04129999999896,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "c890e4cbd91ed236bb2b2a0e9761cb74dc7970675145e1b4971c6368fe074bde",
+          "chunkIndex": 2,
+          "score": 0.8037662260950413
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "4e2c04266d36c0e8d2c74ad01528ac0c7c1bb872d3bf397c7498635188c4ff00",
+          "chunkIndex": 5,
+          "score": 0.7914492736519249
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "8d3585a5511778a7397ec8fb30b2752c2d48df6ceeb6558cb1a19323c2d2ca52",
+          "chunkIndex": 3,
+          "score": 0.7465310843866431
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "38c0f1ae6f58b41832ad07bd070998fde8d4e6c5ad17d02f7d0cc2177cdad737",
+          "chunkIndex": 4,
+          "score": 0.7305605893324765
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "2f410bb5b2dbaf43fb7ef0493d3a293132f292ed7da27028d56003a35913d9d8",
+          "chunkIndex": 2,
+          "score": 0.7189776040342326
+        }
+      ]
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 179.5759999999991,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "c890e4cbd91ed236bb2b2a0e9761cb74dc7970675145e1b4971c6368fe074bde",
+          "chunkIndex": 2,
+          "score": 0.7447794536150492
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "4e2c04266d36c0e8d2c74ad01528ac0c7c1bb872d3bf397c7498635188c4ff00",
+          "chunkIndex": 5,
+          "score": 0.7399537277276841
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "38c0f1ae6f58b41832ad07bd070998fde8d4e6c5ad17d02f7d0cc2177cdad737",
+          "chunkIndex": 4,
+          "score": 0.7073489950867317
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "8d3585a5511778a7397ec8fb30b2752c2d48df6ceeb6558cb1a19323c2d2ca52",
+          "chunkIndex": 3,
+          "score": 0.6849963256718931
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "2f410bb5b2dbaf43fb7ef0493d3a293132f292ed7da27028d56003a35913d9d8",
+          "chunkIndex": 2,
+          "score": 0.6436552234106989
+        }
+      ]
+    },
+    {
+      "id": "lesson-04bc001d-df88-41ed-a275-d6b3774f21d4-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 188.84799999999996,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "contentHash": "8f99016559ceb1ac4536886a4fef8a4d683a916f62afdfe5b391264df949acc9",
+          "chunkIndex": 2,
+          "score": 0.9066956043243408
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "contentHash": "b3b4ce4fb027ed5cf386ed4bacee0bc531964e25fba2786a9b961549b5026bb5",
+          "chunkIndex": 3,
+          "score": 0.8350002071261544
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "a3fa9efd8cc85431d66c537f70ac39713e052d38009fed5696331975e4970e7f",
+          "chunkIndex": 6,
+          "score": 0.6607004404067993
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "c64a7e8324082df0cd79e76914e228402ed5a8540015f64d69998f6ee39bd5c1",
+          "chunkIndex": 5,
+          "score": 0.6056182384490967
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "f0ec447483c206e98556d09c952ea35a7ccd343d9d88643e8c95fc33064f5e56",
+          "chunkIndex": 4,
+          "score": 0.5859238854601325
+        }
+      ]
+    },
+    {
+      "id": "lesson-04bc001d-df88-41ed-a275-d6b3774f21d4-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 210.59779999999955,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "contentHash": "8f99016559ceb1ac4536886a4fef8a4d683a916f62afdfe5b391264df949acc9",
+          "chunkIndex": 2,
+          "score": 0.8420014883280702
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "contentHash": "b3b4ce4fb027ed5cf386ed4bacee0bc531964e25fba2786a9b961549b5026bb5",
+          "chunkIndex": 3,
+          "score": 0.7633126095906031
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "a3fa9efd8cc85431d66c537f70ac39713e052d38009fed5696331975e4970e7f",
+          "chunkIndex": 6,
+          "score": 0.6062406066799536
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "c64a7e8324082df0cd79e76914e228402ed5a8540015f64d69998f6ee39bd5c1",
+          "chunkIndex": 5,
+          "score": 0.5612933970268615
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "33810ea6-d130-4c42-93db-3741d29cc401",
+          "contentHash": "7e0923d75650d45c8ced491ba871272704906f54a14235e2c417369482651544",
+          "chunkIndex": 0,
+          "score": 0.5340800881385841
+        }
+      ]
+    },
+    {
+      "id": "lesson-33810ea6-d130-4c42-93db-3741d29cc401-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 169.86379999999917,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "33810ea6-d130-4c42-93db-3741d29cc401",
+          "contentHash": "7e0923d75650d45c8ced491ba871272704906f54a14235e2c417369482651544",
+          "chunkIndex": 0,
+          "score": 0.8137573003768979
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "f0ec447483c206e98556d09c952ea35a7ccd343d9d88643e8c95fc33064f5e56",
+          "chunkIndex": 4,
+          "score": 0.5990164994021058
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "a3fa9efd8cc85431d66c537f70ac39713e052d38009fed5696331975e4970e7f",
+          "chunkIndex": 6,
+          "score": 0.5977712629897166
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "c64a7e8324082df0cd79e76914e228402ed5a8540015f64d69998f6ee39bd5c1",
+          "chunkIndex": 5,
+          "score": 0.5864783875035289
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "contentHash": "b3b4ce4fb027ed5cf386ed4bacee0bc531964e25fba2786a9b961549b5026bb5",
+          "chunkIndex": 3,
+          "score": 0.5684539161269565
+        }
+      ]
+    },
+    {
+      "id": "lesson-33810ea6-d130-4c42-93db-3741d29cc401-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 159.81980000000112,
+      "retrieved": [
+        {
+          "sourceType": "lesson",
+          "sourceId": "33810ea6-d130-4c42-93db-3741d29cc401",
+          "contentHash": "7e0923d75650d45c8ced491ba871272704906f54a14235e2c417369482651544",
+          "chunkIndex": 0,
+          "score": 0.7519581613590525
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "e561c63e-abd6-4545-99e6-fbb3c50ddef6",
+          "contentHash": "a3fa9efd8cc85431d66c537f70ac39713e052d38009fed5696331975e4970e7f",
+          "chunkIndex": 6,
+          "score": 0.5321887414342925
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "contentHash": "b3b4ce4fb027ed5cf386ed4bacee0bc531964e25fba2786a9b961549b5026bb5",
+          "chunkIndex": 3,
+          "score": 0.5220422744751013
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "94a61463-e055-4467-8894-fe3fb99f0056",
+          "contentHash": "c64a7e8324082df0cd79e76914e228402ed5a8540015f64d69998f6ee39bd5c1",
+          "chunkIndex": 5,
+          "score": 0.51912137752048
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "04bc001d-df88-41ed-a275-d6b3774f21d4",
+          "contentHash": "8f99016559ceb1ac4536886a4fef8a4d683a916f62afdfe5b391264df949acc9",
+          "chunkIndex": 2,
+          "score": 0.5177480269820683
+        }
+      ]
+    },
+    {
+      "id": "exercise-e00000000000000000000000000000000021-1",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 359.859800000002,
+      "retrieved": [
+        {
+          "sourceType": "exercise",
+          "sourceId": "e00000000000000000000000000000000021",
+          "contentHash": "5e39d1b70699e03f40ad0b81b5f628fb2db55ae6708637542a2f82f920536b6a",
+          "chunkIndex": 0,
+          "score": 0.7392532670052819
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.48824587464332925
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.4868558339390665
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000007",
+          "contentHash": "797700b07db58fbc6eadfd97bb01cff72fb3d14bd6f5c7a6e2c2b7873368d5bf",
+          "chunkIndex": 0,
+          "score": 0.47110470957188144
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000009",
+          "contentHash": "ee6acb6355aa3d6ff0170265a97d9b360a16453c1fa9bb9c38677ffe4b22f10f",
+          "chunkIndex": 0,
+          "score": 0.4639616289115931
+        }
+      ]
+    },
+    {
+      "id": "exercise-e00000000000000000000000000000000021-2",
+      "recalledAt5": true,
+      "rank": 1,
+      "latencyMs": 212.64930000000095,
+      "retrieved": [
+        {
+          "sourceType": "exercise",
+          "sourceId": "e00000000000000000000000000000000021",
+          "contentHash": "5e39d1b70699e03f40ad0b81b5f628fb2db55ae6708637542a2f82f920536b6a",
+          "chunkIndex": 0,
+          "score": 0.6832111477851868
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000004",
+          "contentHash": "8ed6d97b66ec7ae39b9507f8b2bb153ae7f8faf272cff6408cf582c936063391",
+          "chunkIndex": 0,
+          "score": 0.4730143861166016
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000011",
+          "contentHash": "7419066f4ead6453f8c92a45064e34b5fa5fdc36009fa09f3a52a46bb601e5f0",
+          "chunkIndex": 0,
+          "score": 0.46092405682349624
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000010",
+          "contentHash": "3f4fc56fee7fd76ec1b37323d8a2f954788ca4cba6e8003400f563739d275e88",
+          "chunkIndex": 0,
+          "score": 0.45863613732837893
+        },
+        {
+          "sourceType": "lesson",
+          "sourceId": "100000000000000000000000000000000008",
+          "contentHash": "e3273837ecc7f661a3b687c479d8f16108d00ed72db97b6a2cc4179a4836101b",
+          "chunkIndex": 0,
+          "score": 0.4404066801071167
+        }
+      ]
+    }
+  ]
+}

@@ -1,13 +1,6 @@
-import type { MetadataValue, HintsValue } from '@/types/lesson-manage';
+import type { ExerciseItem } from '@/types/lesson-manage';
 
-export interface ExerciseItem {
-  id: string;
-  type: string;
-  exerciseContent: string;
-  answer: string;
-  metadata: MetadataValue;
-  hints: HintsValue;
-}
+export type { ExerciseItem } from '@/types/lesson-manage';
 
 export const generateExerciseId = () => `exercise_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
@@ -16,8 +9,12 @@ export const createEmptyExercise = (): ExerciseItem => ({
   type: '',
   exerciseContent: '',
   answer: '',
+  knowledge: '',
+  analysis: '',
+  source: 'static',
   metadata: null,
   hints: null,
+  knowledgeIndexPolicy: 'auto',
 });
 
 export const getExerciseTypeLabel = (type: string) => {

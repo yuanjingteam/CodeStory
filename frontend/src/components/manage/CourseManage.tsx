@@ -1,8 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiEdit, FiRotateCcw, FiTrash2 } from 'react-icons/fi';
 import { showToast } from '@/utils/toast';
+import { showKnowledgeIndexResult } from '@/utils/knowledgeIndex';
 import {
   SearchFilter,
   DataTable,
@@ -11,7 +12,6 @@ import {
 } from '@/components/common';
 import type { FilterField, Column } from '@/components/common';
 import CourseModel from './CourseModel';
-import courseApi from '@/app/api/courses/courses';
 import courseManageApi from '@/app/api/manage/course-manage';
 import type { Course } from '@/types/course';
 import type { CourseFormData } from '@/types/course-manage';
@@ -31,6 +31,7 @@ const levelColorMap: Record<number, string> = {
 interface CourseManageQuery {
   keyword?: string;
   level?: number;
+  status: 'active' | 'deleted';
   page: number;
   size: number;
 }
@@ -39,14 +40,31 @@ export default function CourseManage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const [query, setQuery] = useState<CourseManageQuery>({ page: 1, size: 10 });
+  const [query, setQuery] = useState<CourseManageQuery>({
+    status: 'active',
+    page: 1,
+    size: 10,
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<
     (CourseFormData & { id: string; cover_url?: string }) | undefined
   >();
   const [deleteTarget, setDeleteTarget] = useState<Course | null>(null);
+  const [restoringId, setRestoringId] = useState<string | number | null>(
+    null
+  );
   const [filters, setFilters] = useState<FilterField[]>([
+    {
+      id: 'status',
+      label: '数据状态',
+      type: 'select',
+      value: 'active',
+      options: [
+        { label: '有效内容', value: 'active' },
+        { label: '回收站', value: 'deleted' },
+      ],
+    },
     {
       id: 'level',
       label: '难度',
@@ -64,7 +82,7 @@ export default function CourseManage() {
   const refreshCourses = async () => {
     setLoading(true);
     try {
-      const res = await courseApi.getList(query);
+      const res = await courseManageApi.getList(query);
       setCourses(res.records || []);
       setTotal(res.total);
     } catch (error) {
@@ -77,7 +95,7 @@ export default function CourseManage() {
   useEffect(() => {
     let cancelled = false;
 
-    courseApi
+    courseManageApi
       .getList(query)
       .then((res) => {
         if (cancelled) return;
@@ -102,8 +120,11 @@ export default function CourseManage() {
 
   const handleSubmit = async (data: CourseFormData & { id?: string }) => {
     if (data.id) {
-      await courseManageApi.update(data.id, data);
-      showToast.success('课程更新成功');
+      const response = await courseManageApi.update(data.id, data);
+      showKnowledgeIndexResult(
+        '课程更新成功',
+        response.indexSummary
+      );
     } else {
       await courseManageApi.create(data);
       showToast.success('课程创建成功');
@@ -138,6 +159,20 @@ export default function CourseManage() {
       await refreshCourses();
     }
     setDeleteTarget(null);
+  };
+
+  const handleRestore = async (item: Course) => {
+    setRestoringId(item.id);
+    try {
+      await courseManageApi.restore(item.id);
+      showToast.success(`课程「${item.title}」已恢复`);
+      await refreshCourses();
+    } catch (error) {
+      console.error('恢复课程失败:', error);
+      showToast.error('恢复课程失败，请稍后重试');
+    } finally {
+      setRestoringId(null);
+    }
   };
 
   const columns: Column<Course>[] = [
@@ -201,6 +236,17 @@ export default function CourseManage() {
       align: 'center',
       render: (_, item) => (
         <div className="flex items-center gap-2">
+          {query.status === 'deleted' ? (
+            <button
+              onClick={() => handleRestore(item)}
+              disabled={restoringId === item.id}
+              className="flex items-center gap-1 border-2 border-black bg-green-300 px-3 py-1 text-xs font-bold text-zinc-950 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none disabled:cursor-wait disabled:opacity-60"
+            >
+              <FiRotateCcw className="h-3 w-3" />
+              {restoringId === item.id ? '恢复中' : '恢复'}
+            </button>
+          ) : (
+            <>
           <button
             onClick={() => handleOpenEdit(item)}
             className="px-3 py-1 bg-blue-400 text-white text-xs font-bold border-2 border-black rounded-md shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center gap-1"
@@ -215,6 +261,8 @@ export default function CourseManage() {
             <FiTrash2 className="w-3 h-3" />
             删除
           </button>
+            </>
+          )}
         </div>
       ),
     },
@@ -232,6 +280,9 @@ export default function CourseManage() {
           const levelValue = filters.find(
             (filter) => filter.id === 'level'
           )?.value;
+          const statusValue = filters.find(
+            (filter) => filter.id === 'status'
+          )?.value;
           setLoading(true);
           setQuery((current) => ({
             keyword: searchTerm || undefined,
@@ -239,6 +290,8 @@ export default function CourseManage() {
               levelValue !== '' && levelValue !== undefined
                 ? Number(levelValue)
                 : undefined,
+            status:
+              statusValue === 'deleted' ? 'deleted' : 'active',
             page: 1,
             size: current.size,
           }));
@@ -246,7 +299,8 @@ export default function CourseManage() {
         actionSlot={
           <button
             onClick={handleOpenCreate}
-            className="px-6 py-2 rounded-sm bg-purple-500 text-white font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200"
+            disabled={query.status === 'deleted'}
+            className="px-6 py-2 rounded-sm bg-purple-500 text-white font-bold border-2 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[4px] hover:translate-y-[4px] hover:shadow-none transition-all duration-200 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:shadow-none"
           >
             + 新建课程
           </button>
@@ -284,7 +338,7 @@ export default function CourseManage() {
       <ConfirmDialog
         open={!!deleteTarget}
         title="删除课程"
-        message={`确定删除「${deleteTarget?.title}」吗？删除后不可恢复。`}
+        message={`确定删除「${deleteTarget?.title}」吗？删除后保留 30 天，可在回收站恢复。`}
         confirmText="确认"
         cancelText="取消"
         variant="danger"

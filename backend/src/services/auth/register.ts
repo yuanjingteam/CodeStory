@@ -2,7 +2,6 @@ import prisma from '@/config/prisma';
 import { hashPassword } from '@/utils/bcrypt';
 import { captchaService } from '@/services/auth/captcha';
 import type { RegisterRequest } from '@/types/auth';
-import { deleteCache } from '@/utils/cache';
 import {
   validateEmail,
   validatePassword,
@@ -42,7 +41,6 @@ class RegisterService {
     if (existingUser) {
       return badRequest('邮箱已被注册');
     }
-    await deleteCache(`emailCode:${email}`);
     const hashedPassword = await hashPassword(password);
     const user = await prisma.users.create({
       data: {

@@ -1,0 +1,29 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "reviewerModel": "deepseek-ai/DeepSeek-V4-Flash",
+  "rubricVersion": "rag-claim-support-v3",
+  "promptVersion": "grounded-v3",
+  "promptRevision": "grounded-v3.1-boundary",
+  "reviewMethod": "hybrid-model-assisted, agent-audited",
+  "reviewedAnswers": 40,
+  "reviewedClaims": 209,
+  "reviewedCourseClaims": 98,
+  "reviewedSupplementClaims": 111,
+  "supportedClaims": 97,
+  "correctSupplementClaims": 111,
+  "supportAccuracy": 0.9897959183673469,
+  "supplementAccuracy": 1,
+  "citationValidity": 1,
+  "extensionLabelAccuracy": 1,
+  "passed": true,
+  "unsupportedClaims": [
+    {
+      "answerId": "lesson-100000000000000000000000000000000001-2",
+      "claim": "由此可以看出，HTML的核心作用是定义和组织网页的内容结构，而不是控制样式或行为。",
+      "reviewerNote": "证据未完全支持"
+    }
+  ],
+  "incorrectSupplementClaims": [],
+  "invalidCitations": []
+}

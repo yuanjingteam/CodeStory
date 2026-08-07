@@ -1,0 +1,178 @@
+{
+  "datasetVersion": "rag-v1-candidates",
+  "model": "deepseek-ai/DeepSeek-V4-Flash",
+  "reviewerModel": "codex-manual",
+  "rubricVersion": "rag-claim-support-v2",
+  "reviewMethod": "manual agent audit",
+  "reviewedAt": "2026-07-31",
+  "results": [
+    {
+      "id": "lesson-100000000000000000000000000000000014-1",
+      "claims": [
+        { "text": "语义化标签使用 header、footer、article 等有明确含义的 HTML 标签构建网页结构。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "证据1列出对应语义标签" },
+        { "text": "语义化标签能提升可读性、可维护性、SEO 和屏幕阅读器理解。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "证据未说明这些收益" }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-1",
+      "claims": [
+        { "text": "“什么是数据库”小节讲解数据库定义、核心特性及其数据管理作用。", "supportReview": "supported", "evidenceIndexes": [1, 2], "reviewerNote": "可由基础概念和管理优势推出" }
+      ]
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-1",
+      "claims": [
+        { "text": "该小节讲解 int、double、boolean、char 及类和数组等具体数据类型。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "证据只有小节标题" },
+        { "text": "该小节讲解算术、关系、逻辑、赋值和自增自减等具体运算符。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "证据未列具体运算符" },
+        { "text": "该小节讲解顺序、if、switch、for、while 和 do-while 等流程结构。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "证据未列具体流程结构" },
+        { "text": "后续判断闰年练习会使用这些具体知识。", "supportReview": "unsupported", "evidenceIndexes": [2], "reviewerNote": "证据2只给规则和方法要求" }
+      ]
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-1",
+      "claims": [
+        { "text": "数据库用于存储和管理数据，并支持持久保存、快速查找、多人使用、安全和分析。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "证据1逐项说明" },
+        { "text": "数据库比 Excel 更适合大型、复杂、多人共享的数据管理。", "supportReview": "supported", "evidenceIndexes": [1, 3], "reviewerNote": "证据直接说明" },
+        { "text": "表是容器、列是属性、行是记录。", "supportReview": "supported", "evidenceIndexes": [3], "reviewerNote": "证据3逐项定义" },
+        { "text": "SQL 是与数据库沟通的标准语言。", "supportReview": "supported", "evidenceIndexes": [3], "reviewerNote": "证据3直接说明" },
+        { "text": "SELECT 可查询全部列、指定列或配合 WHERE 条件查询。", "supportReview": "supported", "evidenceIndexes": [3], "reviewerNote": "证据3给出三种语法" }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000014-2",
+      "claims": [
+        { "text": "header、nav、article、section、aside、footer 分别适用于回答所列页面区域。", "supportReview": "unsupported", "evidenceIndexes": [1], "reviewerNote": "证据只列三个标签名" },
+        { "text": "div 用于纯样式容器，span 用于行内局部修饰。", "supportReview": "unsupported", "evidenceIndexes": [3], "reviewerNote": "证据只有区块与行内标题" },
+        { "text": "article、section 和 header 应按回答所述规则嵌套并避免滥用。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "证据未给嵌套规则" }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000061-2",
+      "claims": [
+        { "text": "数据库应用包含关系型或非关系型数据建模及字段、类型和约束设计。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "短标题未说明建模方法" },
+        { "text": "实际程序使用 SQL 或 API 完成增删改查。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "证据未给 SQL 操作" },
+        { "text": "程序可用 sqlite3、JDBC、SQLAlchemy、Hibernate 等驱动或 ORM 连接数据库。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "技术栈未出现在证据" },
+        { "text": "事务机制用于保证原子性和一致性并处理并发。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "证据未说明事务" }
+      ]
+    },
+    {
+      "id": "lesson-8bcec1e1-3c9a-413d-b9e2-9595ae93dd47-2",
+      "claims": [
+        { "text": "年龄、价格、真假分别适合用 int、double、boolean。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "证据未给类型用例" },
+        { "text": "回答所列算术、比较和逻辑运算符用于计算与组合条件。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "证据未列具体运算符" },
+        { "text": "if-else、for 和 while 分别用于条件分支和重复执行。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "证据未给语法用途" },
+        { "text": "判断闰年可用取模和逻辑运算符实现所列条件。", "supportReview": "unsupported", "evidenceIndexes": [2], "reviewerNote": "证据给规则但未给实现方式" }
+      ]
+    },
+    {
+      "id": "lesson-94a61463-e055-4467-8894-fe3fb99f0056-2",
+      "claims": [
+        { "text": "程序通过数据库驱动发送 SQL 并取得结果。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "证据未说明驱动调用" },
+        { "text": "表、列、行分别映射为类或集合、属性、对象或字典，并形成 ORM。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "映射和 ORM 未出现" },
+        { "text": "数据库可持久保存、快速查找并支持多人同时使用。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "证据1逐项说明" },
+        { "text": "事务和锁可保证多用户操作不出错，程序无需自行实现并发控制。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "事务和锁未出现" },
+        { "text": "数据量大、多人协作和频繁查询时必须使用 MySQL、PostgreSQL 等数据库。", "supportReview": "unsupported", "evidenceIndexes": [2], "reviewerNote": "选型结论和产品名超出证据" }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-1",
+      "claims": [
+        { "text": "div 是区块元素，span 是行内元素。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "证据1直接对应" },
+        { "text": "div 独占一行且可设宽高，span 不换行且宽度由内容决定，两者均无语义并配合 CSS。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "具体显示行为未说明" }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-1",
+      "claims": [
+        { "text": "该小节主要讲解数据存储与管理优势。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "证据1直接说明" },
+        { "text": "优势具体包括数据组织、查询效率、一致性、安全性和并发控制。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "证据未列具体优势" }
+      ]
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-1",
+      "claims": [
+        { "text": "闰年规则是能被4整除但不能被100整除，或者能被400整除。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "证据1直接说明" },
+        { "text": "练习要求编写 isLeapYear(int year) 方法判断闰年。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "证据1直接说明" },
+        { "text": "课程明确要求使用 if-else 或三元运算符、逻辑运算符和 boolean 返回值。", "supportReview": "unsupported", "evidenceIndexes": [2], "reviewerNote": "证据未给这些具体实现" }
+      ]
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-1",
+      "claims": [
+        { "text": "CREATE、SHOW、USE 和 DROP 可创建、查看、切换和删除数据库。", "supportReview": "supported", "evidenceIndexes": [1, 3], "reviewerNote": "证据直接给出" },
+        { "text": "INT、VARCHAR 和 DATE 是该节介绍的基础数据类型，CREATE TABLE 用于建表。", "supportReview": "supported", "evidenceIndexes": [3], "reviewerNote": "证据3直接给出" },
+        { "text": "INSERT、UPDATE 和 DELETE 分别用于新增、修改和删除数据。", "supportReview": "supported", "evidenceIndexes": [2, 4], "reviewerNote": "证据2和4直接给出" },
+        { "text": "UPDATE 和 DELETE 必须带 WHERE，字符串加单引号，关键字建议大写并以分号结尾。", "supportReview": "supported", "evidenceIndexes": [2], "reviewerNote": "证据2逐项说明" }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000013-2",
+      "claims": [
+        { "text": "div 属于区块元素，span 属于行内元素。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "证据1直接对应" },
+        { "text": "div 默认独占一行并用于页面骨架，span 不换行并用于局部文本样式。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "用途和行为未说明" },
+        { "text": "div 可配合 width、margin、float 或 Flexbox 布局，span 常调整字体和颜色。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "CSS 用法未出现" }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000062-2",
+      "claims": [
+        { "text": "数据库优势具体包括持久化、减少冗余、一致性、并发和安全性。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "短标题未列具体优势" },
+        { "text": "第三范式和外键用于避免冗余和更新异常。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "范式和外键未出现" },
+        { "text": "ACID 事务可使资金或库存操作全部成功或全部回滚。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "事务内容未出现" },
+        { "text": "锁和隔离级别可处理并发，程序无需自行实现复杂控制。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "锁和隔离级别未出现" }
+      ]
+    },
+    {
+      "id": "lesson-e747215f-ca4a-465b-bb66-495071e803d4-2",
+      "claims": [
+        { "text": "闰年判断规则是能被4整除且不能被100整除，或能被400整除。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "证据1直接说明" },
+        { "text": "回答给出的 isLeapYear 方法正确实现了证据中的规则。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "代码由规则必然推出" },
+        { "text": "闰年判断用于年天数、二月天数和日期合法性等场景。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "应用场景未出现在证据" }
+      ]
+    },
+    {
+      "id": "lesson-e561c63e-abd6-4545-99e6-fbb3c50ddef6-2",
+      "claims": [
+        { "text": "CREATE DATABASE、USE 和字符集设置可用于项目初始化。", "supportReview": "supported", "evidenceIndexes": [1, 3], "reviewerNote": "证据给出对应语法" },
+        { "text": "CREATE TABLE 可用 INT、VARCHAR、DATE 定义表结构。", "supportReview": "supported", "evidenceIndexes": [3, 4], "reviewerNote": "证据给出建表示例" },
+        { "text": "INSERT 用于写入业务数据并推荐指定字段。", "supportReview": "supported", "evidenceIndexes": [4], "reviewerNote": "证据4直接说明" },
+        { "text": "UPDATE 必须带 WHERE 以避免修改全表。", "supportReview": "supported", "evidenceIndexes": [2, 4], "reviewerNote": "证据直接警告" },
+        { "text": "DELETE 必须带 WHERE 以避免删除全表。", "supportReview": "supported", "evidenceIndexes": [2], "reviewerNote": "证据直接警告" },
+        { "text": "程序应通过 pymysql、JDBC 等驱动执行 SQL，并用 BEGIN、COMMIT、ROLLBACK 管理事务。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "驱动和事务未出现" },
+        { "text": "字符串和日期需加单引号，SQL 关键字建议大写。", "supportReview": "supported", "evidenceIndexes": [2], "reviewerNote": "证据2直接说明" }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-1",
+      "claims": [
+        { "text": "HTML 是用于构建网页结构的基础标记语言。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "证据1逐字支持" },
+        { "text": "HTML 标签定义标题、段落、图片和链接，并告诉浏览器内容及其结构。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "具体标签作用未在证据中" }
+      ]
+    },
+    {
+      "id": "lesson-300000000000000000000000000000000063-1",
+      "claims": [
+        { "text": "该小节讲解常见数据库使用场景。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "证据1直接说明" },
+        { "text": "数据库具体用于电商、银行、社交网络和物流系统中的回答所列数据。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "具体场景未出现在证据" },
+        { "text": "这些场景体现数据库的持久化、高效查询和并发控制优势。", "supportReview": "unsupported", "evidenceIndexes": [2], "reviewerNote": "证据未列这些具体优势" }
+      ]
+    },
+    {
+      "id": "lesson-04bc001d-df88-41ed-a275-d6b3774f21d4-1",
+      "claims": [
+        { "text": "LIKE 配合 % 和 _ 实现包含、开头、结尾及单字符模糊匹配。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "证据1直接说明" },
+        { "text": "ORDER BY 支持 ASC、DESC 及多字段排序。", "supportReview": "supported", "evidenceIndexes": [1, 2], "reviewerNote": "证据1和2直接说明" },
+        { "text": "LIMIT 使用起始索引和条数分页，索引从0开始。", "supportReview": "supported", "evidenceIndexes": [2], "reviewerNote": "证据2直接说明" },
+        { "text": "查询执行顺序为 WHERE、ORDER BY、LIMIT，通配内容需加单引号。", "supportReview": "supported", "evidenceIndexes": [2], "reviewerNote": "证据2直接说明" }
+      ]
+    },
+    {
+      "id": "lesson-100000000000000000000000000000000001-2",
+      "claims": [
+        { "text": "HTML 作为网页结构的基础标记语言用于搭建页面骨架。", "supportReview": "supported", "evidenceIndexes": [1], "reviewerNote": "证据1直接支持" },
+        { "text": "h1-h6、p、a、img、ul 和 ol 分别具有回答所述语义。", "supportReview": "unsupported", "evidenceIndexes": [], "reviewerNote": "证据未给具体标签语义" },
+        { "text": "标准页面由 html、head、body 构成并按回答示例嵌套。", "supportReview": "unsupported", "evidenceIndexes": [5], "reviewerNote": "证据仅有文档结构标题" }
+      ]
+    }
+  ]
+}
