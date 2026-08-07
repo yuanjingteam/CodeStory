@@ -344,7 +344,12 @@ export default function ExerciseModal({
               <TiptapViewer content={exerciseData.content} />
             </div>
 
-            {exerciseData.type === 'single_choice' ? (
+            {exerciseData.usable === false ? (
+              // 题干仍然显示，学生能看到坏的是哪道题，而不是一片空白
+              <div className="border-2 border-black bg-red-50 p-3 text-sm font-bold text-red-700">
+                本题选项配置有误，暂时无法作答，请联系课程管理员。
+              </div>
+            ) : exerciseData.type === 'single_choice' ? (
               <ChoiceQuestion
                 key={exerciseData.id}
                 exercise={exerciseData}

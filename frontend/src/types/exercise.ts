@@ -19,8 +19,11 @@ export interface ExerciseDetailData {
   content: string;
   analysis: string;
   difficulty: number;
-  metadata: ChoiceMetadata | CodeMetadata;
+  // 可空：Prisma 侧是 metadata Json?，此前非空的断言会让 SQL NULL 直接崩掉组件
+  metadata: ChoiceMetadata | CodeMetadata | null;
   hints: HintConfig | null;
+  /** 后端判定这道题能否作答；选项配置坏掉时为 false */
+  usable?: boolean;
   userAnswer?: UserAnswer;
 }
 

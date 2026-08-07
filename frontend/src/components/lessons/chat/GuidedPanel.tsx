@@ -13,7 +13,7 @@ const CLOSING_NOTE: Partial<
 > = {
   COMPLETE: '答对了，本轮引导完成。',
   REVIEW: '本轮引导已结束，可以重新开始一轮。',
-  EMPTY: '当前小节暂无已审核题目，引导学习无法开始。',
+  EMPTY: '当前小节暂无可作答的已审核题目，引导学习无法开始。',
   RESTART_REQUIRED: '引导流程已更新，需要重新开始一轮。',
 };
 
@@ -47,6 +47,12 @@ export default function GuidedPanel({
 }: GuidedPanelProps) {
   const closingNote = CLOSING_NOTE[state.phase];
   const options = state.exerciseOptions || [];
+  // 后端出题时已跳过坏题，这里兜的是修复前就存在的 checkpoint：它可能停在
+  // 一道没有选项的选择题上，既没有作答按钮也没有输入框，学生无路可走。
+  const optionsUnavailable =
+    state.phase === 'WAIT_ANSWER' &&
+    state.exerciseType === 'single_choice' &&
+    options.length === 0;
 
   return (
     <div className="space-y-3">
@@ -87,6 +93,12 @@ export default function GuidedPanel({
             );
           })}
         </ul>
+      )}
+
+      {optionsUnavailable && (
+        <p className="border-2 border-dashed border-black bg-white px-3 py-2 text-xs font-bold text-gray-700">
+          题目选项不可用，请重新开始一轮引导。
+        </p>
       )}
 
       {state.hint && (
