@@ -5,6 +5,7 @@ import {
   submitExercise,
   formatExerciseResponse,
 } from '../services/courses/exercise.service';
+import { ChoiceExerciseUnusableError } from '../services/courses/choice-exercise-integrity';
 import {
   getAcquiredHints,
   getExerciseHint,
@@ -63,6 +64,9 @@ router.post('/submit', authMiddleware, async (req, res) => {
       data: result,
     });
   } catch (error) {
+    if (error instanceof ChoiceExerciseUnusableError) {
+      return badRequest(res, '本题选项配置有误，暂时无法作答');
+    }
     return serverError(res, error);
   }
 });

@@ -9,6 +9,10 @@ import {
 import type { PostgresSaver } from '@langchain/langgraph-checkpoint-postgres';
 import prisma from '../../../config/prisma';
 import { getExerciseHint } from '../../courses/exercise-hint.service';
+import {
+  ChoiceExerciseUnusableError,
+  inspectChoiceExercise,
+} from '../../courses/choice-exercise-integrity';
 import { submitExercise } from '../../courses/exercise.service';
 import type {
   GuidedLearningInput,
@@ -63,15 +67,28 @@ async function explainNode(
 async function questionNode(
   state: GuidedLearningGraphState
 ): Promise<Partial<GuidedLearningGraphState>> {
-  const exercise = await prisma.exercises.findFirst({
+  const candidates = await prisma.exercises.findMany({
     where: {
       lesson_id: state.lessonId,
       review_status: 'approved',
       is_delete: 0,
     },
     orderBy: [{ order: 'asc' }, { created_at: 'asc' }],
-    select: { id: true, content: true, type: true, metadata: true },
+    select: {
+      id: true,
+      content: true,
+      type: true,
+      answer: true,
+      metadata: true,
+    },
   });
+  // 跳过选项配置坏掉的题：它怎么答都是错，会把学生锁在 WAIT_ANSWER 里耗完
+  // 三级提示。一坏一好的小节仍然可用。
+  const exercise = candidates.find(
+    (candidate) =>
+      candidate.type !== 'single_choice' ||
+      inspectChoiceExercise(candidate).usable
+  );
   if (!exercise) {
     return {
       phase: 'EMPTY',
@@ -79,7 +96,7 @@ async function questionNode(
       exerciseContent: null,
       exerciseType: null,
       exerciseOptions: null,
-      feedback: '当前小节暂无已审核题目。',
+      feedback: '当前小节暂无可作答的已审核题目。',
     };
   }
   // 选择题按字母判分（exercise.service 用 charCodeAt(0)-65 取下标），
@@ -121,17 +138,30 @@ async function evaluateNode(
       feedback: '未收到有效答案，本轮引导结束。',
     };
   }
-  const result = await submitExercise(
-    state.exerciseId,
-    state.answer,
-    state.userId,
-    {
-      runId: state.runId,
-      nodeName: 'evaluate',
-      effectType: 'submit_answer',
-      effectKey: `${state.runId}:evaluate:${state.hintLevel}`,
+  // questionNode 已经跳过坏题，这里兜的是修复前就存在的 checkpoint：
+  // 它可能还攥着一个当时选中的坏题 ID。
+  let result: Awaited<ReturnType<typeof submitExercise>>;
+  try {
+    result = await submitExercise(
+      state.exerciseId,
+      state.answer,
+      state.userId,
+      {
+        runId: state.runId,
+        nodeName: 'evaluate',
+        effectType: 'submit_answer',
+        effectKey: `${state.runId}:evaluate:${state.hintLevel}`,
+      }
+    );
+  } catch (error) {
+    if (error instanceof ChoiceExerciseUnusableError) {
+      return {
+        phase: 'REVIEW',
+        feedback: '本题选项配置有误，无法判分，请重新开始一轮。',
+      };
     }
-  );
+    throw error;
+  }
   if (!result) {
     return {
       phase: 'REVIEW',

@@ -1,6 +1,10 @@
 import prisma from '../../config/prisma';
 import type { Prisma } from '../../generated/prisma';
 import { resolveShortId, uuidToShortId } from '../../utils/idTransform';
+import {
+  ChoiceExerciseUnusableError,
+  inspectChoiceExercise,
+} from './choice-exercise-integrity';
 import { generateChoiceExplanation } from '../ai/choice-explanation.service';
 import { reviewCodeWithAI } from '../ai/evaluate/code-grading-chain';
 import {
@@ -212,8 +216,13 @@ export async function submitExercise(
   let aiReviewFailure: ReturnType<typeof createAiChatErrorPayload> | undefined;
 
   if (exercise.type === 'single_choice') {
-    const metadata = exercise.metadata as any;
-    const options = metadata?.options || [];
+    // 必须在 runSerializableWithRetry 之前：选项配置坏掉的题怎么答都是错，
+    // 放进去只会白记一次错误提交、白扣一次分、还污染掌握度。
+    const inspection = inspectChoiceExercise(exercise);
+    if (!inspection.usable) {
+      throw new ChoiceExerciseUnusableError(inspection.blockedBy);
+    }
+    const options = inspection.options;
     const answerIndex = answer.trim().toUpperCase().charCodeAt(0) - 65;
     const selectedOption = options[answerIndex];
     correct = selectedOption === exercise.answer;
@@ -535,6 +544,13 @@ export function formatExerciseResponse(exercise: ExerciseDetail, userAnswer: Use
     analysis: exercise.analysis || '',
     difficulty: exercise.difficulty,
     metadata: exercise.metadata,
+    // 不改成 404：request.ts 对任何 HTTP 200 都直接返回 body，body 里的错误码
+    // 在前端是静音的，只会变成一句没头没尾的「题目加载失败」。返回行 + 标志位，
+    // 前端才能给出真实提示。
+    usable:
+      exercise.type === 'single_choice'
+        ? inspectChoiceExercise(exercise).usable
+        : true,
     hints: hints ? {
       _meta: hints._meta,
     } : null,

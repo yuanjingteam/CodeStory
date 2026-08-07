@@ -397,4 +397,46 @@ describe('阶段 4 · PostgreSQL checkpoint 恢复', () => {
     );
     process.env.AI_GRAPH_VERSION = 'guided-learning-v1';
   });
+
+  it('出题时跳过选项配置坏掉的题，只剩坏题则回落 EMPTY', async () => {
+    process.env.AI_GRAPH_ENABLED = 'true';
+    process.env.AI_GRAPH_VERSION = 'guided-learning-v1';
+
+    // order 更靠前的坏题必须被跳过，学生拿到的是后面那道好题
+    const broken = await prisma.exercises.create({
+      data: {
+        lesson_id: lessonId,
+        type: 'single_choice',
+        content: '答案不在选项内的坏题',
+        answer: '',
+        metadata: { options: ['甲', '乙'], correctAnswer: '' },
+        review_status: 'approved',
+        order: 0,
+      },
+    });
+
+    const skipped = await startGuidedLearning(userId, lessonId);
+    expect(skipped).toMatchObject({
+      phase: 'WAIT_ANSWER',
+      exerciseId,
+    });
+    expect(skipped.exerciseId).not.toBe(broken.id);
+
+    // 好题下线后只剩坏题，应回落 EMPTY 而不是把学生卡在 WAIT_ANSWER
+    await prisma.exercises.update({
+      where: { id: exerciseId },
+      data: { review_status: 'draft' },
+    });
+    const empty = await startGuidedLearning(userId, lessonId);
+    expect(empty).toMatchObject({
+      phase: 'EMPTY',
+      exerciseId: null,
+    });
+
+    await prisma.exercises.update({
+      where: { id: exerciseId },
+      data: { review_status: 'approved' },
+    });
+    await prisma.exercises.delete({ where: { id: broken.id } });
+  });
 });

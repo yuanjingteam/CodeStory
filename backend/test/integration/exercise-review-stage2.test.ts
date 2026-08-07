@@ -8,8 +8,10 @@ import { uuidToShortId } from '../../src/utils/idTransform';
 import {
   getExerciseDetail,
   explainChoiceExercise,
+  formatExerciseResponse,
   submitExercise,
 } from '../../src/services/courses/exercise.service';
+import { ChoiceExerciseUnusableError } from '../../src/services/courses/choice-exercise-integrity';
 import {
   getExerciseHint,
   getExerciseHintProgress,
@@ -275,6 +277,51 @@ describe('阶段 2 · 学习端审核态隔离', () => {
     // 拒绝必须永远可用，否则垃圾草稿会卡死在队列里
     const rejected = await reviewManagedExercise(broken.id, 'reject');
     expect(rejected.exercise?.reviewStatus).toBe('rejected');
+  });
+
+  it('选项坏掉的已审核题：提交被拒且不留痕，详情带 usable=false', async () => {
+    const broken = await prisma.exercises.create({
+      data: {
+        lesson_id: lessonId,
+        type: 'single_choice',
+        content: '答案不在选项内的已审核题',
+        answer: '',
+        analysis: '',
+        knowledge: '',
+        source: 'static',
+        review_status: 'approved',
+        metadata: { options: ['甲', '乙'], correctAnswer: '' },
+        knowledge_index_policy: 'exclude',
+        order: 8,
+      },
+    });
+
+    await expect(
+      submitExercise(uuidToShortId(broken.id), 'A', userId)
+    ).rejects.toBeInstanceOf(ChoiceExerciseUnusableError);
+
+    // 必须挡在事务之前：不写 answer 行，也不动掌握度
+    expect(
+      await prisma.answer.count({
+        where: { user_id: userId, exercise_id: broken.id },
+      })
+    ).toBe(0);
+
+    const detail = await getExerciseDetail(
+      uuidToShortId(broken.id),
+      userId
+    );
+    expect(detail).not.toBeNull();
+    expect(formatExerciseResponse(detail!.exercise, null).usable).toBe(false);
+
+    // 好题不受影响
+    const healthy = await getExerciseDetail(
+      uuidToShortId(approvedExerciseId),
+      userId
+    );
+    expect(formatExerciseResponse(healthy!.exercise, null).usable).toBe(true);
+
+    await prisma.exercises.delete({ where: { id: broken.id } });
   });
 
   it('管理员编辑所属小节后审核态与 gen_metadata 保留', async () => {
