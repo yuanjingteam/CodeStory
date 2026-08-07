@@ -13,10 +13,10 @@
   `EMPTY`。
 - 启动、推进、恢复接口已实现。推进必须提交 `runId +
   expectedStateVersion`，session CAS 失败返回 409 和当前状态。
-- 答案、积分、掌握度、提示等级与人工复核单分别使用确定性 `effect_key`；
+- 答案、积分、掌握度与提示等级分别使用确定性 `effect_key`；
   业务写入和 effect applied 状态位于同一 Prisma 事务。
-- 三级提示后仍未通过时创建 `guided_review_pending` 人工复核单，不自动下调
-  掌握度。
+- 三级提示后仍未通过时展示参考答案与解析并结束本轮，不创建人工复核单，
+  也不自动下调掌握度。
 - checkpoint 是事实源，session 只保存投影；`check:learning-runs` 可从 checkpoint
   重建 session 投影并报告缺失 checkpoint 或 pending effect。
 - 运行固定 `AI_GRAPH_VERSION`；版本不一致返回 `RESTART_REQUIRED`，不会静默
@@ -30,7 +30,7 @@
 
 - 后端：14 条迁移从空临时库通过，21 个测试文件 / 170 个用例全过。
 - 阶段四专项 6 条：关闭路径、状态投影、真实 PostgreSQL checkpoint 跨实例恢复、
-  CAS 单胜与 effect 幂等、响应故障注入、三级提示/人工复核/重学/旧 run/图版本升级。
+  CAS 单胜与 effect 幂等、响应故障注入、三级提示后结束/重学/旧 run/图版本升级。
 - 后端 `pnpm run build` 通过。
 - 前端 `pnpm run check` 与 `pnpm run build` 通过。
 

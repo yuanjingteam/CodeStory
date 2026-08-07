@@ -284,3 +284,18 @@ sh scripts/backup-production.sh
 开放访问前必须完成行数核对、迁移状态核对和主流程回归。
 
 旧内网库凭据应在切换成功后立即轮换失效；归档不得提交到 Git 或发送到非受控位置。
+
+## 9. AI 定时运维
+
+完成阶段 6 migration 后，先以 dry-run 验证以下命令：
+
+```bash
+docker compose run --rm backend pnpm run ops:ai-report
+docker compose run --rm backend pnpm run ops:rag-maintain -- --age-minutes=10 --limit=100
+docker compose run --rm backend pnpm run ops:checkpoint-cleanup -- --retention-days=30 --limit=100
+docker compose run --rm backend pnpm run ops:ai-log-cleanup -- --retention-days=90 --limit=1000
+```
+
+确认候选与权限后，只有后三条维护命令按需增加 `--execute`。生产调度、退出码、
+告警口径和清理边界见 `docs/CodeStory_V2.0_AI运维手册.md`。AI 调用日志默认保留
+90 天；完整数据库备份仍覆盖这些记录和 LangGraph 表。

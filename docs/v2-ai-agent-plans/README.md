@@ -32,7 +32,7 @@
 | 3 | [阶段 1：RAG 检索层](./01-rag-grounding.md) | 工程与 Qwen3 30B 固定集机器门禁通过；独立人工复核待补 | 0A、0B 通过 |
 | 4 | [阶段 2：AI 出题与题目管理](./02-question-generation.md) | 工程与 Qwen3 30B 正式 50 题结构门禁通过；人工质量待补 | 阶段 1 通过 |
 | 5 | [阶段 3：评分复核与掌握度](./03-grading-review.md) | 工程与 Qwen3 30B 固定 Agent 基准门禁通过；人工质量待补 | 0A、0B 通过 |
-| 6 | [阶段 4：LangGraph 学习状态机](./04-learning-graph.md) | 核心状态机与发布级证据已补齐，提交审核 | 阶段 2、3 通过 |
+| 6 | [阶段 4：LangGraph 学习状态机](./04-learning-graph.md) | 工程完成；交接文档已同步当前无人工复核实现 | 阶段 2、3 通过 |
 | 7 | [阶段 5：推荐与个性化复习](./05-recommendation-review.md) | 工程与离线规则夹具通过；等待线上自然样本 | 阶段 1、3 通过 |
 | 8 | [阶段 6：治理、评估与收尾](./06-governance-release.md) | 发布前总收口 | 阶段 1～5 通过 |
 | 发布前 | [阶段 0C：生产迁移](./00C-production-migration.md) | 当前延期，不阻塞开发但阻塞上线 | 用户明确启动生产切换 |

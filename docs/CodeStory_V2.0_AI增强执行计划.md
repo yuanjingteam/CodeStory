@@ -225,7 +225,7 @@ INIT → EXPLAIN → QUESTION → WAIT_ANSWER → EVALUATE_BASE → AI_EVALUATE 
                                   └──── hint_level < 3 ─────────────────────────────────────┤
                                                                                             │
                                                                        hint_level = 3 → REVIEW
-                                                                    （完整解析 + 标记未掌握）
+                                                                    （完整解析 + 结束本轮）
 ```
 
 - 依赖包：`@langchain/langgraph` + `@langchain/langgraph-checkpoint-postgres`（均新增）。
@@ -236,7 +236,7 @@ INIT → EXPLAIN → QUESTION → WAIT_ANSWER → EVALUATE_BASE → AI_EVALUATE 
 - **`thread_id` 绑定一次"学习运行"而非"用户 + 小节"**（plan.4 修正）：`ai_chat_sessions` 新增 `current_run_id`（UUID），`thread_id = current_run_id`。用户重新开始学习该小节时换发新 UUID，旧 checkpoint 自然沉淀为历史。若沿用"用户 + 小节"作为 `thread_id`，重学、重练与多标签页并发都会落回同一条旧线程状态。
 - **请求并发控制用 `state_version` 条件更新**：`ai_chat_sessions` 新增 `state_version`（int，随每次成功推进 +1）。推进接口必须携带 `run_id` 与 `expected_state_version`，服务端以 `UPDATE ... WHERE current_run_id = $run_id AND state_version = $expected` 条件更新，**受影响行数为 0 时返回 409 并回传当前状态**，不推进。
   - 该机制覆盖同一标签页双击（第二次请求的 `expected_state_version` 已过期 → 409）和两个标签页并发推进（后到者 409），因此**不再为客户端请求另设 `idempotency_key`**。
-  - `state_version` **不能替代图节点副作用幂等**：LangGraph 在进程恢复、interrupt resume 或节点重试时可能重新执行节点。凡是写 `answer`、扣减提示、创建复核单、修改掌握度、积分或业务投影的节点，都必须先以 `(run_id, node_name, effect_type, effect_key)` 在 `learning_run_effects` 登记；唯一 `effect_key` 命中时直接复用已生效结果，不重复写业务表。
+  - `state_version` **不能替代图节点副作用幂等**：LangGraph 在进程恢复、interrupt resume 或节点重试时可能重新执行节点。凡是写 `answer`、扣减提示、修改掌握度、积分、最终反馈或业务投影的节点，都必须先以 `(run_id, node_name, effect_type, effect_key)` 在 `learning_run_effects` 登记；唯一 `effect_key` 命中时直接复用已生效结果，不重复写业务表。
   - `run_id` 只用于定位 checkpoint 线程，**不承担并发控制职责**；旧标签页携带已换发的旧 `run_id` 时同样返回 409，而不是推进当前新运行。
   - **不再声称 checkpoint 与 Prisma 业务写入同属一个数据库事务**：官方 `PostgresSaver` 与 Prisma 分别管理连接，无法自然共享本地事务。关键节点使用 checkpoint 的同步持久化模式；业务副作用在 Prisma 事务内以 `learning_run_effects` 保证幂等，并由对账脚本补偿“checkpoint 已推进但业务副作用未完成”或反向的不一致。模型调用仍在数据库事务之外完成。
 - **图版本治理**：`ai_chat_sessions` 新增 `graph_version`，启动运行时固定为当时部署版本。升级节点、边或状态 Schema 时必须选择并记录一种策略：① 保持旧版本兼容直到存量运行排空；② 提供显式状态迁移；③ 将不兼容的旧运行标记为 `restart_required` 并安全重开。不得让旧 checkpoint 未经验证直接套用不兼容的新图代码。
@@ -491,7 +491,7 @@ V2.0 期间**不更换后端框架**。该决策与开发文档 V1.1 §5.2 的�
 | --- | --- | --- | --- |
 | **A** | **题目改为稳定 ID 增量更新 + 事务化 + ID 解析加固**（plan.5 扩容，四个子项见 5.0.1） | `services/course-manage/lesson-manage.ts` 的 `createLesson` / `updateLesson`；`utils/idTransform.ts` 调用点；前端小节表单 | 阶段 1 向量索引 `source_id`、阶段 2 审核态与 `gen_metadata`、阶段 5 错题历史 |
 | **C** | **补 `knowledge` / `analysis` / `source` 写入链路**：后端落库补这三个字段（手工录入 `source='static'`），前端小节表单与阶段 2 的题目管理页补对应输入项 | `lesson-manage.ts` 的 create/update、lessons-manage 页面题目编辑区 | 阶段 1 题目向量索引、阶段 2 按知识点出题 |
-| **D** | **定义 `mastery_level` 的计算规则与事件矩阵**（plan.5 收窄）：定义取值区间、与 `answer.score` / `hint_level_used` 的换算关系，实现为**不依赖数据库的纯函数**并由 vitest 覆盖；事件矩阵写入 3.4.2。**本阶段不接入实际写入**——写入在阶段 3 与复核闭环一起上线，避免在复核链路建成前就产生无法追溯的掌握度变更。 | `services/courses/learning-progress.service.ts`（纯函数部分）、3.4.2 | 阶段 3 掌握度写入、阶段 4 `REVIEW` 节点、阶段 5 薄弱点检索 |
+| **D** | **定义 `mastery_level` 的计算规则与事件矩阵**（plan.5 收窄）：定义取值区间、与 `answer.score` / `hint_level_used` 的换算关系，实现为**不依赖数据库的纯函数**并由 vitest 覆盖；事件矩阵写入 3.4.2。**本阶段不接入实际写入**——写入在阶段 3 上线，并由“只升不降”规则保证安全。 | `services/courses/learning-progress.service.ts`（纯函数部分）、3.4.2 | 阶段 3 掌握度写入、阶段 4 `REVIEW` 节点、阶段 5 薄弱点检索 |
 
 **前置项完成标准：**
 
@@ -685,7 +685,7 @@ lessons-manage 小节表单内的题目编辑区**保留现状**，仅按前置�
 - **目标：** 以新增模式落地 V1.1 §3.2.1 的跨请求学习状态机，用户中途离开可恢复到原状态。
 - **范围：**
   - 用 `StateGraph` 实现 3.1.2 的节点与边；`PostgresSaver` 做 checkpoint，**`thread_id = ai_chat_sessions.current_run_id`**（一次学习运行一个 UUID，重新开始学习换新值，见 3.1.2），关键节点使用同步持久化模式。
-  - `QUESTION` 节点**从当前小节 `review_status='approved'` 的题库选题**（不调出题链，见 3.1.2）；`AI_EVALUATE` / `MERGE_RESULT` 节点复用阶段 3 评分链；`HINT` 节点复用 `exercise-hint.service`；`REVIEW` 节点按前置项 D 规则标记未掌握。
+  - `QUESTION` 节点**从当前小节 `review_status='approved'` 的题库选题**（不调出题链，见 3.1.2）；`AI_EVALUATE` / `MERGE_RESULT` 节点复用阶段 3 评分链；`HINT` 节点复用 `exercise-hint.service`；`REVIEW` 节点展示参考答案与解析并结束，不下调掌握度。
   - 推进接口带 `run_id` + `expected_state_version`，服务端条件更新推进，命中 0 行返回 409 并回传当前状态（机制见 3.1.2，字段见第 4 节）。
   - 写 `answer`、提示使用量、复核单、掌握度和业务投影的节点全部通过 `learning_run_effects.effect_key` 幂等执行；提供最小对账脚本，修复 checkpoint 与 effect/业务状态不一致。
   - 节点转移后同步 `ai_chat_sessions.state / hint_level / current_exercise_id` 投影；`hint_level` 按 3.4.1 规则写回 `answer.hint_level_used`。投影失败不伪装成 checkpoint 原子事务，而是留下可补偿的 effect 状态。
@@ -695,11 +695,11 @@ lessons-manage 小节表单内的题目编辑区**保留现状**，仅按前置�
   - `AI_GRAPH_ENABLED` 默认关闭。
 - **关键改动：** `services/ai/learning-graph/*`（新）、`routes/ai.ts`、`services/ai/lesson-session.service.ts`、`frontend/src/app/api/ai/chat.ts`、`frontend/src/components/lessons/chat/**`、`frontend/src/components/lessons/Chat.tsx`。
 - **完成标准：**
-  - 完整走通 `INIT→EXPLAIN→QUESTION→WAIT_ANSWER→EVALUATE→未通过→HINT×3→REVIEW→标记未掌握`。
+  - 完整走通 `INIT→EXPLAIN→QUESTION→WAIT_ANSWER→EVALUATE→未通过→HINT×3→REVIEW→展示参考答案并结束`，不得下调掌握度或创建人工复核单。
   - **中断恢复可验证**：在 `WAIT_ANSWER` 状态关闭页面 / 重启后端进程，重新进入小节后能恢复到同一节点与同一 `hint_level`，不从头开始。
   - **重学不串档可验证**：完成一次学习后重新开始该小节，`current_run_id` 换新、状态从 `INIT` 起步，不落回上一轮 checkpoint。
   - **并发可验证**：两个标签页同时推进，一个成功、另一个收到 409 并刷新到最新状态，`state_version` 只 +1；同一标签页快速双击同样只前进一步；旧标签页携带已换发的旧 `run_id` 推进返回 409，不影响当前运行。
-  - **节点重放可验证**：在业务副作用完成后、checkpoint/响应完成前故障注入并恢复，同一 `effect_key` 不会重复写答案、扣提示、建复核单、改掌握度或加积分；对账脚本可收敛 checkpoint 与业务状态。
+  - **节点重放可验证**：在业务副作用完成后、checkpoint/响应完成前故障注入并恢复，同一 `effect_key` 不会重复写答案、扣提示、写最终反馈、改掌握度或加积分；对账脚本可收敛 checkpoint 与业务状态。
   - **图升级可验证**：至少用一个旧 `graph_version` checkpoint 演练恢复；兼容版本正常续跑，不兼容版本明确返回 `restart_required` 或完成迁移，不得静默错跑。
   - 小节题库中 `approved` 题目不足时，`QUESTION` 节点走"暂无可用题目"分支而非报错或即时生成。
   - `AI_GRAPH_ENABLED=false` 时，`guidedModeAvailable` 返回 `false`、前端无模式入口、状态机路由未注册（直接请求返回 404），自由对话与普通做题行为与现网一致（手工回归清单逐条通过）。
