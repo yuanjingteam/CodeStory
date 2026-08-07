@@ -45,6 +45,8 @@ import {
   GUIDED_LEARNING_PHASES,
   type GuidedLearningPhase,
 } from '../services/ai/learning-graph/types';
+import { getTraceId } from '../middleware/request-context';
+import { logger } from '../config/logger';
 
 const router = Router();
 const MAX_QUESTION_LENGTH = 2_000;
@@ -212,6 +214,7 @@ router.delete('/chat/history', authMiddleware, async (req, res) => {
 });
 
 router.post('/chat/stream', authMiddleware, aiChatRateLimit, async (req, res) => {
+  const traceId = getTraceId() || 'trace-unavailable';
   const userId = typeof req.user?.id === 'string' ? req.user.id : '';
   const lessonId = typeof req.body.lessonId === 'string' ? req.body.lessonId.trim() : '';
   const exerciseId =
@@ -355,6 +358,7 @@ router.post('/chat/stream', authMiddleware, aiChatRateLimit, async (req, res) =>
         assistantContent,
         userMetadata,
         {
+          traceId,
           lessonId: context.lessonId,
           exerciseId: context.exerciseId,
           hintLevel: hint.level,
@@ -363,7 +367,6 @@ router.post('/chat/stream', authMiddleware, aiChatRateLimit, async (req, res) =>
         },
         'hint'
       );
-
       writeEvent(res, { type: 'done' });
       res.end();
       return;
@@ -408,6 +411,7 @@ router.post('/chat/stream', authMiddleware, aiChatRateLimit, async (req, res) =>
         finalAssistantContent,
         userMetadata,
         {
+          traceId,
           lessonId: context.lessonId,
           exerciseId: context.exerciseId,
           modelSource: 'lesson-chat',
@@ -424,6 +428,22 @@ router.post('/chat/stream', authMiddleware, aiChatRateLimit, async (req, res) =>
             finalAssistantContent !== assistantContent,
         },
         messageType
+      );
+      logger.info(
+        {
+          outcome: 'completed',
+          lesson_id: context.lessonId,
+          exercise_id: context.exerciseId,
+          retrieval_mode: context.retrievalMode,
+          evidence_count: context.evidence.length,
+          evidence_quality: context.evidenceQuality,
+          answer_scope: answerScope,
+          prompt_version: promptVersion,
+          invalid_citation_count: invalidCitationIndexes.length,
+          answer_post_processed:
+            finalAssistantContent !== assistantContent,
+        },
+        'lesson chat completed'
       );
       writeEvent(res, {
         type: 'done',

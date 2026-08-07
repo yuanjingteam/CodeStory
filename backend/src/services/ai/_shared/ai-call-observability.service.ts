@@ -36,7 +36,9 @@ function extractTokenUsage(value: unknown): TokenUsage {
   const usage = readRecord(result?.usage_metadata) ||
     readRecord(result?.usageMetadata) ||
     readRecord(readRecord(result?.response_metadata)?.tokenUsage) ||
-    readRecord(readRecord(result?.responseMetadata)?.tokenUsage);
+    readRecord(readRecord(result?.response_metadata)?.token_usage) ||
+    readRecord(readRecord(result?.responseMetadata)?.tokenUsage) ||
+    readRecord(readRecord(result?.responseMetadata)?.token_usage);
   if (!usage) return {};
 
   const inputTokens = optionalNonNegativeInteger(

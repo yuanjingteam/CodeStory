@@ -14,6 +14,7 @@ import {
   findChoiceExerciseWriteIssue,
   type ChoiceExerciseIssue,
 } from '../courses/choice-exercise-integrity';
+import { recordAiFeedbackEvent } from '../ai/ai-feedback.service';
 
 export type ExerciseReviewStatus = 'draft' | 'approved' | 'rejected';
 export type ExerciseType = 'single_choice' | 'code';
@@ -432,7 +433,8 @@ export async function createManagedExercise(
 
 export async function updateManagedExercise(
   id: string,
-  rawInput: ExerciseManageWriteInput
+  rawInput: ExerciseManageWriteInput,
+  actorUserId?: string
 ) {
   const exerciseId = requireUuid(id, '题目');
   const existing = await prisma.exercises.findFirst({
@@ -478,6 +480,17 @@ export async function updateManagedExercise(
     } else {
       await invalidateKnowledgeSource(tx, 'exercise', updated.id);
     }
+    if (actorUserId && existing.source === 'ai') {
+      await recordAiFeedbackEvent({
+        userId: actorUserId,
+        scene: 'exercise-review',
+        eventType: 'exercise_edited',
+        targetType: 'exercise',
+        targetId: exerciseId,
+        metadata: { source: 'ai' },
+        client: tx,
+      });
+    }
   });
   const indexing = ticket
     ? await completeKnowledgeIndexes([ticket])
@@ -491,7 +504,8 @@ export async function updateManagedExercise(
 export async function reviewManagedExercise(
   id: string,
   action: 'approve' | 'reject',
-  rawInput?: ExerciseManageWriteInput
+  rawInput?: ExerciseManageWriteInput,
+  actorUserId?: string
 ) {
   const exerciseId = requireUuid(id, '题目');
   let ticket: KnowledgeIndexTicket | null = null;
@@ -570,6 +584,21 @@ export async function reviewManagedExercise(
       );
     } else {
       await invalidateKnowledgeSource(tx, 'exercise', current.id);
+    }
+    if (actorUserId) {
+      await recordAiFeedbackEvent({
+        userId: actorUserId,
+        scene: 'exercise-review',
+        eventType: action === 'reject'
+          ? 'exercise_rejected'
+          : rawInput
+            ? 'exercise_edited_and_approved'
+            : 'exercise_approved',
+        targetType: 'exercise',
+        targetId: exerciseId,
+        metadata: { action, edited: Boolean(rawInput) },
+        client: tx,
+      });
     }
   });
 

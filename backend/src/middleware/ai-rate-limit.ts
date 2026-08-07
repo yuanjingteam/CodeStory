@@ -1,7 +1,10 @@
 import rateLimit, { type Store } from 'express-rate-limit';
+import type { Request } from 'express';
 import { RedisStore } from 'rate-limit-redis';
 import redisClient from '../config/redis';
 import { logger } from '../config/logger';
+import prisma from '../config/prisma';
+import { resolveShortId } from '../utils/idTransform';
 
 function parsePositiveInteger(
   value: string | undefined,
@@ -19,6 +22,7 @@ export function createAiRateLimit(options: {
   windowMs?: number;
   limit?: number;
   store?: Store;
+  skip?: (req: Request) => boolean | Promise<boolean>;
 }) {
   const windowMs = options.windowMs || parsePositiveInteger(
     process.env[`${options.envPrefix}_RATE_WINDOW_MS`],
@@ -36,6 +40,7 @@ export function createAiRateLimit(options: {
     legacyHeaders: false,
     // Redis 短时故障时保证学习主流程可用；express-rate-limit 会记录 store 错误。
     passOnStoreError: true,
+    skip: options.skip,
     keyGenerator: (req) => `${options.scene}:${req.user!.id}`,
     store:
       options.store ||
@@ -95,9 +100,36 @@ export const exerciseAssistanceRateLimit = createAiRateLimit({
   defaultLimit: 20,
 });
 
-export const codeSubmissionRateLimit = createAiRateLimit({
-  scene: 'code-grading',
-  envPrefix: 'AI_CODE_GRADING',
-  defaultWindowMs: 10 * 60 * 1_000,
-  defaultLimit: 20,
-});
+async function isCodeSubmission(req: Request): Promise<boolean> {
+  const exerciseId = typeof req.body?.exercise_id === 'string'
+    ? req.body.exercise_id
+    : '';
+  const resolvedId = await resolveShortId('exercises', exerciseId);
+  if (!resolvedId) return false;
+  const exercise = await prisma.exercises.findFirst({
+    where: { id: resolvedId, is_delete: 0 },
+    select: { type: true },
+  });
+  return exercise?.type === 'code';
+}
+
+export function createCodeSubmissionRateLimit(options?: {
+  windowMs?: number;
+  limit?: number;
+  store?: Store;
+  isCodeSubmission?: (req: Request) => boolean | Promise<boolean>;
+}) {
+  const detector = options?.isCodeSubmission || isCodeSubmission;
+  return createAiRateLimit({
+    scene: 'code-grading',
+    envPrefix: 'AI_CODE_GRADING',
+    defaultWindowMs: 10 * 60 * 1_000,
+    defaultLimit: 20,
+    windowMs: options?.windowMs,
+    limit: options?.limit,
+    store: options?.store,
+    skip: async (req) => !(await detector(req)),
+  });
+}
+
+export const codeSubmissionRateLimit = createCodeSubmissionRateLimit();

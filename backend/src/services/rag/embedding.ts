@@ -53,10 +53,7 @@ export async function embedDocumentsInBatches(
 ): Promise<number[][]> {
   if (texts.length === 0) return [];
 
-  const config =
-    options?.batchSize && options?.dimensions
-      ? undefined
-      : getAiEmbeddingConfig();
+  const config = options?.client ? undefined : getAiEmbeddingConfig();
   const batchSize = Math.min(
     options?.batchSize || config?.batchSize || 10,
     100
@@ -98,7 +95,7 @@ export async function embedQuery(
     dimensions?: number;
   }
 ): Promise<number[]> {
-  const config = options?.dimensions ? undefined : getAiEmbeddingConfig();
+  const config = options?.client ? undefined : getAiEmbeddingConfig();
   const dimensions =
     options?.dimensions || config?.dimensions || 1024;
   const client = options?.client || createEmbeddingClient(config);

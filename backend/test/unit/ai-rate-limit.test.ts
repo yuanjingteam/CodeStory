@@ -2,7 +2,10 @@ import express from 'express';
 import { MemoryStore } from 'express-rate-limit';
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
-import { createAiRateLimit } from '../../src/middleware/ai-rate-limit';
+import {
+  createAiRateLimit,
+  createCodeSubmissionRateLimit,
+} from '../../src/middleware/ai-rate-limit';
 
 function createApp(scene: string) {
   const app = express();
@@ -73,5 +76,38 @@ describe('AI 高成本接口统一限流', () => {
     const response = await request(app).post('/ai');
     expect(response.status).toBe(200);
     expect(response.body.code).toBe(200);
+  });
+
+  it('选择题提交不消耗代码评分额度，代码题在模型调用前受限', async () => {
+    const app = express();
+    app.use(express.json());
+    app.use((req, _res, next) => {
+      req.user = { id: 'user-a' };
+      next();
+    });
+    let modelCalls = 0;
+    app.post(
+      '/submit',
+      createCodeSubmissionRateLimit({
+        windowMs: 60_000,
+        limit: 1,
+        store: new MemoryStore(),
+        isCodeSubmission: (req) => req.body.type === 'code',
+      }),
+      (req, res) => {
+        if (req.body.type === 'code') modelCalls += 1;
+        res.json({ code: 200 });
+      }
+    );
+
+    expect((await request(app).post('/submit').send({ type: 'single_choice' })).status)
+      .toBe(200);
+    expect((await request(app).post('/submit').send({ type: 'single_choice' })).status)
+      .toBe(200);
+    expect((await request(app).post('/submit').send({ type: 'code' })).status)
+      .toBe(200);
+    expect((await request(app).post('/submit').send({ type: 'code' })).status)
+      .toBe(429);
+    expect(modelCalls).toBe(1);
   });
 });

@@ -1,9 +1,9 @@
 import crypto from 'node:crypto';
-import { Prisma } from '../../generated/prisma';
 import prisma from '../../config/prisma';
 import { resolveShortId } from '../../utils/idTransform';
 import { isRagEnabled } from '../../config/ai';
 import { createKnowledgeRetriever } from '../rag/retriever';
+import { recordAiFeedbackEvent } from '../ai/ai-feedback.service';
 
 export type RecommendationScene = 'lesson' | 'review';
 export type RecommendationMode = 'personalized' | 'fallback' | 'cold_start';
@@ -197,29 +197,16 @@ export async function recordRecommendationEvent(input: {
     input.eventType,
   ].join(':');
 
-  try {
-    await prisma.ai_feedback_events.create({
-      data: {
-        trace_id: data.feedId,
-        user_id: input.userId,
-        scene: 'recommendation',
-        event_type: input.eventType,
-        target_type: data.targetType,
-        target_id: data.targetId,
-        metadata: { rank: data.rank },
-        dedupe_key: dedupeKey,
-      },
-    });
-    return { recorded: true };
-  } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002'
-    ) {
-      return { recorded: false };
-    }
-    throw error;
-  }
+  const result = await recordAiFeedbackEvent({
+    userId: input.userId,
+    scene: 'recommendation',
+    eventType: input.eventType,
+    targetType: data.targetType,
+    targetId: data.targetId,
+    metadata: { rank: data.rank, feedId: data.feedId },
+    dedupeKey,
+  });
+  return { recorded: result.recorded };
 }
 
 async function appendLearningSignals(

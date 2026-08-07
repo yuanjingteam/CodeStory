@@ -173,7 +173,8 @@ router.put('/:id', async (req, res) => {
       res,
       await updateManagedExercise(
         req.params.id,
-        req.body as ExerciseManageWriteInput
+        req.body as ExerciseManageWriteInput,
+        req.user!.id
       )
     );
   } catch (error) {
@@ -195,7 +196,8 @@ router.put('/:id/review', async (req, res) => {
       await reviewManagedExercise(
         req.params.id,
         action,
-        req.body?.exercise as ExerciseManageWriteInput | undefined
+        req.body?.exercise as ExerciseManageWriteInput | undefined,
+        req.user!.id
       )
     );
   } catch (error) {

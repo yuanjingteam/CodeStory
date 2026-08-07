@@ -58,6 +58,17 @@ describe('AI 调用可观测性', () => {
     expect(warn).toHaveBeenCalledOnce();
   });
 
+  it.each([
+    { response_metadata: { token_usage: { prompt_tokens: 11, completion_tokens: 7 } } },
+    { responseMetadata: { tokenUsage: { promptTokens: 11, completionTokens: 7 } } },
+  ])('兼容供应商 response metadata token 用量格式', async (response) => {
+    await observeAiCall({ scene: 'test-scene' }, async () => response);
+    const serializedCall = JSON.stringify(executeRaw.mock.calls[0]);
+    expect(serializedCall).toContain('11');
+    expect(serializedCall).toContain('7');
+    expect(serializedCall).toContain('18');
+  });
+
   it('流式调用完成后仅记录供应商可用指标，不估算字符 token', async () => {
     async function* chunks() {
       yield { content: 'first' };

@@ -584,4 +584,104 @@ describe('阶段 2 · 出题与审核接口权限三态', () => {
       'approved'
     );
   });
+
+  it('采用、编辑采用和拒绝复用请求 trace 写入幂等反馈事件', async () => {
+    const traceId = `${marker}_exercise_feedback_trace`;
+    const drafts = await Promise.all(
+      ['adopt', 'edit', 'reject'].map((kind, index) =>
+        prisma.exercises.create({
+          data: {
+            lesson_id: lessonId,
+            type: 'single_choice',
+            content: `${kind} feedback exercise`,
+            answer: 'A',
+            analysis: 'feedback analysis',
+            knowledge: 'feedback knowledge',
+            source: 'ai',
+            review_status: 'draft',
+            metadata: { options: ['A', 'B'] },
+            knowledge_index_policy: 'exclude',
+            order: 100 + index,
+          },
+        })
+      )
+    );
+
+    const adopt = await request(app)
+      .put(`/api/v1/admin/exercises/${drafts[0].id}/review`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .set('x-request-id', traceId)
+      .send({ action: 'approve' });
+    const edit = await request(app)
+      .put(`/api/v1/admin/exercises/${drafts[1].id}/review`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .set('x-request-id', traceId)
+      .send({
+        action: 'approve',
+        exercise: {
+          lessonId,
+          type: 'single_choice',
+          content: 'edited feedback exercise',
+          answer: 'A',
+          analysis: 'edited analysis',
+          knowledge: 'edited knowledge',
+          difficulty: 1,
+          source: 'ai',
+          metadata: { options: ['A', 'B'] },
+        },
+      });
+    const reject = await request(app)
+      .put(`/api/v1/admin/exercises/${drafts[2].id}/review`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .set('x-request-id', traceId)
+      .send({ action: 'reject' });
+
+    expect([adopt.status, edit.status, reject.status]).toEqual([200, 200, 200]);
+    const events = await prisma.ai_feedback_events.findMany({
+      where: {
+        user_id: adminId,
+        scene: 'exercise-review',
+        trace_id: traceId,
+        target_id: { in: drafts.map((draft) => draft.id) },
+      },
+      orderBy: { event_type: 'asc' },
+    });
+    expect(events.map((event) => event.event_type).sort()).toEqual([
+      'exercise_approved',
+      'exercise_edited_and_approved',
+      'exercise_rejected',
+    ]);
+    expect(new Set(events.map((event) => event.dedupe_key)).size).toBe(3);
+
+    const editPayload = {
+      lessonId,
+      type: 'single_choice',
+      content: 'idempotent edited exercise',
+      answer: 'A',
+      analysis: 'idempotent analysis',
+      knowledge: 'idempotent knowledge',
+      difficulty: 1,
+      source: 'ai',
+      metadata: { options: ['A', 'B'] },
+    };
+    const editPath = `/api/v1/admin/exercises/${drafts[0].id}`;
+    const firstEdit = await request(app)
+      .put(editPath)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .set('x-request-id', traceId)
+      .send(editPayload);
+    const duplicateEdit = await request(app)
+      .put(editPath)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .set('x-request-id', traceId)
+      .send(editPayload);
+    expect([firstEdit.status, duplicateEdit.status]).toEqual([200, 200]);
+    expect(await prisma.ai_feedback_events.count({
+      where: {
+        trace_id: traceId,
+        target_id: drafts[0].id,
+        event_type: 'exercise_edited',
+      },
+    })).toBe(1);
+  });
 });

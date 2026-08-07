@@ -227,6 +227,7 @@ describe('阶段 5 · 推荐、冷启动与学习数据隔离', () => {
 
 describe('阶段 5 · 推荐埋点', () => {
   it('同一 feed 的重复曝光幂等，并拒绝跨用户复用 token', async () => {
+    const requestTraceId = `${marker}_event_trace`;
     const feedResponse = await request(app)
       .get(`/api/v1/recommendations/review?courseId=${courseId}&limit=1`)
       .set('Authorization', `Bearer ${userToken}`);
@@ -235,10 +236,12 @@ describe('阶段 5 · 推荐埋点', () => {
     const first = await request(app)
       .post('/api/v1/recommendations/events')
       .set('Authorization', `Bearer ${userToken}`)
+      .set('x-request-id', requestTraceId)
       .send({ trackingToken, eventType: 'impression' });
     const duplicate = await request(app)
       .post('/api/v1/recommendations/events')
       .set('Authorization', `Bearer ${userToken}`)
+      .set('x-request-id', requestTraceId)
       .send({ trackingToken, eventType: 'impression' });
     const otherUser = await request(app)
       .post('/api/v1/recommendations/events')
@@ -250,6 +253,16 @@ describe('阶段 5 · 推荐埋点', () => {
     expect(duplicate.status).toBe(200);
     expect(duplicate.body.data).toEqual({ received: 1, recorded: 0 });
     expect(otherUser.status).toBe(400);
+    const event = await prisma.ai_feedback_events.findFirstOrThrow({
+      where: { user_id: userId, event_type: 'impression' },
+      orderBy: { created_at: 'desc' },
+    });
+    expect(event.trace_id).toBe(requestTraceId);
+    expect(event.metadata).toMatchObject({
+      rank: 1,
+      feedId: feedResponse.body.data.feedId,
+    });
+    expect(event.dedupe_key).toContain(feedResponse.body.data.feedId);
   });
 
   it('批量事件先校验参数，非法事件不会写入', async () => {
@@ -257,6 +270,9 @@ describe('阶段 5 · 推荐埋点', () => {
       .get(`/api/v1/recommendations/review?courseId=${courseId}&limit=1`)
       .set('Authorization', `Bearer ${userToken}`);
     const trackingToken = feedResponse.body.data.items[0].trackingToken;
+    const beforeCount = await prisma.ai_feedback_events.count({
+      where: { user_id: userId, scene: 'recommendation' },
+    });
     const response = await request(app)
       .post('/api/v1/recommendations/events')
       .set('Authorization', `Bearer ${userToken}`)
@@ -269,12 +285,9 @@ describe('阶段 5 · 推荐埋点', () => {
 
     expect(response.status).toBe(400);
     const count = await prisma.ai_feedback_events.count({
-      where: {
-        user_id: userId,
-        trace_id: feedResponse.body.data.feedId,
-      },
+      where: { user_id: userId, scene: 'recommendation' },
     });
-    expect(count).toBe(0);
+    expect(count).toBe(beforeCount);
   });
 });
 
