@@ -13,6 +13,10 @@ import {
 import { sendAiErrorResponse } from '../services/ai/ai-chat-error.service';
 import { badRequest, notFound, serverError } from '../utils/response';
 import { authMiddleware } from '../middleware/auth';
+import {
+  codeSubmissionRateLimit,
+  exerciseAssistanceRateLimit,
+} from '../middleware/ai-rate-limit';
 
 const router = Router();
 
@@ -40,7 +44,7 @@ router.get('/detail', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/submit', authMiddleware, async (req, res) => {
+router.post('/submit', authMiddleware, codeSubmissionRateLimit, async (req, res) => {
   try {
     const { exercise_id, answer, recommendationToken } = req.body;
     const userId = req.user!.id;
@@ -71,7 +75,7 @@ router.post('/submit', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/choice-explanation', authMiddleware, async (req, res) => {
+router.post('/choice-explanation', authMiddleware, exerciseAssistanceRateLimit, async (req, res) => {
   try {
     const { exercise_id, answer } = req.body;
     const userId = req.user!.id;
@@ -95,7 +99,7 @@ router.post('/choice-explanation', authMiddleware, async (req, res) => {
   }
 });
 
-router.get('/hint', authMiddleware, async (req, res) => {
+router.get('/hint', authMiddleware, exerciseAssistanceRateLimit, async (req, res) => {
   try {
     const exerciseId = req.query.exercise_id as string;
     const hintLevel = parseInt(req.query.level as string);

@@ -444,7 +444,8 @@ describe('阶段 2 · 出题限流', () => {
     const limited = await request(app).post('/generate');
 
     expect(limited.status).toBe(429);
-    expect(limited.body.code).toBe('AI_EXERCISE_GENERATION_RATE_LIMITED');
+    expect(limited.body.code).toBe('AI_RATE_LIMITED');
+    expect(limited.body.data.scene).toBe('exercise-generation');
     expect(limited.body.message).toContain('后重试');
     expect(downstreamCalls).toBe(2);
   });

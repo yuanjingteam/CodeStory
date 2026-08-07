@@ -1,6 +1,5 @@
-import rateLimit, { type Store } from 'express-rate-limit';
-import { RedisStore } from 'rate-limit-redis';
-import redisClient from '../config/redis';
+import type { Store } from 'express-rate-limit';
+import { createAiRateLimit } from './ai-rate-limit';
 
 function parsePositiveInteger(
   value: string | undefined,
@@ -24,40 +23,12 @@ export function createExerciseGenerationRateLimit(options?: {
   limit?: number;
   store?: Store;
 }) {
-  const windowMs = options?.windowMs || defaultWindowMs;
-  return rateLimit({
-  windowMs,
-  limit: options?.limit || defaultLimit,
-  standardHeaders: 'draft-8',
-  legacyHeaders: false,
-  passOnStoreError: false,
-  keyGenerator: (req) => `admin:${req.user!.id}`,
-  store:
-    options?.store ||
-    new RedisStore({
-      prefix: 'codestory:rate:exercise-generation:',
-      sendCommand: (...args: string[]) => redisClient.sendCommand(args),
-    }),
-  handler: (req, res) => {
-    const rateLimitInfo = (
-      req as typeof req & {
-        rateLimit: { resetTime?: Date };
-      }
-    ).rateLimit;
-    const retryAfterSeconds = rateLimitInfo.resetTime
-      ? Math.max(
-          1,
-          Math.ceil(
-            (rateLimitInfo.resetTime.getTime() - Date.now()) / 1_000
-          )
-        )
-      : Math.ceil(windowMs / 1_000);
-    res.status(429).json({
-      code: 'AI_EXERCISE_GENERATION_RATE_LIMITED',
-      message: `出题请求过于频繁，请在 ${retryAfterSeconds} 秒后重试。`,
-      data: { retryAfterSeconds },
-    });
-  },
+  return createAiRateLimit({
+    scene: 'exercise-generation',
+    envPrefix: 'AI_EXERCISE_GENERATION',
+    defaultWindowMs,
+    defaultLimit,
+    ...options,
   });
 }
 

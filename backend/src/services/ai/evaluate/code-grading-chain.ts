@@ -8,6 +8,7 @@ import {
   extractJsonObject,
   getMessageText,
 } from '../_shared/model';
+import { observeAiCall } from '../_shared/ai-call-observability.service';
 
 export const AI_CODE_REVIEW_RUBRIC_VERSION = 'ai-review-v3-qwen';
 export const AI_CODE_REVIEW_CONFIDENCE_THRESHOLD = 0.8;
@@ -114,10 +115,18 @@ export async function reviewCodeWithAI(input: CodeReviewInput): Promise<AiCodeRe
   let lastError: unknown;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const response = await RunnableSequence.from([
-        codeReviewPrompt,
-        model,
-      ]).invoke(values);
+      const response = await observeAiCall(
+        {
+          scene: 'code-grading',
+          node: 'review',
+          promptVersion: AI_CODE_REVIEW_RUBRIC_VERSION,
+          retryCount: attempt,
+        },
+        () => RunnableSequence.from([
+          codeReviewPrompt,
+          model,
+        ]).invoke(values)
+      );
       const rawContent = getMessageText(response.content).trim();
       const parsed = codeReviewSchema.parse(
         extractJsonObject(rawContent, 'AI_CODE_REVIEW_JSON_NOT_FOUND')

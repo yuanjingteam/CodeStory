@@ -17,6 +17,7 @@ import {
   extractJsonObject,
   getMessageText,
 } from '../_shared/model';
+import { observeAiCall } from '../_shared/ai-call-observability.service';
 import {
   generatedExerciseBatchSchema,
   type ExerciseGenerationInput,
@@ -688,9 +689,18 @@ async function invokeGenerationChain(values: GenerationValues): Promise<{
   return runExerciseGenerationPipeline(values, async ({ promptKind, values: promptInput }) => {
     const prompt = promptKind === 'generation' ? generationPrompt : repairPrompt;
     const messages = await prompt.formatMessages(promptInput);
-    const response = await model.invoke(messages, {
-      response_format: { type: runtimeConfig.responseFormat },
-    });
+    const response = await observeAiCall(
+      {
+        scene: 'exercise-generation',
+        node: promptKind,
+        promptVersion: EXERCISE_GENERATION_PROMPT_VERSION,
+        retryCount: promptKind === 'repair' ? 1 : 0,
+        fallbackUsed: promptKind === 'repair',
+      },
+      () => model.invoke(messages, {
+        response_format: { type: runtimeConfig.responseFormat },
+      })
+    );
     return getMessageText(response.content);
   });
 }

@@ -40,6 +40,7 @@ import {
   isLearningGraphEnabled,
 } from '../config/ai';
 import guidedLearningRouter from './guided-learning';
+import { aiChatRateLimit } from '../middleware/ai-rate-limit';
 import {
   GUIDED_LEARNING_PHASES,
   type GuidedLearningPhase,
@@ -210,7 +211,7 @@ router.delete('/chat/history', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/chat/stream', authMiddleware, async (req, res) => {
+router.post('/chat/stream', authMiddleware, aiChatRateLimit, async (req, res) => {
   const userId = typeof req.user?.id === 'string' ? req.user.id : '';
   const lessonId = typeof req.body.lessonId === 'string' ? req.body.lessonId.trim() : '';
   const exerciseId =

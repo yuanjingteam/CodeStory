@@ -7,6 +7,7 @@ import {
   createChatModel,
   getMessageText,
 } from './_shared/model';
+import { observeAiStream } from './_shared/ai-call-observability.service';
 import type { LessonAiContext } from './lesson-context.service';
 import type { LessonChatHistoryMessage } from './lesson-session.service';
 import type {
@@ -357,8 +358,7 @@ export async function* streamLessonChat(
   const chain = prompt.pipe(
     createChatModel({ streaming: true, streamUsage: false })
   );
-  const stream = await chain.stream(
-    {
+  const values = {
       courseTitle: context.courseTitle,
       chapterTitle: context.chapterTitle,
       lessonTitle: context.lessonTitle,
@@ -373,8 +373,14 @@ export async function* streamLessonChat(
       currentCodeContext: formatCurrentCode(currentCode),
       chatHistory: formatChatHistory(history),
       question,
+    };
+  const stream = observeAiStream(
+    {
+      scene: 'lesson-chat',
+      node: 'answer',
+      promptVersion,
     },
-    { signal }
+    () => chain.stream(values, { signal })
   );
 
   for await (const chunk of stream) {

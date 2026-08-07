@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth';
+import { guidedLearningRateLimit } from '../middleware/ai-rate-limit';
 import {
   advanceGuidedLearning,
   resumeGuidedLearning,
@@ -45,7 +46,7 @@ function sendError(res: any, error: unknown) {
   });
 }
 
-router.post('/start', authMiddleware, async (req, res) => {
+router.post('/start', authMiddleware, guidedLearningRateLimit, async (req, res) => {
   const userId = getUserId(req);
   const lessonId =
     typeof req.body.lessonId === 'string'
@@ -68,7 +69,7 @@ router.post('/start', authMiddleware, async (req, res) => {
   }
 });
 
-router.post('/advance', authMiddleware, async (req, res) => {
+router.post('/advance', authMiddleware, guidedLearningRateLimit, async (req, res) => {
   const userId = getUserId(req);
   const lessonId =
     typeof req.body.lessonId === 'string'

@@ -3,6 +3,9 @@ import { z } from 'zod';
 import {
   createChatModel,
 } from './_shared/model';
+import { observeAiCall } from './_shared/ai-call-observability.service';
+
+const CHOICE_EXPLANATION_PROMPT_VERSION = 'choice-explanation-v1';
 
 export interface ChoiceOptionExplanation {
   label: string;
@@ -125,14 +128,21 @@ export async function generateChoiceExplanation(
       method: 'jsonMode',
     })
   );
-  const response = await chain.invoke({
-    exerciseContent: input.exerciseContent,
-    knowledge: input.knowledge || '未标注',
-    options: formatOptions(input),
-    correctOption: input.correctOption,
-    selectedOption: input.selectedOption,
-    analysis: input.analysis || '暂无解析',
-  });
+  const response = await observeAiCall(
+    {
+      scene: 'choice-explanation',
+      node: 'generate',
+      promptVersion: CHOICE_EXPLANATION_PROMPT_VERSION,
+    },
+    () => chain.invoke({
+      exerciseContent: input.exerciseContent,
+      knowledge: input.knowledge || '未标注',
+      options: formatOptions(input),
+      correctOption: input.correctOption,
+      selectedOption: input.selectedOption,
+      analysis: input.analysis || '暂无解析',
+    })
+  );
 
   return response;
 }
