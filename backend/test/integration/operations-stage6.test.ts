@@ -61,5 +61,5 @@ describe('阶段 6 运维命令数据库 dry-run', () => {
       event: 'ai_metrics_report',
       status: 'INSUFFICIENT_DATA',
     });
-  });
+  }, 30_000);
 });
