@@ -5,3 +5,8 @@ dist
 .env.*
 *.md
 uploads
+evals
+.vscode
+.idea
+coverage
+*.log
