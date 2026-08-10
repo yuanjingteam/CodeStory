@@ -8,7 +8,7 @@
 >
 > **最后核对：** 2026-08-07
 >
-> **适用范围：** `backend/src/services/ai/**`、`backend/src/services/courses/**`、`backend/src/services/course-manage/**`、`backend/src/services/rag/**`（新增）、`backend/src/middleware/**`、`backend/prisma/**`、`frontend/src/app/(admin)/exercises-manage/**`、`frontend/src/components/lessons/**`、`docker-compose*.yml`、`.env.production.example`、`docs/DEPLOY_DOCKER.md`
+> **适用范围：** `backend/src/services/ai/**`、`backend/src/services/courses/**`、`backend/src/services/course-manage/**`、`backend/src/services/rag/**`（新增）、`backend/src/middleware/**`、`backend/prisma/**`、`frontend/src/app/(admin)/exercises-manage/**`、`frontend/src/components/lessons/**`、`docker-compose*.yml`、`.env.production.example`、`docs/生产部署指南.md`
 >
 > **文档用途：** V2.0（AI 助手增强）阶段的开发、验收依据。
 
@@ -594,7 +594,7 @@ V2.0 期间**不更换后端框架**。该决策与开发文档 V1.1 §5.2 的�
   - 每日至少一次全库 custom dump 与 uploads 归档；全库 dump 自然包含未来的 LangGraph checkpoint 表。
   - 本机至少保留 7 份日备份、4 份周备份；至少一份加密后复制到服务器之外。
   - 每月在隔离库做一次真实恢复演练并记录耗时。初始生产 RPO 定为 24 小时，RTO 以第一次演练实测值为基线。
-- **关键改动：** `docker-compose.yml`、`docker-compose.dev.yml`、`docker/postgres/init-app-user.sh`、`.env.production.example`、`docs/DEPLOY_DOCKER.md`、备份/恢复脚本、阶段 0B 的 `scripts/setup-checkpointer.ts`。
+- **关键改动：** `docker-compose.yml`、`docker-compose.dev.yml`、`docker/postgres/init-app-user.sh`、`.env.production.example`、`docs/生产部署指南.md`、备份/恢复脚本、阶段 0B 的 `scripts/setup-checkpointer.ts`。
 - **完成标准：**
   - 固定 pgvector 镜像、外部卷、网络隔离、健康检查和管理员/应用账号分离均已在目标服务器验证。
   - 迁移前后关键表行数一致，迁移记录与 Schema 对账无漂移，序列下一次写入正常。
