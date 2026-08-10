@@ -42,3 +42,6 @@ codestory_backup/
 .codebuddy/
 # Local browser-test reports, screenshots and traces
 /output/
+
+# Personal documents
+docs/木及简历.md
