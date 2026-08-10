@@ -55,6 +55,16 @@ function createWelcomeMessage(lessonTitle: string): ChatMessage {
   };
 }
 
+function createMessageId(): string {
+  if (typeof globalThis.crypto?.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `message-${Date.now().toString(36)}-${Math.random()
+    .toString(36)
+    .slice(2, 10)}`;
+}
+
 export default function Chat({
   lessonId,
   lessonTitle,
@@ -181,7 +191,7 @@ export default function Chat({
       outgoingMessageType === 'code_analysis'
         ? attachedCurrentCode ?? null
         : null;
-    const assistantMessageId = crypto.randomUUID();
+    const assistantMessageId = createMessageId();
     const controller = new AbortController();
     abortControllerRef.current = controller;
     setIsStreaming(true);
@@ -189,7 +199,7 @@ export default function Chat({
     setMessages((previous) => [
       ...previous,
       {
-        id: crypto.randomUUID(),
+        id: createMessageId(),
         role: 'user',
         messageType: outgoingMessageType,
         content: trimmedQuestion,
