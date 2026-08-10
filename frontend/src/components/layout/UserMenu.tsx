@@ -9,6 +9,7 @@ import { useUserStore } from '@/store/useUserStore';
 import { logout } from '@/api/auth/auth';
 import { AlertDialog } from '@/components/ui';
 import { showToast } from '@/utils/toast';
+import { publishAuthSessionChange } from '@/utils/auth-session';
 
 const itemClass =
   'flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-bold text-black hover:bg-yellow-200 focus-visible:bg-yellow-200 focus-visible:outline-none';
@@ -29,6 +30,7 @@ export default function UserMenu() {
       // 会话在服务端可能已失效，本地状态仍需清理
     } finally {
       clearUser();
+      publishAuthSessionChange({ type: 'signed-out' });
       setLoggingOut(false);
       setConfirmOpen(false);
       showToast.success('已退出登录');

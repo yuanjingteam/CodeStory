@@ -2,10 +2,13 @@
 
 import { useEffect } from 'react';
 import {
+  getSafeRedirectPath,
   handleAuthenticationFailure,
   initializeAuthSession,
   isRefreshSessionExpired,
   refreshAccessToken,
+  subscribeToAuthSessionChanges,
+  synchronizeAuthSession,
 } from '@/utils/auth-session';
 import { useUserStore } from '@/store/useUserStore';
 
@@ -17,6 +20,61 @@ export default function AuthBootstrap() {
 
   useEffect(() => {
     void initializeAuthSession();
+  }, []);
+
+  useEffect(() => {
+    const redirectFromAuthPage = () => {
+      if (!window.location.pathname.startsWith('/auth/')) return;
+
+      const redirect = getSafeRedirectPath(
+        new URLSearchParams(window.location.search).get('redirect')
+      );
+      window.location.replace(redirect);
+    };
+
+    const synchronizeAndRedirect = async () => {
+      await synchronizeAuthSession();
+      if (useUserStore.getState().isLoggedIn) {
+        redirectFromAuthPage();
+      }
+    };
+
+    const unsubscribe = subscribeToAuthSessionChanges((change) => {
+      if (change.type === 'signed-out') {
+        useUserStore.getState().clearUser();
+        return;
+      }
+
+      if (change.type === 'access-token-updated') {
+        useUserStore
+          .getState()
+          .setAccessToken(change.accessToken, change.accessExpiresAt);
+        return;
+      }
+
+      if (change.session) {
+        useUserStore.getState().addUser(change.session);
+        redirectFromAuthPage();
+        return;
+      }
+
+      void synchronizeAndRedirect();
+    });
+
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === 'visible' &&
+        !useUserStore.getState().isLoggedIn
+      ) {
+        void synchronizeAndRedirect();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   useEffect(() => {

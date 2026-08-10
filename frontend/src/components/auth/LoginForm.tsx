@@ -16,7 +16,10 @@ import {
 import FormInput from './FormInput';
 import { useUserStore } from '@/store/useUserStore';
 import { toast } from 'sonner';
-import { getSafeRedirectPath } from '@/utils/auth-session';
+import {
+  getSafeRedirectPath,
+  publishAuthSessionChange,
+} from '@/utils/auth-session';
 
 const STORAGE_KEY = 'loginfrom';
 
@@ -130,6 +133,7 @@ export default function LoginForm() {
         localStorage.removeItem('forgotpasswordfrom');
         toast.success('登录成功');
         await setUserLogin(res.data);
+        publishAuthSessionChange({ type: 'signed-in', session: res.data });
         setTimeout(() => {
           const redirect = getSafeRedirectPath(
             new URLSearchParams(window.location.search).get('redirect')
