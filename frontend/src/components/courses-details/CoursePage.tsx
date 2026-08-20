@@ -1,20 +1,24 @@
 'use client';
-import { useState, useEffect } from 'react';
+
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { BsBook, BsChevronDown } from 'react-icons/bs';
 import { courseDetailApi } from '@/app/api/courses/course-detail';
 import type { CourseDetailData, Chapter } from '@/types/course-detail';
 import { courseLevelMap } from '@/utils/constants';
 import { useUserStore } from '@/store/useUserStore';
 
-export default function CourseDetails({
-  courseId,
-}: {
-  courseId: string;
-  }) {
+type LoadError = 'not-found' | 'request' | null;
+
+export default function CourseDetails({ courseId }: { courseId: string }) {
   const { isLoggedIn, isLoading } = useUserStore();
   const router = useRouter();
   const [course, setCourse] = useState<CourseDetailData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<LoadError>(null);
+  const [retryVersion, setRetryVersion] = useState(0);
 
   useEffect(() => {
     if (isLoading) return;
@@ -22,139 +26,129 @@ export default function CourseDetails({
       router.replace('/auth/login');
       return;
     }
-    const fetchCourseDetail = async () => {
-      try {
+
+    const controller = new AbortController();
+    void Promise.resolve().then(() => {
+      if (!controller.signal.aborted) {
         setLoading(true);
-        const response = await courseDetailApi.getById(courseId);
-        setCourse(response);
-      } catch (error) {
-        console.error('获取课程详情失败:', error);
-      } finally {
-        setLoading(false);
+        setError(null);
       }
-    };
+    });
+    courseDetailApi
+      .getById(courseId, controller.signal)
+      .then((response) => setCourse(response))
+      .catch((requestError: unknown) => {
+        if (controller.signal.aborted) return;
+        setError(
+          axios.isAxiosError(requestError) && requestError.response?.status === 404
+            ? 'not-found'
+            : 'request'
+        );
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
 
-    fetchCourseDetail();
-  }, [courseId, isLoading, isLoggedIn, router]);
+    return () => controller.abort();
+  }, [courseId, isLoading, isLoggedIn, retryVersion, router]);
 
-  if (loading) {
+  if (loading && !course) {
     return (
-      <section className="bg-white p-8 mx-8 relative z-10">
-        <div className="text-center py-10 font-bold">加载中...</div>
+      <section className="mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-6" aria-busy="true" aria-label="课程详情加载中">
+        <div className="h-32 animate-pulse border-2 border-black bg-gray-100 motion-reduce:animate-none" />
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          {Array.from({ length: 3 }, (_, index) => <div key={index} className="h-24 animate-pulse border-2 border-black bg-gray-100 motion-reduce:animate-none" />)}
+        </div>
       </section>
     );
   }
 
-  if (!course) {
+  if (error || !course) {
+    const notFound = error === 'not-found';
     return (
-      <section className="bg-white p-8 mx-8 relative z-10">
-        <div className="text-center py-10 font-bold">课程不存在</div>
+      <section className="mx-auto w-full max-w-[900px] px-4 py-16 sm:px-6">
+        <div role="alert" className="border-2 border-black bg-white p-8 text-center shadow-[4px_4px_0_0_rgba(0,0,0,1)]">
+          <h1 className="text-2xl font-black">{notFound ? '课程不存在' : '课程加载失败'}</h1>
+          <p className="mt-2 text-gray-600">{notFound ? '该课程可能已下架或链接有误。' : '请检查网络后重新加载。'}</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            {!notFound ? <button type="button" onClick={() => setRetryVersion((value) => value + 1)} className="min-h-11 border-2 border-black bg-yellow-300 px-5 font-bold shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none">重新加载</button> : null}
+            <Link href="/courses" className="inline-flex min-h-11 items-center border-2 border-black bg-white px-5 font-bold shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600">返回课程列表</Link>
+          </div>
+        </div>
       </section>
     );
   }
 
   return (
-    <section className="bg-white p-8 mx-8 relative z-10 max-h-[88vh] overflow-y-auto">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="text-3xl font-black mb-2">{course.title}</h2>
-          <p className="text-gray-600">{course.description}</p>
+    <section className="mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8" aria-busy={loading}>
+      <header className="mb-8 flex flex-col items-start justify-between gap-5 md:flex-row md:items-center">
+        <div className="min-w-0">
+          <h1 className="mb-2 text-3xl font-black sm:text-4xl">{course.title}</h1>
+          <p className="max-w-3xl leading-relaxed text-gray-600">{course.description}</p>
         </div>
+        <Link href="/courses" className="inline-flex min-h-11 shrink-0 items-center border-2 border-black bg-purple-600 px-4 py-2 font-bold text-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300">
+          返回课程列表
+        </Link>
+      </header>
 
-        <button
-          onClick={() => router.push('/courses')}
-          className="border-2 border-black px-4 py-2 bg-purple-500 text-white font-bold shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all rounded-md"
-        >
-          ← 返回
-        </button>
-      </div>
+      <dl className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Stat value={course.chapterCount} label="章节" color="bg-blue-50" />
+        <Stat value={course.lessonCount} label="小节" color="bg-green-50" />
+        <Stat value={`${course.estimatedTotalTime} 分钟`} label="预计总时长" color="bg-purple-50" />
+      </dl>
 
-      {/* 课程信息卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] bg-blue-50 p-4 rounded-lg">
-          <div className="text-2xl font-black text-blue-600">{course.chapterCount}</div>
-          <div className="text-sm text-gray-600">章节</div>
-        </div>
-        <div className="border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] bg-green-50 p-4 rounded-lg">
-          <div className="text-2xl font-black text-green-600">{course.lessonCount}</div>
-          <div className="text-sm text-gray-600">小节</div>
-        </div>
-        <div className="border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] bg-purple-50 p-4 rounded-lg">
-          <div className="text-2xl font-black text-purple-600">{course.estimatedTotalTime}分钟</div>
-          <div className="text-sm text-gray-600">预计总时长</div>
-        </div>
-      </div>
-
-      {/* 课程大纲 */}
-      <div className="mt-6">
-        <h3 className="text-2xl font-black mb-4 flex items-center gap-2">
-          <span>📚</span> 课程大纲
-        </h3>
-        <div className="space-y-4">
-          {course.chapters.map((chapter) => (
-            <ChapterItem key={chapter.id} chapter={chapter} courseId={course.id} />
-          ))}
-        </div>
+      <div>
+        <h2 className="mb-4 flex items-center gap-2 text-2xl font-black"><BsBook aria-hidden="true" />课程大纲</h2>
+        {course.chapters.length > 0 ? (
+          <div className="space-y-4">
+            {course.chapters.map((chapter) => <ChapterItem key={chapter.id} chapter={chapter} courseId={course.id} />)}
+          </div>
+        ) : (
+          <div className="border-2 border-black bg-yellow-50 p-8 text-center font-bold">课程内容正在准备中</div>
+        )}
       </div>
     </section>
   );
 }
 
-// 章节组件
-function ChapterItem({ chapter, courseId }: { chapter: Chapter; courseId: string }) {
-  const router = useRouter();
-  const [isExpanded, setIsExpanded] = useState(true);
+function Stat({ value, label, color }: { value: string | number; label: string; color: string }) {
+  return (
+    <div className={`${color} border-2 border-black p-4 shadow-[2px_2px_0_0_rgba(0,0,0,1)]`}>
+      <dd className="text-2xl font-black">{value}</dd>
+      <dt className="text-sm text-gray-600">{label}</dt>
+    </div>
+  );
+}
 
-  const handleLessonClick = (lessonId: string) => {
-    router.push(`/courses/${courseId}/chapters/${chapter.id}/lessons/${lessonId}`);
-  };
+function ChapterItem({ chapter, courseId }: { chapter: Chapter; courseId: string }) {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const contentId = `chapter-${chapter.id}-lessons`;
 
   return (
-    <div className="border-2 border-black shadow-[3px_3px_0_0_rgba(0,0,0,1)] bg-white rounded-lg">
-      {/* 章标题 */}
-      <div 
-        className="bg-gradient-to-r from-purple-100 to-purple-200 p-4 border-b-2 border-black rounded-t-lg cursor-pointer hover:from-purple-200 hover:to-purple-300 transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">📖</span>
-            <div>
-              <h4 className="font-bold text-lg">{chapter.title}</h4>
-              <p className="text-sm text-gray-600">{chapter.lessonCount} 小节</p>
-            </div>
-          </div>
-          <span className="text-xl transition-transform duration-200" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-            ▼
+    <section className="border-2 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)]">
+      <h3>
+        <button type="button" aria-expanded={isExpanded} aria-controls={contentId} onClick={() => setIsExpanded((expanded) => !expanded)} className="flex min-h-14 w-full items-center justify-between gap-4 bg-purple-100 p-4 text-left transition-colors hover:bg-purple-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-purple-600">
+          <span>
+            <span className="block text-lg font-black">{chapter.title}</span>
+            <span className="text-sm font-medium text-gray-600">{chapter.lessonCount} 小节</span>
           </span>
-        </div>
-      </div>
+          <BsChevronDown aria-hidden="true" className={`shrink-0 text-xl transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
+        </button>
+      </h3>
 
-      {/* 小节列表 */}
-      {isExpanded && (
-        <div className="divide-y-2 divide-black">
-          {chapter.lessons.map((lesson) => {
+      {isExpanded ? (
+        <div id={contentId} className="divide-y-2 divide-black">
+          {chapter.lessons.length > 0 ? chapter.lessons.map((lesson) => {
             const difficulty = courseLevelMap[lesson.difficulty] || { text: '未知', color: 'bg-gray-300' };
             return (
-              <div
-                key={lesson.id}
-                onClick={() => handleLessonClick(lesson.id)}
-                className="p-4 hover:bg-yellow-50 transition-colors flex items-center justify-between group cursor-pointer"
-              >
-                <div className="flex items-center gap-3 flex-1">
-                  <span className="text-xl">📄</span>
-                  <div className="flex-1">
-                    <div className="font-bold">{lesson.title}</div>
-                  </div>
-                </div>
-                <span className={`${difficulty.color} border-2 border-black px-3 py-1 text-xs font-bold rounded-lg`}>
-                  {difficulty.text}
-                </span>
-              </div>
+              <Link key={lesson.id} href={`/courses/${courseId}/chapters/${chapter.id}/lessons/${lesson.id}`} className="flex min-h-14 items-center justify-between gap-4 p-4 transition-[background-color,box-shadow] hover:bg-white hover:shadow-[inset_4px_0_0_0_#18181b] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-purple-600">
+                <span className="min-w-0 truncate font-bold">{lesson.title}</span>
+                <span className={`${difficulty.color} shrink-0 border-2 border-black px-3 py-1 text-xs font-bold`}>{difficulty.text}</span>
+              </Link>
             );
-          })}
+          }) : <p className="p-4 text-gray-600">本章暂无小节</p>}
         </div>
-      )}
-    </div>
+      ) : null}
+    </section>
   );
 }

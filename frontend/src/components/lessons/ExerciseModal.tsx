@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FiX } from 'react-icons/fi'
 import { exerciseApi } from '@/app/api/courses/exercise'
 import type {
@@ -109,6 +109,9 @@ export default function ExerciseModal({
   const [currentHintLevelUsed, setCurrentHintLevelUsed] = useState(0)
   const [showResult, setShowResult] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const submitLockRef = useRef(false)
 
   useEffect(() => {
     let cancelled = false
@@ -123,6 +126,9 @@ export default function ExerciseModal({
         setChoiceExplanationError('')
         setShowResult(false)
         setHasSubmitted(false)
+        setSubmitError('')
+        setIsSubmitting(false)
+        submitLockRef.current = false
         onCodeChange?.(null)
         return
       }
@@ -134,6 +140,9 @@ export default function ExerciseModal({
       setShowResult(false)
       setCurrentHintLevelUsed(0)
       setHasSubmitted(false)
+      setSubmitError('')
+      setIsSubmitting(false)
+      submitLockRef.current = false
       onCodeChange?.(null)
       exerciseApi.getDetail(exerciseId)
         .then(response => {
@@ -160,8 +169,11 @@ export default function ExerciseModal({
   }, [isOpen, exerciseId, onCodeChange])
 
   const handleSubmit = async (answer: string) => {
-    if (!exerciseData?.id) return false
+    if (!exerciseData?.id || submitLockRef.current) return false
 
+    submitLockRef.current = true
+    setIsSubmitting(true)
+    setSubmitError('')
     try {
       const response = await exerciseApi.submit(exerciseData.id, answer, recommendationToken || undefined)
       setSubmitResult({
@@ -193,7 +205,11 @@ export default function ExerciseModal({
       return response.correct
     } catch (error) {
       console.error('提交答案失败:', error)
+      setSubmitError('答案提交失败，你的内容已保留，请重试。')
       return false
+    } finally {
+      submitLockRef.current = false
+      setIsSubmitting(false)
     }
   }
 
@@ -229,6 +245,8 @@ export default function ExerciseModal({
         </div>
         <button
           onClick={onClose}
+          type="button"
+          aria-label="关闭练习"
           className="w-8 h-8 flex items-center justify-center border-2 border-black hover:bg-white/20 rounded transition-colors"
         >
           <FiX className="w-5 h-5" />
@@ -350,20 +368,28 @@ export default function ExerciseModal({
                 本题选项配置有误，暂时无法作答，请联系课程管理员。
               </div>
             ) : exerciseData.type === 'single_choice' ? (
-              <ChoiceQuestion
-                key={exerciseData.id}
-                exercise={exerciseData}
-                onSubmit={handleSubmit}
-                onHintUsed={setCurrentHintLevelUsed}
-              />
+              <>
+                {submitError ? <div role="alert" className="mb-4 border-2 border-black bg-red-50 p-3 text-sm font-bold text-red-700">{submitError}</div> : null}
+                <ChoiceQuestion
+                  key={exerciseData.id}
+                  exercise={exerciseData}
+                  onSubmit={handleSubmit}
+                  onHintUsed={setCurrentHintLevelUsed}
+                  isSubmitting={isSubmitting}
+                />
+              </>
             ) : exerciseData.type === 'code' ? (
-              <CodeQuestion
-                key={exerciseData.id}
-                exercise={exerciseData}
-                onSubmit={handleSubmit}
-                onHintUsed={setCurrentHintLevelUsed}
-                onCodeChange={onCodeChange}
-              />
+              <>
+                {submitError ? <div role="alert" className="mb-4 border-2 border-black bg-red-50 p-3 text-sm font-bold text-red-700">{submitError}</div> : null}
+                <CodeQuestion
+                  key={exerciseData.id}
+                  exercise={exerciseData}
+                  onSubmit={handleSubmit}
+                  onHintUsed={setCurrentHintLevelUsed}
+                  onCodeChange={onCodeChange}
+                  isSubmitting={isSubmitting}
+                />
+              </>
             ) : (
               <div className="text-center font-bold text-gray-500">暂不支持的题型</div>
             )}

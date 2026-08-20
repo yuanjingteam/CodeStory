@@ -1,28 +1,17 @@
 'use client';
-import { useState, useEffect } from 'react';
+
+import { useEffect, useState, type FormEvent } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import courseApi from '@/app/api/courses/courses';
 import type { Course, CourseListRequest } from '@/types/course';
-import { BsPersonFill, BsSearch } from 'react-icons/bs';
-import { useUserStore } from '@/store/useUserStore';
+import { BsArrowClockwise, BsPersonFill, BsSearch } from 'react-icons/bs';
 import { courseLevelMap, courseStatusMap } from '@/utils/constants';
-import { toast } from 'sonner';
 
-const levelMap = {
-  全部难度: undefined,
-  初级: 0,
-  中级: 1,
-  高级: 2,
-};
+const PAGE_SIZE = 12;
 
-const learnStatusMap = {
-  全部状态: undefined,
-  未开始: 0,
-  进行中: 1,
-  已完成: 2,
-};
-
+const levelMap = { 全部难度: undefined, 初级: 0, 中级: 1, 高级: 2 };
+const learnStatusMap = { 全部状态: undefined, 未开始: 0, 进行中: 1, 已完成: 2 };
 const studentCountRangeMap: Record<string, { min?: number; max?: number }> = {
   全部人数: {},
   '1-50 人': { min: 1, max: 50 },
@@ -46,325 +35,189 @@ const defaultCourseQuery: CourseQuery = {
   studentRange: '全部人数',
 };
 
-const buildCourseListRequest = (query: CourseQuery): CourseListRequest => {
-  const params: CourseListRequest = {
+const buildCourseListRequest = (query: CourseQuery, page: number): CourseListRequest => {
+  const range = studentCountRangeMap[query.studentRange];
+  return {
     keyword: query.keyword || undefined,
     level: levelMap[query.level as keyof typeof levelMap],
     learnStatus: learnStatusMap[query.status as keyof typeof learnStatusMap],
-    page: 1,
-    size: 999,
+    minStudentCount: range.min,
+    maxStudentCount: range.max,
+    page,
+    size: PAGE_SIZE,
   };
-  const range = studentCountRangeMap[query.studentRange];
-
-  if (range.min !== undefined) {
-    params.minStudentCount = range.min;
-  }
-  if (range.max !== undefined) {
-    params.maxStudentCount = range.max;
-  }
-
-  return params;
 };
 
 const getLevelNumber = (level: string | number): number => {
   if (typeof level === 'number') return level;
-  const num = parseInt(level);
-  return isNaN(num) ? 0 : num;
+  const parsed = Number.parseInt(level, 10);
+  return Number.isNaN(parsed) ? 0 : parsed;
 };
 
-const getLearnStatus = (
-  status: number | undefined,
-  progress: number | undefined
-): number => {
-  if (progress !== undefined && progress >= 100) {
-    return 2; // 进度100%强制为"已完成"
-  }
+const getLearnStatus = (status: number | undefined, progress: number | undefined): number => {
+  if (progress !== undefined && progress >= 100) return 2;
   if (status === undefined) return 0;
-  if (status >= 2) return 2;
-  return status;
+  return status >= 2 ? 2 : status;
 };
 
 export default function CoursesSection() {
-  const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [retryVersion, setRetryVersion] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [query, setQuery] = useState<CourseQuery>(defaultCourseQuery);
-  const { isLoggedIn } = useUserStore();
-  const handleCourseClick = (courseId: string | number) => {
-    if (!isLoggedIn) {
-      toast.error('请先登录');
-      return;
-    };
-    router.push(`/courses/${courseId}`);
-  };
-
-  const handleReset = () => {
-    setLoading(true);
-    setSearchTerm('');
-    setQuery({ ...defaultCourseQuery });
-  };
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   useEffect(() => {
     let cancelled = false;
-    const params = buildCourseListRequest(query);
-
-    console.log('📤 发送请求参数:', params);
+    void Promise.resolve().then(() => {
+      if (!cancelled) {
+        setLoading(true);
+        setError('');
+      }
+    });
     courseApi
-      .getList(params)
-      .then((res) => {
+      .getList(buildCourseListRequest(query, page))
+      .then((response) => {
         if (cancelled) return;
-        console.log('📥 收到响应数据:', res);
-        setCourses(res.records || []);
+        setCourses(response.records || []);
+        setTotal(response.total || 0);
       })
-      .catch((err) => {
-        if (!cancelled) {
-          console.error('获取课程失败', err);
-        }
+      .catch(() => {
+        if (!cancelled) setError('课程加载失败，请检查网络后重试。');
       })
       .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       });
+    return () => { cancelled = true; };
+  }, [page, query, retryVersion]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [query]);
+  const updateFilter = (field: keyof CourseQuery, value: string) => {
+    setPage(1);
+    setQuery((current) => ({ ...current, [field]: value }));
+  };
+
+  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    updateFilter('keyword', searchTerm.trim());
+  };
+
+  const handleReset = () => {
+    setSearchTerm('');
+    setPage(1);
+    setQuery({ ...defaultCourseQuery });
+  };
 
   return (
-    <section className="bg-white p-8 mx-8 relative z-10">
-      <div className="mb-8">
-        <h2 className="text-3xl font-black mb-2">全部课程</h2>
+    <section className="relative z-10 mx-auto w-full max-w-[1400px] bg-white px-4 py-6 sm:px-6 lg:px-8">
+      <header className="mb-8">
+        <h1 className="mb-2 text-3xl font-black">全部课程</h1>
         <p className="text-gray-600">选择你感兴趣的课程，开始学习之旅</p>
+      </header>
+
+      <form className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[repeat(3,minmax(150px,1fr))_minmax(280px,1.6fr)]" onSubmit={handleSearch} role="search">
+        <FilterSelect label="课程难度" value={query.level} options={Object.keys(levelMap)} onChange={(value) => updateFilter('level', value)} />
+        <FilterSelect label="学习状态" value={query.status} options={Object.keys(learnStatusMap)} onChange={(value) => updateFilter('status', value)} />
+        <FilterSelect label="学习人数" value={query.studentRange} options={Object.keys(studentCountRangeMap)} onChange={(value) => updateFilter('studentRange', value)} />
+
+        <div className="grid gap-2 font-bold">
+          <label htmlFor="course-search">搜索课程</label>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-2">
+            <input id="course-search" type="search" placeholder="输入课程名称" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} className="min-h-11 min-w-0 rounded-lg border-2 border-black bg-white px-4 py-2 shadow-[2px_2px_0_0_rgba(0,0,0,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600" />
+            <button type="submit" aria-label="搜索课程" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg border-2 border-black bg-purple-600 px-3 text-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-transform hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300">
+              <BsSearch aria-hidden="true" />
+            </button>
+            <button type="button" onClick={handleReset} className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-black bg-white px-3 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-transform hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600">
+              <BsArrowClockwise aria-hidden="true" /><span className="hidden sm:inline">重置</span>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <div aria-busy={loading} aria-live="polite">
+        {error ? (
+          <div role="alert" className="mb-6 flex flex-col items-start justify-between gap-3 border-2 border-black bg-red-50 p-4 sm:flex-row sm:items-center">
+            <p className="font-bold text-red-800">{error}</p>
+            <button type="button" onClick={() => setRetryVersion((current) => current + 1)} className="min-h-11 border-2 border-black bg-white px-4 font-bold shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700">重新加载</button>
+          </div>
+        ) : null}
+
+        {loading && courses.length === 0 ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label="课程加载中">
+            {Array.from({ length: 8 }, (_, index) => <div key={index} className="h-80 animate-pulse rounded-xl border-2 border-black bg-gray-100 motion-reduce:animate-none" />)}
+          </div>
+        ) : null}
+
+        {courses.length > 0 ? (
+          <div className={`grid grid-cols-1 gap-6 transition-opacity sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${loading ? 'opacity-60' : 'opacity-100'}`}>
+            {courses.map((course) => <CourseCard key={course.id} course={course} />)}
+          </div>
+        ) : null}
+
+        {!loading && !error && courses.length === 0 ? (
+          <div className="border-2 border-black bg-yellow-50 px-4 py-16 text-center">
+            <h2 className="text-2xl font-black">没有找到匹配的课程</h2>
+            <p className="mt-2 text-gray-600">调整筛选条件或清空搜索内容后再试。</p>
+            <button type="button" onClick={handleReset} className="mt-5 min-h-11 border-2 border-black bg-white px-5 font-bold shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600">清空筛选</button>
+          </div>
+        ) : null}
       </div>
 
-      <div className="flex flex-wrap gap-4 mb-8 items-center">
-        <select
-          value={query.level}
-          onChange={(e) => {
-            setLoading(true);
-            setQuery((current) => ({ ...current, level: e.target.value }));
-          }}
-          className="w-50 rounded-lg border-2 border-black px-4 py-2 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
-        >
-          <option value="全部难度">全部难度</option>
-          <option value="初级">初级</option>
-          <option value="中级">中级</option>
-          <option value="高级">高级</option>
-        </select>
-
-        <select
-          value={query.status}
-          onChange={(e) => {
-            setLoading(true);
-            setQuery((current) => ({ ...current, status: e.target.value }));
-          }}
-          className="w-50 rounded-lg border-2 border-black px-4 py-2 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
-        >
-          <option value="全部状态">全部状态</option>
-          <option value="未开始">未开始</option>
-          <option value="进行中">进行中</option>
-          <option value="已完成">已完成</option>
-        </select>
-
-        <select
-          value={query.studentRange}
-          onChange={(e) => {
-            setLoading(true);
-            setQuery((current) => ({
-              ...current,
-              studentRange: e.target.value,
-            }));
-          }}
-          className="w-50 rounded-lg border-2 border-black px-4 py-2 font-bold bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
-        >
-          <option value="全部人数">全部人数</option>
-          <option value="1-50 人">1-50 人</option>
-          <option value="51-200 人">51-200 人</option>
-          <option value="201-500 人">201-500 人</option>
-          <option value="501-1000 人">501-1000 人</option>
-          <option value="1000+ 人">1000+ 人</option>
-        </select>
-
-        <div className="ml-auto flex gap-2">
-          <input
-            type="text"
-            placeholder="搜索课程..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="rounded-l-lg border-2 border-black px-4 py-2 font-bold bg-white focus:outline-none shadow-[2px_2px_0_0_rgba(0,0,0,1)] w-64"
-          />
-          <button
-            onClick={() => {
-              setLoading(true);
-              setQuery((current) => ({
-                ...current,
-                keyword: searchTerm.trim(),
-              }));
-            }}
-            className="rounded-r-lg bg-purple-600 text-white px-4 py-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-purple-700 transition-colors flex items-center justify-center"
-          >
-            <BsSearch className="w-5 h-5" />
-          </button>
-          <button
-            onClick={handleReset}
-            className="rounded-lg bg-white text-gray-700 px-4 py-2 border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-gray-50 transition-all duration-200 font-medium flex items-center gap-2"
-            title="重置所有筛选条件"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-            重置
-          </button>
-        </div>
-      </div>
-
-      {loading && <div className="text-center py-10 font-bold">加载中...</div>}
-
-      {!loading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {courses.map((course) => {
-            const level = getLevelNumber(course.level);
-            const levelConfigItem = courseLevelMap[level] || {
-              text: '未知',
-              color: 'bg-gray-300',
-            };
-            const learnStatus = getLearnStatus(
-              course.learnStatus,
-              course.progress
-            );
-            const statusConfig =
-              courseStatusMap[learnStatus] || courseStatusMap[0];
-
-            return (
-              <div
-                key={course.id}
-                onClick={() => handleCourseClick(course.id)}
-                className="flex flex-col rounded-xl border-1 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[5px_5px_0_0_rgba(0,0,0,1)] transition-all h-[320px] cursor-pointer overflow-hidden"
-              >
-                {/* 顶部图片横幅 */}
-                <div className="relative h-40 w-full border-b-2 border-black overflow-hidden shrink-0 rounded-t-xl">
-                  {course.cover_url ? (
-                    <Image
-                      src={course.cover_url}
-                      alt={course.title}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="h-full w-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
-                      <span className="text-6xl">📚</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* 内容区域 */}
-                <div className="p-4 flex flex-col flex-1">
-                  <h3
-                    className="text-xl font-black mb-1 truncate"
-                    title={course.title}
-                  >
-                    {course.title}
-                  </h3>
-                  <p
-                    className="text-gray-600 text-sm mb-3 whitespace-nowrap overflow-hidden text-ellipsis"
-                    title={course.description}
-                  >
-                    {course.description}
-                  </p>
-
-                  {course.progress !== undefined ? (
-                    <div className="mb-2">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="flex-1 bg-gray-200 rounded-full h-2 border-2 border-black">
-                          <div
-                            className={`h-full rounded-full transition-all ${
-                              learnStatus === 2 ? 'bg-green-500' : 'bg-blue-500'
-                            }`}
-                            style={{
-                              width: `${Math.min(course.progress, 100)}%`,
-                            }}
-                          />
-                        </div>
-                        <span className="text-xs font-bold text-gray-600 whitespace-nowrap">
-                          {course.progress}%
-                        </span>
-                        <span
-                          className={`${statusConfig.color} border-2 border-black px-2 py-1 text-xs font-bold shrink-0 rounded-md`}
-                        >
-                          {statusConfig.text}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span
-                          className={`${levelConfigItem.color} border-2 border-black px-2 py-0.5 text-xs font-bold rounded-md`}
-                        >
-                          {levelConfigItem.text}
-                        </span>
-                        {course.studentCount !== undefined && (
-                          <span className="text-xs text-gray-600 flex items-center gap-1">
-                            <span>
-                              <BsPersonFill />
-                            </span>
-                            <span className="font-bold">
-                              学习人数：{course.studentCount.toLocaleString()}
-                            </span>
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mb-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <span
-                          className={`${levelConfigItem.color} border-2 border-black px-3 py-1 text-xs font-bold`}
-                        >
-                          {levelConfigItem.text}
-                        </span>
-                        <span
-                          className={`${statusConfig.color} border-2 border-black px-2 py-1 text-xs font-bold shrink-0`}
-                        >
-                          {statusConfig.text}
-                        </span>
-                      </div>
-                      {course.studentCount !== undefined && (
-                        <div className="text-right">
-                          <span className="text-xs text-gray-600 flex items-center gap-1 justify-end">
-                            <span>👥</span>
-                            <span className="font-bold">
-                              {course.studentCount.toLocaleString()}
-                            </span>
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {!loading && courses.length === 0 && (
-        <div className="text-center py-16">
-          <p className="text-2xl font-bold">没有找到匹配的课程</p>
-        </div>
-      )}
+      {!error && totalPages > 1 ? (
+        <nav className="mt-8 flex flex-wrap items-center justify-center gap-3" aria-label="课程分页">
+          <button type="button" disabled={page === 1 || loading} onClick={() => setPage((current) => Math.max(1, current - 1))} className="min-h-11 border-2 border-black bg-white px-4 font-bold shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500 disabled:shadow-none">上一页</button>
+          <span className="px-2 font-bold" aria-current="page">第 {page} / {totalPages} 页</span>
+          <button type="button" disabled={page >= totalPages || loading} onClick={() => setPage((current) => Math.min(totalPages, current + 1))} className="min-h-11 border-2 border-black bg-white px-4 font-bold shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-500 disabled:shadow-none">下一页</button>
+        </nav>
+      ) : null}
     </section>
+  );
+}
+
+function FilterSelect({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) {
+  return (
+    <label className="grid gap-2 font-bold">
+      <span>{label}</span>
+      <select value={value} onChange={(event) => onChange(event.target.value)} className="min-h-11 w-full rounded-lg border-2 border-black bg-white px-4 py-2 shadow-[2px_2px_0_0_rgba(0,0,0,1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-600">
+        {options.map((option) => <option key={option}>{option}</option>)}
+      </select>
+    </label>
+  );
+}
+
+function CourseCard({ course }: { course: Course }) {
+  const levelConfig = courseLevelMap[getLevelNumber(course.level)] || { text: '未知', color: 'bg-gray-300' };
+  const learnStatus = getLearnStatus(course.learnStatus, course.progress);
+  const statusConfig = courseStatusMap[learnStatus] || courseStatusMap[0];
+  const progress = Math.min(Math.max(course.progress || 0, 0), 100);
+
+  return (
+    <Link href={`/courses/${course.id}`} className="group flex min-h-80 flex-col overflow-hidden rounded-xl border-2 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_rgba(0,0,0,1)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-purple-600 motion-reduce:transition-none">
+      <div className="relative h-40 w-full shrink-0 overflow-hidden border-b-2 border-black bg-purple-100">
+        {course.cover_url ? <Image src={course.cover_url} alt="" fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw" className="object-cover transition-transform group-hover:scale-[1.02] motion-reduce:transition-none" /> : <div className="flex h-full items-center justify-center font-mono text-5xl font-black" aria-hidden="true">{'</>'}</div>}
+      </div>
+      <div className="flex flex-1 flex-col p-4">
+        <h2 className="mb-1 line-clamp-1 text-xl font-black" title={course.title}>{course.title}</h2>
+        <p className="mb-4 line-clamp-2 text-sm text-gray-600">{course.description}</p>
+        <div className="mt-auto space-y-3">
+          {course.progress !== undefined ? (
+            <div className="flex items-center gap-2">
+              <div className="h-3 flex-1 overflow-hidden border-2 border-black bg-gray-200" role="progressbar" aria-label={`${course.title}学习进度`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
+                <div className={`h-full ${learnStatus === 2 ? 'bg-green-500' : 'bg-blue-500'}`} style={{ width: `${progress}%` }} />
+              </div>
+              <span className="text-xs font-bold">{progress}%</span>
+            </div>
+          ) : null}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className={`${levelConfig.color} border-2 border-black px-2 py-1 text-xs font-bold`}>{levelConfig.text}</span>
+            <span className={`${statusConfig.color} border-2 border-black px-2 py-1 text-xs font-bold`}>{statusConfig.text}</span>
+          </div>
+          {course.studentCount !== undefined ? <span className="flex items-center justify-end gap-1 text-xs font-bold text-gray-600"><BsPersonFill aria-hidden="true" />{course.studentCount.toLocaleString()} 人学习</span> : null}
+        </div>
+      </div>
+    </Link>
   );
 }

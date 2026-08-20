@@ -82,7 +82,7 @@ export default function GuidedPanel({
                   type="button"
                   onClick={() => onAnswer(label)}
                   disabled={!canAnswer}
-                  className="flex w-full items-start gap-2 border-2 border-black bg-white px-3 py-2 text-left text-sm font-bold text-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-transform hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-yellow-100 hover:shadow-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:bg-white"
+                  className="flex w-full items-start gap-2 border-2 border-black bg-white px-3 py-2 text-left text-sm font-bold text-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-transform hover:translate-x-0.5 hover:translate-y-0.5 hover:bg-white hover:shadow-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:bg-white"
                 >
                   <span className="flex-shrink-0">{label}.</span>
                   <span className="min-w-0 break-words">

@@ -12,11 +12,13 @@ export const lessonDetailApi = {
   },
   startById: (
     lessonId: string | number,
-    params?: { courseId?: string; chapterId?: string }
+    params?: { courseId?: string; chapterId?: string },
+    signal?: AbortSignal
   ) => {
     return request
       .post<LessonDetailResponse>(`chapter/lesson/${lessonId}/start`, null, {
         params,
+        signal,
       })
       .then(res => res.data);
   },

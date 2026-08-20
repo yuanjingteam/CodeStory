@@ -16,6 +16,7 @@ interface QuestionProps {
   ) => void | Promise<void>
   onCurrentExerciseChange?: (exerciseId: string | null) => void
   onCurrentExerciseCodeChange?: (code: string | null) => void
+  isLessonSwitching?: boolean
 }
 
 export default function Question({
@@ -24,6 +25,7 @@ export default function Question({
   onLessonSwitched,
   onCurrentExerciseChange,
   onCurrentExerciseCodeChange,
+  isLessonSwitching = false,
 }: QuestionProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -50,8 +52,6 @@ export default function Question({
     }
     return null
   })
-  const [isTransitioning, setIsTransitioning] = useState(false)
-  const [transitionDirection, setTransitionDirection] = useState<'left' | 'right' | null>(null)
   const exerciseButtonOrderRef = useRef<Map<string, number>>(new Map())
   const buttonIdToExerciseIdRef = useRef<Map<string, string>>(new Map())
   const exercisesRef = useRef(exercises)
@@ -156,7 +156,7 @@ export default function Question({
   }, [modalOpen, searchParams])
 
   const handleNavigate = async (direction: 'prev' | 'next') => {
-    if (!currentLessonId || !courseId || !currentChapterId) return
+    if (!currentLessonId || !courseId || !currentChapterId || isLessonSwitching) return
 
     try {
       const currentIndex = currentLessonIndex
@@ -170,13 +170,7 @@ export default function Question({
       )
       const targetChapterId = targetChapter?.id || currentChapterId
 
-      setTransitionDirection(direction === 'next' ? 'left' : 'right')
-      setIsTransitioning(true)
-
-      await new Promise(resolve => setTimeout(resolve, 150))
-
       await onLessonSwitched?.(targetLessonId, targetChapterId)
-      setTimeout(() => setIsTransitioning(false), 50)
     } catch (error) {
       console.error('切换小节失败:', error)
     }
@@ -206,13 +200,7 @@ export default function Question({
       </div>
 
       {/* 主内容区 */}
-      <div
-        className={`flex-1 overflow-hidden transition-all duration-300 ease-in-out ${
-          isTransitioning
-            ? 'opacity-0 ' + (transitionDirection === 'left' ? '-translate-x-4' : 'translate-x-4')
-            : 'opacity-100 translate-x-0'
-        }`}
-      >
+      <div className="flex-1 overflow-hidden" aria-busy={isLessonSwitching}>
         {modalOpen ? (
           <ExerciseModal
             isOpen={modalOpen}
@@ -292,11 +280,11 @@ export default function Question({
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3 max-w-4xl mx-auto">
           <button
             onClick={() => handleNavigate('prev')}
-            disabled={!hasPrev}
+            disabled={!hasPrev || isLessonSwitching}
             aria-label="上一节"
             className={`py-3 px-3 sm:px-4 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2 text-base whitespace-nowrap ${
-              hasPrev
-                ? 'bg-yellow-400 text-black hover:bg-yellow-500 rounded-lg hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+              hasPrev && !isLessonSwitching
+                ? 'bg-yellow-400 text-zinc-950 hover:bg-yellow-300 rounded-lg hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed rounded-lg'
             }`}
           >
@@ -312,15 +300,15 @@ export default function Question({
                     {completedExerciseCount}/{exercises.length}
                   </span>
                 </div>
-                <div className="w-full h-3 bg-gray-200 rounded-sm overflow-hidden border-2 border-black">
+                <div className="h-3 w-full overflow-hidden rounded-sm border-2 border-black bg-gray-200" role="progressbar" aria-label="本节练习进度" aria-valuemin={0} aria-valuemax={exercises.length} aria-valuenow={completedExerciseCount}>
                   <div
-                    className="h-full bg-yellow-400 transition-all duration-500"
+                    className="h-full bg-yellow-400"
                     style={{ width: `${exercises.length > 0 ? (completedExerciseCount / exercises.length) * 100 : 0}%` }}
                   />
                 </div>
                 {allExercisesCompleted && (
                   <div className="mt-1 text-center text-black-600 text-sm font-bold">
-                    🎉 所有练习已完成
+                    所有练习已完成
                   </div>
                 )}
               </div>
@@ -328,11 +316,11 @@ export default function Question({
           </div>
           <button
             onClick={() => handleNavigate('next')}
-            disabled={!hasNext}
+            disabled={!hasNext || isLessonSwitching}
             aria-label="下一节"
             className={`py-3 px-3 sm:px-4 font-bold border-4 border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2 text-base whitespace-nowrap ${
-              hasNext
-                ? 'bg-yellow-400 text-black hover:bg-yellow-500 rounded-lg hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
+              hasNext && !isLessonSwitching
+                ? 'bg-yellow-400 text-zinc-950 hover:bg-yellow-300 rounded-lg hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed rounded-lg'
             }`}
           >

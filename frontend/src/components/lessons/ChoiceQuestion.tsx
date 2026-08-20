@@ -13,10 +13,11 @@ interface ChoiceQuestionProps {
   exercise: ExerciseDetailData;
   onSubmit: (answer: string) => Promise<boolean>;
   onHintUsed?: (level: number) => void;
+  isSubmitting?: boolean;
 }
 
 const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
-  ({ exercise, onSubmit, onHintUsed }, ref) => {
+  ({ exercise, onSubmit, onHintUsed, isSubmitting = false }, ref) => {
   const [showHintModal, setShowHintModal] = useState(false);
   const [hintLevelUsed, setHintLevelUsed] = useState(0);
   const alreadyCorrect = (exercise.userAnswer?.score ?? 0) > 0;
@@ -64,10 +65,9 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between mb-4">
-        <div className="font-bold text-lg">请选择正确答案：</div>
-        <div className="flex items-center gap-2">
+    <fieldset className="space-y-2" disabled={alreadyCorrect || isSubmitting}>
+      <legend className="mb-3 text-lg font-bold">请选择正确答案：</legend>
+      <div className="mb-4 flex items-center justify-end gap-2">
           {!alreadyCorrect && (
             <span
               className={`text-xs font-bold ${
@@ -82,8 +82,9 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
             </span>
           )}
           <button
+            type="button"
             onClick={() => setShowHintModal(true)}
-            disabled={alreadyCorrect}
+            disabled={alreadyCorrect || isSubmitting}
             className={`
               py-2 px-4 font-bold border-2 border-black rounded-md
               shadow-[2px_2px_0_0_rgba(0,0,0,1)]
@@ -99,7 +100,6 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
             <BsLightbulb className="w-5 h-5 mr-1" />
             {hintLevelUsed >= maxHintLevel ? '查看提示' : `提示 (${maxHintLevel - hintLevelUsed})`}
           </button>
-        </div>
       </div>
 
       {options.map((option: string, index: number) => {
@@ -107,31 +107,32 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
         const isSelected = selectedOption === optionLabel;
 
         return (
-          <div
-            key={index}
-            onClick={() => handleSelect(optionLabel)}
-            className={`py-3 px-4 border-4 border-black cursor-pointer rounded-md transition-all font-bold ${
+          <label
+            key={`${optionLabel}-${option}`}
+            className={`block rounded-md border-4 border-black px-4 py-3 font-bold transition-transform focus-within:ring-4 focus-within:ring-purple-600 ${
               isSelected
                 ? 'bg-yellow-400 shadow-[4px_4px_0_0_rgba(0,0,0,1)] translate-x-[2px] translate-y-[2px]'
-                : 'bg-white hover:bg-gray-100 shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-[4px_4px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]'
-            }`}
+                : 'cursor-pointer bg-white shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:bg-gray-100 hover:translate-x-[2px] hover:translate-y-[2px]'
+            } ${isSubmitting || alreadyCorrect ? 'cursor-not-allowed opacity-70' : ''}`}
           >
+            <input type="radio" name={`exercise-${exercise.id}`} value={optionLabel} checked={isSelected} onChange={() => handleSelect(optionLabel)} className="sr-only" />
             <span className="mr-2">{optionLabel}.</span>
             <span>{option.replace(/^[A-D]\.\s*/, '')}</span>
-          </div>
+          </label>
         );
       })}
 
       <button
+        type="button"
         onClick={() => void handleSubmit()}
-        disabled={!selectedOption || alreadyCorrect}
+        disabled={!selectedOption || alreadyCorrect || isSubmitting}
         className={`w-full py-3 font-bold border-4 border-black rounded-lg shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-lg mt-4 ${
-          selectedOption && !alreadyCorrect
+          selectedOption && !alreadyCorrect && !isSubmitting
             ? 'bg-green-600 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
             : 'bg-gray-300 text-gray-500 cursor-not-allowed'
         }`}
       >
-        {alreadyCorrect ? '已完成' : '提交答案'}
+        {alreadyCorrect ? '已完成' : isSubmitting ? '提交中...' : '提交答案'}
       </button>
 
       {showHintModal && (
@@ -143,7 +144,7 @@ const ChoiceQuestion = forwardRef<ChoiceQuestionHandle, ChoiceQuestionProps>(
           onClose={() => setShowHintModal(false)}
         />
       )}
-    </div>
+    </fieldset>
   );
 });
 

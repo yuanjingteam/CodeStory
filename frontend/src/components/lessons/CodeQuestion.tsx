@@ -18,10 +18,11 @@ interface CodeQuestionProps {
   onSubmit: (answer: string) => Promise<boolean>;
   onHintUsed?: (level: number) => void;
   onCodeChange?: (code: string) => void;
+  isSubmitting?: boolean;
 }
 
 const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
-  ({ exercise, onSubmit, onHintUsed, onCodeChange }, ref) => {
+  ({ exercise, onSubmit, onHintUsed, onCodeChange, isSubmitting = false }, ref) => {
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [showHintModal, setShowHintModal] = useState(false);
     const [hintLevelUsed, setHintLevelUsed] = useState(0);
@@ -89,7 +90,9 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
               </span>
             )}
             <button
+              type="button"
               onClick={() => setIsCollapsed(!isCollapsed)}
+              disabled={isSubmitting}
               className="py-2 px-4 bg-purple-500 rounded-lg text-white font-bold border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
             >
               {isCollapsed ? (
@@ -105,7 +108,9 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
               )}
             </button>
             <button
+              type="button"
               onClick={() => setShowHintModal(true)}
+              disabled={isSubmitting}
               className="
                 py-2 px-4 font-bold border-2 border-black rounded-lg
                 shadow-[2px_2px_0_0_rgba(0,0,0,1)]
@@ -132,6 +137,7 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
           <CodeMirror
             value={userCode}
             onChange={setUserCode}
+            editable={!isSubmitting}
             height="100%"
             theme="dark"
             extensions={[
@@ -148,15 +154,16 @@ const CodeQuestion = forwardRef<CodeQuestionHandle, CodeQuestionProps>(
         </div>
 
         <button
+          type="button"
           onClick={() => void handleSubmit()}
-          disabled={!userCode.trim()}
+          disabled={!userCode.trim() || isSubmitting}
           className={`w-full py-3 font-bold border-4 border-black rounded-lg shadow-[4px_4px_0_0_rgba(0,0,0,1)] transition-all text-lg mt-4 ${
-            userCode.trim()
+            userCode.trim() && !isSubmitting
               ? 'bg-green-600 text-white hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          {hasPreviousScore ? '再次提交评阅' : '提交评阅'}
+          {isSubmitting ? '提交中...' : hasPreviousScore ? '再次提交评阅' : '提交评阅'}
         </button>
 
         {showHintModal && (

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Group, Panel, Separator } from 'react-resizable-panels';
 import { lessonDetailApi } from '@/app/api/courses/lesson-detail';
 import type { LessonDetailData } from '@/types/lesson-detail';
@@ -26,6 +26,9 @@ export default function LessonPage({
   const { isLoggedIn, isLoading: isAuthLoading } = useUserStore();
   const [data, setData] = useState<LessonDetailData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [retryVersion, setRetryVersion] = useState(0);
+  const [isLessonSwitching, setIsLessonSwitching] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [chatCollapsed, setChatCollapsed] = useState(false);
   const [currentExerciseId, setCurrentExerciseId] = useState<string | null>(null);
@@ -33,6 +36,8 @@ export default function LessonPage({
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [mobileWorkspace, setMobileWorkspace] =
     useState<MobileWorkspace>('lesson');
+  const requestIdRef = useRef(0);
+  const pendingLessonIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 767px)');
@@ -68,18 +73,13 @@ export default function LessonPage({
     });
   }, []);
 
-  const handleLessonSwitched = useCallback(async (newLessonId: string, newChapterId: string) => {
-    try {
-      const response = await lessonDetailApi.startById(newLessonId, {
-        courseId,
-        chapterId: newChapterId,
-      });
-      setData(response);
-      router.push(`/courses/${response.course.id}/chapters/${newChapterId}/lessons/${response.currentLesson.id}`);
-    } catch (error) {
-      console.error('❌ 切换小节失败:', error);
-    }
-  }, [courseId, router]);
+  const handleLessonSwitched = useCallback((newLessonId: string, newChapterId: string) => {
+    if (pendingLessonIdRef.current || isLessonSwitching || newLessonId === data?.currentLesson.id) return;
+    pendingLessonIdRef.current = newLessonId;
+    setIsLessonSwitching(true);
+    setLoadError('');
+    router.push(`/courses/${courseId}/chapters/${newChapterId}/lessons/${newLessonId}`);
+  }, [courseId, data?.currentLesson.id, isLessonSwitching, router]);
 
   useEffect(() => {
     if (isAuthLoading) return;
@@ -89,27 +89,42 @@ export default function LessonPage({
       return;
     }
 
-    const fetchData = async () => {
-      try {
+    if (!lessonId) return;
+
+    const controller = new AbortController();
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    void Promise.resolve().then(() => {
+      if (!controller.signal.aborted && requestIdRef.current === requestId) {
         setLoading(true);
-        const response = await lessonDetailApi.startById(lessonId, {
-          courseId,
-          chapterId,
-        });
-        setData(response);
-      } catch {
-        console.error('获取课程详情失败');
-      } finally {
+        setLoadError('');
+      }
+    });
+
+    lessonDetailApi.startById(
+      lessonId,
+      { courseId, chapterId },
+      controller.signal
+    ).then((response) => {
+      if (requestIdRef.current !== requestId) return;
+      setData(response);
+      pendingLessonIdRef.current = null;
+      setIsLessonSwitching(false);
+    }).catch(() => {
+      if (controller.signal.aborted || requestIdRef.current !== requestId) return;
+      setLoadError('小节加载失败，原内容已保留。');
+      pendingLessonIdRef.current = null;
+      setIsLessonSwitching(false);
+    }).finally(() => {
+      if (!controller.signal.aborted && requestIdRef.current === requestId) {
         setLoading(false);
       }
-    };
+    });
 
-    if (lessonId) {
-      fetchData();
-    }
-  }, [chapterId, courseId, lessonId, isAuthLoading, isLoggedIn]);
+    return () => controller.abort();
+  }, [chapterId, courseId, lessonId, isAuthLoading, isLoggedIn, retryVersion]);
 
-  if (loading || isMobile === null) {
+  if ((loading && !data) || isMobile === null) {
     return (
       <div className="flex min-h-[calc(100dvh-64px)] items-center justify-center">
         加载中...
@@ -119,11 +134,21 @@ export default function LessonPage({
 
   if (!data) {
     return (
-      <div className="flex min-h-[calc(100dvh-64px)] items-center justify-center">
-        加载失败
+      <div className="flex min-h-[calc(100dvh-64px)] flex-col items-center justify-center gap-4 px-4 text-center" role="alert">
+        <p className="font-bold">{loadError || '小节加载失败'}</p>
+        <button type="button" onClick={() => setRetryVersion((value) => value + 1)} className="min-h-11 border-2 border-black bg-yellow-300 px-5 font-bold shadow-[3px_3px_0_0_rgba(0,0,0,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none">
+          重新加载
+        </button>
       </div>
     );
   }
+
+  const loadErrorBanner = loadError ? (
+    <div role="alert" className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b-2 border-black bg-red-50 px-3 py-2 text-sm font-bold text-red-800">
+      <span>{loadError}</span>
+      <button type="button" onClick={() => setRetryVersion((value) => value + 1)} className="border-2 border-black bg-white px-3 py-1 text-black">重试</button>
+    </div>
+  ) : null;
 
   if (isMobile) {
     const workspaceButtonClass = (workspace: MobileWorkspace) =>
@@ -171,7 +196,8 @@ export default function LessonPage({
             mobileWorkspace === 'catalog' ? 'flex flex-1 flex-col' : 'hidden'
           }`}
         >
-          <Content data={data} onLessonClick={handleLessonSwitched} />
+          {loadErrorBanner}
+          <Content data={data} onLessonClick={handleLessonSwitched} isLessonSwitching={isLessonSwitching || loading} />
         </div>
 
         <div
@@ -179,6 +205,7 @@ export default function LessonPage({
             mobileWorkspace === 'lesson' ? 'flex flex-1 flex-col' : 'hidden'
           }`}
         >
+          {loadErrorBanner}
           <Question
             key={data.currentLesson.id}
             data={data}
@@ -186,6 +213,7 @@ export default function LessonPage({
             onLessonSwitched={handleLessonSwitched}
             onCurrentExerciseChange={setCurrentExerciseId}
             onCurrentExerciseCodeChange={setCurrentExerciseCode}
+            isLessonSwitching={isLessonSwitching || loading}
           />
         </div>
 
@@ -222,7 +250,7 @@ export default function LessonPage({
         >
           <div className="h-full border-4 border-black rounded-lg shadow-[1px_1px_0_0_rgba(0,0,0,1)] bg-white relative flex flex-col overflow-hidden">
             {!sidebarCollapsed && (
-              <Content data={data} onLessonClick={handleLessonSwitched} />
+              <Content data={data} onLessonClick={handleLessonSwitched} isLessonSwitching={isLessonSwitching || loading} />
             )}
             {sidebarCollapsed && (
               <div className="flex items-center justify-center h-full">
@@ -238,6 +266,7 @@ export default function LessonPage({
 
         <Panel defaultSize="50%" minSize="420px">
           <div className="h-full border-4 border-black rounded-lg shadow-[1px_1px_0_0_rgba(0,0,0,1)] bg-white relative flex flex-col overflow-hidden">
+            {loadErrorBanner}
             <Question
               key={data.currentLesson.id}
               data={data}
@@ -245,6 +274,7 @@ export default function LessonPage({
               onLessonSwitched={handleLessonSwitched}
               onCurrentExerciseChange={setCurrentExerciseId}
               onCurrentExerciseCodeChange={setCurrentExerciseCode}
+              isLessonSwitching={isLessonSwitching || loading}
             />
           </div>
         </Panel>

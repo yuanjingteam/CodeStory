@@ -84,6 +84,8 @@ export default function Chat({
     useState<GuidedLearningState | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScrollRef = useRef(true);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -134,7 +136,12 @@ export default function Chat({
   }, [lessonId, lessonTitle]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!shouldAutoScrollRef.current) return;
+    const frame = window.requestAnimationFrame(() => {
+      const container = messagesContainerRef.current;
+      if (container) container.scrollTop = container.scrollHeight;
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [messages]);
 
   useEffect(() => {
@@ -152,6 +159,7 @@ export default function Chat({
     const hintRequest = retryContext?.hintRequest === true;
     const trimmedQuestion = question.trim();
     if (!trimmedQuestion || isStreaming) return;
+    shouldAutoScrollRef.current = true;
     // 引导模式独占界面：输入即作答，只推进状态机，不写入自由问答的消息流。
     if (guidedMode && guidedState) {
       setIsStreaming(true);
@@ -334,6 +342,7 @@ export default function Chat({
     } catch (error) {
       const errorPayload = getAiErrorMessage(error);
       showToast.error(errorPayload.message);
+      throw error;
     } finally {
       setIsClearing(false);
     }
@@ -442,7 +451,20 @@ export default function Chat({
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+        <div
+          ref={messagesContainerRef}
+          className="flex-1 overflow-y-auto bg-gray-50 p-4"
+          role="log"
+          aria-label="AI 助手对话"
+          aria-live="polite"
+          aria-relevant="additions text"
+          aria-busy={isStreaming}
+          onScroll={(event) => {
+            const element = event.currentTarget;
+            shouldAutoScrollRef.current =
+              element.scrollHeight - element.scrollTop - element.clientHeight <= 48;
+          }}
+        >
           {inGuidedView && guidedState ? (
             <GuidedPanel
               state={guidedState}
@@ -480,7 +502,7 @@ export default function Chat({
                     })
                   }
                   disabled={isStreaming}
-                  className="flex flex-shrink-0 items-center gap-1 rounded-full border-2 border-black bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-800 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:bg-yellow-100 hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex flex-shrink-0 items-center gap-1 rounded-full border-2 border-black bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-800 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:bg-white hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Icon className="h-3.5 w-3.5" />
                   {action.label}
@@ -509,7 +531,9 @@ export default function Chat({
             </div>
           ) : (
           <div className="border-2 border-black rounded-2xl bg-white overflow-hidden">
+            <label htmlFor="lesson-chat-input" className="sr-only">输入要问 AI 助手的内容</label>
             <textarea
+              id="lesson-chat-input"
               value={input}
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={(event) => {
@@ -541,23 +565,30 @@ export default function Chat({
                 <button
                   type="button"
                   onClick={stopGeneration}
-                  className="w-8 h-8 flex flex-shrink-0 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600"
+                  aria-label="停止生成"
+                  title="停止生成"
+                  className="flex size-11 flex-shrink-0 items-center justify-center rounded-full bg-red-500 text-white hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black"
                 >
-                  <FiSquare className="w-4 h-4" />
+                  <FiSquare className="w-4 h-4" aria-hidden="true" />
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={() => void sendMessage(input)}
                   disabled={!input.trim() || isStreaming}
-                  className="w-8 h-8 flex flex-shrink-0 items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 disabled:bg-gray-300 disabled:text-gray-500"
+                  aria-label="发送消息"
+                  title="发送消息"
+                  className="flex size-11 flex-shrink-0 items-center justify-center rounded-full bg-green-500 text-white hover:bg-green-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
                 >
-                  <FiSend className="w-4 h-4" />
+                  <FiSend className="w-4 h-4" aria-hidden="true" />
                 </button>
               )}
             </div>
           </div>
           )}
+          <div className="sr-only" role="status" aria-live="polite">
+            {isStreaming ? 'AI 正在生成回答' : ''}
+          </div>
         </div>
       </div>
       <AlertDialog
@@ -568,7 +599,7 @@ export default function Chat({
         cancelText="取消"
         variant="danger"
         loading={isClearing}
-        onConfirm={() => void clearHistory()}
+        onConfirm={clearHistory}
         onOpenChange={(open) => {
           if (!isClearing) setClearDialogOpen(open);
         }}
