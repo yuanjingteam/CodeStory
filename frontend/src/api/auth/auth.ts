@@ -1,3 +1,4 @@
+import axios from 'axios';
 import request from '@/utils/request';
 import type {
   LoginRequest,
@@ -7,7 +8,32 @@ import type {
   ImageCaptchaData,
   ForgetPasswordRequest,
   LoginUserInfo,
+  AuthErrorCode,
 } from '@/types/auth';
+
+export interface AuthErrorDetails {
+  errorCode?: AuthErrorCode;
+  message: string;
+  status?: number;
+}
+
+export function getAuthErrorDetails(
+  error: unknown,
+  fallbackMessage: string
+): AuthErrorDetails {
+  if (!axios.isAxiosError(error)) {
+    return { message: fallbackMessage };
+  }
+
+  const data = error.response?.data as
+    | { errorCode?: AuthErrorCode; message?: string }
+    | undefined;
+  return {
+    errorCode: data?.errorCode,
+    message: data?.message || fallbackMessage,
+    status: error.response?.status,
+  };
+}
 // 登录
 export const login = async (data: LoginRequest): Promise<ApiResponse<LoginResponse>> => {
   return request.post('/auth/login', data);

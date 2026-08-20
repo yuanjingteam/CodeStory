@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { registerService } from '@/services/auth/register';
 import type { RegisterRequest } from '@/types/auth';
+import { normalizeAuthError } from '@/errors/auth-error';
 
 class RegisterController {
   async register(req: Request, res: Response) {
@@ -11,6 +12,7 @@ class RegisterController {
       if (!email || !password || !nickname || !emailCode) {
         return res.status(400).json({
           code: 400,
+          errorCode: 'AUTH_REGISTER_INCOMPLETE',
           message: '注册信息不能为空',
         });
       }
@@ -20,9 +22,15 @@ class RegisterController {
         message: '注册成功',
       });
     } catch (error) {
-      return res.status(400).json({
-        code: 400,
-        message: error instanceof Error ? error.message : '注册失败',
+      const authError = normalizeAuthError(error, {
+        statusCode: 500,
+        code: 'AUTH_REGISTER_FAILED',
+        message: '注册失败，请稍后重试',
+      });
+      return res.status(authError.statusCode).json({
+        code: authError.statusCode,
+        errorCode: authError.code,
+        message: authError.message,
       });
     }
   }

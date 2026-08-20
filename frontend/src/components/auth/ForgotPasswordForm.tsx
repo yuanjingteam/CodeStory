@@ -1,17 +1,22 @@
 'use client';
 import { useState, useEffect } from 'react';
 import FormInput from './FormInput';
-import { getEmailCaptcha, forgetPassword } from '@/api/auth/auth';
+import {
+  forgetPassword,
+  getAuthErrorDetails,
+  getEmailCaptcha,
+} from '@/api/auth/auth';
 import { useEmailCode } from '@/hooks/auth/useEmailCode';
 import type { ValidateResult } from '@/utils/validate';
 import { useRouter } from 'next/navigation';
 import {
   validateEmail,
-  validateCode,
+  validateEmailCode,
   validatePassword,
   validateConfirmPassword,
 } from '@/utils/validate';
 import { toast } from 'sonner';
+import Button from '@/components/ui/Button';
 
 const STORAGE_KEY = 'forgotpasswordfrom';
 
@@ -83,7 +88,7 @@ export default function ForgotPasswordForm() {
   const emailCodeStatus = getFieldStatus(
     'emailCode',
     formData.emailCode,
-    validateCode
+    validateEmailCode
   );
   const passwordStatus = getFieldStatus(
     'password',
@@ -102,6 +107,7 @@ export default function ForgotPasswordForm() {
     loading: sendingCode,
     sendCode,
     isCounting,
+    resetCountdown,
   } = useEmailCode({
     duration: 60,
     onSend: async () => {
@@ -119,15 +125,17 @@ export default function ForgotPasswordForm() {
           toast.success('验证码发送成功');
         } 
       } catch (error) {
-        toast.error('获取验证码失败');
+        const details = getAuthErrorDetails(error, '获取验证码失败');
+        toast.error(details.message);
         console.error(error);
+        throw error;
       }
     },
   });
 
   const validateForm = () => {
     const emailResult = validateEmail(formData.email);
-    const codeResult = validateCode(formData.emailCode);
+    const codeResult = validateEmailCode(formData.emailCode);
     const passwordResult = validatePassword(formData.password);
     const confirmPasswordResult = validateConfirmPassword(
       formData.password,
@@ -172,7 +180,15 @@ export default function ForgotPasswordForm() {
         }, 500);
       }
     } catch (error) {
-      toast.error('密码重置失败');
+      const details = getAuthErrorDetails(
+        error,
+        '密码重置失败，请稍后重试'
+      );
+      toast.error(details.message);
+      if (details.errorCode?.includes('EMAIL_CODE')) {
+        setTouched((prev) => ({ ...prev, emailCode: true }));
+        setErrors((prev) => ({ ...prev, emailCode: details.message }));
+      }
       console.error(error);
     } finally {
       setLoading(false);
@@ -184,15 +200,20 @@ export default function ForgotPasswordForm() {
       {/* 邮箱 */}
       <FormInput
         label="邮箱"
+        name="email"
         type="email"
+        autoComplete="username"
+        required
         value={formData.email}
         placeholder="请输入邮箱地址"
         touched={touched.email}
         error={errors.email}
         success={emailStatus === 'success'}
         onChange={(value) => {
-          setFormData((prev) => ({ ...prev, email: value }));
-          setErrors((prev) => ({ ...prev, email: '' }));
+          setFormData((prev) => ({ ...prev, email: value, emailCode: '' }));
+          setErrors((prev) => ({ ...prev, email: '', emailCode: '' }));
+          setTouched((prev) => ({ ...prev, emailCode: false }));
+          resetCountdown();
         }}
         onBlur={() => {
           setTouched((prev) => ({ ...prev, email: true }));
@@ -206,10 +227,15 @@ export default function ForgotPasswordForm() {
 
       {/* 邮箱验证码 */}
       <div>
-        <div className="flex  gap-3 items-end">
-          <div className="flex-1">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="min-w-0">
             <FormInput
               label="邮箱验证码"
+              name="emailCode"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              required
+              maxLength={6}
               value={formData.emailCode}
               placeholder="请输入邮箱验证码"
               touched={touched.emailCode}
@@ -221,7 +247,7 @@ export default function ForgotPasswordForm() {
               }}
               onBlur={() => {
                 setTouched((prev) => ({ ...prev, emailCode: true }));
-                const result = validateCode(formData.emailCode);
+                const result = validateEmailCode(formData.emailCode);
                 setErrors((prev) => ({
                   ...prev,
                   emailCode: result.isValid ? '' : result.message,
@@ -231,54 +257,43 @@ export default function ForgotPasswordForm() {
           </div>
 
           {/* 发送验证码 */}
-          <button
+          <Button
             type="button"
-            disabled={sendingCode || isCounting}
+            variant="secondary"
+            disabled={isCounting}
+            loading={sendingCode}
+            loadingText="发送中..."
             onClick={sendCode}
-            className="
-              h-[51px]
-              px-4
-              whitespace-nowrap
-              font-black 
-              text-sm
-              bg-yellow-400
-              border-2 
-              rounded-sm
-              border-black
-              shadow-[2px_2px_0_0_rgba(0,0,0,1)]
-              hover:translate-x-[2px]
-              hover:translate-y-[2px]
-              hover:shadow-none
-              transition-all
-              disabled:opacity-50
-              disabled:cursor-not-allowed
-              disabled:hover:translate-x-0
-              disabled:hover:translate-y-0
-            "
+            className="h-[42px] w-full whitespace-nowrap px-3 text-sm sm:mt-[30px] sm:w-auto"
           >
-            {countdown > 0
-              ? `${countdown}s`
-              : sendingCode
-                ? '发送中...'
-                : '发送验证码'}
-          </button>
+            {countdown > 0 ? `${countdown}s 后重发` : '发送验证码'}
+          </Button>
         </div>
       </div>
 
       {/* 新密码 */}
       <FormInput
         label="新密码"
+        name="password"
+        autoComplete="new-password"
+        required
         value={formData.password}
         placeholder="请输入新密码"
         touched={touched.password}
         error={errors.password}
         success={passwordStatus === 'success'}
         showPasswordToggle
-        showPassword={showConfirmPassword}
-        onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
+        showPassword={showPassword}
+        onTogglePassword={() => setShowPassword(!showPassword)}
         onChange={(value) => {
           setFormData((prev) => ({ ...prev, password: value }));
-          setErrors((prev) => ({ ...prev, password: '' }));
+          setErrors((prev) => ({
+            ...prev,
+            password: '',
+            confirmPassword: touched.confirmPassword
+              ? validateConfirmPassword(value, confirmPassword).message
+              : prev.confirmPassword,
+          }));
         }}
         onBlur={() => {
           setTouched((prev) => ({ ...prev, password: true }));
@@ -293,17 +308,25 @@ export default function ForgotPasswordForm() {
       {/* 确认密码 */}
       <FormInput
         label="确认密码"
+        name="confirmPassword"
+        autoComplete="new-password"
+        required
         value={confirmPassword}
         placeholder="请再次输入密码"
         touched={touched.confirmPassword}
         error={errors.confirmPassword}
         success={confirmPasswordStatus === 'success'}
         showPasswordToggle
-        showPassword={showPassword}
-        onTogglePassword={() => setShowPassword(!showPassword)}
+        showPassword={showConfirmPassword}
+        onTogglePassword={() => setShowConfirmPassword(!showConfirmPassword)}
         onChange={(value) => {
           setConfirmPassword(value);
-          setErrors((prev) => ({ ...prev, confirmPassword: '' }));
+          setErrors((prev) => ({
+            ...prev,
+            confirmPassword: touched.confirmPassword
+              ? validateConfirmPassword(formData.password, value).message
+              : '',
+          }));
         }}
         onBlur={() => {
           setTouched((prev) => ({ ...prev, confirmPassword: true }));
@@ -319,27 +342,15 @@ export default function ForgotPasswordForm() {
       />
 
       {/* 提交按钮 */}
-      <button
+      <Button
         type="submit"
-        disabled={loading}
-        className="
-          w-full py-3
-          font-black text-white
-          bg-yellow-500
-          border-2 border-black
-          shadow-[4px_4px_0_0_rgba(0,0,0,1)]
-          hover:translate-x-[4px]
-          hover:translate-y-[4px]
-          hover:shadow-none
-          transition-all duration-200
-          disabled:opacity-50
-          disabled:cursor-not-allowed
-          disabled:hover:translate-x-0
-          disabled:hover:translate-y-0
-        "
+        variant="primary"
+        loading={loading}
+        loadingText="重置中..."
+        fullWidth
       >
-        {loading ? '重置中...' : '重置密码'}
-      </button>
+        重置密码
+      </Button>
     </form>
   );
 }

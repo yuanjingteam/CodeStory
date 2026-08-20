@@ -22,6 +22,18 @@ type RetryableRequestConfig = InternalAxiosRequestConfig & {
   _retry?: boolean;
 };
 
+const publicAuthPaths = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/forget-password',
+  '/auth/email-captcha',
+  '/auth/image-captcha',
+];
+
+function isPublicAuthRequest(url?: string): boolean {
+  return Boolean(url && publicAuthPaths.some((path) => url.endsWith(path)));
+}
+
 const service: AxiosInstance = axios.create({
   baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1`,
   timeout: 5000,
@@ -48,6 +60,10 @@ service.interceptors.response.use(
     return Promise.reject(new Error(response.statusText || 'Error'));
   },
   async (error: AxiosError<AuthErrorResponse>) => {
+    if (isPublicAuthRequest(error.config?.url)) {
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401) {
       const originalRequest = error.config as
         | RetryableRequestConfig

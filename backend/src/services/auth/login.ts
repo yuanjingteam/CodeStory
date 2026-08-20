@@ -8,7 +8,7 @@ import { createAuthSessionTimes } from '@/config/auth-session';
 import {
   validateEmail,
   validatePassword,
-  validateCode,
+  validateImageCaptcha,
 } from '@/utils/validate';
 import { comparePassword } from '@/utils/bcrypt';
 import {
@@ -16,6 +16,7 @@ import {
   issueAccessToken,
   issueRefreshToken,
 } from '@/utils/auth-token';
+import { AuthError } from '@/errors/auth-error';
 
 class LoginService {
   async login(body: LoginRequest) {
@@ -23,15 +24,15 @@ class LoginService {
     const emailResult = validateEmail(email);
     
     if (!emailResult.isValid) {
-      throw new Error(emailResult.message);
+      throw new AuthError('AUTH_INVALID_EMAIL', emailResult.message, 400);
     }
     const passwordResult = validatePassword(password);
     if (!passwordResult.isValid) {
-      throw new Error(passwordResult.message);
+      throw new AuthError('AUTH_INVALID_PASSWORD', passwordResult.message, 400);
     }
-    const captchaResult = validateCode(captchaCode);
+    const captchaResult = validateImageCaptcha(captchaCode);
     if (!captchaResult.isValid) {
-      throw new Error(captchaResult.message);
+      throw new AuthError('AUTH_INVALID_IMAGE_CAPTCHA', captchaResult.message, 400);
     }
 
     await captchaService.verifyImageCaptcha(captchaId, captchaCode);
@@ -41,15 +42,15 @@ class LoginService {
     });
 
     if (!user) {
-      throw new Error('用户不存在');
+      throw new AuthError('AUTH_CREDENTIALS_INVALID', '邮箱或密码错误');
     }
 
     if (user.is_delete === 1) {
-      throw new Error('该账户已被删除，无法登录');
+      throw new AuthError('AUTH_ACCOUNT_DELETED', '该账户已被删除，无法登录', 403);
     }
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
-      throw new Error('密码错误');
+      throw new AuthError('AUTH_CREDENTIALS_INVALID', '邮箱或密码错误');
     }
     const sessionId = randomUUID();
     const tokenId = randomUUID();

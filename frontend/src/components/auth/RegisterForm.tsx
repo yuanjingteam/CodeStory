@@ -2,7 +2,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { RegisterRequest } from '@/types/auth';
-import { register, getEmailCaptcha } from '@/api/auth/auth';
+import {
+  getAuthErrorDetails,
+  getEmailCaptcha,
+  register,
+} from '@/api/auth/auth';
 import FormInput from './FormInput';
 import type { ValidateResult } from '@/utils/validate';
 import {
@@ -10,10 +14,11 @@ import {
   validatePassword,
   validateNickname,
   validateConfirmPassword,
-  validateCode,
+  validateEmailCode,
 } from '@/utils/validate';
 import { useEmailCode } from '@/hooks/auth/useEmailCode';
 import { toast } from 'sonner';
+import Button from '@/components/ui/Button';
 
 const STORAGE_KEY = 'registerfrom';
 
@@ -120,13 +125,14 @@ export default function RegisterForm() {
   const emailCodeStatus = getFieldStatus(
     'emailCode',
     registerInput.emailCode,
-    validateCode
+    validateEmailCode
   );
   const {
     countdown,
     loading: sendingCode,
     sendCode,
     isCounting,
+    resetCountdown,
   } = useEmailCode({
     duration: 60,
     onSend: async () => {
@@ -142,8 +148,10 @@ export default function RegisterForm() {
           toast.success('验证码发送成功');
         } 
       } catch (error) {
-        toast.error('获取验证码失败');
+        const details = getAuthErrorDetails(error, '获取验证码失败');
+        toast.error(details.message);
         console.error(error);
+        throw error;
       }
     },
   });
@@ -161,7 +169,7 @@ export default function RegisterForm() {
       registerInput.password,
       confirmPassword
     );
-    const emailCodeResult = validateCode(registerInput.emailCode);
+    const emailCodeResult = validateEmailCode(registerInput.emailCode);
     const newErrors: RegisterErrors = {
       nickname: nicknameResult.isValid ? '' : nicknameResult.message,
       email: emailResult.isValid ? '' : emailResult.message,
@@ -196,7 +204,15 @@ export default function RegisterForm() {
         router.push('/auth/login');
       } 
     } catch (error) {
-      toast.error('注册失败');
+      const details = getAuthErrorDetails(error, '注册失败，请稍后重试');
+      toast.error(details.message);
+      if (details.errorCode === 'AUTH_EMAIL_EXISTS') {
+        setTouched((prev) => ({ ...prev, email: true }));
+        setErrors((prev) => ({ ...prev, email: details.message }));
+      } else if (details.errorCode?.includes('EMAIL_CODE')) {
+        setTouched((prev) => ({ ...prev, emailCode: true }));
+        setErrors((prev) => ({ ...prev, emailCode: details.message }));
+      }
       console.error(error);
     } finally {
       setLoading(false);
@@ -207,6 +223,9 @@ export default function RegisterForm() {
       {/* 昵称 */}
       <FormInput
         label="昵称"
+        name="nickname"
+        autoComplete="nickname"
+        required
         value={registerInput.nickname}
         placeholder="请输入昵称"
         touched={touched.nickname}
@@ -229,15 +248,24 @@ export default function RegisterForm() {
       {/* 邮箱 */}
       <FormInput
         label="邮箱"
+        name="email"
         type="email"
+        autoComplete="username"
+        required
         value={registerInput.email}
         placeholder="请输入邮箱地址"
         touched={touched.email}
         error={errors.email}
         success={emailStatus === 'success'}
         onChange={(value) => {
-          setRegisterInput((prev) => ({ ...prev, email: value }));
-          setErrors((prev) => ({ ...prev, email: '' }));
+          setRegisterInput((prev) => ({
+            ...prev,
+            email: value,
+            emailCode: '',
+          }));
+          setErrors((prev) => ({ ...prev, email: '', emailCode: '' }));
+          setTouched((prev) => ({ ...prev, emailCode: false }));
+          resetCountdown();
         }}
         onBlur={() => {
           setTouched((prev) => ({ ...prev, email: true }));
@@ -251,10 +279,15 @@ export default function RegisterForm() {
 
       {/* 邮箱验证码 */}
       <div>
-        <div className="flex gap-3 items-end">
-          <div className="flex-1">
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="min-w-0">
             <FormInput
               label="邮箱验证码"
+              name="emailCode"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              required
+              maxLength={6}
               value={registerInput.emailCode}
               placeholder="请输入邮箱验证码"
               touched={touched.emailCode}
@@ -264,45 +297,36 @@ export default function RegisterForm() {
                 setRegisterInput((prev) => ({ ...prev, emailCode: value }));
                 setErrors((prev) => ({ ...prev, emailCode: '' }));
               }}
+              onBlur={() => {
+                setTouched((prev) => ({ ...prev, emailCode: true }));
+                const result = validateEmailCode(registerInput.emailCode);
+                setErrors((prev) => ({
+                  ...prev,
+                  emailCode: result.isValid ? '' : result.message,
+                }));
+              }}
             />
           </div>
-          <button
+          <Button
             type="button"
-            disabled={sendingCode || isCounting}
+            variant="secondary"
+            disabled={isCounting}
+            loading={sendingCode}
+            loadingText="发送中..."
             onClick={sendCode}
-            className="
-              h-[51px]
-              px-4
-              whitespace-nowrap
-              font-black 
-              text-sm
-              bg-yellow-400
-              border-2 
-              rounded-sm
-              border-black
-              shadow-[2px_2px_0_0_rgba(0,0,0,1)]
-              hover:translate-x-[2px]
-              hover:translate-y-[2px]
-              hover:shadow-none
-              transition-all
-              disabled:opacity-50
-              disabled:cursor-not-allowed
-              disabled:hover:translate-x-0
-              disabled:hover:translate-y-0
-            "
+            className="h-[42px] w-full whitespace-nowrap px-3 text-sm sm:mt-[30px] sm:w-auto"
           >
-            {countdown > 0
-              ? `${countdown}s`
-              : sendingCode
-                ? '发送中...'
-                : '发送验证码'}
-          </button>
+            {countdown > 0 ? `${countdown}s 后重发` : '发送验证码'}
+          </Button>
         </div>
       </div>
 
       {/* 密码 */}
       <FormInput
         label="密码"
+        name="password"
+        autoComplete="new-password"
+        required
         value={registerInput.password}
         placeholder="请输入密码"
         touched={touched.password}
@@ -313,7 +337,13 @@ export default function RegisterForm() {
         onTogglePassword={() => setShowPassword(!showPassword)}
         onChange={(value) => {
           setRegisterInput((prev) => ({ ...prev, password: value }));
-          setErrors((prev) => ({ ...prev, password: '' }));
+          setErrors((prev) => ({
+            ...prev,
+            password: '',
+            confirmPassword: touched.confirmPassword
+              ? validateConfirmPassword(value, confirmPassword).message
+              : prev.confirmPassword,
+          }));
         }}
         onBlur={() => {
           setTouched((prev) => ({ ...prev, password: true }));
@@ -328,6 +358,9 @@ export default function RegisterForm() {
       {/* 确认密码 */}
       <FormInput
         label="确认密码"
+        name="confirmPassword"
+        autoComplete="new-password"
+        required
         value={confirmPassword}
         placeholder="请再次输入密码"
         touched={touched.confirmPassword}
@@ -338,7 +371,12 @@ export default function RegisterForm() {
         onTogglePassword={() => setConfirmShowPassword(!confirmShowPassword)}
         onChange={(value) => {
           setConfirmPassword(value);
-          setErrors((prev) => ({ ...prev, confirmPassword: '' }));
+          setErrors((prev) => ({
+            ...prev,
+            confirmPassword: touched.confirmPassword
+              ? validateConfirmPassword(registerInput.password, value).message
+              : '',
+          }));
         }}
         onBlur={() => {
           setTouched((prev) => ({ ...prev, confirmPassword: true }));
@@ -354,29 +392,15 @@ export default function RegisterForm() {
       />
 
       {/* 注册按钮 */}
-      <button
+      <Button
         type="submit"
-        disabled={loading}
-        className="
-          w-full py-3
-          font-black text-white
-          bg-green-500
-          border-2 
-          rounded-sm
-          border-black
-          shadow-[2px_2px_0_0_rgba(0,0,0,1)]
-          hover:translate-x-[2px]
-          hover:translate-y-[2px]
-          hover:shadow-none
-          transition-all duration-200
-          disabled:opacity-50
-          disabled:cursor-not-allowed
-          disabled:hover:translate-x-0
-          disabled:hover:translate-y-0
-        "
+        variant="primary"
+        loading={loading}
+        loadingText="注册中..."
+        fullWidth
       >
-        {loading ? '注册中...' : '注册'}
-      </button>
+        注册
+      </Button>
     </form>
   );
 }

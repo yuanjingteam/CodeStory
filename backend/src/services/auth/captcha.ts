@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { setCache, getCache, deleteCache } from '@/utils/cache';
 import { createCaptcha } from '@/utils/captcha';
 import { sendEmail } from '@/utils/email';
+import { AuthError } from '@/errors/auth-error';
 
 class CaptchaService {
   // 生成图片验证码
@@ -19,10 +20,10 @@ class CaptchaService {
   async verifyImageCaptcha(captchaId: string, code: string) {
     const redisCode = await getCache(`captcha:${captchaId}`);
     if (!redisCode) {
-      throw new Error('验证码已过期');
+      throw new AuthError('AUTH_IMAGE_CAPTCHA_EXPIRED', '图片验证码已过期', 400);
     }
     if (redisCode !== code.toLowerCase()) {
-      throw new Error('验证码错误');
+      throw new AuthError('AUTH_IMAGE_CAPTCHA_INCORRECT', '图片验证码错误', 400);
     }
     await deleteCache(`captcha:${captchaId}`);
     return true;
@@ -30,12 +31,10 @@ class CaptchaService {
 
   // 发送邮箱验证码
   generateCode(): string {
-    return Math.random().toString(10).substring(2, 8);
+    return crypto.randomInt(0, 1_000_000).toString().padStart(6, '0');
   }
   async sendEmailCaptcha(email: string) {
     const code = this.generateCode();
-    await setCache(`email-code:${email}`, code, 60 * 5);
-    await setCache(`email-limit:${email}`, '1', 60);
     const sent = await sendEmail({
       to: email,
       subject: '【CodeStory】您的验证码',
@@ -48,18 +47,20 @@ class CaptchaService {
       `,
     });
     if (!sent) {
-      throw new Error('邮件发送失败');
+      throw new AuthError('AUTH_EMAIL_SEND_FAILED', '邮件验证码发送失败', 500);
     }
+    await setCache(`email-code:${email}`, code, 60 * 5);
+    await setCache(`email-limit:${email}`, '1', 60);
   }
 
   // 验证邮箱验证码
   async verifyEmailCode(email: string, emailCode: string): Promise<boolean> {
     const storedCode = await getCache(`email-code:${email}`);
     if (!storedCode) {
-      throw new Error('验证码已过期');
+      throw new AuthError('AUTH_EMAIL_CODE_EXPIRED', '邮箱验证码已过期', 400);
     }
     if (storedCode !== emailCode) {
-      throw new Error('验证码错误');
+      throw new AuthError('AUTH_EMAIL_CODE_INCORRECT', '邮箱验证码错误', 400);
     }
     await deleteCache(`email-code:${email}`);
     return true;

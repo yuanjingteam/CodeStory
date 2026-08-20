@@ -13,12 +13,19 @@ export function useEmailCode(options: UseEmailCodeOptions) {
   const [loading, setLoading] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const onSendRef = useRef(onSend);
+  const requestVersionRef = useRef(0);
+  const requestInFlightRef = useRef(false);
+  const countdownRef = useRef(0);
 
   useEffect(() => {
     onSendRef.current = onSend;
   }, [onSend]);
 
   const startCountdown = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    countdownRef.current = duration;
     setCountdown(duration);
     timerRef.current = setInterval(() => {
       setCountdown((prev) => {
@@ -26,28 +33,53 @@ export function useEmailCode(options: UseEmailCodeOptions) {
           if (timerRef.current) {
             clearInterval(timerRef.current);
           }
+          countdownRef.current = 0;
           return 0;
         }
+        countdownRef.current = prev - 1;
         return prev - 1;
       });
     }, 1000);
   }, [duration]);
 
+  const resetCountdown = useCallback(() => {
+    requestVersionRef.current += 1;
+    requestInFlightRef.current = false;
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    countdownRef.current = 0;
+    setCountdown(0);
+    setLoading(false);
+  }, []);
+
   const sendCode = useCallback(async () => {
+    if (requestInFlightRef.current || countdownRef.current > 0) return;
+
+    const requestVersion = requestVersionRef.current + 1;
+    requestVersionRef.current = requestVersion;
+    requestInFlightRef.current = true;
     try {
       setLoading(true);
       await onSendRef.current();
-      startCountdown();
+      if (requestVersion === requestVersionRef.current) {
+        startCountdown();
+      }
     } catch (error) {
       console.error(error);
-      throw error;
     } finally {
-      setLoading(false);
+      if (requestVersion === requestVersionRef.current) {
+        requestInFlightRef.current = false;
+        setLoading(false);
+      }
     }
   }, [startCountdown]);
 
   useEffect(() => {
     return () => {
+      requestVersionRef.current += 1;
+      requestInFlightRef.current = false;
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
@@ -59,5 +91,6 @@ export function useEmailCode(options: UseEmailCodeOptions) {
     loading,
     sendCode,
     isCounting: countdown > 0,
+    resetCountdown,
   };
 }

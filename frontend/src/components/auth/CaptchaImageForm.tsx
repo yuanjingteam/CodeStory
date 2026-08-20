@@ -1,14 +1,18 @@
 'use client';
+
 import {
-  useEffect,
-  useEffectEvent,
-  useState,
   forwardRef,
+  useCallback,
+  useEffect,
+  useId,
   useImperativeHandle,
+  useRef,
+  useState,
 } from 'react';
 import { getImageCaptcha } from '@/api/auth/auth';
 import type { ImageCaptchaData } from '@/types/auth';
-import { toast } from 'sonner';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 
 interface CaptchaImageProps {
   value: string;
@@ -16,172 +20,142 @@ interface CaptchaImageProps {
   error?: string;
 }
 
-export default forwardRef<{ refresh: () => void }, CaptchaImageProps>(
+type CaptchaStatus = 'loading' | 'ready' | 'error';
+
+export interface CaptchaImageHandle {
+  refresh: () => Promise<void>;
+}
+
+export default forwardRef<CaptchaImageHandle, CaptchaImageProps>(
   function CaptchaImage({ value, onChange, error }, ref) {
-    const [loading, setLoading] = useState(true);
-    const [captchaData, setCaptchaData] = useState<ImageCaptchaData | null>(
-      null
-    );
-    const notifyCaptchaChange = useEffectEvent(onChange);
-
-    const fetchCaptcha = async () => {
-      try {
-        setLoading(true);
-        const res = await getImageCaptcha();
-        if (res.code === 200 && res.data?.captchaId && res.data?.image) {
-          setCaptchaData(res.data);
-          onChange({
-            captchaCode: '',
-            captchaId: res.data.captchaId || '',
-          });
-        } else {
-          toast.error(res.message || '获取验证码失败');
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error('获取验证码失败');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    useImperativeHandle(ref, () => ({
-      refresh: fetchCaptcha,
-    }));
+    const inputId = useId();
+    const errorId = `${inputId}-error`;
+    const statusId = `${inputId}-status`;
+    const [status, setStatus] = useState<CaptchaStatus>('loading');
+    const [captchaData, setCaptchaData] = useState<ImageCaptchaData | null>(null);
+    const onChangeRef = useRef(onChange);
+    const requestIdRef = useRef(0);
 
     useEffect(() => {
-      let cancelled = false;
+      onChangeRef.current = onChange;
+    }, [onChange]);
 
-      getImageCaptcha()
-        .then((res) => {
-          if (cancelled) return;
-          if (res.code === 200 && res.data?.captchaId && res.data?.image) {
-            setCaptchaData(res.data);
-            notifyCaptchaChange({
-              captchaCode: '',
-              captchaId: res.data.captchaId,
-            });
-          } else {
-            toast.error(res.message || '获取验证码失败');
-          }
-        })
-        .catch((error) => {
-          if (!cancelled) {
-            console.error(error);
-            toast.error('获取验证码失败');
-          }
-        })
-        .finally(() => {
-          if (!cancelled) {
-            setLoading(false);
-          }
+    const fetchCaptcha = useCallback(async () => {
+      const requestId = ++requestIdRef.current;
+      setStatus('loading');
+      setCaptchaData(null);
+      onChangeRef.current({ captchaCode: '', captchaId: '' });
+
+      try {
+        const res = await getImageCaptcha();
+        if (requestId !== requestIdRef.current) return;
+        if (res.code !== 200 || !res.data?.captchaId || !res.data?.image) {
+          throw new Error(res.message || '图片验证码加载失败');
+        }
+
+        setCaptchaData(res.data);
+        setStatus('ready');
+        onChangeRef.current({
+          captchaCode: '',
+          captchaId: res.data.captchaId,
         });
-
-      return () => {
-        cancelled = true;
-      };
+      } catch (fetchError) {
+        if (requestId !== requestIdRef.current) return;
+        console.error(fetchError);
+        setStatus('error');
+      }
     }, []);
 
-    const handleRefresh = async () => {
-      await fetchCaptcha();
-    };
+    useImperativeHandle(ref, () => ({ refresh: fetchCaptcha }), [fetchCaptcha]);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const code = e.target.value.replace(/\s/g, '');
+    useEffect(() => {
+      void fetchCaptcha();
+      return () => {
+        requestIdRef.current += 1;
+      };
+    }, [fetchCaptcha]);
+
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const captchaCode = event.target.value.replace(/\s/g, '').toUpperCase();
       onChange({
-        captchaCode: code,
+        captchaCode,
         captchaId: captchaData?.captchaId || '',
       });
     };
 
     return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-black text-gray-700">验证码</label>
-          {error && (
-            <span className="text-xs font-bold text-red-500">{error}</span>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          {/* 输入框 */}
-          <input
+      <div className="grid gap-2">
+        <label htmlFor={inputId} className="text-sm font-bold text-zinc-800">
+          图片验证码
+        </label>
+        <div className="grid grid-cols-[minmax(0,1fr)_7rem] items-stretch gap-3 sm:grid-cols-[minmax(0,1fr)_8rem]">
+          <Input
+            id={inputId}
+            name="captchaCode"
             type="text"
+            inputMode="text"
+            autoCapitalize="characters"
+            autoComplete="off"
+            spellCheck={false}
+            required
             value={value}
             onChange={handleInputChange}
-            placeholder="请输入验证码（大写字母）"
+            placeholder="4位验证码"
             maxLength={4}
-            className={`
-              flex-1 px-4 py-3
-              border-2
-              rounded-sm
-              border-gray-500
-              bg-white
-              uppercase
-              font-black
-              outline-none
-              transition-all 
-              duration-200
-              ${error ? 'border-red-500' : 'focus:border-purple-500'}
-            `}
+            invalid={Boolean(error)}
+            aria-describedby={error ? errorId : statusId}
+            className="min-w-0 uppercase font-black tracking-[0.2em]"
           />
-          {/* 验证码图片 */}
-          <div className="relative">
-            {loading ? (
-              <div
-                className="
-                  w-32 h-12
-                  border-2 
-                  border-black
-                  bg-gray-100
-                  flex items-center justify-center
-                  font-black text-xs
-                "
-              >
-                加载中...
-              </div>
-            ) : error ? (
-              <button
-                type="button"
-                onClick={handleRefresh}
-                className="
-                  w-32 h-12
-                  border-2 
-                  rounded-sm
-                  border-black
-                  bg-red-200
-                  text-red-700
-                  text-xs font-black
-                  shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
-                  active:translate-x-[2px]
-                  active:translate-y-[2px]
-                  active:shadow-none
-                  transition-all
-                "
-              >
-                点击重试
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleRefresh}
-                className="
-                  w-32 h-12
-                  border-2 border-black
-                  bg-white
-                  flex items-center justify-center
-                  cursor-pointer
-                  shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
-                  active:translate-x-[2px]
-                  active:translate-y-[2px]
-                  active:shadow-none
-                  transition-all
-                "
-                title="点击刷新验证码"
+
+          {status === 'ready' ? (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => void fetchCaptcha()}
+              aria-label="刷新图片验证码"
+              className="h-full min-h-11 overflow-hidden px-1 py-0"
+            >
+              <span
+                className="flex h-full w-full items-center justify-center"
+                aria-hidden="true"
                 dangerouslySetInnerHTML={{ __html: captchaData?.image || '' }}
               />
-            )}
-          </div>
+            </Button>
+          ) : status === 'loading' ? (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled
+              loading
+              loadingText="加载中"
+              aria-label="图片验证码加载中"
+              className="h-full min-h-11 px-2 text-xs"
+            >
+              加载中
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => void fetchCaptcha()}
+              aria-label="重新加载图片验证码"
+              className="h-full min-h-11 px-2 text-xs"
+            >
+              重新加载
+            </Button>
+          )}
         </div>
+        {error ? (
+          <p id={errorId} className="text-sm font-bold text-red-600">
+            {error}
+          </p>
+        ) : (
+          <p id={statusId} className="text-xs text-zinc-600" aria-live="polite">
+            {status === 'error'
+              ? '图片验证码加载失败，请重试'
+              : '验证码不区分大小写，点击图片可刷新'}
+          </p>
+        )}
       </div>
     );
   }

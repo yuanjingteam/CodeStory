@@ -73,6 +73,30 @@ export function validateCode(code: string): ValidateResult {
   return { isValid: true, message: '' };
 }
 
+export function validateImageCaptcha(code: string): ValidateResult {
+  if (!code) {
+    return { isValid: false, message: '请输入图片验证码' };
+  }
+
+  if (!/^[a-zA-Z0-9]{4}$/.test(code)) {
+    return { isValid: false, message: '请输入4位字母或数字验证码' };
+  }
+
+  return { isValid: true, message: '' };
+}
+
+export function validateEmailCode(code: string): ValidateResult {
+  if (!code) {
+    return { isValid: false, message: '请输入邮箱验证码' };
+  }
+
+  if (!/^\d{6}$/.test(code)) {
+    return { isValid: false, message: '请输入6位数字邮箱验证码' };
+  }
+
+  return { isValid: true, message: '' };
+}
+
 export function validatePhone(phone: string): ValidateResult {
   if (!phone) {
     return { isValid: false, message: '请输入手机号' };

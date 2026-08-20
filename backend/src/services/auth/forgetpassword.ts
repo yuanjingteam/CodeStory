@@ -5,8 +5,9 @@ import type { ForgetPasswordRequest } from '@/types/auth';
 import {
   validateEmail,
   validatePassword,
-  validateCode,
+  validateEmailCode,
 } from '@/utils/validate';
+import { AuthError } from '@/errors/auth-error';
 
 class ForgetPasswordService {
   async forgetPassword(req: ForgetPasswordRequest) {
@@ -14,17 +15,17 @@ class ForgetPasswordService {
 
     const emailResult = validateEmail(email);
     if (!emailResult.isValid) {
-      throw new Error(emailResult.message);
+      throw new AuthError('AUTH_INVALID_EMAIL', emailResult.message, 400);
     }
 
     const passwordResult = validatePassword(password);
     if (!passwordResult.isValid) {
-      throw new Error(passwordResult.message);
+      throw new AuthError('AUTH_INVALID_PASSWORD', passwordResult.message, 400);
     }
 
-    const codeResult = validateCode(emailCode);
+    const codeResult = validateEmailCode(emailCode);
     if (!codeResult.isValid) {
-      throw new Error(codeResult.message);
+      throw new AuthError('AUTH_INVALID_EMAIL_CODE', codeResult.message, 400);
     }
 
     await captchaService.verifyEmailCode(email, emailCode);

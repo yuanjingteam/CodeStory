@@ -1,5 +1,3 @@
-'use client';
-
 const panels = [
   {
     fill: '#FFD400',
@@ -56,11 +54,15 @@ const polygonPoints = (points: number[][]) =>
 
 export default function AuthBackground() {
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden bg-white">
+    <div
+      className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-white opacity-70"
+      aria-hidden="true"
+    >
       <svg
         className="h-full w-full"
         viewBox="0 0 100 100"
         preserveAspectRatio="xMidYMid slice"
+        focusable="false"
       >
         {/* 色块 */}
         {panels.map((panel, index) => (
@@ -70,7 +72,6 @@ export default function AuthBackground() {
             fill={panel.fill}
             stroke="black"
             strokeWidth="0.3"
-            className="hover:translate-x-[1px] hover:translate-y-[1px]  duration-200 "
           />
         ))}
       </svg>

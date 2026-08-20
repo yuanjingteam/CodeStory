@@ -6,40 +6,38 @@ import {
   validateEmail,
   validatePassword,
   validateNickname,
-  validateCode,
+  validateEmailCode,
 } from '@/utils/validate';
-import { badRequest } from '../../utils/response';
+import { AuthError } from '@/errors/auth-error';
 
 class RegisterService {
   async register(req: RegisterRequest) {
     const { email, password, nickname, emailCode } = req;
     const emailResult = validateEmail(email);
     if (!emailResult.isValid) {
-      return badRequest(emailResult.message);
+      throw new AuthError('AUTH_INVALID_EMAIL', emailResult.message, 400);
     }
 
     const passwordResult = validatePassword(password);
     if (!passwordResult.isValid) {
-      return badRequest(passwordResult.message);
+      throw new AuthError('AUTH_INVALID_PASSWORD', passwordResult.message, 400);
     }
 
     const nicknameResult = validateNickname(nickname);
     if (!nicknameResult.isValid) {
-      return badRequest(nicknameResult.message);
+      throw new AuthError('AUTH_INVALID_NICKNAME', nicknameResult.message, 400);
     }
 
-    const codeResult = validateCode(emailCode);
+    const codeResult = validateEmailCode(emailCode);
     if (!codeResult.isValid) {
-      return badRequest(codeResult.message);
+      throw new AuthError('AUTH_INVALID_EMAIL_CODE', codeResult.message, 400);
     }
-    if (!(await captchaService.verifyEmailCode(email, emailCode))) {
-      return badRequest('邮件验证码错误');
-    }
+    await captchaService.verifyEmailCode(email, emailCode);
     const existingUser = await prisma.users.findUnique({
       where: { email },
     });
     if (existingUser) {
-      return badRequest('邮箱已被注册');
+      throw new AuthError('AUTH_EMAIL_EXISTS', '邮箱已被注册', 409);
     }
     const hashedPassword = await hashPassword(password);
     const user = await prisma.users.create({

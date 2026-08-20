@@ -5,6 +5,7 @@ import {
   REFRESH_TOKEN_COOKIE_NAME,
   getRefreshTokenCookieOptions,
 } from '@/config/auth-cookie';
+import { normalizeAuthError } from '@/errors/auth-error';
 class LoginController {
   async login(req: Request, res: Response) {
     try {
@@ -13,6 +14,7 @@ class LoginController {
       if (!email || !password || !captchaId || !captchaCode) {
         return res.status(400).json({
           code: 400,
+          errorCode: 'AUTH_LOGIN_INCOMPLETE',
           message: '登录信息不完整',
         });
       }
@@ -43,9 +45,15 @@ class LoginController {
         },
       });
     } catch (error) {
-      return res.status(401).json({
-        code: 401,
-        message: error instanceof Error ? error.message : '登录失败',
+      const authError = normalizeAuthError(error, {
+        statusCode: 500,
+        code: 'AUTH_LOGIN_FAILED',
+        message: '登录失败，请稍后重试',
+      });
+      return res.status(authError.statusCode).json({
+        code: authError.statusCode,
+        errorCode: authError.code,
+        message: authError.message,
       });
     }
   }
