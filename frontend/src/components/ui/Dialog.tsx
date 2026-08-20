@@ -46,7 +46,7 @@ export default function Dialog({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-zinc-950/55 data-[state=closed]:opacity-0 data-[state=open]:opacity-100 motion-reduce:transition-none" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-zinc-950/55 transition-opacity duration-150 data-[state=closed]:opacity-0 data-[state=open]:opacity-100 motion-reduce:transition-none" />
         <DialogPrimitive.Content
           onPointerDownOutside={(event) => {
             if (!closeOnOverlay) {
@@ -61,7 +61,7 @@ export default function Dialog({
           className={[
             'fixed left-1/2 top-1/2 z-50 flex max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)]',
             '-translate-x-1/2 -translate-y-1/2 flex-col border-2 border-zinc-950 bg-white',
-            'shadow-[6px_6px_0_0_#18181b] focus:outline-none',
+            'shadow-[6px_6px_0_0_#18181b] focus:outline-none motion-reduce:transition-none',
             sizeStyles[size],
             contentClassName,
           ]
@@ -97,13 +97,13 @@ export default function Dialog({
           </header>
 
           <div
-            className={`min-h-0 flex-1 overflow-y-auto p-6 ${bodyClassName}`}
+            className={`min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 ${bodyClassName}`}
           >
             {children}
           </div>
 
           {footer ? (
-            <footer className="flex shrink-0 flex-wrap items-center justify-end gap-3 border-t-2 border-zinc-950 p-4">
+            <footer className="flex shrink-0 flex-col-reverse items-stretch justify-end gap-3 border-t-2 border-zinc-950 p-4 sm:flex-row sm:items-center">
               {footer}
             </footer>
           ) : null}

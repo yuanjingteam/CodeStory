@@ -4,7 +4,7 @@ import { getUserCourses } from '@/api/profile';
 import type { UserCourse } from '@/types/profile';
 import { LuBookOpen, LuBadgeCheck, LuBadgeX, LuPlus } from 'react-icons/lu';
 import Img from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { formatPercentage } from '@/utils/format';
 import ErrorDataCard from '@/components/common/ErrorDataCard';
 import { useUserStore } from '@/store/useUserStore';
@@ -13,25 +13,31 @@ export default function HomeMyCourses() {
   const { isLoggedIn, isLoading } = useUserStore();
   const [courses, setCourses] = useState<UserCourse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   useEffect(() => {
-    if (!isLoggedIn || isLoading) return;
+    if (isLoading) return;
+    if (!isLoggedIn) return;
     const fetchCourses = async () => {
       try {
         setLoading(true);
+        setError(false);
         const res = await getUserCourses();
         if (res.code === 200) {
           setCourses(res.data || []);
+        } else {
+          setError(true);
         }
       } catch (err) {
         console.error('获取用户课程失败', err);
+        setError(true);
       } finally {
         setLoading(false);
       }
     };
     fetchCourses();
-  }, [isLoading, isLoggedIn]);
+  }, [isLoading, isLoggedIn, reloadKey]);
 
-  const router = useRouter();
   const inProgressCourses = courses.filter((course) => course.status === 1);
   const completedCourses = courses.filter((course) => course.status === 2);
   const noStartCourses = courses.filter((course) => course.status === 0);
@@ -44,10 +50,10 @@ export default function HomeMyCourses() {
     );
 
     return (
-      <div
+      <Link
         key={`${course.id}-${course.last_learned_at}`}
-        onClick={() => router.push(`/courses/${course.id}`)}
-        className="group flex items-center gap-4 p-4 rounded-xl bg-white border-2 border-gray-200 hover:shadow-lg hover:border-blue-300 hover:border-2 transition-all  cursor-pointer"
+        href={`/courses/${course.id}`}
+        className="group flex cursor-pointer items-center gap-3 border-2 border-black bg-white p-3 shadow-[3px_3px_0_0_#18181b] transition-[transform,box-shadow,background-color] hover:bg-white hover:shadow-[5px_5px_0_0_#18181b] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none sm:gap-4 sm:p-4"
       >
         <div className="relative w-20 h-20 flex-shrink-0">
           {course.cover_url ? (
@@ -89,42 +95,36 @@ export default function HomeMyCourses() {
         </div>
 
         {/* 继续学习按钮 */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            router.push(`/courses/${course.id}`);
-          }}
-          className="px-4 py-2 bg-purple-600 text-white text-sm font-bold rounded-lg hover:bg-purple-700 transition-colors flex-shrink-0 shadow-sm"
+        <span
+          className="hidden shrink-0 border-2 border-black bg-yellow-300 px-3 py-2 text-sm font-bold text-black sm:inline-flex"
         >
           {course.status === 0
             ? '开始学习'
             : course.status === 2
               ? '查看'
               : '继续学习'}
-        </button>
-      </div>
+        </span>
+      </Link>
     );
   };
 
   const renderEllipsisCard = () => (
-    <div
-      onClick={() => router.push('/courses')}
-      className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+    <Link
+      href="/courses"
+      className="flex min-h-12 cursor-pointer items-center justify-center gap-2 border-2 border-dashed border-black bg-zinc-50 p-4 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2"
     >
       <LuPlus className="w-5 h-5 text-gray-400" />
       <span className="text-sm text-gray-500">探索更多课程，开启学习之旅</span>
-    </div>
+    </Link>
   );
-
-  const getEllipsisCount = (courseCount: number) => {
-    if (courseCount >= maxCourses) return 0;
-    return maxCourses - courseCount;
-  };
 
   if (loading && isLoggedIn) {
     return (
-      <section className="flex-1 h-[280px] flex items-center justify-center">
-        <div className="text-lg font-black text-gray-500">加载中...</div>
+      <section className="flex min-h-72 flex-1 flex-col gap-4 border-2 border-zinc-300 p-6" role="status">
+        {[0, 1, 2].map((item) => (
+          <div key={item} className="h-20 animate-pulse border-2 border-black bg-zinc-100 motion-reduce:animate-none" />
+        ))}
+        <span className="sr-only">正在加载我的课程...</span>
       </section>
     );
   }
@@ -135,7 +135,7 @@ export default function HomeMyCourses() {
   ].slice(0, maxCourses);
 
   return (
-    <section className="flex-1 h-[350px] flex flex-col border-2 border-gray-200 rounded-sm px-6 pt-6">
+    <section className="flex min-h-96 min-w-0 flex-1 flex-col border-2 border-black px-4 pt-5 sm:px-6 sm:pt-6 lg:max-h-[430px]">
       {/* 标题行 */}
       <div className="flex items-center justify-between pb-4 border-b-2 border-gray-200">
         <div className="flex items-center gap-3">
@@ -143,7 +143,7 @@ export default function HomeMyCourses() {
           <h2 className="text-xl font-bold text-gray-900">我的学习</h2>
         </div>
         {/* 统计信息 */}
-        <div className="flex items-center gap-4">
+        <div className="hidden items-center gap-4 sm:flex">
           <div className="flex items-center gap-1.5 text-sm">
             <LuBookOpen className="w-4 h-4 text-yellow-500" />
             <span className="font-medium text-gray-600">学习中</span>
@@ -169,30 +169,29 @@ export default function HomeMyCourses() {
       </div>
 
       {/* 课程列表 */}
-      {courses.length > 0 && isLoggedIn ? (
-        <div className="flex-1 overflow-hidden border-gray-200">
-          <style>{`
-          .scrollbar-hidden::-webkit-scrollbar {
-            display: none;
-          }
-        `}</style>
+      {error ? (
+        <ErrorDataCard
+          variant="error"
+          title="课程加载失败"
+          description="暂时无法获取你的学习课程，请稍后重试。"
+          action={<button type="button" className="cursor-pointer font-bold underline underline-offset-4" onClick={() => setReloadKey((key) => key + 1)}>重试</button>}
+        />
+      ) : courses.length > 0 && isLoggedIn ? (
+        <div className="min-h-0 flex-1 overflow-hidden border-gray-200">
           <div
-            className="h-full flex flex-col gap-5 pt-3 overflow-y-auto scrollbar-hidden"
-            style={{
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
+            className="flex h-full flex-col gap-4 overflow-y-auto py-3 pr-1"
           >
             {displayCourses.map(renderCourseCard)}
-            {Array(getEllipsisCount(displayCourses.length))
-              .fill(0)
-              .map((_, index) => (
-                <div key={`ellipsis-${index}`}>{renderEllipsisCard()}</div>
-              ))}
+            {displayCourses.length < maxCourses ? renderEllipsisCard() : null}
           </div>
         </div>
       ) : (
-        <ErrorDataCard title="暂无数据" description="当前没有可展示的信息" />
+        <ErrorDataCard
+          variant={isLoggedIn ? 'empty' : 'auth'}
+          title={isLoggedIn ? '还没有学习课程' : '登录后查看学习进度'}
+          description={isLoggedIn ? '从课程列表选择一门课程，开始你的学习。' : '登录后可以继续上次的课程并查看完成进度。'}
+          action={<Link href={isLoggedIn ? '/courses' : '/auth/login'} className="font-bold underline underline-offset-4">{isLoggedIn ? '探索课程' : '去登录'}</Link>}
+        />
       )}
     </section>
   );

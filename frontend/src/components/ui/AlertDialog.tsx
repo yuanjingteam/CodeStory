@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState, type MouseEvent, type ReactNode } from 'react';
 import * as AlertDialogPrimitive from '@radix-ui/react-alert-dialog';
 import { FiAlertTriangle, FiInfo } from 'react-icons/fi';
 import Button from './Button';
@@ -15,7 +15,7 @@ interface AlertDialogProps {
   cancelText?: string;
   variant?: AlertDialogVariant;
   loading?: boolean;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   onOpenChange: (open: boolean) => void;
 }
 
@@ -32,14 +32,35 @@ export default function AlertDialog({
   confirmText = '确认',
   cancelText = '取消',
   variant = 'danger',
-  loading = false,
+  loading,
   onConfirm,
   onOpenChange,
 }: AlertDialogProps) {
   const Icon = variant === 'info' ? FiInfo : FiAlertTriangle;
+  const [internalLoading, setInternalLoading] = useState(false);
+  const isLoading = Boolean(loading) || internalLoading;
+
+  const handleConfirm = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    if (isLoading) return;
+    setInternalLoading(true);
+    try {
+      await Promise.resolve().then(onConfirm);
+      onOpenChange(false);
+    } catch {
+      // 调用方负责展示具体错误；确认框保持打开，允许用户重试。
+    } finally {
+      setInternalLoading(false);
+    }
+  };
 
   return (
-    <AlertDialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+    <AlertDialogPrimitive.Root
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!isLoading) onOpenChange(nextOpen);
+      }}
+    >
       <AlertDialogPrimitive.Portal>
         <AlertDialogPrimitive.Overlay className="fixed inset-0 z-50 bg-zinc-950/55" />
         <AlertDialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 border-2 border-zinc-950 bg-white p-5 shadow-[6px_6px_0_0_#18181b] focus:outline-none">
@@ -61,16 +82,16 @@ export default function AlertDialog({
 
           <div className="mt-6 flex justify-end gap-3">
             <AlertDialogPrimitive.Cancel asChild>
-              <Button variant="secondary" disabled={loading}>
+              <Button variant="secondary" disabled={isLoading}>
                 {cancelText}
               </Button>
             </AlertDialogPrimitive.Cancel>
             <AlertDialogPrimitive.Action asChild>
               <Button
                 variant={variant === 'danger' ? 'danger' : 'primary'}
-                loading={loading}
+                loading={isLoading}
                 loadingText="处理中..."
-                onClick={onConfirm}
+                onClick={(event) => void handleConfirm(event)}
               >
                 {confirmText}
               </Button>

@@ -29,11 +29,11 @@ const variantStyles: Record<ButtonVariant, string> = {
   primary:
     'border-zinc-950 bg-yellow-400 text-zinc-950 shadow-[3px_3px_0_0_#18181b] hover:bg-yellow-300',
   secondary:
-    'border-zinc-950 bg-white text-zinc-950 shadow-[3px_3px_0_0_#18181b] hover:bg-zinc-100',
+    'border-zinc-950 bg-zinc-100 text-zinc-950 shadow-[3px_3px_0_0_#18181b] hover:bg-white',
   danger:
-    'border-zinc-950 bg-red-500 text-white shadow-[3px_3px_0_0_#18181b] hover:bg-red-600',
+    'border-zinc-950 bg-red-700 text-white shadow-[3px_3px_0_0_#18181b] hover:bg-red-400 hover:text-zinc-950',
   success:
-    'border-zinc-950 bg-green-500 text-white shadow-[3px_3px_0_0_#18181b] hover:bg-green-600',
+    'border-zinc-950 bg-emerald-700 text-white shadow-[3px_3px_0_0_#18181b] hover:bg-emerald-400 hover:text-zinc-950',
   ghost:
     'border-transparent bg-transparent text-zinc-700 shadow-none hover:bg-zinc-100 hover:text-zinc-950',
 };
@@ -41,7 +41,7 @@ const variantStyles: Record<ButtonVariant, string> = {
 const sizeStyles: Record<ButtonSize, string> = {
   sm: 'min-h-9 px-3 py-1.5 text-sm',
   md: 'min-h-10 px-5 py-2',
-  icon: 'size-9 p-0',
+  icon: 'size-10 p-0',
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -71,9 +71,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
       aria-busy={loading || undefined}
       className={[
         'inline-flex items-center justify-center gap-2 border-2 font-bold',
-        'transition-[transform,box-shadow,background-color,color,opacity] duration-150',
+        'transition-[transform,box-shadow,background-color,color,opacity] duration-150 motion-reduce:transition-none',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2',
-        'enabled:active:translate-x-[3px] enabled:active:translate-y-[3px] enabled:active:shadow-none',
+        'enabled:cursor-pointer enabled:active:translate-x-[3px] enabled:active:translate-y-[3px] enabled:active:shadow-none motion-reduce:transform-none',
         'disabled:cursor-not-allowed disabled:opacity-50',
         variantStyles[variant],
         sizeStyles[size],

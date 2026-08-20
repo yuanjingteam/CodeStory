@@ -3,52 +3,66 @@ import { useState, useEffect } from 'react';
 import type { HomeCourse } from '@/types/home';
 import { getHomeCourses } from '@/api/home';
 import Img from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { courseLevelMap } from '@/utils/constants';
 import { LuArrowRight } from 'react-icons/lu';
 import { FiUsers } from 'react-icons/fi';
 import ErrorDataCard from '@/components/common/ErrorDataCard';
 export default function HomeCourses() {
   const [homeCourses, setHomeCourses] = useState<HomeCourse[]>([]);
-  const [hoveredCourse, setHoveredCourse] = useState<string | null>(null);
-  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   useEffect(() => {
     const fetchCourses = async () => {
       try {
+        setLoading(true);
+        setError(false);
         const res = await getHomeCourses();
-        setHomeCourses(res.data);
+        setHomeCourses(res.data || []);
       } catch (err) {
         console.error('获取热门课程失败', err);
+        setError(true);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchCourses();
-  }, []);
+    void fetchCourses();
+  }, [reloadKey]);
 
   return (
-    <section className="w-full mx-8 my-10 bg-white border-2 border-gray-300 rounded-sm  mx-auto">
+    <section className="my-8 w-full border-2 border-black bg-white md:my-10">
       <div className="flex p-4  items-center justify-between mb-4 border-b-2 border-gray-300">
         <h2 className="text-xl font-black text-black">热门课程</h2>
-        <button
-          className="flex items-center gap-1 text-purple-600 font-bold hover:underline text-sm"
-          onClick={() => router.push('/courses')}
+        <Link
+          className="flex min-h-10 cursor-pointer items-center gap-1 text-sm font-bold text-purple-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2"
+          href="/courses"
         >
           查看全部 <LuArrowRight className="w-4 h-4" />
-        </button>
+        </Link>
       </div>
       {/* 课程列表 */}
-      {homeCourses.length > 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-1 gap-6 px-6 py-4 sm:grid-cols-2 lg:grid-cols-4" role="status">
+          {[0, 1, 2, 3].map((item) => (
+            <div key={item} className="h-28 animate-pulse border-2 border-black bg-zinc-100 motion-reduce:animate-none" />
+          ))}
+          <span className="sr-only">正在加载热门课程...</span>
+        </div>
+      ) : error ? (
+        <ErrorDataCard
+          variant="error"
+          title="热门课程加载失败"
+          description="暂时无法获取课程，请稍后重试。"
+          action={<button type="button" className="cursor-pointer font-bold underline underline-offset-4" onClick={() => setReloadKey((key) => key + 1)}>重试</button>}
+        />
+      ) : homeCourses.length > 0 ? (
         <div className="px-6 py-4 mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {homeCourses.map((course) => (
-            <div
+            <Link
               key={course.id}
-              className={`relative rounded-xl bg-white border-2 border-black p-4 cursor-pointer transition-all duration-200 ${
-                hoveredCourse === course.id
-                  ? 'translate-x-[4px] translate-y-[4px] shadow-none'
-                  : 'shadow-[2px_2px_0_0_rgba(0,0,0,1)]'
-              }`}
-              onMouseEnter={() => setHoveredCourse(course.id)}
-              onClick={() => router.push(`/courses/${course.id}`)}
-              onMouseLeave={() => setHoveredCourse(null)}
+              href={`/courses/${course.id}`}
+              className="relative cursor-pointer rounded-xl border-2 border-black bg-white p-4 shadow-[3px_3px_0_0_#18181b] transition-[transform,box-shadow,background-color] hover:bg-white hover:shadow-[5px_5px_0_0_#18181b] active:translate-x-[3px] active:translate-y-[3px] active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none"
             >
               <div
                 className={`absolute -top-2 -right-2 px-2 py-1 text-xs font-black text-white border-2 border-black  ${courseLevelMap[course.level]?.color || 'bg-gray-500 text-gray-700'}`}
@@ -81,7 +95,7 @@ export default function HomeCourses() {
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       ) : (

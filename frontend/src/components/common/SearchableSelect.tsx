@@ -2,6 +2,7 @@
 
 import {
   useId,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -44,6 +45,7 @@ export default function SearchableSelect({
   const [search, setSearch] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const listboxId = useId();
 
   const selectedLabel =
@@ -56,6 +58,16 @@ export default function SearchableSelect({
       option.label.toLocaleLowerCase().includes(keyword)
     );
   }, [options, search]);
+
+  const safeActiveIndex = Math.min(
+    activeIndex,
+    Math.max(filteredOptions.length - 1, 0)
+  );
+
+  useEffect(() => {
+    if (!open) return;
+    optionRefs.current[safeActiveIndex]?.scrollIntoView({ block: 'nearest' });
+  }, [open, safeActiveIndex]);
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -83,7 +95,7 @@ export default function SearchableSelect({
       setActiveIndex((current) => Math.max(current - 1, 0));
     } else if (event.key === 'Enter') {
       event.preventDefault();
-      handleSelect(filteredOptions[activeIndex].value);
+      handleSelect(filteredOptions[safeActiveIndex].value);
     }
   };
 
@@ -146,8 +158,8 @@ export default function SearchableSelect({
               aria-label={searchPlaceholder}
               aria-controls={listboxId}
               aria-activedescendant={
-                filteredOptions[activeIndex]
-                  ? `${listboxId}-${activeIndex}`
+                filteredOptions[safeActiveIndex]
+                  ? `${listboxId}-${safeActiveIndex}`
                   : undefined
               }
               className="pl-9"
@@ -167,10 +179,13 @@ export default function SearchableSelect({
             ) : (
               filteredOptions.map((option, index) => {
                 const selected = option.value === value;
-                const active = index === activeIndex;
+                const active = index === safeActiveIndex;
 
                 return (
                   <button
+                    ref={(node) => {
+                      optionRefs.current[index] = node;
+                    }}
                     id={`${listboxId}-${index}`}
                     key={option.value}
                     type="button"
@@ -179,9 +194,9 @@ export default function SearchableSelect({
                     onMouseEnter={() => setActiveIndex(index)}
                     onClick={() => handleSelect(option.value)}
                     className={[
-                      'flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm font-medium outline-none',
-                      'hover:bg-yellow-100 focus-visible:bg-yellow-100',
-                      active ? 'bg-yellow-50' : '',
+                      'flex min-h-10 w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left text-sm font-medium outline-none',
+                      'hover:bg-white hover:shadow-[inset_4px_0_0_0_#18181b] focus-visible:bg-white',
+                      active ? 'bg-white shadow-[inset_4px_0_0_0_#18181b]' : '',
                       selected ? 'font-black' : '',
                     ]
                       .filter(Boolean)

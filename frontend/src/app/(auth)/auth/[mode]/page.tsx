@@ -1,5 +1,5 @@
 'use client';
-import { useParams, useRouter } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Link from 'next/link';
 import LoginForm from '@/components/auth/LoginForm';
 import RegisterForm from '@/components/auth/RegisterForm';
@@ -7,13 +7,12 @@ import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 import AuthBackground from '@/components/auth/AuthBackground';
 
 export default function AuthPage() {
-  const params = useParams();  // 读出当前 URL 的动态段
-  const router = useRouter();
-  const mode = params.mode as
-    | 'login'
-    | 'register'
-    | 'forgot-password'
-    | 'reset-password';
+  const params = useParams();
+  const mode = params.mode as string;
+
+  if (!['login', 'register', 'forgot-password'].includes(mode)) {
+    notFound();
+  }
 
   const getPageTitle = () => {
     switch (mode) {
@@ -27,7 +26,7 @@ export default function AuthPage() {
       case 'register':
         return {
           title: 'CREATE ACCOUNT',
-          subtitle: '加入 Code Learns，开启你的编程之旅',
+          subtitle: '加入 CodeStory，开启你的编程之旅',
           label: '注册',
           color: 'bg-green-500',
         };
@@ -69,7 +68,7 @@ export default function AuthPage() {
             还没有账号？
             <Link
               href="/auth/register"
-              className="font-bold text-green-600 hover:underline ml-1"
+              className="ml-1 font-bold text-zinc-800 underline decoration-2 underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2"
             >
               立即注册
             </Link>
@@ -81,7 +80,7 @@ export default function AuthPage() {
             记得密码了？
             <Link
               href="/auth/login"
-              className="font-bold text-purple-600 hover:underline ml-1"
+              className="ml-1 font-bold text-zinc-800 underline decoration-2 underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2"
             >
               返回登录
             </Link>
@@ -93,7 +92,7 @@ export default function AuthPage() {
             记得密码了？
             <Link
               href="/auth/login"
-              className="font-bold text-purple-600 hover:underline ml-1"
+              className="ml-1 font-bold text-zinc-800 underline decoration-2 underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2"
             >
               返回登录
             </Link>
@@ -105,7 +104,7 @@ export default function AuthPage() {
             还没有账号？
             <Link
               href="/auth/register"
-              className="font-bold text-green-600 hover:underline ml-1"
+              className="ml-1 font-bold text-zinc-800 underline decoration-2 underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2"
             >
               立即注册
             </Link>
@@ -115,26 +114,26 @@ export default function AuthPage() {
   };
 
   return (
-    <section className="fixed inset-0 flex items-center justify-center bg-gray-50 overflow-auto z-50">
+    <main className="relative min-h-[100dvh] overflow-x-hidden overflow-y-auto bg-zinc-50 px-4 py-6 sm:px-6 md:flex md:items-center md:justify-center md:py-8">
       {/* 色块 */}
       <AuthBackground />
       {/* 表单内容（居中） */}
-      <div className="w-[450px] bg-white border-2 rounded-sm border-black shadow-[4px_4px_0_0_rgba(0,0,0,1)] px-10 py-8 relative z-10">
+      <div className="relative z-10 mx-auto w-full max-w-[450px] border-2 border-black bg-white px-4 py-6 shadow-[4px_4px_0_0_rgba(0,0,0,1)] sm:px-8 sm:py-8 md:mx-0">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-xl font-black text-black">{pageInfo.title}</h1>
             <p className="text-sm text-gray-600">{pageInfo.subtitle}</p>
           </div>
-          <button
-            onClick={() => router.push('/')}
-            className={`px-4 py-1 border-2 rounded-sm bg-blue-500 border-black hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none duration-200 font-bold text-sm text-white  shadow-[2px_2px_0_0_rgba(0,0,0,1)]`}
+          <Link
+            href="/"
+            className="border-2 border-black bg-white px-3 py-1 text-sm font-bold text-zinc-950 shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-[transform,box-shadow,background-color] duration-150 hover:bg-zinc-100 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2"
           >
             回首页
-          </button>
+          </Link>
         </div>
         {renderForm()}
         {renderFooter()}
       </div>
-    </section>
+    </main>
   );
 }

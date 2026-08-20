@@ -1,4 +1,3 @@
-'use client';
 import {
   FiMonitor,
   FiTarget,
@@ -17,17 +16,16 @@ export default function AboutHero() {
         flex
         flex-col
         bg-white
-        px-8 pt-4
-        m-4
+        px-4 py-6 md:px-8
         transition-all duration-150
         relative z-10
       "
     >
-      <div className="flex justify-center items-center">
-        <div className="flex-3  rounded-xl py-4">
+      <div className="mx-auto flex w-full max-w-7xl flex-col items-center justify-center gap-8 lg:flex-row">
+        <div className="min-w-0 flex-1 rounded-xl py-4">
           <div className="flex flex-col justify-between h-full items-center mb-10">
             <div className="pr-4">
-              <h1 className="text-4xl font-extrabold mb-6 text-black  flex items-center gap-2">
+              <h1 className="mb-6 flex items-center gap-2 text-3xl font-extrabold text-black sm:text-4xl">
                 关于 CodeStory <BsRobot className="w-10 h-10 text-purple-600" />
               </h1>
               <p className="indent-8">
@@ -40,8 +38,8 @@ export default function AboutHero() {
             </div>
           </div>
           {/* 核心优势三块卡片 */}
-          <div className="flex justify-start items-center gap-4 my-4">
-            <div className="border-2 rounded-xl border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-none hover:translate-[2px] transition-all duration-150 p-5 bg-white">
+          <div className="my-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div className="rounded-xl border-2 border-black bg-white p-5 shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
               <div className="flex items-center gap-3 m-2">
                 <div className="w-8 h-8 flex items-center justify-center  rounded-full  text-purple-500">
                   <BsRobot className="w-8 h-8" />
@@ -50,7 +48,7 @@ export default function AboutHero() {
               </div>
               <p className="text-gray-700">智能 AI 助手陪伴学习</p>
             </div>
-            <div className="border-2 rounded-xl border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-none hover:translate-[2px] transition-all duration-150 p-5 bg-white">
+            <div className="rounded-xl border-2 border-black bg-white p-5 shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
               <div className="flex items-center gap-3 m-2">
                 <div className="w-8 h-8 flex items-center justify-center  text-green-600">
                   <FiMonitor className="w-8 h-8" />
@@ -59,7 +57,7 @@ export default function AboutHero() {
               </div>
               <p className="text-gray-700">边学边练，学以致用</p>
             </div>
-            <div className="border-2 rounded-xl border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] hover:shadow-none hover:translate-[2px] transition-all duration-150 p-5 bg-white">
+            <div className="rounded-xl border-2 border-black bg-white p-5 shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
               <div className="flex items-center gap-3 m-2">
                 <div className="w-8 h-8 flex items-center justify-center  text-blue-500">
                   <FiTarget className="w-8 h-8" />
@@ -70,14 +68,14 @@ export default function AboutHero() {
             </div>
           </div>
         </div>
-        <div className=" flex-2 w-[1000px]  flex items-center justify-center relative">
-          <div className="absolute top-[10px] left-5   flex items-center justify-center">
+        <div className="relative flex w-full min-w-0 flex-1 items-center justify-center lg:max-w-xl">
+          <div className="absolute left-0 top-3 hidden items-center justify-center sm:flex">
             <AboutCodeCard />
           </div>
           <div className=" h-[310px] flex items-center justify-center overflow-hidden">
             <Img
               src="/about-robot(2).png"
-              alt="about-robot"
+              alt=""
               width={700}
               height={700}
               className="object-contain scale-120"
@@ -86,7 +84,7 @@ export default function AboutHero() {
         </div>
       </div>
       {/* 联系方式卡片 */}
-      <div className="flex justify-start items-center gap-4 my-6">
+      <div className="mx-auto my-6 grid w-full max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* 邮箱 */}
         <div className="flex-1 flex flex-col items-center justify-center p-4 border-2 border-gray-500 rounded-lg bg-white ">
           <div className="w-12 h-12 flex items-center justify-center bg-yellow-400 rounded-full border-2 border-yellow-400 mb-2">

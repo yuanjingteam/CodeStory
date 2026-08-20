@@ -12,7 +12,7 @@ import { showToast } from '@/utils/toast';
 import { publishAuthSessionChange } from '@/utils/auth-session';
 
 const itemClass =
-  'flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-bold text-black hover:bg-yellow-200 focus-visible:bg-yellow-200 focus-visible:outline-none';
+  'flex min-h-10 w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm font-bold text-black hover:bg-white hover:shadow-[inset_4px_0_0_0_#18181b] focus-visible:bg-white focus-visible:outline-none focus-visible:shadow-[inset_4px_0_0_0_#18181b]';
 
 export default function UserMenu() {
   const router = useRouter();
@@ -47,7 +47,7 @@ export default function UserMenu() {
           <button
             type="button"
             aria-label="用户菜单"
-            className="flex min-h-10 items-center gap-2 px-1 font-bold text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black"
+            className="flex min-h-10 cursor-pointer items-center gap-2 px-1 font-bold text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
           >
             <span className="relative block h-8 w-8 shrink-0 overflow-hidden rounded-full border border-black">
               <Img
@@ -104,7 +104,7 @@ export default function UserMenu() {
         confirmText="退出登录"
         variant="danger"
         loading={loggingOut}
-        onConfirm={() => void handleLogout()}
+        onConfirm={handleLogout}
         onOpenChange={setConfirmOpen}
       />
     </>

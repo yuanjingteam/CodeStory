@@ -11,6 +11,7 @@ import { FaUserEdit, FaStar } from 'react-icons/fa';
 import Img from 'next/image';
 import UpdateUserInfoForm from '@/components/home/UpdateUserInfoForm';
 import ErrorDataCard from '@/components/common/ErrorDataCard';
+import Button from '@/components/ui/Button';
 export default function HomeMyInfo() {
   const { user, isLoggedIn, isLoading, updateUserInfo } = useUserStore();
   const [userInfo, setUserInfo] = useState<UserProfileInfo>({
@@ -26,12 +27,15 @@ export default function HomeMyInfo() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   useEffect(() => {
     if (!isLoggedIn || isLoading) return;
     const fetchUserProfile = async () => {
       try {
         setLoading(true);
+        setError(false);
         const res = await getProfile();
         if (res.code === 200 && res.data) {
           setUserInfo((prev) => ({
@@ -50,24 +54,25 @@ export default function HomeMyInfo() {
         }
       } catch (error) {
         console.error('获取用户信息失败:', error);
+        setError(true);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserProfile();
-  }, [isLoggedIn, isLoading, updateUserInfo]);
+    void fetchUserProfile();
+  }, [isLoggedIn, isLoading, reloadKey, updateUserInfo]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl font-black text-black">Loading...</div>
+      <div className="flex min-h-72 w-full max-w-md items-center justify-center border-2 border-black bg-zinc-50 p-6" role="status">
+        <div className="h-32 w-full animate-pulse bg-zinc-100 motion-reduce:animate-none" />
+        <span className="sr-only">正在加载个人信息...</span>
       </div>
     );
   }
 
   const updateUserProfileHandler = async (data: UpdateUserInfopRequest) => {
-    setLoading(true);
     try {
       const res = await updateUserProfile(data);
       if (res.code === 200) {
@@ -76,12 +81,12 @@ export default function HomeMyInfo() {
           ...res.data,
         }));
         updateUserInfo(res.data);
-        setIsOpen(false);
+        return;
       }
+      throw new Error('更新个人信息失败');
     } catch (error) {
       console.error('更新用户信息失败:', error);
-    } finally {
-      setLoading(false);
+      throw error;
     }
   };
 
@@ -92,7 +97,14 @@ export default function HomeMyInfo() {
   return (
     <section className="w-full flex-1 max-w-md bg-white border-2 border-gray-200 rounded-sm p-6 relative">
       {/* 个人信息卡片 */}
-      {isLoggedIn ? (
+      {error ? (
+        <ErrorDataCard
+          variant="error"
+          title="个人信息加载失败"
+          description="暂时无法获取个人信息，请稍后重试。"
+          action={<button type="button" className="cursor-pointer font-bold underline underline-offset-4" onClick={() => setReloadKey((key) => key + 1)}>重试</button>}
+        />
+      ) : isLoggedIn ? (
         <div>
           {/* 角色标签 */}
           <span
@@ -130,12 +142,15 @@ export default function HomeMyInfo() {
                 <h2 className="text-xl font-black text-black  truncate">
                   {userInfo.nickname || '用户'}
                 </h2>
-                <button
+                <Button
                   onClick={() => setIsOpen(true)}
-                  className=" mx-4 cursor-pointer"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="编辑个人信息"
+                  className="mx-2 shrink-0"
                 >
                   <FaUserEdit className="w-6 h-6 text-gray-500 text-center" />
-                </button>
+                </Button>
               </div>
               <div className="flex flex-col gap-1 text-sm text-gray-600">
                 <span>性别: {userSexMap[userInfo.sex] || '未设置'}</span>
@@ -206,14 +221,16 @@ export default function HomeMyInfo() {
           </div>
         </div>
       ) : (
-        <ErrorDataCard title="未登录" description="请先登录以查看个人信息" />
+        <ErrorDataCard variant="auth" title="未登录" description="请先登录以查看个人信息" />
       )}
-      <UpdateUserInfoForm
-        isOpen={isOpen}
-        onClose={onClose}
-        initialData={userInfo}
-        onSubmit={updateUserProfileHandler}
-      />
+      {isOpen ? (
+        <UpdateUserInfoForm
+          isOpen
+          onClose={onClose}
+          initialData={userInfo}
+          onSubmit={updateUserProfileHandler}
+        />
+      ) : null}
     </section>
   );
 }

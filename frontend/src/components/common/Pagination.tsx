@@ -75,9 +75,9 @@ export default function Pagination({
       </div>
 
       {/* 右侧：分页导航 */}
-      <div className="flex min-w-0 items-center justify-center gap-2">
+      <div className="flex min-w-0 flex-wrap items-center justify-center gap-2">
         <span className="text-sm text-gray-600 font-bold">
-          当前第 {currentPage}/{totalPages} 页
+          {totalPages > 0 ? `当前第 ${currentPage}/${totalPages} 页` : '暂无分页数据'}
         </span>
 
         {/* 上一页 */}

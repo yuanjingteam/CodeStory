@@ -13,7 +13,7 @@ export default function AboutCodeCard() {
   return (
     <div className="relative w-full max-w-md mx-auto">
       {/* Code window */}
-      <div className="bg-gray-900 rounded-lg border-2 border-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] p-4 hover:translate-y-[2px] hover:shadow-none transition-all duration-200">
+      <div className="rounded-lg border-2 border-black bg-gray-900 p-4 shadow-[2px_2px_0_0_rgba(0,0,0,1)]">
         <pre className="text-green-400 text-sm font-mono">
           <code>
             {codeLines.map((line, index) => (
